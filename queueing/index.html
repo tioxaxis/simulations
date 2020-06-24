@@ -4,7 +4,7 @@
 
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="res/tiox3.png">
+    <link rel="shortcut icon" href="Res/tiox3.png">
         
     <!-- my CSS  -->
         <link rel="stylesheet" type="text/css" href="tiox.css">
@@ -29,15 +29,19 @@
   <body onload="initializeAll()">
 
 
-<div id="exportPresetsBox" style = "display:none">
+<div id='exportBoxOuter' style='display:none'>
+<div id="exportPresetsBox" style = "display:block">
       <p> Either copy and save the text below into the 'presets.json' file and place it next to the 'index.html' on the server,  </p>
     <p class="blueBox" id="jsonDisplay"></p>
     <br>
     <p> or copy and save the URL below and use it to access the 'index.html' file</p>
     <p class="blueBox" id="urlDisplay"></p>
     <br>
-    <button onclick= " document.getElementById('exportPresetsBox').style='display:none'; document.getElementById('containerOuter').style='display:block'"> Return </button>
-</div> 
+    <button onclick= " document.getElementById('exportBoxOuter').style='display:none'; "
+            style='position:fixed; top:105px;
+                   right: 105px'> X </button>
+</div>
+      </div>
 <div  id="containerOuter">
    <div  id="containerInner">
       <div id="leftHandSideBox">

@@ -1382,7 +1382,10 @@ const presets = {
             // evt = evt || window.event;
             const key = evt.key; 
             if (key === "Escape"){
-                presets.deleteTextInpBox();
+                let elem = document.getElementById( 'exportBoxOuter');
+                if (elem.style.display  == 'block' ) 
+                    elem.style.display = 'none'
+                else presets.deleteTextInpBox();
             } else if (key === "Enter"){
                 if ( presets.editMode ) 
                     if ( presets.textMode ) presets.saveModifiedDesc();
@@ -1546,8 +1549,8 @@ const presets = {
     },
     
     export: function() {
-        document.getElementById('exportPresetsBox').style = 'display:block';
-        document.getElementById('containerOuter').style = 'display:none';
+        document.getElementById('exportBoxOuter').style = 'display:block';
+        //document.getElementById('containerOuter').style = 'display:none';
         document.getElementById('jsonDisplay').innerHTML = createJSON();
         document.getElementById('urlDisplay').innerHTML = createURL();
     },

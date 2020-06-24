@@ -4,17 +4,43 @@
 
 .blueBox {
     border: blue solid 5px;
-    padding: 10px;
-    margin: 0% 10%;
-    background: 
+    margin: 0% 5%;
+    background: white; 
     
 }
+#exportBoxOuter{
+    position: relative;
+    
+}
+#exportPresetsBox {
+    position: fixed;
+    top:5%;
+    left: 5%;
+    right: 5%;
+    height: 100%;
+    padding-bottom:;
+    background-color: #b8becb;
+    z-index : 9;
+    margin: auto;
+    width:;
+    
+}
+#exportPresetsBox p {
+    padding: 0px 3%;
+}
+#exportPresetsBox button {
+    position: fixed;
+    top: 5%;
+    right: 5%;
+}
+
 #containerOuter { 
     position: relative;
     margin: auto;     /*-- center the box                           */
     width: 99vw;      /* vw = % of view width                       */
     height: 49.5vw;     /* use vw to make it proportional to width    */
-    }
+    z-index: 0
+}
         
  #containerInner {
        position: absolute;
