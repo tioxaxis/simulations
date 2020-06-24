@@ -1,6 +1,8 @@
 "use strict";
 // declaration of Globals
 const tioxInfinity = 5000000000000;
+//import {jStat} from "./res/jstat.min.js";
+
      
 class GammaRV {  
     constructor (rate,CV=0,minimumTime=20){
@@ -1095,7 +1097,7 @@ class Person {
 
      
 
-function initializeAll(){
+export function initializeAll(){
     sliders.initialize();
     presets.initialize();
     theChart.initialize();
@@ -1370,15 +1372,23 @@ const presets = {
         presets.currentLi = null;
         this.started = true;
         
-        document.getElementById('addButton').onclick = presets.addRow;
-        document.getElementById('deleteButton').onclick = presets.deleteSelected;
-        
-        document.getElementById('editButton').onclick = presets.startEdit;
-        document.getElementById('saveButton').onclick = presets.saveEdit;
-        document.getElementById('cancelButton').onclick = presets.cancelEdit;
-        document.getElementById('exportButton').onclick = presets.export;
+        document.getElementById('addButton')
+            .addEventListener('click',presets.addRow);
+        document.getElementById('deleteButton')
+            .addEventListener('click',presets.deleteSelected);
+        document.getElementById('editButton')
+            .addEventListener('click',presets.startEdit);
+        document.getElementById('saveButton')
+            .addEventListener('click',presets.saveEdit);
+        document.getElementById('cancelButton')
+            .addEventListener('click',presets.cancelEdit);
+        document.getElementById('exportButton')
+            .addEventListener('click',presets.export)
+        ;
             
-        document.onkeydown = function(evt) {
+        document.addEventListener('keydown',keyDownFunction);
+        
+        function keyDownFunction (evt) {
             // evt = evt || window.event;
             const key = evt.key; 
             if (key === "Escape"){
@@ -1474,9 +1484,9 @@ const presets = {
             newRow.classList.add("selected");
             sliders.setSlidersFrom(newRow.dataset);
             if ( !presets.editMode ){
-                if (newRow.dataset.reset == "true") playPauseReset('reset');
-                if ( newRow.dataset.action == '1' && theAnimation.isRunning ) playPauseReset('pause');
-                else if ( newRow.dataset.action == '2' && !theAnimation.isRunning ) playPauseReset('play');
+                if (newRow.dataset.reset == "true") resetAll();
+                if ( newRow.dataset.action == '1' && theAnimation.isRunning ) pause();
+                else if ( newRow.dataset.action == '2' && !theAnimation.isRunning ) play();
             }
         };
         presets.currentLi = newRow;
@@ -1493,7 +1503,7 @@ const presets = {
         // if nothing is selected as we enter edit mode pick first preset;  Also pause.
         let x = presets.ulPointer.firstElementChild;
         if ( !presets.currentLi ) presets.changeCurrentLiTo(x);
-        playPauseReset('pause');
+        pause();
         
         document.getElementById("addButton").style.display = "block";
         document.getElementById('deleteButton').style.display = 'block';
@@ -1576,19 +1586,21 @@ const presets = {
     }
 };
 
-function playPauseReset(name){ 
-    if (name == 'play' ){
+ function play(){ 
         document.getElementById('playButton').style.display = 'none';
         document.getElementById('pauseButton').style.display = 'inline';  
         theAnimation.start() ;
-    } else if (name == 'pause' ){
+    };
+function pause(){
         document.getElementById('pauseButton').style.display ='none';
         document.getElementById('playButton').style.display = 'block';
-        theAnimation.stop() ;  
-    } else if ( name == 'reset' ){
-        resetAll();
-    }
+        theAnimation.stop()
 };
+document.getElementById('playButton').addEventListener('click',play);
+document.getElementById('pauseButton').addEventListener('mouseup',pause);
+document.getElementById('resetButton').addEventListener('mouseup',resetAll);
+
+
 function createURL() {
     let searchStr = location.href+'?presets=';
     let contents = document.querySelectorAll('#ULPresetList li');

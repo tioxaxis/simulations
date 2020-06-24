@@ -8,14 +8,12 @@
         
     <!-- my CSS  -->
         <link rel="stylesheet" type="text/css" href="tiox.css">
-   
-   
     
     <!-- software to do the charting  -->
         <script src="res/chart.js"></script> 
     
     <!--software for random number generation-->
-        <script src='res/jstat.min.js'></script>
+       <script src='res/jstat.min.js'></script>  
     
     <!-- converts Math.random() to be seeded    -->
         <script src='res/seedrandom.min.js'></script>
@@ -24,10 +22,27 @@
         <script src="res/fabric.js"></script>
     
      <!--  my JavaScript -->
-        <script src='queueing.js'></script>
-</head>
-  <body onload="initializeAll()">
+<script type = 'module'>
+  import {initializeAll} from './queueing.js';
+  document.addEventListener("DOMContentLoaded", initializeAll);
+</script>
+    
+<!--
+    <script type='module'>
+       //import initializeAll from './queueing.js';
+        function afterLoad() {
+           let x = 30;
+           
+        //  initializeAll();
+       }
+      
+      </script>
+-->
 
+    </head>
+  <body >
+      
+      
 
 <div id='exportBoxOuter' style='display:none'>
 <div id="exportPresetsBox" style = "display:block">
@@ -119,13 +134,9 @@
         </div>
 
         <div class="playButtons" id="playButtons">
-            <p id="pauseButton" style="display:none">
-            <button onmouseup="playPauseReset('pause')" >Pause</button></p>
-
-            <p id="playButton"  style="display:inline">
-            <button onmouseup="playPauseReset('play')" >Play</button></p>
-
-            <button onmouseup="playPauseReset('reset')" >Reset</button>     
+            <p id='pauseButton' style="display:none"><button >Pause</button></p>
+            <p id='playButton' style="display:inline"><button >Play</button></p>
+            <p id='resetButton'><button >Reset</button> </p>    
         </div>
      
         <div class="actionBox" id="actionOptions"> 
