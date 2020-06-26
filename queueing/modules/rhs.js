@@ -1,6 +1,7 @@
-import {theSimulation, theAnimation, resetAll, theChart } 
+import {theSimulation, theAnimation, theChart } 
         from '../queueing.js';
-
+import {simuParams} 
+    from './simuParams.js';
 
 
 // this is the structure to keep track of the sliders (both values and displays)
@@ -39,43 +40,41 @@ export const sliders = {
         
         this.arSlider.addEventListener('input',  function () {
             let v = Number( sliders.arSlider.value ).toFixed(1);
-            theSimulation.interarrivalRV.setRate(v/10000);
+            simuParams.setParam('ar',v);
             sliders.arDisplay.innerHTML = v;
             setCurrentLi('ar', v); 
             });
         
         this.acvSlider.addEventListener('input', function () {
             let v = Number( sliders.acvSlider.value ).toFixed(1);
-            theSimulation.interarrivalRV.setCV(v);
+            simuParams.setParam('acv',v);
             sliders.acvDisplay.innerHTML = v;
             setCurrentLi('acv', v);
             });
         
         this.srSlider.addEventListener('input',  function () {
            let v = Number( sliders.srSlider.value ).toFixed(1);
-            theSimulation.serviceRV.setRate(v/10000);
+            simuParams.setParam('sr',v);
             sliders.srDisplay.innerHTML = v;
             setCurrentLi('sr', v);
             });
         
         this.scvSlider.addEventListener('input',  function () {
             let v = Number( sliders.scvSlider.value ).toFixed(1);
-            theSimulation.serviceRV.setCV(v);
+            simuParams.setParam('scv',v);
             sliders.scvDisplay.innerHTML = v;
             setCurrentLi('scv', v);
             });
         
         this.speedSlider.addEventListener('input', function(){ 
-            let v = Number( sliders.speedSlider.value ).toFixed(0);
-            theAnimation.framedelta =  
-                theAnimation.framedeltaFor1X*v;
-            theChart.continue(); 
-            sliders.speedDisplay.innerHTML = v;
-            setCurrentLi('speed', v);
-            theAnimation.speedUpdateFlag = true;
-            });
+            let v = Number( sliders.speedSlider.value ).toFixed(0);  
+            simuParams.setParam('speed',v);
+            sliders.speedDisplay.innerHTML = v;                     
+            setCurrentLi('speed', v);                              
+             });
         
         this.resetCheckboxPointer.addEventListener('change',this.resetCheck);
+        
         for (let j = 0; j < this.actionRadioNodelist.length; j++){
             this.actionRadioNodelist[j].
                 addEventListener('change',this.actionRadio);
@@ -86,36 +85,37 @@ export const sliders = {
     setSlidersFrom: function (aPreset){
         this.arSlider.value = aPreset.ar;
         this.arDisplay.innerHTML = aPreset.ar;
+        simuParams.setParam('ar',aPreset.ar);
+        
         this.acvSlider.value = aPreset.acv;
         this.acvDisplay.innerHTML = aPreset.acv;
+        simuParams.setParam('acv',aPreset.acv);
         
         this.srSlider.value = aPreset.sr;
         this.srDisplay.innerHTML = aPreset.sr;
+        simuParams.setParam('sr',aPreset.sr);
+        
         this.scvSlider.value = aPreset.scv;
         this.scvDisplay.innerHTML= aPreset.scv;
-         
+        simuParams.setParam('scv',aPreset.scv);
+        
         this.speedSlider.value = aPreset.speed;
         this.speedDisplay.innerHTML = aPreset.speed;
+        simuParams.setParam('speed',aPreset.speed);
         
         if (presets.editMode) {
             setChecked(this.actionRadioNodelist,aPreset.action);
             this.resetCheckboxPointer.checked = aPreset.reset == "true";
-        }
-        // if things are setup and need to be adjusted fix 5 values for theSimulation/theAnimation.
-        if( theSimulation.interarrivalRV ) {
-            theSimulation.interarrivalRV.setParams(
-                Number( sliders.arSlider.value )/10000,
-                Number( sliders.acvSlider.value ));
-            
-            theSimulation.serviceRV.setParams(
-                Number( sliders.srSlider.value )/10000,
-                Number( sliders.scvSlider.value ));
-        
-            theAnimation.framedelta =  
-               theAnimation.framedeltaFor1X*Number( sliders.speedSlider.value );
-             theChart.continue();
-            theAnimation.speedUpdateFlag = true;
-           
+        } else {
+            // not in edit mode so respond to change by reseting or pausing or playing
+            if (aPreset.reset == 'true') document.getElementById('resetButton').click();
+            if (aPreset.action == 1 ) {
+                let theButton = document.getElementById('pauseButton')
+                if (theButton.style.display != 'none' ) theButton.click();
+            } else if (aPreset.action == 2 ) {
+                let theButton = document.getElementById('playButton')
+                if (theButton.style.display != 'none' ) theButton.click();
+            }
         }
     },
     
@@ -135,6 +135,7 @@ export const sliders = {
             presets.currentLi.dataset.reset = this.checked;
     },
 };
+sliders.initialize();
 
 function createOne(params) {
             const liElem = document.createElement("LI");
@@ -223,12 +224,9 @@ export const presets = {
                 presets.ulPointer.append(createOne({ar:elems[0], acv:elems[1], sr:elems[2], scv:elems[3], speed:elems[4], action: elems[5], reset: elems[6], desc: elems[7]}));
             }
         } else {
-        
-        
             presetsString = localStorage.getItem("TIOX");
             if (presetsString) {
                 presetsRows = JSON.parse(presetsString);
-
             } else {
                 let response = await fetch('presets.json');
                 if (response.ok) { 
@@ -264,11 +262,8 @@ export const presets = {
         document.addEventListener('keydown',keyDownFunction);
         
         function keyDownFunction (evt) {
-            // evt = evt || window.event;
             const key = evt.key; 
-            if (evt.code === "Space") {
-                togglePlayPause();
-            } else if (key === "Escape"){
+            if (key === "Escape"){
                 let elem = document.getElementById( 'exportBoxOuter');
                 if (elem.style.display  == 'block' ) 
                     elem.style.display = 'none'
@@ -360,11 +355,11 @@ export const presets = {
         if ( newRow ) {
             newRow.classList.add("selected");
             sliders.setSlidersFrom(newRow.dataset);
-            if ( !presets.editMode ){
-                if (newRow.dataset.reset == "true") resetAll();
-                if ( newRow.dataset.action == '1' &&    theAnimation.isRunning ) pause();
-                else if ( newRow.dataset.action == '2' && !theAnimation.isRunning ) play();
-            }
+//            if ( !presets.editMode ){
+//                if (newRow.dataset.reset == "true") resetAll();
+//                if ( newRow.dataset.action == '1' &&    theAnimation.isRunning ) pause();
+//                else if ( newRow.dataset.action == '2' && !theAnimation.isRunning ) play();
+//            }
         };
         presets.currentLi = newRow;
     },
@@ -376,10 +371,14 @@ export const presets = {
         //    save / clone the list ulPointer.
         
         presets.editMode = true; 
+        // simulate a click on pause if running.
+        let theButton = document.getElementById('pauseButton')
+                if (theButton.style.display != 'none' ) theButton.click();
+        
         // if nothing is selected as we enter edit mode pick first preset;  Also pause.
         let x = presets.ulPointer.firstElementChild;
         if ( !presets.currentLi ) presets.changeCurrentLiTo(x);
-        pause();
+        
         
         document.getElementById("addButton").style.display = "block";
         document.getElementById('deleteButton').style.display = 'block';
@@ -462,25 +461,7 @@ export const presets = {
     }
 };
 
- function togglePlayPause() {
-        if ( theAnimation.isRunning ) pause();
-        else play();
-    };
-
-function play(){ 
-        document.getElementById('playButton').style.display = 'none';
-        document.getElementById('pauseButton').style.display = 'inline';  
-        theAnimation.start() ;
-    };
-function pause(){
-        document.getElementById('pauseButton').style.display ='none';
-        document.getElementById('playButton').style.display = 'block';
-        theAnimation.stop()
-};
-document.getElementById('playButton').addEventListener('click',play);
-document.getElementById('pauseButton').addEventListener('mouseup',pause);
-document.getElementById('resetButton').addEventListener('mouseup',resetAll);
-
+ 
 
 function createURL() {
     let searchStr = location.href+'?presets=';
@@ -531,4 +512,5 @@ function createList(presetsRows) {
         nodelist[j].checked = true;
     }
 
+presets.initialize();
 

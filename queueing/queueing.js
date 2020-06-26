@@ -1,11 +1,14 @@
 "use strict";
 // declaration of Globals
 const tioxInfinity = 5000000000000;
-import {GammaRV, Heap} from './modules/utility.js';
+import {GammaRV, Heap} 
+    from './modules/utility.js';
 import {Queue, Supplier, WalkAndDestroy, MachineCenter, InfiniteMachineCenter}
     from './modules/procsteps.js' ;
-import {sliders, presets } from './modules/rhs.js';
-
+import {sliders } 
+    from './modules/rhs.js';
+import {simuParams} 
+    from './modules/simuParams.js';
 
 
 export const theAnimation= {
@@ -34,8 +37,45 @@ export const theAnimation= {
         
     },
     
-     
+    checkChangeSimuParams: function(){
+        if (!simuParams.changeFlag )return;
+        if ( simuParams.changed('ar') ){
+          theSimulation.interarrivalRV.setRate(
+              simuParams.getParam ( 'ar' )/10000);
+        }
+        if ( simuParams.changed('acv') ){
+          theSimulation.interarrivalRV.setCV(
+              simuParams.getParam ( 'acv' ));
+        }
+        if ( simuParams.changed('sr') ){
+          theSimulation.serviceRV.setRate(
+              simuParams.getParam ( 'sr' )/10000);
+        }
+        if ( simuParams.changed('scv') ){
+            theSimulation.serviceRV.setCV(
+                simuParams.getParam ( 'scv' ));
+        }
+        if ( simuParams.changed('speed') ){
+            theAnimation.framedelta = theAnimation.framedeltaFor1X * simuParams.getParam('speed');
+            theChart.continue();
+            Person.updateForSpeed();
+        }
+//        if ( simuParams.changed('reset') ){
+//            if ( getParam ( 'reset' ) )
+//                resetAll();
+//        }
+//        if ( simuParams.changed('action') ){
+//            let v = getParam ( 'action' );
+//            if ( v = 'play' )play();
+//            else if ( v = 'pause') pause();
+//        }
+//        
+        simuParams.changeFlag = false;
+    },
+         
     eachFrame: function() {
+        theAnimation.checkChangeSimuParams();
+        
         let theTop ;
         while( (theTop = theAnimation.simu.heap.top())  &&
                 theTop.time <= theAnimation.frametime ){
@@ -434,17 +474,7 @@ function resizeCanvas() {
          this.list.splice(k,1);
      };
      
- };  // end class PersonCheck
-//let thePersonCheck = new PersonCheck();
-     
-
-// var personCounter = 0;
-//var checkPointer = null;
-//var allPeople=[];
-
-//function updateForSpeed(allPeople){
-//    allPeople.forEach(p=>p.computeCountDelta(p.pathList[0]));
-//};
+ }; 
 
 export class Person {
     static simu = theSimulation;
@@ -646,8 +676,6 @@ static  check(){
      
 
 export function initializeAll(){
-    sliders.initialize();
-    presets.initialize();
     theChart.initialize();
     theAnimation.initialize(theSimulation);
  
@@ -667,6 +695,33 @@ export function resetAll(){
     
 }
 
+
+function togglePlayPause() {
+        if ( theAnimation.isRunning ) pause();
+        else play();
+    };
+
+function play(){ 
+        document.getElementById('playButton').style.display = 'none';
+        document.getElementById('pauseButton').style.display = 'inline';  
+        theAnimation.start() ;
+    };
+function pause(){
+        document.getElementById('pauseButton').style.display ='none';
+        document.getElementById('playButton').style.display = 'block';
+        theAnimation.stop()
+};
+document.getElementById('playButton').addEventListener('click',play);
+document.getElementById('pauseButton').addEventListener('click',pause);
+document.getElementById('resetButton').addEventListener('click',resetAll);
+ document.addEventListener('keydown',keyDownFunction);
+
+function keyDownFunction (evt) {
+            const key = evt.key; 
+            if (evt.code === "Space") {
+                togglePlayPause();
+            }
+}
  
 
 //   TheChart variable is the interface to create the charts using Chart.js
