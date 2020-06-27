@@ -1,9 +1,9 @@
 export const simuParams = {
-    item: {ar: {value: null, flag: false},
-           acv: {value: null, flag: false}, 
-           sr: {value: null, flag: false}, 
-           scv: {value: null, flag: false}, 
-           speed: {value: null, flag: false}},
+    item: {ar: {value: 5, flag: false},
+           acv: {value: 0, flag: false}, 
+           sr: {value: 6, flag: false}, 
+           scv: {value: 0, flag: false}, 
+           speed: {value: 1, flag: false}},
     changeFlag : false,
     
     setParam: function ( key, v ){

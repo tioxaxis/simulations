@@ -1,17 +1,17 @@
 "use strict";
 // declaration of Globals
-const tioxInfinity = 5000000000000;
+
+const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
 import {GammaRV, Heap} 
     from './modules/utility.js';
-import {Queue, Supplier, WalkAndDestroy, MachineCenter, InfiniteMachineCenter}
+import {Queue, Supplier, WalkAndDestroy, MachineCenter, 
+        InfiniteMachineCenter}
     from './modules/procsteps.js' ;
-import {sliders } 
-    from './modules/rhs.js';
 import {simuParams} 
     from './modules/simuParams.js';
 
 
-export const theAnimation= {
+const theAnimation= {
     simu : null,
     frametime : 0,        // like 'now' which is simulated time, but rounded to framedelta
     framedelta : 20,      //simulated time increment per frame
@@ -41,7 +41,7 @@ export const theAnimation= {
         if (!simuParams.changeFlag )return;
         if ( simuParams.changed('ar') ){
           theSimulation.interarrivalRV.setRate(
-              simuParams.getParam ( 'ar' )/10000);
+              simuParams.getParam ( 'ar' )/tioxTimeConv);
         }
         if ( simuParams.changed('acv') ){
           theSimulation.interarrivalRV.setCV(
@@ -49,7 +49,7 @@ export const theAnimation= {
         }
         if ( simuParams.changed('sr') ){
           theSimulation.serviceRV.setRate(
-              simuParams.getParam ( 'sr' )/10000);
+              simuParams.getParam ( 'sr' )/tioxTimeConv);
         }
         if ( simuParams.changed('scv') ){
             theSimulation.serviceRV.setCV(
@@ -60,16 +60,6 @@ export const theAnimation= {
             theChart.continue();
             Person.updateForSpeed();
         }
-//        if ( simuParams.changed('reset') ){
-//            if ( getParam ( 'reset' ) )
-//                resetAll();
-//        }
-//        if ( simuParams.changed('action') ){
-//            let v = getParam ( 'action' );
-//            if ( v = 'play' )play();
-//            else if ( v = 'pause') pause();
-//        }
-//        
         simuParams.changeFlag = false;
     },
          
@@ -83,8 +73,6 @@ export const theAnimation= {
              theAnimation.simu.now = event.time;
              event.proc(event.item);
          }
-        if( theAnimation.speedUpdateFlag ) Person.updateForSpeed();
-        theAnimation.speedUpdateFlag = false;
         
             
         // move frame time ahead delta = 40 milliseconds => 25 frames/minute.
@@ -104,8 +92,9 @@ export const theAnimation= {
     
     resetBackground: function(theFabricCanvas){
         theFabricCanvas.clear();
-        this.qLenDisplay = new fabric.Text('Queue Length = 0', 
-                                           { fontSize: 20, visible: false, left: 100, top: 250 });
+        this.qLenDisplay = new fabric.Text( 'Queue Length = 0', 
+            { fontSize: 20, visible: false, 
+             left: 100, top: 250 });
         theFabricCanvas.add(this.qLenDisplay); 
         
         // put other things that are fixed and not people on stage.
@@ -117,13 +106,6 @@ export const theAnimation= {
         theAnimation.theCanvas = new fabric.Canvas('theCanvas', { renderOnAddRemove: false });
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
-        
-//        theAnimation.theCanvas.on('mouse:down', function(options) {
-//        console.log(options.e.clientX, options.e.clientY);
-//        if (options.target) {
-//            console.log('an object was clicked! ', options.target.type);
-//            } } );
-//    
     },
     
     reset: function() {
@@ -139,9 +121,7 @@ const theStage = {
     width: 1000,
     height: 300,
     pathY: 100,
-    person: {dx: 40, dy: 60}
-    
-    
+    person: {dx: 40, dy: 60}   
 };
 {
     theStage.offStageLeft = {x: -50, y: theStage.pathY};
@@ -244,7 +224,6 @@ const animForTSA = {
     firstLoc : theStage.scanner,
     delta : theStage.scannerDelta,
     dontOverlap: true,
-    speedUpdateFlag: false,
 
     machLoc: null,
     lastFinPerson: null,
@@ -297,28 +276,13 @@ class processCollection {
  };
 
  moveDisplay() {
-     //theStage.clear();
      Person.all.forEach(p=> p.moveDisplayWithPath(false))
-    // this.processList.forEach( aProcess => aProcess.moveDisplay() );
  };
-    
-//markPeople() {
-//    thePersonCheck.clear();
-//     this.processList.forEach( aProcess => aProcess.markPeople() );
-//    let u = thePersonCheck.countUnmarked();
-//    if (u > 0 ){
-//        console.log('checked all the people',thePersonCheck.list.length, 'now=',theSimulation.now, 
-//               u,'  are unmarked');
-//        for (let k = 0; k<thePersonCheck.list.length; k++){
-//            if (!thePersonCheck.list[k].proc)console.log('unmarked is ', k);
-//        }
-//    }
-//};
 }; // end class processCollection
 
 
 
-export const theSimulation = { 
+ const theSimulation = { 
     now: 0,
     interarrivalRV: null,
     serviceRV: null,
@@ -335,8 +299,12 @@ export const theSimulation = {
     initialize: function (){
     
         // random variables
-        this.interarrivalRV = new GammaRV(sliders.arSlider.value/10000,sliders.acvSlider.value);
-        this.serviceRV = new GammaRV(sliders.srSlider.value/10000,sliders.scvSlider.value);
+        let r = simuParams.getParam('ar');
+        let cv = simuParams.getParam('acv'); 
+        this.interarrivalRV = new GammaRV(r/tioxTimeConv,cv);
+        r = simuParams.getParam('sr');
+        cv = simuParams.getParam('scv');
+        this.serviceRV = new GammaRV(r/tioxTimeConv,cv);
         
         //queues
         this.supply = new Supplier(theSimulation, -50, 100);
@@ -477,18 +445,21 @@ function resizeCanvas() {
  }; 
 
 export class Person {
-    static simu = theSimulation;
+    static simu = null;
+    static anim = null;
     static all = [];
     static personCounter = 0;
     static checkPointer = null;
     static updateForSpeed(){
-        Person.all.forEach(p=>p.computeCountDelta(p.pathList[0]));
-    }
-    static setup(){
+        Person.all.forEach(p => p.computeCountDelta( p.pathList[0] ));
+    };
+    static setup(simu, anim){
+        Person.simu = simu;
+        Person.anim = anim;
         Person.checkPointer = null;
         Person.personCounter = 0;
         Person.all = [];
-    }
+    };
 
     constructor (ahead, x,y= 100,w = 30,h = 30) {
         // capture first person;
@@ -507,7 +478,7 @@ export class Person {
         this.arrivalTime = null;
         
         this.graphic = new fabric.Rect({top: 100,left:-50, width: w, height: h , fill: "blue" })
-        theAnimation.theCanvas.add(this.graphic);
+        Person.anim.theCanvas.add(this.graphic);
         //this.graphic = {width: w, height:h, color: "blue"};
          this.machine = null;
  //       thePersonCheck.push(this);
@@ -525,7 +496,7 @@ export class Person {
             this.behind.ahead = null;
             Person.checkPointer = this.behind;
         }
-        theAnimation.theCanvas.remove(this.graphic);  
+        Person.anim.theCanvas.remove(this.graphic);  
     };
     
      moveDisplayWithPath (dontOverlap){
@@ -534,7 +505,7 @@ export class Person {
          else {
              if (path.count <= 0){
                  this.cur.x = path.x;
-                 path.t = theAnimation.frametime;
+                 path.t = Person.anim.frametime;
              } else {
                  this.cur.x += path.deltaX;
                  this.cur.y += path.deltaY;
@@ -558,9 +529,9 @@ export class Person {
     
      computeCountDelta(path){
          
-         let previousFrameTime = Math.floor(Person.simu.now / theAnimation.framedelta)
-         * theAnimation.framedelta;
-         path.count = Math.floor((path.t - previousFrameTime)/theAnimation.framedelta);
+         let previousFrameTime = Math.floor(Person.simu.now / Person.anim.framedelta)
+         * Person.anim.framedelta;
+         path.count = Math.floor((path.t - previousFrameTime)/Person.anim.framedelta);
          
         path.deltaX = ( path.x - this.cur.x ) / path.count;
          path.deltaY = ( path.y - this.cur.y ) / path.count;
@@ -673,6 +644,7 @@ static  check(){
   };  // end class Person
 
 
+
      
 
 export function initializeAll(){
@@ -684,9 +656,8 @@ export function initializeAll(){
     
     resetAll();   
 };
-
-export function resetAll(){
-    Person.setup();
+ function resetAll(){
+    Person.setup(theSimulation,theAnimation);
     theAnimation.reset();
     theChart.reset();
     theSimulation.reset();
@@ -695,6 +666,7 @@ export function resetAll(){
     
 }
 
+//  
 
 function togglePlayPause() {
         if ( theAnimation.isRunning ) pause();
@@ -714,7 +686,7 @@ function pause(){
 document.getElementById('playButton').addEventListener('click',play);
 document.getElementById('pauseButton').addEventListener('click',pause);
 document.getElementById('resetButton').addEventListener('click',resetAll);
- document.addEventListener('keydown',keyDownFunction);
+document.addEventListener('keydown',keyDownFunction);
 
 function keyDownFunction (evt) {
             const key = evt.key; 
@@ -844,7 +816,7 @@ export const theChart ={
     },
     continue: function(){
         this.graphScale = Math.max(this.graphScale,
-                          Number( sliders.speedSlider.value )); 
+                Number( simuParams.getParam('speed') )); 
         this.graphTimeWidth = this.graphInitialTimeWidth*this.graphScale;
         this.graphTimeShift = this.ghrapInitialTimeShift*this.graphScale;
         this.graphMax = Math.max(this.graphMax,this.graphMin + this.graphTimeWidth);

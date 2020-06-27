@@ -1,5 +1,3 @@
-import {theSimulation, theAnimation, theChart } 
-        from '../queueing.js';
 import {simuParams} 
     from './simuParams.js';
 
@@ -157,7 +155,8 @@ function setCurrentLi(key, v){
                 if ( presets.currentLi ) presets.currentLi.classList.remove("selected");
                 presets.currentLi = null;  
             };
-         }
+         };
+
 function nextLi() {
     if ( presets.currentLi ) {
         if ( presets.currentLi.nextElementSibling )
@@ -165,7 +164,7 @@ function nextLi() {
         return presets.currentLi;
     }
     return presets.ulPointer.firstElementChild;  
-}
+};
 
 function previousLi() {
     if ( presets.currentLi ) {
@@ -174,7 +173,7 @@ function previousLi() {
         return presets.currentLi;
     }
     return presets.ulPointer.lastElementChild;  
-}
+};
 
 function neighborLi() {
     if ( !presets.currentLi ) return null;
@@ -183,7 +182,7 @@ function neighborLi() {
     if ( presets.currentLi.nextElementSibling )
             return presets.currentLi.nextElementSibling; 
     return null; 
-}
+};
 
 
 
@@ -212,6 +211,7 @@ export const presets = {
         this.ulPointer.addEventListener('dblclick', this.liDblClicked);
         
         
+        // get the presets from the URL, or local storage or .json file in that order
         var presetsRows=null;
 
         let presetsString = location.search;
@@ -229,13 +229,8 @@ export const presets = {
                 presetsRows = JSON.parse(presetsString);
             } else {
                 let response = await fetch('presets.json');
-                if (response.ok) { 
-                 presetsRows = await response.json();
-                } 
-//              else {
-//                  alert("HTTP-Error: " + response.status);
-//               }
-           
+                if (response.ok) presetsRows = await response.json();
+                else alert("json file HTTP-Error: " + response.status);
             }     
            createList(presetsRows)
         }
@@ -258,7 +253,7 @@ export const presets = {
         document.getElementById('cancelButton')
             .addEventListener('click',presets.cancelEdit);
         document.getElementById('exportButton')
-            .addEventListener('click',presets.export);
+            .addEventListener('click',presets.popupExport);
         document.addEventListener('keydown',keyDownFunction);
         
         function keyDownFunction (evt) {
@@ -355,11 +350,6 @@ export const presets = {
         if ( newRow ) {
             newRow.classList.add("selected");
             sliders.setSlidersFrom(newRow.dataset);
-//            if ( !presets.editMode ){
-//                if (newRow.dataset.reset == "true") resetAll();
-//                if ( newRow.dataset.action == '1' &&    theAnimation.isRunning ) pause();
-//                else if ( newRow.dataset.action == '2' && !theAnimation.isRunning ) play();
-//            }
         };
         presets.currentLi = newRow;
     },
@@ -389,30 +379,18 @@ export const presets = {
         
     },
     
-    exitEdit: function() {
-        presets.editMode = false;
-        presets.saveModifiedDesc();
-        document.getElementById("addButton").style.display = "none";
-        document.getElementById('deleteButton').style.display = 'none';
-        document.getElementById('menuBox').style.display = 'none';
-        document.getElementById('editBox').style.display = 'block';
-        document.getElementById('actionOptions').style.display = 'none';
-        document.getElementById('playButtons').style.display = 'flex'; 
-    },
-    
+     
     // this restores previous state (to what it was at start of edit)
     cancelEdit: function() {
         presets.exitEdit();
-        // delete the list and insert the old one, need to make sure currentLi is correct.
         createList(JSON.parse(presets.save.theJSON));
         sliders.setSlidersFrom(presets.save.slidersValues);
         presets.currentLi = null;     
     },
     
-    // sorts and saves the cuurent list to localStorage
+    // sorts and saves the current list to localStorage
     saveEdit: function(){
         presets.exitEdit();
-        // delete the cloned UL
                 
         // sort the Li's in UL;  key is desc
         function sortTheUL( container ) { 
@@ -424,7 +402,6 @@ export const presets = {
             list.sort((a, b) => a.innerHTML.localeCompare(b.innerHTML));
             
             for( let i = 0; i < list.length; i++ ){
-//                console.log(list[i].innerHTML);
                 container.append(list[i]);
             }
         }
@@ -433,9 +410,19 @@ export const presets = {
         localStorage.setItem("TIOX",createJSON());
     },
     
-    export: function() {
+    exitEdit: function() {
+        presets.editMode = false;
+        presets.saveModifiedDesc();
+        document.getElementById("addButton").style.display = "none";
+        document.getElementById('deleteButton').style.display = 'none';
+        document.getElementById('menuBox').style.display = 'none';
+        document.getElementById('editBox').style.display = 'block';
+        document.getElementById('actionOptions').style.display = 'none';
+        document.getElementById('playButtons').style.display = 'flex'; 
+    },
+   
+    popupExport: function() {
         document.getElementById('exportBoxOuter').style = 'display:block';
-        //document.getElementById('containerOuter').style = 'display:none';
         document.getElementById('jsonDisplay').innerHTML = createJSON();
         document.getElementById('urlDisplay').innerHTML = createURL();
     },
@@ -460,8 +447,6 @@ export const presets = {
          }
     }
 };
-
- 
 
 function createURL() {
     let searchStr = location.href+'?presets=';
@@ -497,8 +482,7 @@ function createList(presetsRows) {
             presets.ulPointer.append(createOne(row));
         }  
     }
-
-}
+};
 
 
 // two Nodelist routines;

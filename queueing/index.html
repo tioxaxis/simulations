@@ -22,24 +22,15 @@
         <script src="res/fabric.js"></script>
     
      <!--  my JavaScript -->
-<script type = 'module'>
-  import {initializeAll} from './queueing.js';
-  document.addEventListener("DOMContentLoaded", initializeAll);
-</script>
+    <script type = 'module' src = 'modules/rhs.js'></script>
+    <script type = 'module'>
+        var nowxx= 1;
+      import {initializeAll} from './queueing.js';
+      document.addEventListener("DOMContentLoaded",
+                                initializeAll);
+    </script>
     
-<!--
-    <script type='module'>
-       //import initializeAll from './queueing.js';
-        function afterLoad() {
-           let x = 30;
-           
-        //  initializeAll();
-       }
-      
-      </script>
--->
-
-    </head>
+</head>
   <body >
       
       

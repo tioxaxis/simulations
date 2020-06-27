@@ -1,3 +1,5 @@
+const tioxInfinity = 5000000000000;
+
 export class GammaRV {  
     constructor (rate,CV=0,minimumTime=20){
         this.rate = rate;
