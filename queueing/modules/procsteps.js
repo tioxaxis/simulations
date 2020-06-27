@@ -1,14 +1,44 @@
 
-import {Person} from '../queueing.js'// QUEUE
+import {Person} from '../queueing.js'; // QUEUE
+import {Heap} from './utility.js';
+
+
+export class ProcessCollection {
+ constructor (){
+     this.processList = [];  
+ };
+
+ push (aProcess) {
+     this.processList.push(aProcess);
+ };
+
+ reset () {
+     this.processList.forEach( aProcess => aProcess.reset() );
+ };
+
+ moveDisplay() {
+     Person.all.forEach(p=> p.moveDisplayWithPath(false))
+ };
+}; // end class processCollection
+
+export var simu = {
+    now: 0,
+    interarrivalRV: null,
+    serviceRV : null,
+    heap: new Heap ((x,y) => x.time < y.time ),
+   theProcessCollection : new ProcessCollection(),
+    
+}
+
+
 export class Queue {
-constructor (name, numSeats, simu, walkingTime,
+constructor (name, numSeats, walkingTime,
              anim,
              recordArrive = null, recordLeave = null ){
     this.name = name;
     this.maxSeats = numSeats;
     this.walkingTime = walkingTime;
     
-    this.simu = simu;
     this.anim = anim;
     this.previousMachine = null;
     this.nextMachine = null;
@@ -51,7 +81,7 @@ push (person) {
     if ( this.q.length == this.maxSeats ) return false;
     else {
         
-        const arrivalTime = this.simu.now + this.walkingTime;
+        const arrivalTime = simu.now + this.walkingTime;
         this.anim.join(this.q.length, arrivalTime, person);
         this.q.push(person);
          // insert into end of doubly linked list
@@ -60,7 +90,7 @@ push (person) {
         this.lastAdded = person;
 
         
-        this.simu.heap.push( {time: arrivalTime,
+        simu.heap.push( {time: arrivalTime,
             proc: this.arrive.bind(this), item: person});
         this.printQueue();
         return true;
@@ -94,21 +124,12 @@ pull (procTime) {
         return;
     }
 
-//moveDisplay() {
-//    this.q.forEach( p => p.moveDisplayWithPath(this.anim.dontOverlap) );
-//};
-//markPeople(){
-//        let name = this.name;
-//        this.q.forEach( p => thePersonCheck.mark(p, name) );
-//};
-
 };   //end class Queue
      
  
 // SUPPLIER
 export class Supplier {
-constructor (simu, x, y){
-    this.simu = simu;
+constructor ( x, y){
     this.loc = {x:x,y:y};
     this.previous = null;
 };
@@ -122,9 +143,8 @@ pull () {
 
 //  WALK AND DESTROY
 export class WalkAndDestroy {
-constructor (name, simu, animForWalkAndDestroy, dontOverlap){
+constructor (name, animForWalkAndDestroy, dontOverlap){
     this.name = name;
-    this.simu = simu;
     this.animForWalkAndDestroy = animForWalkAndDestroy;
     
     this.walkingTime =this.animForWalkAndDestroy.setWalkingTime();
@@ -148,7 +168,7 @@ push (person) {
     this.animForWalkAndDestroy.start(person);
     
     
-    this.simu.heap.push( {time:this.simu.now+this.walkingTime, 
+    simu.heap.push( {time:simu.now+this.walkingTime, 
             proc: this.destroy.bind(this), item: person});
     return true;
 };
@@ -167,41 +187,16 @@ destroy (person) {
     if (a) a.behind = person;
     person.destroy();
 }
-
-//moveDisplay() {
-////    if ( this.q.length == 0 ) return;
-////    if ( this.q[0].ahead ) {
-////        console.log(' move and destroy head of q has nonzero "ahead"');
-////        debugger;
-////    }
-//    
-////    if( this.q[0].cur.x >= this.loc.x ){
-//////        console.log(' about to delete person ',this.q[0].which, this.q)
-////        this.q[0].destroy();
-////        this.q.shift();
-////    }
-//    let p = this.lastAdded;
-//    while ( p ) {
-//        p.moveDisplayWithPath(this.dontOverlap);
-//        p = p.ahead;
-//    }
-//};
-//markPeople(){
-//    let name = this.name;
-//    this.q.forEach( p => thePersonCheck.mark(p, name) );
-//};
-
 };  //end export class WalkAndDestroy
 
 //   MACHINE CENTER         
  export class MachineCenter {
-     constructor (name, numMachines, simu, procTime,
+     constructor (name, numMachines, procTime,
                    previousQ,nextQ, 
                   anim,
                   recordStart = null, recordFinish = null){
          this.name = name;
          this.numMachines = numMachines;
-         this.simu = simu;
          this.procTime = procTime;
          
          this.previousQ = previousQ;
@@ -259,7 +254,7 @@ destroy (person) {
              machine.status = 'busy';
              machine.person = person;
 
-             this.simu.heap.push( {time:this.simu.now+theProcTime, 
+             simu.heap.push( {time:simu.now+theProcTime, 
                 proc: this.finish.bind(this), item: machine});
              if (this.recordStart) this.recordStart(person);
              
@@ -285,28 +280,12 @@ destroy (person) {
          }
      };   
 
-//     moveDisplay() {
-//         for ( let mach of this.machs) {
-//            if( mach.person ) {
-//                mach.person.moveDisplayWithPath( this.anim.dontOverlap );
-//            }
-//         }
-//     };
-    
-//    markPeople(){
-//        let name = this.name;
-//        this.machs.forEach( 
-//            function (mach) {if(mach.person) thePersonCheck.mark(mach.person, name)}
-//        );
-//    };
-
-
 };  //end class MachineCenter
 
 // INFINITE MACHINE CENTER
  export class InfiniteMachineCenter  extends MachineCenter {
-     constructor (name, simu, procTime, input, output){
-         super(name, -1, simu, procTime,
+     constructor (name,  procTime, input, output){
+         super(name, -1,  procTime,
                    previousQ, nextQ, 
                   null, null, null) ;
          //create a first machine to avoid a nasty edge case, make the machine idle with noone.

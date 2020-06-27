@@ -2,9 +2,9 @@
 // declaration of Globals
 
 const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
-import {GammaRV, Heap} 
-    from './modules/utility.js';
-import {Queue, Supplier, WalkAndDestroy, MachineCenter, 
+import {GammaRV, Heap} from './modules/utility.js';
+//    from './modules/utility.js';
+import {simu, Queue, Supplier, WalkAndDestroy, MachineCenter, 
         InfiniteMachineCenter}
     from './modules/procsteps.js' ;
 import {simuParams} 
@@ -12,7 +12,7 @@ import {simuParams}
 
 
 const theAnimation= {
-    simu : null,
+//    simu : null,
     frametime : 0,        // like 'now' which is simulated time, but rounded to framedelta
     framedelta : 20,      //simulated time increment per frame
     framedeltaFor1X : 20,
@@ -40,19 +40,19 @@ const theAnimation= {
     checkChangeSimuParams: function(){
         if (!simuParams.changeFlag )return;
         if ( simuParams.changed('ar') ){
-          theSimulation.interarrivalRV.setRate(
+          simu.interarrivalRV.setRate(
               simuParams.getParam ( 'ar' )/tioxTimeConv);
         }
         if ( simuParams.changed('acv') ){
-          theSimulation.interarrivalRV.setCV(
+          simu.interarrivalRV.setCV(
               simuParams.getParam ( 'acv' ));
         }
         if ( simuParams.changed('sr') ){
-          theSimulation.serviceRV.setRate(
+          simu.serviceRV.setRate(
               simuParams.getParam ( 'sr' )/tioxTimeConv);
         }
         if ( simuParams.changed('scv') ){
-            theSimulation.serviceRV.setCV(
+            simu.serviceRV.setCV(
                 simuParams.getParam ( 'scv' ));
         }
         if ( simuParams.changed('speed') ){
@@ -67,23 +67,23 @@ const theAnimation= {
         theAnimation.checkChangeSimuParams();
         
         let theTop ;
-        while( (theTop = theAnimation.simu.heap.top())  &&
+        while( (theTop = simu.heap.top())  &&
                 theTop.time <= theAnimation.frametime ){
-             const event = theAnimation.simu.heap.pull();
-             theAnimation.simu.now = event.time;
+             const event = simu.heap.pull();
+             simu.now = event.time;
              event.proc(event.item);
          }
         
             
         // move frame time ahead delta = 40 milliseconds => 25 frames/minute.
-        theAnimation.simu.now = theAnimation.frametime;
+        simu.now = theAnimation.frametime;
         theAnimation.frametime += theAnimation.framedelta;             
-        theAnimation.simu.theProcessCollection.moveDisplay();
+        simu.theProcessCollection.moveDisplay();
         
         //escape hatch.
         if (theAnimation.frametime > 1000000 ){theAnimation.stop();
             console.log('reached limit and cleared Interval',            
-                        theAnimation.intervalTimer, theAnimation.simu.now);
+                        theAnimation.intervalTimer, simu.now);
         }
         Person.check();
         theAnimation.theCanvas.renderAll();
@@ -100,8 +100,8 @@ const theAnimation= {
         // put other things that are fixed and not people on stage.
     },
     
-    initialize: function( simu ) {
-        this.simu = simu;
+    initialize: function(  ) {
+//        this.simu = simu;
         
         theAnimation.theCanvas = new fabric.Canvas('theCanvas', { renderOnAddRemove: false });
         resizeCanvas();
@@ -173,7 +173,7 @@ const animForQueue = {
             let dest = p.pathList[0];
 
             if ( k < theSimulation.queue.numSeatsUsed) 
-                     dest.t = theSimulation.now +
+                     dest.t = simu.now +
                          Math.min(animForQueue.delta.dx/theStage.normalSpeed,procTime); 
                          
              dest.x += animForQueue.delta.dx;
@@ -196,8 +196,8 @@ const animForWalkOffStage = {
          if ( person.isThereOverlap() ){
             person.cur.y = person.ahead.cur.y - 10;
          }
-//            person.pathList[3] = {t: theSimulation.now+60/theStage.normalSpeed, x: 890, y: 100 };
-            person.pathList[0] = {t: theSimulation.now+this.walkingTime,
+//            person.pathList[3] = {t: simu.now+60/theStage.normalSpeed, x: 890, y: 100 };
+            person.pathList[0] = {t: simu.now+this.walkingTime,
                           x: this.loc.x, y: this.loc.y }
             person.graphic.set('fill',  "black");  
     }
@@ -250,9 +250,9 @@ const animForTSA = {
         person.graphic.set('fill',"purple");
         if (animForTSA.lastFinPerson){
             let path = animForTSA.lastFinPerson.pathList[0];
-            if (path.t > theSimulation.now){
+            if (path.t > simu.now){
                     animForTSA.lastFinPerson.setTime( 
-                        Math.min(path.t, theSimulation.now+theProcTime));
+                        Math.min(path.t, simu.now+theProcTime));
             }
         }    
     },
@@ -262,34 +262,10 @@ const animForTSA = {
     }
 };
 
-class processCollection {
- constructor (){
-     this.processList = [];  
- };
-
- push (aProcess) {
-     this.processList.push(aProcess);
- };
-
- reset () {
-     this.processList.forEach( aProcess => aProcess.reset() );
- };
-
- moveDisplay() {
-     Person.all.forEach(p=> p.moveDisplayWithPath(false))
- };
-}; // end class processCollection
 
 
 
  const theSimulation = { 
-    now: 0,
-    interarrivalRV: null,
-    serviceRV: null,
-    
-    heap : new Heap( (x,y) => x.time < y.time ),
-    theProcessCollection : new processCollection(),
-    
     supply : null,
     queue : null,
     walkOffStage :null,
@@ -301,37 +277,37 @@ class processCollection {
         // random variables
         let r = simuParams.getParam('ar');
         let cv = simuParams.getParam('acv'); 
-        this.interarrivalRV = new GammaRV(r/tioxTimeConv,cv);
+        simu.interarrivalRV = new GammaRV(r/tioxTimeConv,cv);
         r = simuParams.getParam('sr');
         cv = simuParams.getParam('scv');
-        this.serviceRV = new GammaRV(r/tioxTimeConv,cv);
+        simu.serviceRV = new GammaRV(r/tioxTimeConv,cv);
         
         //queues
-        this.supply = new Supplier(theSimulation, -50, 100);
+        this.supply = new Supplier( -50, 100);
     
                 
-        this.queue = new Queue("theQueue",-1,theSimulation, animForQueue.walkingTime,     
+        this.queue = new Queue("theQueue",-1, animForQueue.walkingTime,     
                 animForQueue,
                 recordQueueArrival, recordQueueLeave  );
         
         // define the helper functions
         function recordQueueArrival (person){
-            person.arrivalTime = theSimulation.now;
+            person.arrivalTime = simu.now;
         };
         function recordQueueLeave(person) {            
-            theChart.push(theSimulation.now,theSimulation.now-person.arrivalTime);
+            theChart.push(simu.now,simu.now-person.arrivalTime);
          };
             
       
-        this.walkOffStage = new WalkAndDestroy("walkOff", theSimulation, animForWalkOffStage, true);
+        this.walkOffStage = new WalkAndDestroy("walkOff",  animForWalkOffStage, true);
     
     
         // machine centers 
-        this.creator = new MachineCenter("creator", 1,theSimulation,this.interarrivalRV,
+        this.creator = new MachineCenter("creator", 1,simu.interarrivalRV,
                                          this.supply, this.queue, 
                                          animForCreator);
             
-        this.TSAagent = new MachineCenter("TSAagent",1,theSimulation,this.serviceRV,
+        this.TSAagent = new MachineCenter("TSAagent",1,simu.serviceRV,
                                           this.queue, this.walkOffStage,
                                          animForTSA);
          
@@ -339,18 +315,18 @@ class processCollection {
         this.queue.setPreviousNext(this.creator,this.TSAagent);
 
         // put all the things with visible people in theProcessCollection
-        this.theProcessCollection.push(this.creator);
-        this.theProcessCollection.push(this.queue);
-        this.theProcessCollection.push(this.TSAagent);
-        this.theProcessCollection.push(this.walkOffStage);
+        simu.theProcessCollection.push(this.creator);
+        simu.theProcessCollection.push(this.queue);
+        simu.theProcessCollection.push(this.TSAagent);
+        simu.theProcessCollection.push(this.walkOffStage);
      },
     
     
     reset: function(){
         // schedule the initial Person to arrive and start the simulation/animation.  
-        theSimulation.now = 0;
-        this.heap.reset();
-        this.theProcessCollection.reset();
+        simu.now = 0;
+        simu.heap.reset();
+        simu.theProcessCollection.reset();
         this.supply.previous = null;
 //        thePersonCheck.reset();
         this.creator.knockFromPrevious();        
@@ -445,7 +421,6 @@ function resizeCanvas() {
  }; 
 
 export class Person {
-    static simu = null;
     static anim = null;
     static all = [];
     static personCounter = 0;
@@ -453,8 +428,7 @@ export class Person {
     static updateForSpeed(){
         Person.all.forEach(p => p.computeCountDelta( p.pathList[0] ));
     };
-    static setup(simu, anim){
-        Person.simu = simu;
+    static setup( anim){
         Person.anim = anim;
         Person.checkPointer = null;
         Person.personCounter = 0;
@@ -466,12 +440,12 @@ export class Person {
         if(!Person.checkPointer) Person.checkPointer = this;  
         this.which = ++Person.personCounter;
        // console.log('just created person', personCounter, ' at time now',
-//                   Person.simu.now);
+//                   simu.now);
         this.ahead = ahead;
         this.behind = null;
         Person.all.push(this);
                 
-        this.cur = {t: Person.simu.now, x: x, y: y};
+        this.cur = {t: simu.now, x: x, y: y};
         this.width = w;
         this.pathList = [];
         this.pathList[0]= {t: -1, x: -50, y: 100};
@@ -529,7 +503,7 @@ export class Person {
     
      computeCountDelta(path){
          
-         let previousFrameTime = Math.floor(Person.simu.now / Person.anim.framedelta)
+         let previousFrameTime = Math.floor(simu.now / Person.anim.framedelta)
          * Person.anim.framedelta;
          path.count = Math.floor((path.t - previousFrameTime)/Person.anim.framedelta);
          
@@ -554,7 +528,7 @@ export class Person {
          let distance = Math.max(Math.abs(this.cur.x-x),
                                  Math.abs(this.cur.y-y));  
          let deltaTime = Math.min(distance/theStage.normalSpeed,procTime);
-         this.pathList[0] = {t:Person.simu.now +deltaTime, x:x, y:y};
+         this.pathList[0] = {t:simu.now +deltaTime, x:x, y:y};
          this.computeCountDelta(this.pathList[0]);
      };
 
@@ -649,7 +623,7 @@ static  check(){
 
 export function initializeAll(){
     theChart.initialize();
-    theAnimation.initialize(theSimulation);
+    theAnimation.initialize();
  
     Math.seedrandom('this is the Queueing Simulation');
     theSimulation.initialize();
@@ -657,7 +631,7 @@ export function initializeAll(){
     resetAll();   
 };
  function resetAll(){
-    Person.setup(theSimulation,theAnimation);
+    Person.setup(theAnimation);
     theAnimation.reset();
     theChart.reset();
     theSimulation.reset();
