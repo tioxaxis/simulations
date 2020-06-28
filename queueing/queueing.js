@@ -4,117 +4,87 @@
 const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
 import {GammaRV, Heap} from './modules/utility.js';
 //    from './modules/utility.js';
-import {simu, Queue, Supplier, WalkAndDestroy, MachineCenter, 
-        InfiniteMachineCenter}
+import {simu, Queue, WalkAndDestroy, MachineCenter, 
+        InfiniteMachineCenter,SPerson}
     from './modules/procsteps.js' ;
 import {simuParams} 
     from './modules/simuParams.js';
 
+class ProcessCollection {
+ constructor (){
+     this.processList = [];  
+ };
 
-const theAnimation= {
-//    simu : null,
-    frametime : 0,        // like 'now' which is simulated time, but rounded to framedelta
-    framedelta : 20,      //simulated time increment per frame
-    framedeltaFor1X : 20,
-    frameInterval:  20,     //milliseconds between frames
-    intervalTimer : null,
-    isRunning: false,
-    theCanvas : null,
-    
-    start: function(){      
-        if (theAnimation.isRunning) {
-            alert(' called start but it is already running');
-            debugger;
-        }
-        theAnimation.intervalTimer = setInterval( theAnimation.eachFrame,
-                                    theAnimation.frameInterval );
-        theAnimation.isRunning = true;
-    },
-    
-    stop: function(){
-        clearInterval(theAnimation.intervalTimer);
-        theAnimation.isRunning = false;
+ push (aProcess) {
+     this.processList.push(aProcess);
+ };
+
+ reset () {
+     this.processList.forEach( aProcess => aProcess.reset() );
+ };
+
+// moveDisplay() {
+//     Person.all.forEach(p=> p.moveDisplayWithPath(false))
+// };
+}; // end class processCollection
+
+var qLenDisplay= null;
+
+ function resetBackground(){
+        let theFabricCanvas = simu.theCanvas;
+        theFabricCanvas.clear();
+        qLenDisplay = new fabric.Text( 'Queue Length = 0', 
+            { fontSize: 20, visible: false, 
+             left: 100, top: 250 });
+        theFabricCanvas.add(qLenDisplay); 
         
-    },
-    
-    checkChangeSimuParams: function(){
+        // put other things that are fixed and not people on stage.
+    simu.theCanvas.renderAll();
+    };
+
+simu.checkChangeSimuParams =  function(){
         if (!simuParams.changeFlag )return;
         if ( simuParams.changed('ar') ){
-          simu.interarrivalRV.setRate(
+          theSimulation.interarrivalRV.setRate(
               simuParams.getParam ( 'ar' )/tioxTimeConv);
         }
         if ( simuParams.changed('acv') ){
-          simu.interarrivalRV.setCV(
+          theSimulation.interarrivalRV.setCV(
               simuParams.getParam ( 'acv' ));
         }
         if ( simuParams.changed('sr') ){
-          simu.serviceRV.setRate(
+          theSimulation.serviceRV.setRate(
               simuParams.getParam ( 'sr' )/tioxTimeConv);
         }
         if ( simuParams.changed('scv') ){
-            simu.serviceRV.setCV(
+            theSimulation.serviceRV.setCV(
                 simuParams.getParam ( 'scv' ));
         }
         if ( simuParams.changed('speed') ){
-            theAnimation.framedelta = theAnimation.framedeltaFor1X * simuParams.getParam('speed');
+            simu.framedelta = simu.framedeltaFor1X * simuParams.getParam('speed');
             theChart.continue();
             Person.updateForSpeed();
         }
         simuParams.changeFlag = false;
-    },
-         
-    eachFrame: function() {
-        theAnimation.checkChangeSimuParams();
-        
-        let theTop ;
-        while( (theTop = simu.heap.top())  &&
-                theTop.time <= theAnimation.frametime ){
-             const event = simu.heap.pull();
-             simu.now = event.time;
-             event.proc(event.item);
-         }
-        
-            
-        // move frame time ahead delta = 40 milliseconds => 25 frames/minute.
-        simu.now = theAnimation.frametime;
-        theAnimation.frametime += theAnimation.framedelta;             
-        simu.theProcessCollection.moveDisplay();
-        
-        //escape hatch.
-        if (theAnimation.frametime > 1000000 ){theAnimation.stop();
-            console.log('reached limit and cleared Interval',            
-                        theAnimation.intervalTimer, simu.now);
-        }
-        Person.check();
-        theAnimation.theCanvas.renderAll();
-    },
-    qLenDisplay: null,
+    };
+
+simu.reset2 = function(){
+    Person.reset();
+    theChart.reset();
+    resetBackground();
+    // theSimulation.reset();
+    // schedule the initial Person to arrive and start the simulation/animation.  
+        theProcessCollection.reset();
+        simu.checkChangeSimuParams();
+        theSimulation.supply.previous = null;
+        theSimulation.creator.knockFromPrevious();        
+    };
+
+
+simu.moveDisplayAll = function(){
+        Person.all.forEach(p=> p.moveDisplayWithPath(false))
+    } 
     
-    resetBackground: function(theFabricCanvas){
-        theFabricCanvas.clear();
-        this.qLenDisplay = new fabric.Text( 'Queue Length = 0', 
-            { fontSize: 20, visible: false, 
-             left: 100, top: 250 });
-        theFabricCanvas.add(this.qLenDisplay); 
-        
-        // put other things that are fixed and not people on stage.
-    },
-    
-    initialize: function(  ) {
-//        this.simu = simu;
-        
-        theAnimation.theCanvas = new fabric.Canvas('theCanvas', { renderOnAddRemove: false });
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-    },
-    
-    reset: function() {
-        theAnimation.frametime= 0;
-        theAnimation.resetBackground(theAnimation.theCanvas);
-        // the various process steps will be called on reset theSimulation.
-    }
-        
-};
 
 const theStage = {
     normalSpeed : .25,
@@ -158,14 +128,14 @@ const animForQueue = {
 
     arrive: function (nSeatsUsed, person) {
         person.graphic.set('fill', "orange");
-        if ( nSeatsUsed > 10 ) theAnimation.qLenDisplay.set('text',
+        if ( nSeatsUsed > 10 ) qLenDisplay.set('text',
                     'Queue Length = ' + nSeatsUsed).set('visible',true);
     },
 
     leave: function (procTime, nSeatsUsed) {
         if ( nSeatsUsed > 5 )                
-            theAnimation.qLenDisplay.set('text', 'Queue Length = ' + nSeatsUsed);
-        else theAnimation.qLenDisplay.set('visible',false);
+            qLenDisplay.set('text', 'Queue Length = ' + nSeatsUsed);
+        else qLenDisplay.set('visible',false);
         
         for (let k = 0; k < theSimulation.queue.q.length; k++){
             let time;
@@ -238,7 +208,7 @@ const animForTSA = {
                  top: theStage.scanner.y -15 + k*animForTSA.delta.dy,
                 fill: 'white', stroke: 'blue', strokeWidth: 5,
                 width: 45, height: 45});
-            theAnimation.theCanvas.add(rect1);
+            simu.theCanvas.add(rect1);
             animForTSA.machLoc[k] = {x :locX, y :locY, rect: rect1};
             locX += animForTSA.delta.dx;
             locY += animForTSA.delta.dy;
@@ -263,9 +233,13 @@ const animForTSA = {
 };
 
 
+var theProcessCollection = new ProcessCollection();
 
-
- const theSimulation = { 
+ const theSimulation = {
+     interarrivalRV: null,
+    serviceRV : null,
+     
+     
     supply : null,
     queue : null,
     walkOffStage :null,
@@ -277,10 +251,10 @@ const animForTSA = {
         // random variables
         let r = simuParams.getParam('ar');
         let cv = simuParams.getParam('acv'); 
-        simu.interarrivalRV = new GammaRV(r/tioxTimeConv,cv);
+        theSimulation.interarrivalRV = new GammaRV(r/tioxTimeConv,cv);
         r = simuParams.getParam('sr');
         cv = simuParams.getParam('scv');
-        simu.serviceRV = new GammaRV(r/tioxTimeConv,cv);
+        theSimulation.serviceRV = new GammaRV(r/tioxTimeConv,cv);
         
         //queues
         this.supply = new Supplier( -50, 100);
@@ -303,11 +277,11 @@ const animForTSA = {
     
     
         // machine centers 
-        this.creator = new MachineCenter("creator", 1,simu.interarrivalRV,
+        this.creator = new MachineCenter("creator", 1,theSimulation.interarrivalRV,
                                          this.supply, this.queue, 
                                          animForCreator);
             
-        this.TSAagent = new MachineCenter("TSAagent",1,simu.serviceRV,
+        this.TSAagent = new MachineCenter("TSAagent",1,theSimulation.serviceRV,
                                           this.queue, this.walkOffStage,
                                          animForTSA);
          
@@ -315,70 +289,25 @@ const animForTSA = {
         this.queue.setPreviousNext(this.creator,this.TSAagent);
 
         // put all the things with visible people in theProcessCollection
-        simu.theProcessCollection.push(this.creator);
-        simu.theProcessCollection.push(this.queue);
-        simu.theProcessCollection.push(this.TSAagent);
-        simu.theProcessCollection.push(this.walkOffStage);
+        theProcessCollection.push(this.creator);
+        theProcessCollection.push(this.queue);
+        theProcessCollection.push(this.TSAagent);
+        theProcessCollection.push(this.walkOffStage);
      },
-    
-    
-    reset: function(){
-        // schedule the initial Person to arrive and start the simulation/animation.  
-        simu.now = 0;
-        simu.heap.reset();
-        simu.theProcessCollection.reset();
-        this.supply.previous = null;
-//        thePersonCheck.reset();
-        this.creator.knockFromPrevious();        
-    },
-
 };
 
+// SUPPLIER
+ class Supplier {
+constructor ( x, y ){
+    this.x = x;
+    this.y = y;
+    this.previous = null;
+};
 
-function resizeChart(){
-        const w = document.getElementById('canvasWrapper');
-        const wW   = w.clientWidth;
-        const newFontSize = wW / 750 * 14;
-        theChart.chart.options.title.fontSize = newFontSize;
-    theChart.chart.options.title.padding = 5;
-    theChart.chart.options.legend.labels.fontSize = newFontSize;
-    theChart.chart.options.legend.labels.padding = 10;
-    
-        theChart.chart.update();
-        //alert(' in resize and w,h = '+wW+'  new font size');
-      };
-    
-    
-    
-    
-function resizeCanvas() {
-    resizeChart();
-    
-    let theFabricCanvas = theAnimation.theCanvas;
-    
-    // w for wrapper,  c for canvas, W for width, H for height
-    const w = document.getElementById('canvasWrapper');
-    const cW = theFabricCanvas.getWidth();
-    const cH = theFabricCanvas.getHeight();
-    const ratio = cW / cH;
-    const wW   = w.clientWidth;
-    const wH  = w.clientHeight;
-    
-    
-    const scale = wW /cW;
-    
-    const zoom  = theFabricCanvas.getZoom() * scale;
-    /* console.log('Wrapper WH:'+cW+','+cH+
-               '  theFabricCanvas WH:'+cW+','+cH+
-               '   scale  '+scale+'   zoom '+zoom);
-    */
-    theFabricCanvas.setDimensions({width: wW, height: wW / ratio});
-    theFabricCanvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0]);
-}
-
-
-
-
+pull () {
+    return this.previous = new Person(this.previous, this.x, this.y); 
+ }
+};   //end class Supplier
 
 
 
@@ -420,57 +349,37 @@ function resizeCanvas() {
      
  }; 
 
-export class Person {
+ export class Person extends SPerson {
     static anim = null;
-    static all = [];
-    static personCounter = 0;
+//    static all = [];
+//    static personCounter = 0;
     static checkPointer = null;
     static updateForSpeed(){
         Person.all.forEach(p => p.computeCountDelta( p.pathList[0] ));
     };
-    static setup( anim){
-        Person.anim = anim;
+    
+
+    static reset(){
+        super.reset();
         Person.checkPointer = null;
-        Person.personCounter = 0;
-        Person.all = [];
     };
 
     constructor (ahead, x,y= 100,w = 30,h = 30) {
+        super(ahead);
         // capture first person;
-        if(!Person.checkPointer) Person.checkPointer = this;  
-        this.which = ++Person.personCounter;
-       // console.log('just created person', personCounter, ' at time now',
-//                   simu.now);
-        this.ahead = ahead;
-        this.behind = null;
-        Person.all.push(this);
-                
+        if(!Person.checkPointer) Person.checkPointer = this;                  
         this.cur = {t: simu.now, x: x, y: y};
         this.width = w;
         this.pathList = [];
         this.pathList[0]= {t: -1, x: -50, y: 100};
-        this.arrivalTime = null;
         
         this.graphic = new fabric.Rect({top: 100,left:-50, width: w, height: h , fill: "blue" })
-        Person.anim.theCanvas.add(this.graphic);
-        //this.graphic = {width: w, height:h, color: "blue"};
-         this.machine = null;
- //       thePersonCheck.push(this);
-        
-        //console.log('total people in PersonCheck = '+thePersonCheck.list.length)
-        if ( ahead ) ahead.behind = this;
+        simu.theCanvas.add(this.graphic);
      };
     
     destroy(){
-//        thePersonCheck.delete(this)
-        let k = Person.all.indexOf(this);
-        if (k < 0){alert('failed to find person in all');debugger}
-        Person.all.splice(k,1);
-        if ( this.behind ) {
-            this.behind.ahead = null;
-            Person.checkPointer = this.behind;
-        }
-        Person.anim.theCanvas.remove(this.graphic);  
+        super.destroy();
+        simu.theCanvas.remove(this.graphic);  
     };
     
      moveDisplayWithPath (dontOverlap){
@@ -479,7 +388,7 @@ export class Person {
          else {
              if (path.count <= 0){
                  this.cur.x = path.x;
-                 path.t = Person.anim.frametime;
+                 path.t = simu.frametime;
              } else {
                  this.cur.x += path.deltaX;
                  this.cur.y += path.deltaY;
@@ -503,9 +412,9 @@ export class Person {
     
      computeCountDelta(path){
          
-         let previousFrameTime = Math.floor(simu.now / Person.anim.framedelta)
-         * Person.anim.framedelta;
-         path.count = Math.floor((path.t - previousFrameTime)/Person.anim.framedelta);
+         let previousFrameTime = Math.floor(simu.now / simu.framedelta)
+         * simu.framedelta;
+         path.count = Math.floor((path.t - previousFrameTime)/simu.framedelta);
          
         path.deltaX = ( path.x - this.cur.x ) / path.count;
          path.deltaY = ( path.y - this.cur.y ) / path.count;
@@ -622,52 +531,18 @@ static  check(){
      
 
 export function initializeAll(){
-    theChart.initialize();
-    theAnimation.initialize();
+    simu.initialize();
  
     Math.seedrandom('this is the Queueing Simulation');
     theSimulation.initialize();
     
-    resetAll();   
+    document.getElementById('resetButton').click();
+    // reset all at both levels?
 };
- function resetAll(){
-    Person.setup(theAnimation);
-    theAnimation.reset();
-    theChart.reset();
-    theSimulation.reset();
-    theAnimation.theCanvas.renderAll();
-    
-    
-}
+ 
 
 //  
 
-function togglePlayPause() {
-        if ( theAnimation.isRunning ) pause();
-        else play();
-    };
-
-function play(){ 
-        document.getElementById('playButton').style.display = 'none';
-        document.getElementById('pauseButton').style.display = 'inline';  
-        theAnimation.start() ;
-    };
-function pause(){
-        document.getElementById('pauseButton').style.display ='none';
-        document.getElementById('playButton').style.display = 'block';
-        theAnimation.stop()
-};
-document.getElementById('playButton').addEventListener('click',play);
-document.getElementById('pauseButton').addEventListener('click',pause);
-document.getElementById('resetButton').addEventListener('click',resetAll);
-document.addEventListener('keydown',keyDownFunction);
-
-function keyDownFunction (evt) {
-            const key = evt.key; 
-            if (evt.code === "Space") {
-                togglePlayPause();
-            }
-}
  
 
 //   TheChart variable is the interface to create the charts using Chart.js
@@ -848,5 +723,20 @@ class VerticalAxisValue {
         return this.table[0];
     }
 } ;
+
+function resizeChart(){
+        const w = document.getElementById('canvasWrapper');
+        const wW   = w.clientWidth;
+        const newFontSize = wW / 750 * 14;
+        theChart.chart.options.title.fontSize = newFontSize;
+    theChart.chart.options.title.padding = 5;
+    theChart.chart.options.legend.labels.fontSize = newFontSize;
+    theChart.chart.options.legend.labels.padding = 10;
+    
+        theChart.chart.update();
+        //alert(' in resize and w,h = '+wW+'  new font size');
+      };
+window.addEventListener('resize', resizeChart);
+theChart.initialize();
 
 

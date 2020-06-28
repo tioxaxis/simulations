@@ -1,34 +1,125 @@
 
-import {Person} from '../queueing.js'; // QUEUE
+//import {Person} from '../queueing.js'; // QUEUE
 import {Heap} from './utility.js';
-
-
-export class ProcessCollection {
- constructor (){
-     this.processList = [];  
- };
-
- push (aProcess) {
-     this.processList.push(aProcess);
- };
-
- reset () {
-     this.processList.forEach( aProcess => aProcess.reset() );
- };
-
- moveDisplay() {
-     Person.all.forEach(p=> p.moveDisplayWithPath(false))
- };
-}; // end class processCollection
 
 export var simu = {
     now: 0,
-    interarrivalRV: null,
-    serviceRV : null,
-    heap: new Heap ((x,y) => x.time < y.time ),
-   theProcessCollection : new ProcessCollection(),
     
+    heap: new Heap ((x,y) => x.time < y.time ),
+   
+    frametime : 0,        // like 'now' which is simulated time, but rounded to framedelta
+    framedelta : 20,      //simulated time increment per frame
+    framedeltaFor1X : 20,
+    frameInterval:  20,     //milliseconds between frames
+    intervalTimer : null,
+    isRunning: false,
+    theCanvas : null,
+    
+    initialize: function(  ) {
+        simu.theCanvas = new fabric.Canvas('theCanvas', { renderOnAddRemove: false });
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+    },
+    
+    reset: function() {
+        simu.now = 0;
+        simu.heap.reset();
+        
+        simu.frametime= 0;
+        // the various process steps will be called on reset theSimulation.
+        simu.reset2();
+        
+    }
+    
+};
+
+function resizeCanvas() {
+    let theFabricCanvas = simu.theCanvas;
+    
+    // w for wrapper,  c for canvas, W for width, H for height
+    const w = document.getElementById('canvasWrapper');
+    const cW = theFabricCanvas.getWidth();
+    const cH = theFabricCanvas.getHeight();
+    const ratio = cW / cH;
+    const wW   = w.clientWidth;
+    const wH  = w.clientHeight;
+    
+    const scale = wW /cW;
+    const zoom  = theFabricCanvas.getZoom() * scale;
+    
+    theFabricCanvas.setDimensions({width: wW, height: wW / ratio});
+    theFabricCanvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0]); 
 }
+
+
+// play pause toggle and listeners that run them.
+function togglePlayPause() {
+        if ( simu.isRunning ) pause();
+        else play();
+    };
+
+function play(){ 
+        document.getElementById('playButton').style.display = 'none';
+        document.getElementById('pauseButton').style.display = 'inline';  
+        if (simu.isRunning) {
+            alert(' called start but it is already running');
+            debugger;
+        }
+        simu.intervalTimer = setInterval(eachFrame,
+                                    simu.frameInterval );
+        simu.isRunning = true;;
+    };
+function pause(){
+        document.getElementById('pauseButton').style.display ='none';
+        document.getElementById('playButton').style.display = 'block';
+        clearInterval(simu.intervalTimer);
+        simu.isRunning = false;
+};
+document.getElementById('playButton').addEventListener('click',play);
+document.getElementById('pauseButton').addEventListener('click',pause);
+document.getElementById('resetButton').addEventListener('click',simu.reset);
+document.addEventListener('keydown',keyDownFunction);
+
+function keyDownFunction (evt) {
+            const key = evt.key; 
+            if (evt.code === "Space") {
+                togglePlayPause();
+            }
+}
+
+function eachFrame () {
+        simu.checkChangeSimuParams();
+        
+        let theTop ;
+        while( (theTop = simu.heap.top())  &&
+                theTop.time <= simu.frametime ){
+             const event = simu.heap.pull();
+             simu.now = event.time;
+             event.proc(event.item);
+         }
+        
+            
+        // move frame time ahead delta = 40 milliseconds => 25 frames/minute.
+        simu.now = simu.frametime;
+        simu.frametime += simu.framedelta;             
+        simu.moveDisplayAll();
+        
+        //escape hatch.
+        if (simu.frametime > 1000000 ){pause();
+            console.log('reached limit and cleared Interval',            
+                        simu.intervalTimer, simu.now);
+        }
+        // Person.check();
+        simu.theCanvas.renderAll();
+    };
+
+
+
+
+
+
+
 
 
 export class Queue {
@@ -127,19 +218,6 @@ pull (procTime) {
 };   //end class Queue
      
  
-// SUPPLIER
-export class Supplier {
-constructor ( x, y){
-    this.loc = {x:x,y:y};
-    this.previous = null;
-};
-
-pull () {
-      this.previous = new Person(this.previous, this.loc.x, this.loc.y); 
-    return this.previous;
-    //person is going to machine which should set destination. etc.
- }
-};   //end class Supplier
 
 //  WALK AND DESTROY
 export class WalkAndDestroy {
@@ -304,3 +382,34 @@ destroy (person) {
      };
 };  //end class InfiniteMachineCenter
 
+// minimal Person with properties only for the simulation, the procsteps
+export class SPerson {
+    static all = [];
+    static counter = 0;
+
+static reset(){
+    SPerson.all = [];
+    SPerson.counter = 0;
+    
+};
+
+constructor (ahead){
+    this.which = ++SPerson.counter;
+    this.ahead = ahead;
+    this.behind = null;
+    SPerson.all.push(this);
+    this.arrivalTime = null;
+    this.machine = null;
+    if ( ahead ) ahead.behind = this;
+};
+
+destroy(){
+    let k = SPerson.all.indexOf(this);
+        if (k < 0){alert('failed to find person in all');debugger}
+        SPerson.all.splice(k,1);
+        if ( this.behind ) {
+            this.behind.ahead = null;
+        }   ;
+    
+};
+}

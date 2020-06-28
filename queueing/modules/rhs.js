@@ -236,7 +236,7 @@ export const presets = {
         }
 
         presets.printPresets();
-
+        presets.changeCurrentLiTo(nextLi());
 
         // defaults to nothing selected in list
         presets.currentLi = null;
