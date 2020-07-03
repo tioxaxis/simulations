@@ -19,7 +19,7 @@ export var simu = {
         simu.theCanvas = new fabric.Canvas('theCanvas', { renderOnAddRemove: false });
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
-        
+        //simu.reset();
     },
     
     reset: function() {
@@ -60,17 +60,14 @@ function togglePlayPause() {
     };
 
 function play(){ 
+        if ( simu.isRunning ) return;
         document.getElementById('playButton').style.display = 'none';
         document.getElementById('pauseButton').style.display = 'inline';  
-        if (simu.isRunning) {
-            alert(' called start but it is already running');
-            debugger;
-        }
-        simu.intervalTimer = setInterval(eachFrame,
-                                    simu.frameInterval );
+        simu.intervalTimer = setInterval(eachFrame, simu.frameInterval );
         simu.isRunning = true;;
     };
 function pause(){
+        if ( !simu.isRunning ) return; 
         document.getElementById('pauseButton').style.display ='none';
         document.getElementById('playButton').style.display = 'block';
         clearInterval(simu.intervalTimer);
@@ -89,7 +86,7 @@ function keyDownFunction (evt) {
 }
 
 function eachFrame () {
-        simu.checkChangeSimuParams();
+ //       simu.checkChangeSimuParams();
         
         let theTop ;
         while( (theTop = simu.heap.top())  &&
@@ -286,7 +283,6 @@ destroy (person) {
          this.machs = null;
          // setup machines if finite number with positions offset by dx,dy
          // if infinite number of machines then create them on the fly in same position.
-        this.reset();
      };
         
     reset (){

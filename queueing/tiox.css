@@ -15,9 +15,10 @@
 #exportPresetsBox {
     position: fixed;
     top:5%;
+    bottom: 10%;
     left: 5%;
     right: 5%;
-    height: 100%;
+    height: 80%;
     padding-bottom:;
     background-color: #b8becb;
     z-index : 9;
@@ -27,10 +28,13 @@
 }
 #exportPresetsBox p {
     padding: 0px 3%;
+    word-wrap: break-word;
+    overflow:auto;
+    max-height: 30%;
 }
 #exportPresetsBox button {
     position: fixed;
-    top: 5%;
+    top: 8%;
     right: 5%;
 }
 

@@ -1,128 +1,108 @@
 import {simuParams} 
     from './simuParams.js';
 
-
-// this is the structure to keep track of the sliders (both values and displays)
 export const sliders = {
-        // pointers to the slider, i.e.,input range objects
-        arSlider: null,
-        acvSlider: null,
-        srSlider: null,
-        scvSlider: null,
-        speedSlider: null,
         resetCheckboxPointer: null,
         actionRadioNodelist: null,
-    
-        // pointers to the display of the values of the sliders
-        arDisplay: null,
-        acvDisplay: null,
-        srDisplay: null,
-        scvDisplay: null,
-        speedDisplay: null,
-        
+            
     // this goes with the next function
     initialize: function(){
-        this.arSlider = document.getElementById("arrivalRate");
-        this.arDisplay = document.getElementById("arrivalRateDisplay");
-        this.acvSlider = document.getElementById("arrivalVariability");
-        this.acvDisplay = document.getElementById("arrivalVariabilityDisplay");
-        this.srSlider = document.getElementById("serviceRate");
-        this.srDisplay = document.getElementById("serviceRateDisplay");
-        this.scvSlider = document.getElementById("serviceVariability");
-        this.scvDisplay = document.getElementById("serviceVariabilityDisplay");
-        this.speedSlider = document.getElementById("speed");
-        this.speedDisplay = document.getElementById("speedDisplay");
-        this.actionRadioNodelist = document.getElementsByName("actionRadio");
-        this.resetCheckboxPointer = document.getElementById("resetCheckbox");
-        
-        
-        this.arSlider.addEventListener('input',  function () {
-            let v = Number( sliders.arSlider.value ).toFixed(1);
-            simuParams.setParam('ar',v);
-            sliders.arDisplay.innerHTML = v;
-            setCurrentLi('ar', v); 
-            });
-        
-        this.acvSlider.addEventListener('input', function () {
-            let v = Number( sliders.acvSlider.value ).toFixed(1);
-            simuParams.setParam('acv',v);
-            sliders.acvDisplay.innerHTML = v;
-            setCurrentLi('acv', v);
-            });
-        
-        this.srSlider.addEventListener('input',  function () {
-           let v = Number( sliders.srSlider.value ).toFixed(1);
-            simuParams.setParam('sr',v);
-            sliders.srDisplay.innerHTML = v;
-            setCurrentLi('sr', v);
-            });
-        
-        this.scvSlider.addEventListener('input',  function () {
-            let v = Number( sliders.scvSlider.value ).toFixed(1);
-            simuParams.setParam('scv',v);
-            sliders.scvDisplay.innerHTML = v;
-            setCurrentLi('scv', v);
-            });
-        
-        this.speedSlider.addEventListener('input', function(){ 
-            let v = Number( sliders.speedSlider.value ).toFixed(0);  
-            simuParams.setParam('speed',v);
-            sliders.speedDisplay.innerHTML = v;                     
-            setCurrentLi('speed', v);                              
-             });
-        
-        this.resetCheckboxPointer.addEventListener('change',this.resetCheck);
-        
-        for (let j = 0; j < this.actionRadioNodelist.length; j++){
-            this.actionRadioNodelist[j].
-                addEventListener('change',this.actionRadio);
-        }
-         
+        document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderG);
+        function captureChangeInSliderG(event){
+            let inputElem = event.target.closest('input');
+            if (!inputElem) return
+            else {
+                if( event.isTrusted && presets.editMode ){
+                    //setCurrentLi(key, inputElem.value);
+                    let k = event.target.id;
+                    let v = inputElem.value;
+                    let t = inputElem.type;
+                    let ds = presets.currentLi.dataset;
+                    // pull value into preset based on type of input
+                    switch (t) {    
+                        case 'range':
+                            ds[k] = v;
+                            break;
+                        case 'checkbox':
+                            ds[k] = inputElem.checked.toString();
+                            break;
+                        case 'radio':
+                            ds['action'] = k;
+                            break;
+                        default:
+                    }
+
+                } else {
+                    if ( presets.currentLi ) presets.currentLi.classList.remove("selected");
+                    presets.currentLi = null;  
+                };
+                }
+        };         
     },
+
+
+
+
     
-    setSlidersFrom: function (aPreset){
-        this.arSlider.value = aPreset.ar;
-        this.arDisplay.innerHTML = aPreset.ar;
-        simuParams.setParam('ar',aPreset.ar);
-        
-        this.acvSlider.value = aPreset.acv;
-        this.acvDisplay.innerHTML = aPreset.acv;
-        simuParams.setParam('acv',aPreset.acv);
-        
-        this.srSlider.value = aPreset.sr;
-        this.srDisplay.innerHTML = aPreset.sr;
-        simuParams.setParam('sr',aPreset.sr);
-        
-        this.scvSlider.value = aPreset.scv;
-        this.scvDisplay.innerHTML= aPreset.scv;
-        simuParams.setParam('scv',aPreset.scv);
-        
-        this.speedSlider.value = aPreset.speed;
-        this.speedDisplay.innerHTML = aPreset.speed;
-        simuParams.setParam('speed',aPreset.speed);
-        
-        if (presets.editMode) {
-            setChecked(this.actionRadioNodelist,aPreset.action);
-            this.resetCheckboxPointer.checked = aPreset.reset == "true";
-        } else {
-            // not in edit mode so respond to change by reseting or pausing or playing
-            if (aPreset.reset == 'true') document.getElementById('resetButton').click();
-            if (aPreset.action == 1 ) {
-                let theButton = document.getElementById('pauseButton')
-                if (theButton.style.display != 'none' ) theButton.click();
-            } else if (aPreset.action == 2 ) {
-                let theButton = document.getElementById('playButton')
-                if (theButton.style.display != 'none' ) theButton.click();
+     tpes : {ar:'range', acv:'range', sr:'range', scv:'range',
+            speed:'range', action:'radio', reset:'checkbox'},
+    inputEvent : new Event('input',{bubbles: true}),
+      setSlidersFrom: function (aPreset){
+        const precision = {ar:1,acv:1,sr:1,scv:1,speed:0};
+//        const inputBoxes = document.getElementById("sliderBigBox")
+//                .querySelectorAll("input"); 
+        let inputBox;  
+        for (let key in sliders.tpes ) {
+            let t = sliders.tpes[key];
+            inputBox = document.getElementById(key);
+            let v = aPreset[key];
+            if( t == 'range' ){
+                inputBox.value = v;
+                inputBox.dispatchEvent(sliders.inputEvent);
+            } else if( t == 'checkbox' ) 
+                inputBox.checked = (v == 'true');
+            
+            else if( t == 'radio' ){
+                inputBox = document.getElementById(v);
+                let theNodeList = document.getElementsByName(key);
+                let j = findId(theNodeList,v);
+                theNodeList[j].checked = true;
             }
+                 
         }
+        // not in edit mode then may cause a reset, a play, or a pause.
+        console.log(aPreset.reset, aPreset.action);
+          if ( !presets.editMode ){
+            if ( aPreset.reset == 'true' )
+                document.getElementById('resetButton').click();
+            if ( aPreset.action == 'play' )
+                document.getElementById('playButton').click();
+            else if ( aPreset.action == 'pause' )
+                document.getElementById('pauseButton').click();
+            }
     },
     
     getSliders: function () {
-        return  {ar: this.arSlider.value,
-                 acv: this.acvSlider.value,
-                 sr: this.srSlider.value,
-                 scv : this.scvSlider.value,
-                 speed : this.speedSlider.value};
+        let aPreset = {};
+        for ( let k in sliders.tpes ){
+            let inputElem = document.getElementById(k);
+            let t = sliders.tpes[k] ;
+            switch (t) {
+                case 'range':
+                    aPreset[k] = inputElem.value
+                    break;
+                case 'checkbox':
+                    aPreset[k] = inputElem.checked.toString();
+                    break;
+                case 'radio':
+                    let theNodeList = document.getElementsByName(k);
+                    aPreset[k] = theNodeList[getChecked(theNodeList)].id; 
+                    break;
+                default:
+            }
+            
+        }
+        return aPreset;
     },
     
     actionRadio : function () {
@@ -138,15 +118,13 @@ sliders.initialize();
 function createOne(params) {
             const liElem = document.createElement("LI");
             liElem.innerHTML = params.desc;
-            liElem.dataset.ar = params.ar;
-            liElem.dataset.acv = params.acv;
-            liElem.dataset.sr = params.sr;
-            liElem.dataset.scv = params.scv;
-            liElem.dataset.speed = params.speed;
-            liElem.dataset.action = params.action;
-            liElem.dataset.reset = params.reset;
+            // liElem.dataset = {...params};
+            for ( let key in params ){
+                liElem.dataset[key] = params[key];
+            }
             return liElem;
         }
+    
 
 function setCurrentLi(key, v){
             if (presets.editMode) {
@@ -217,12 +195,7 @@ export const presets = {
         let presetsString = location.search;
         if ( presetsString ) {
             presetsString = decodeURI(presetsString.slice(9));
-            let rows = presetsString.split(';');
-            rows.pop();
-            for (let row of rows ) {
-                let elems = row.split(',');
-                presets.ulPointer.append(createOne({ar:elems[0], acv:elems[1], sr:elems[2], scv:elems[3], speed:elems[4], action: elems[5], reset: elems[6], desc: elems[7]}));
-            }
+            presetsRows = JSON.parse(presetsString);
         } else {
             presetsString = localStorage.getItem("TIOX");
             if (presetsString) {
@@ -232,14 +205,32 @@ export const presets = {
                 if (response.ok) presetsRows = await response.json();
                 else alert("json file HTTP-Error: " + response.status);
             }     
-           createList(presetsRows)
         }
+        createList(presetsRows);
+//        
+//            let rows = presetsString.split(';');
+//            rows.pop();
+//            for (let row of rows ) {
+//                let elems = row.split(',');
+//                presets.ulPointer.append(createOne({ar:elems[0], acv:elems[1], sr:elems[2], scv:elems[3], speed:elems[4], action: elems[5], reset: elems[6], desc: elems[7]}));
+//            }
+//        } else {
+//            presetsString = localStorage.getItem("TIOX");
+//            if (presetsString) {
+//                presetsRows = JSON.parse(presetsString);
+//            } else {
+//                let response = await fetch('presets.json');
+//                if (response.ok) presetsRows = await response.json();
+//                else alert("json file HTTP-Error: " + response.status);
+//            }     
+//           createList(presetsRows)
+//        }
 
         presets.printPresets();
         presets.changeCurrentLiTo(nextLi());
 
         // defaults to nothing selected in list
-        presets.currentLi = null;
+        //presets.currentLi = null;
         this.started = true;
         
         document.getElementById('addButton')
@@ -307,18 +298,12 @@ export const presets = {
     // for adding an new Preset row
    addRow: function() {
         let desc =''
-        if ( presets.ulPointer.childElementCount > 0 ) desc = presets.saveModifiedDesc() + " copy";
-        if ( presets.currentLi ) presets.currentLi.classList.remove("selected");
+        if ( presets.ulPointer.childElementCount > 0 )
+                desc = presets.saveModifiedDesc() + " copy";
+        if ( presets.currentLi )      
+                presets.currentLi.classList.remove("selected");
 
-        const li = createOne({ desc: desc,
-                            ar: sliders.arSlider.value,
-                            acv: sliders.acvSlider.value,
-                            sr: sliders.srSlider.value,
-                            scv: sliders.scvSlider.value,
-                            speed: sliders.speedSlider.value,
-                            action: getChecked(sliders.actionRadioNodelist), 
-                            reset: sliders.resetCheckboxPointer.checked.toString()  
-                             })
+        const li = createOne(presets.currentLi.dataset)
         li.classList.add("selected");
         presets.ulPointer.append(li);
         presets.currentLi = li;
@@ -449,19 +434,19 @@ export const presets = {
 };
 
 function createURL() {
-    let searchStr = location.href+'?presets=';
-    let contents = document.querySelectorAll('#ULPresetList li');
-        for (let i = 0; i <contents.length; i++) {
-           searchStr += contents[i].dataset.ar + "," +
-                    contents[i].dataset.acv + "," +
-                    contents[i].dataset.sr + "," +
-                    contents[i].dataset.scv + "," +
-                    contents[i].dataset.speed + "," +
-                    contents[i].dataset.action + "," +
-                    contents[i].dataset.reset + "," +
-                    contents[i].innerHTML + ";" 
-        }
-        return searchStr; 
+    return encodeURI(location.href+'?presets='+ createJSON());
+//    let contents = document.querySelectorAll('#ULPresetList li');
+//        for (let i = 0; i <contents.length; i++) {
+//           searchStr += contents[i].dataset.ar + "," +
+//                    contents[i].dataset.acv + "," +
+//                    contents[i].dataset.sr + "," +
+//                    contents[i].dataset.scv + "," +
+//                    contents[i].dataset.speed + "," +
+//                    contents[i].dataset.action + "," +
+//                    contents[i].dataset.reset + "," +
+//                    contents[i].innerHTML + ";" 
+//        }
+//        return searchStr; 
 }
 
 function createJSON() {
@@ -491,10 +476,16 @@ function createList(presetsRows) {
             if (nodelist[j].checked ) return j
         }
         return -1;
-    }
+    };
     function setChecked (nodelist,j) {
         nodelist[j].checked = true;
+    };
+function findId(nodelist,str){
+    for ( let j = 0; j<nodelist.length; j++ ) {
+        if ( nodelist[j].id == str ) return j
     }
+    return -1;
+}
 
 presets.initialize();
 

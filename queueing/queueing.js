@@ -9,6 +9,7 @@ import {simu, Queue, WalkAndDestroy, MachineCenter,
     from './modules/procsteps.js' ;
 import {simuParams} 
     from './modules/simuParams.js';
+//import {slides} from './modules/rhs.js';
 
 class ProcessCollection {
  constructor (){
@@ -39,45 +40,106 @@ var qLenDisplay= null;
         theFabricCanvas.add(qLenDisplay); 
         
         // put other things that are fixed and not people on stage.
-    simu.theCanvas.renderAll();
     };
 
-simu.checkChangeSimuParams =  function(){
-        if (!simuParams.changeFlag )return;
-        if ( simuParams.changed('ar') ){
-          theSimulation.interarrivalRV.setRate(
-              simuParams.getParam ( 'ar' )/tioxTimeConv);
+document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
+const precision = {ar:1,acv:1,sr:1,scv:1,speed:0}
+function captureChangeInSliderS(event){
+//    console.log('is event '+(event.isTrusted?'real':'scripted'));
+    let inputElem = event.target.closest('input');
+    if (!inputElem) return
+    else {
+        var id = inputElem.id;
+        if (inputElem.type == 'range'){
+            var v = Number( inputElem.value )       
+                    .toFixed(precision[id]);
+            document.getElementById(id+'Display').innerHTML = v;
         }
-        if ( simuParams.changed('acv') ){
-          theSimulation.interarrivalRV.setCV(
-              simuParams.getParam ( 'acv' ));
-        }
-        if ( simuParams.changed('sr') ){
-          theSimulation.serviceRV.setRate(
-              simuParams.getParam ( 'sr' )/tioxTimeConv);
-        }
-        if ( simuParams.changed('scv') ){
-            theSimulation.serviceRV.setCV(
-                simuParams.getParam ( 'scv' ));
-        }
-        if ( simuParams.changed('speed') ){
-            simu.framedelta = simu.framedeltaFor1X * simuParams.getParam('speed');
+        switch(id) {
+        case 'ar':  
+            theSimulation.interarrivalRV.setRate(v/tioxTimeConv);
+            break;
+        case 'acv':  
+            theSimulation.interarrivalRV.setCV(v);
+            break;        
+
+        case 'sr':  
+            theSimulation.serviceRV.setRate(v/tioxTimeConv);
+            break;
+        case 'scv':  
+            theSimulation.serviceRV.setCV(v);
+            break;       
+
+        case 'speed':
+            simu.framedelta = simu.framedeltaFor1X * v;
             theChart.continue();
             Person.updateForSpeed();
+            break;
+        
+            
+//        case 'reset':
+//            if( !event.isTrusted && inputElem.checked )
+//                document.getElementById('resetButton').click();
+//            break;
+//        case 'play':
+//                if( !event.isTrusted )
+//                document.getElementById('playButton').click();
+//            
+//            break;
+//        case 'pause':
+//            if( !event.isTrusted )
+//                document.getElementById('pauseButton').click();
+//            break;
+                
+        default:
+            console.log(' reached part for default');
+            break;
         }
-        simuParams.changeFlag = false;
-    };
+//        console.log(' adjusted '+ id+' to '+ v);
+            
+                
+    }
+}
 
+
+
+//simu.checkChangeSimuParams =  function(){
+//        if (!simuParams.changeFlag )return;
+//        if ( simuParams.changed('ar') ){
+//          theSimulation.interarrivalRV.setRate(
+//              simuParams.getParam ( 'ar' )/tioxTimeConv);
+//        }
+//        if ( simuParams.changed('acv') ){
+//          theSimulation.interarrivalRV.setCV(
+//              simuParams.getParam ( 'acv' ));
+//        }
+//        if ( simuParams.changed('sr') ){
+//          theSimulation.serviceRV.setRate(
+//              simuParams.getParam ( 'sr' )/tioxTimeConv);
+//        }
+//        if ( simuParams.changed('scv') ){
+//            theSimulation.serviceRV.setCV(
+//                simuParams.getParam ( 'scv' ));
+//        }
+//        if ( simuParams.changed('speed') ){
+//            simu.framedelta = simu.framedeltaFor1X * simuParams.getParam('speed');
+//            theChart.continue();
+//            Person.updateForSpeed();
+//        }
+//        simuParams.changeFlag = false;
+//    };
 simu.reset2 = function(){
+    resetBackground();
     Person.reset();
     theChart.reset();
-    resetBackground();
-    // theSimulation.reset();
-    // schedule the initial Person to arrive and start the simulation/animation.  
-        theProcessCollection.reset();
-        simu.checkChangeSimuParams();
-        theSimulation.supply.previous = null;
-        theSimulation.creator.knockFromPrevious();        
+    
+          
+    theProcessCollection.reset();
+        
+    // schedule the initial Person to arrive and start the simulation/animation.
+    theSimulation.supply.previous = null;
+    theSimulation.creator.knockFromPrevious();
+    simu.theCanvas.renderAll();
     };
 
 
@@ -530,16 +592,14 @@ static  check(){
 
      
 
-export function initializeAll(){
-    simu.initialize();
- 
+ function initializeAll(){    //exported so index.html can call it
     Math.seedrandom('this is the Queueing Simulation');
-    theSimulation.initialize();
-    
-    document.getElementById('resetButton').click();
-    // reset all at both levels?
+    simu.initialize();   // the generic
+    theSimulation.initialize();   // the specific to queueing
+    //reset first time to make sure it is ready to play.
+    document.getElementById('resetButton').click();   
 };
- 
+document.addEventListener("DOMContentLoaded",initializeAll);
 
 //  
 

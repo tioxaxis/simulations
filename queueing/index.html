@@ -23,11 +23,10 @@
     
      <!--  my JavaScript -->
     <script type = 'module' src = 'modules/rhs.js'></script>
-    <script type = 'module'>
-        var nowxx= 1;
-      import {initializeAll} from './queueing.js';
-      document.addEventListener("DOMContentLoaded",
-                                initializeAll);
+    <script type = 'module' src = 'queueing.js'>
+//      import {initializeAll} from './queueing.js';
+//      document.addEventListener("DOMContentLoaded",
+//                                initializeAll);
     </script>
     
 </head>
@@ -44,8 +43,7 @@
     <p class="blueBox" id="urlDisplay"></p>
     <br>
     <button onclick= " document.getElementById('exportBoxOuter').style='display:none'; "
-            style='position:fixed; top:105px;
-                   right: 105px'> X </button>
+            > X </button>
 </div>
       </div>
 <div  id="containerOuter">
@@ -68,10 +66,10 @@
 
         <div class="sliderbox"> 
             <p>Arrival Rate = 
-            <span id="arrivalRateDisplay">9.0</span></p>
-                <input id="arrivalRate" 
-                   type="range" min="0" max="10" step="0.5" value="9.0" class="slider"  list="arrivalRateOptions">
-            <datalist class="scale1" id="arrivalRateOptions">
+            <span id="arDisplay">9.0</span></p>
+                <input id="ar" 
+                   type="range" min="0" max="10" step="0.5" value="5.0" class="slider"  list="arOptions">
+            <datalist class="scale1" id="arOptions">
                     <option value="0"> 0</option>
                     <option value="2"> 2</option>
                     <option value="4"> 4</option>
@@ -83,10 +81,10 @@
 
         <div class="sliderbox"> 
             <p>Arrival Variability = 
-                <span id="arrivalVariabilityDisplay">1.0</span></p>
-            <input id="arrivalVariability" 
-                   type="range" min="0" max="2" step="0.5" value="1.0" class="slider"  list="ArrivalVariabilityOptions">
-            <datalist class="scale1" id="ArrivalVariabilityOptions">
+                <span id="acvDisplay">1.0</span></p>
+            <input id="acv" 
+                   type="range" min="0" max="2" step="0.5" value="0.0" class="slider"  list="acvOptions">
+            <datalist class="scale1" id="acvOptions">
                     <option value="0.0">0.0</option>
                     <option value="0.5"></option>
                     <option value="1.0">1.0</option>
@@ -97,10 +95,10 @@
 
         <div class="sliderbox"> 
             <p>Service Rate = 
-                <span id="serviceRateDisplay">9.0</span></p>
-            <input id="serviceRate" 
-                   type="range" min="0" max="10" step="0.5" value="9.0" class="slider"  list="serviceRateOptions">
-            <datalist class="scale1" id="serviceRateOptions">
+                <span id="srDisplay">9.0</span></p>
+            <input id="sr" 
+                   type="range" min="0" max="10" step="0.5" value="6.0" class="slider"  list="srOptions">
+            <datalist class="scale1" id="srOptions">
                     <option value="0"> 0</option>
                     <option value="2"> 2</option>
                     <option value="4"> 4</option>
@@ -112,10 +110,10 @@
 
         <div class="sliderbox"> 
             <p>Service Variability = 
-                <span id="serviceVariabilityDisplay">1.0</span></p>
-            <input id="serviceVariability" 
-                   type="range" min="0" max="2" step="0.5" value="1.0" class="slider"  list="serviceVariabilityOptions">
-            <datalist class="scale1" id="serviceVariabilityOptions">
+                <span id="scvDisplay">1.0</span></p>
+            <input id="scv" 
+                   type="range" min="0" max="2" step="0.5" value="0.0" class="slider"  list="scvOptions">
+            <datalist class="scale1" id="scvOptions">
                     <option value="0.0">0.0</option>
                     <option value="0.5"></option>
                     <option value="1.0">1.0</option>
@@ -133,22 +131,22 @@
         <div class="actionBox" id="actionOptions"> 
             <div>Action:</div>
             <div class="radiopair">
-                <input type="radio" name="actionRadio" id="actionNone" value="0" checked >
-               <label for="actionNone">  None</label>
+                <input type="radio" name="action" id="none" value="none" checked >
+               <label for="none">  None</label>
             </div>
     
             <div class="radiopair">    
-                <input type="radio" name="actionRadio" id="actionPause" value="1">
-                 <label for="actionPause">Pause</label>
+                <input type="radio" name="action" id="pause" value="pause">
+                 <label for="pause">Pause</label>
             </div> 
     
             <div class="radiopair">          
-                <input type="radio" name="actionRadio" id="actionPlay" value="2">
-                <label for="actionPlay">Play</label>
+                <input type="radio" name="action" id="play" value="play">
+                <label for="play">Play</label>
             </div>
     
             <div class="radiopair">
-                <input type="checkbox" id="resetCheckbox" value="Reset">
+                <input type="checkbox" id="reset" value="reset">
                 <label for="actionReset">Reset</label>
             </div>
     
