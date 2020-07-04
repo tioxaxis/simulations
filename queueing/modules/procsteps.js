@@ -1,5 +1,3 @@
-
-//import {Person} from '../queueing.js'; // QUEUE
 import {Heap} from './utility.js';
 
 export var simu = {
@@ -10,7 +8,8 @@ export var simu = {
     frametime : 0,        // like 'now' which is simulated time, but rounded to framedelta
     framedelta : 20,      //simulated time increment per frame
     framedeltaFor1X : 20,
-    frameInterval:  20,     //milliseconds between frames
+    frameInterval:  20,    //milliseconds between frames
+    frameSpeed : 1.0 ,       //framedelta/framedeltaFor1X
     intervalTimer : null,
     isRunning: false,
     theCanvas : null,
@@ -249,13 +248,6 @@ push (person) {
 };
     
 destroy (person) {
-//    if (this.q[0] != person ) {
-//        alert( ' in walk and destroy and q[0]  != person') ;
-//        debugger;
-//    }
-//    person.destroy();
-    //  this.q.shift();
-    // remove 'person' from doubly linked list
     let b = person.behind;
     let a = person.ahead;
     if (b) b.ahead = person;

@@ -2,9 +2,7 @@ import {simuParams}
     from './simuParams.js';
 
 export const sliders = {
-        resetCheckboxPointer: null,
-        actionRadioNodelist: null,
-            
+         
     // this goes with the next function
     initialize: function(){
         document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderG);
@@ -13,7 +11,6 @@ export const sliders = {
             if (!inputElem) return
             else {
                 if( event.isTrusted && presets.editMode ){
-                    //setCurrentLi(key, inputElem.value);
                     let k = event.target.id;
                     let v = inputElem.value;
                     let t = inputElem.type;
@@ -71,7 +68,7 @@ export const sliders = {
                  
         }
         // not in edit mode then may cause a reset, a play, or a pause.
-        console.log(aPreset.reset, aPreset.action);
+        //console.log(aPreset.reset, aPreset.action);
           if ( !presets.editMode ){
             if ( aPreset.reset == 'true' )
                 document.getElementById('resetButton').click();
@@ -104,16 +101,15 @@ export const sliders = {
         }
         return aPreset;
     },
-    
-    actionRadio : function () {
-            presets.currentLi.dataset.action = this.value;
-    },
-        
-    resetCheck : function() {
-            presets.currentLi.dataset.reset = this.checked;
-    },
 };
 sliders.initialize();
+//const inputRangeElems = document.querySelectorAll('input[type="range"]');
+//for ( let i = 0; i < inputRangeElems.length; i++) {
+//     inputRangeElems[i].addEventListener('keydown keyup keypress', 
+// function (event) {
+//        if ( event.key == "ArrowDown"  || event.key == "PageDown" ||
+//            event.key == "ArrowUp"  || event.key == "PageUp" ) 
+//                event.preventDefault();});};
 
 function createOne(params) {
             const liElem = document.createElement("LI");
@@ -125,15 +121,6 @@ function createOne(params) {
             return liElem;
         }
     
-
-function setCurrentLi(key, v){
-            if (presets.editMode) {
-                presets.currentLi.dataset[key] = v;
-            } else {
-                if ( presets.currentLi ) presets.currentLi.classList.remove("selected");
-                presets.currentLi = null;  
-            };
-         };
 
 function nextLi() {
     if ( presets.currentLi ) {
@@ -207,25 +194,6 @@ export const presets = {
             }     
         }
         createList(presetsRows);
-//        
-//            let rows = presetsString.split(';');
-//            rows.pop();
-//            for (let row of rows ) {
-//                let elems = row.split(',');
-//                presets.ulPointer.append(createOne({ar:elems[0], acv:elems[1], sr:elems[2], scv:elems[3], speed:elems[4], action: elems[5], reset: elems[6], desc: elems[7]}));
-//            }
-//        } else {
-//            presetsString = localStorage.getItem("TIOX");
-//            if (presetsString) {
-//                presetsRows = JSON.parse(presetsString);
-//            } else {
-//                let response = await fetch('presets.json');
-//                if (response.ok) presetsRows = await response.json();
-//                else alert("json file HTTP-Error: " + response.status);
-//            }     
-//           createList(presetsRows)
-//        }
-
         presets.printPresets();
         presets.changeCurrentLiTo(nextLi());
 
@@ -246,6 +214,22 @@ export const presets = {
         document.getElementById('exportButton')
             .addEventListener('click',presets.popupExport);
         document.addEventListener('keydown',keyDownFunction);
+//        document.addEventListener('keyup keydown',captureKeyUp,true)
+//        
+//        
+//        function captureKeyUp(evt){
+//            if( evt.key == "ArrowDown"  || evt.key == "PageDown" ){
+//                presets.nextRow();
+//                evt.stopPropagation();
+//                evt.preventDefault();
+//            } else if( evt.key == "ArrowUp"  || evt.key == "PageUp" ){
+//                presets.previousRow();
+//                evt.stopPropagation();
+//                evt.preventDefault();
+//            }
+//            
+//        };
+        
         
         function keyDownFunction (evt) {
             const key = evt.key; 
@@ -258,9 +242,10 @@ export const presets = {
                 if ( presets.editMode ) 
                     if ( presets.textMode ) presets.saveModifiedDesc();
                     else  presets.addTextBox(presets.currentLi.innerHTML);
-            } else if( key === "ArrowDown"  || key === "PageDown" ){
+            } 
+            else if( key == "ArrowDown"  || key == "PageDown" ){
                 presets.nextRow();
-            } else if( key === "ArrowUp"  || key === "PageUp" ){
+            } else if( key == "ArrowUp"  || key == "PageUp" ){
                 presets.previousRow();
             }
         }
@@ -268,7 +253,7 @@ export const presets = {
 
     
     printPresets: function () {
-        console.log(presets.ulPointer);
+        //console.log(presets.ulPointer);
     },
     
     // utilities for the text box:  Delete, Save, Add  from the CurrentLi row.
@@ -309,14 +294,14 @@ export const presets = {
         presets.currentLi = li;
         }, 
     
-    nextRow: function() {
-        if ( document.activeElement.tagName=="BODY"){ 
-            presets.changeCurrentLiTo(nextLi());
-        }
+    nextRow: function() { 
+      if ( document.activeElement.tagName=="BODY"){        
+          presets.changeCurrentLiTo(nextLi());
+      }
     },
     
     previousRow: function() {
-        if( document.activeElement.tagName=="BODY"){
+        if ( document.activeElement.tagName=="BODY"){                   
             presets.changeCurrentLiTo( previousLi());
         }
     },
@@ -354,14 +339,12 @@ export const presets = {
         let x = presets.ulPointer.firstElementChild;
         if ( !presets.currentLi ) presets.changeCurrentLiTo(x);
         
-        
         document.getElementById("addButton").style.display = "block";
         document.getElementById('deleteButton').style.display = 'block';
         document.getElementById('menuBox').style.display = 'block';
         document.getElementById('editBox').style.display = 'none';
         document.getElementById('actionOptions').style.display = 'flex';
-        document.getElementById('playButtons').style.display = 'none';
-        
+        document.getElementById('playButtons').style.display = 'none';   
     },
     
      
@@ -435,18 +418,6 @@ export const presets = {
 
 function createURL() {
     return encodeURI(location.href+'?presets='+ createJSON());
-//    let contents = document.querySelectorAll('#ULPresetList li');
-//        for (let i = 0; i <contents.length; i++) {
-//           searchStr += contents[i].dataset.ar + "," +
-//                    contents[i].dataset.acv + "," +
-//                    contents[i].dataset.sr + "," +
-//                    contents[i].dataset.scv + "," +
-//                    contents[i].dataset.speed + "," +
-//                    contents[i].dataset.action + "," +
-//                    contents[i].dataset.reset + "," +
-//                    contents[i].innerHTML + ";" 
-//        }
-//        return searchStr; 
 }
 
 function createJSON() {
@@ -470,16 +441,16 @@ function createList(presetsRows) {
 };
 
 
-// two Nodelist routines;
-    function getChecked (nodelist){
-        for (let j = 0; j < nodelist.length; j++){
-            if (nodelist[j].checked ) return j
-        }
-        return -1;
-    };
-    function setChecked (nodelist,j) {
-        nodelist[j].checked = true;
-    };
+// three Nodelist routines;
+function getChecked (nodelist){
+    for (let j = 0; j < nodelist.length; j++){
+        if (nodelist[j].checked ) return j
+    }
+    return -1;
+};
+function setChecked (nodelist,j) {
+    nodelist[j].checked = true;
+};
 function findId(nodelist,str){
     for ( let j = 0; j<nodelist.length; j++ ) {
         if ( nodelist[j].id == str ) return j

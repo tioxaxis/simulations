@@ -44,6 +44,7 @@ var qLenDisplay= null;
 
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
 const precision = {ar:1,acv:1,sr:1,scv:1,speed:0}
+const speeds = [1,2,5,10,25];
 function captureChangeInSliderS(event){
 //    console.log('is event '+(event.isTrusted?'real':'scripted'));
     let inputElem = event.target.closest('input');
@@ -71,26 +72,13 @@ function captureChangeInSliderS(event){
             break;       
 
         case 'speed':
-            simu.framedelta = simu.framedeltaFor1X * v;
+            simu.framedelta = simu.framedeltaFor1X *speeds[v];
+            simu.frameSpeed = speeds[v];
             theChart.continue();
             Person.updateForSpeed();
+                document.getElementById(id+'Display').innerHTML = speeds[v];
             break;
-        
-            
-//        case 'reset':
-//            if( !event.isTrusted && inputElem.checked )
-//                document.getElementById('resetButton').click();
-//            break;
-//        case 'play':
-//                if( !event.isTrusted )
-//                document.getElementById('playButton').click();
-//            
-//            break;
-//        case 'pause':
-//            if( !event.isTrusted )
-//                document.getElementById('pauseButton').click();
-//            break;
-                
+                        
         default:
             console.log(' reached part for default');
             break;
@@ -103,31 +91,6 @@ function captureChangeInSliderS(event){
 
 
 
-//simu.checkChangeSimuParams =  function(){
-//        if (!simuParams.changeFlag )return;
-//        if ( simuParams.changed('ar') ){
-//          theSimulation.interarrivalRV.setRate(
-//              simuParams.getParam ( 'ar' )/tioxTimeConv);
-//        }
-//        if ( simuParams.changed('acv') ){
-//          theSimulation.interarrivalRV.setCV(
-//              simuParams.getParam ( 'acv' ));
-//        }
-//        if ( simuParams.changed('sr') ){
-//          theSimulation.serviceRV.setRate(
-//              simuParams.getParam ( 'sr' )/tioxTimeConv);
-//        }
-//        if ( simuParams.changed('scv') ){
-//            theSimulation.serviceRV.setCV(
-//                simuParams.getParam ( 'scv' ));
-//        }
-//        if ( simuParams.changed('speed') ){
-//            simu.framedelta = simu.framedeltaFor1X * simuParams.getParam('speed');
-//            theChart.continue();
-//            Person.updateForSpeed();
-//        }
-//        simuParams.changeFlag = false;
-//    };
 simu.reset2 = function(){
     resetBackground();
     Person.reset();
@@ -634,9 +597,23 @@ export const theChart ={
                 pointBorderColor: 'rgba(0,150,0,1)',
                 showLine: true,
                 lineTension: 0,
-                pointRadius: 5,
+                pointRadius: 3,
                 borderColor: 'rgba(0,150,0,1)',
-                    borderWidth: 4,
+                    borderWidth: 3,
+                fill: false,
+
+                data: [],
+                },
+                {   //*** Series #3
+                label: 'predicted wait',
+                pointBackgroundColor: 'rgb(185, 26, 26)',
+                pointBorderColor: 'rgba(185, 26, 26)',
+                showLine: true,
+                    hidden: true,
+                lineTension: 0,
+                pointRadius: 0,
+                borderColor: 'rgba(185, 26, 26)',
+                    borderWidth: 3,
                 fill: false,
 
                 data: [],
@@ -650,7 +627,7 @@ export const theChart ={
             maintainAspectRatio: false,
             responsive: true,
             pointBackgroundColor : 'rgba(255,0,0,1)',
-            showLiness: true,
+            //showLiness: true,
             layout:{
                 padding: {
                     left: 20,
@@ -694,8 +671,8 @@ export const theChart ={
             },
     total: null,
     count: null,
-    graphInitialTimeWidth: 40,
-    ghrapInitialTimeShift: 30,
+    graphInitialTimeWidth: 2,
+    graphInitialTimeShift: 2,
     graphTimeWidth: null,
     graphTimeShift: null,
     graphMin: null,
@@ -711,10 +688,11 @@ export const theChart ={
     reset: function(){
         this.stuff.data.datasets[0].data=[];
         this.stuff.data.datasets[1].data=[];
+        this.stuff.data.datasets[2].data=[];
         this.total = 0;
         this.count = 0;
         this.graphScale = 1;
-        this.yAxisScale = {max: .4, stepSize: .1};
+        this.yAxisScale = {max: 1, stepSize: .2};
         this.aVAxis = new VerticalAxisValue();
         this.graphMin = 0;
         this.graphMax = this.graphInitialTimeWidth;
@@ -724,10 +702,9 @@ export const theChart ={
         this.continue();
     },
     continue: function(){
-        this.graphScale = Math.max(this.graphScale,
-                Number( simuParams.getParam('speed') )); 
+        this.graphScale = Math.max(this.graphScale, simu.frameSpeed); 
         this.graphTimeWidth = this.graphInitialTimeWidth*this.graphScale;
-        this.graphTimeShift = this.ghrapInitialTimeShift*this.graphScale;
+        this.graphTimeShift = this.graphInitialTimeShift*this.graphScale;
         this.graphMax = Math.max(this.graphMax,this.graphMin + this.graphTimeWidth);
         this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
         this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
@@ -737,11 +714,12 @@ export const theChart ={
         this.chart.data.datasets[0].borderWidth = points;
         this.chart.data.datasets[1].pointRadius = points;
         this.chart.data.datasets[1].borderWidth = points;
+        this.chart.data.datasets[2].borderWidth = points;
         this.chart.update();
     },
     push: function (t,w){ 
-        t /= 1000;
-        w /= 1000;
+        t /= 10000;
+        w /= 10000;
         this.total += w;
         this.count++;
         if (t > this.graphMax) {
@@ -750,29 +728,42 @@ export const theChart ={
             this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
             this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
             }
-        if ( w > this.yAxisScale.max){
+        const pW = predictedWait();
+        if ( w > this.yAxisScale.max  || ( pW  && pW > this.yAxisScale.max ) ){
             this.yAxisScale = this.aVAxis.update(w);
+            if ( pW ) this.yAxisScale = this.aVAxis.update(pW);
             this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
             this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
         }
         this.chart.data.datasets[0].data.push({x:t,y:w});
         this.chart.data.datasets[1].data.push({x:t,y:this.total/this.count});
+        if (pW) this.chart.data.datasets[2].data.push({x:t,y:pW});
         this.chart.update();
         // update graph with time, this.total/this.waits.length
     } 
 }
 
+function predictedWait(){
+    if (theSimulation.serviceRV.rate == 0 ) return null;
+    let rho = theSimulation.interarrivalRV.rate/theSimulation.serviceRV.rate;
+    if (rho >= 1) return null;
+    let p = ( rho / (1-rho) / theSimulation.serviceRV.rate/10000 )*
+        (theSimulation.interarrivalRV.CV**2 + theSimulation.serviceRV.CV**2)/2;
+    console.log(' predicted wait / 10000 ', p/10000);
+    return p;
+}
+
 class VerticalAxisValue {
     constructor(){
         this.table= [
-           { max: 0.4,  stepSize: 0.1},
-           { max: 0.5,  stepSize: 0.1},
-           { max: 0.6,  stepSize: 0.2},
-           { max: 0.8,  stepSize: 0.2},
            { max: 1.0,  stepSize: 0.2},
            { max: 1.5,  stepSize: 0.5},
            { max: 2,    stepSize: 0.5},
-           { max: 3,    stepSize: 1.0}
+           { max: 3,    stepSize: 1.0},
+           { max: 4,    stepSize: 1},
+           { max: 5,    stepSize: 1},
+           { max: 6,    stepSize: 2},
+           { max: 8,    stepSize: 2},
         ];   
     };
     update (y) {
@@ -785,17 +776,17 @@ class VerticalAxisValue {
 } ;
 
 function resizeChart(){
-        const w = document.getElementById('canvasWrapper');
-        const wW   = w.clientWidth;
-        const newFontSize = wW / 750 * 14;
-        theChart.chart.options.title.fontSize = newFontSize;
+    const w = document.getElementById('canvasWrapper');
+    const wW   = w.clientWidth;
+    const newFontSize = wW / 750 * 14;
+    theChart.chart.options.title.fontSize = newFontSize;
     theChart.chart.options.title.padding = 5;
     theChart.chart.options.legend.labels.fontSize = newFontSize;
     theChart.chart.options.legend.labels.padding = 10;
-    
-        theChart.chart.update();
-        //alert(' in resize and w,h = '+wW+'  new font size');
-      };
+
+    theChart.chart.update();
+    //alert(' in resize and w,h = '+wW+'  new font size');
+    };
 window.addEventListener('resize', resizeChart);
 theChart.initialize();
 
