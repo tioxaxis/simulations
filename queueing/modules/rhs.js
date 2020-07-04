@@ -41,10 +41,13 @@ export const sliders = {
 
 
     
-     tpes : {ar:'range', acv:'range', sr:'range', scv:'range',
-            speed:'range', action:'radio', reset:'checkbox'},
+    tpes : {ar:'range', acv:'range', sr:'range', scv:'range',
+            
+    speed:'range', action:'radio', reset:'checkbox'},
+    
     inputEvent : new Event('input',{bubbles: true}),
-      setSlidersFrom: function (aPreset){
+    
+    setSlidersFrom: function (aPreset){
         const precision = {ar:1,acv:1,sr:1,scv:1,speed:0};
 //        const inputBoxes = document.getElementById("sliderBigBox")
 //                .querySelectorAll("input"); 
@@ -189,8 +192,11 @@ export const presets = {
                 presetsRows = JSON.parse(presetsString);
             } else {
                 let response = await fetch('presets.json');
-                if (response.ok) presetsRows = await response.json();
-                else alert("json file HTTP-Error: " + response.status);
+                if (response.ok) {
+                    presetsRows = await response.json();
+                } else {
+                    alert("json file HTTP-Error: " + response.status);
+                }
             }     
         }
         createList(presetsRows);
@@ -418,7 +424,7 @@ export const presets = {
 
 function createURL() {
     return encodeURI(location.href+'?presets='+ createJSON());
-}
+};
 
 function createJSON() {
             let rows= [];
@@ -456,7 +462,7 @@ function findId(nodelist,str){
         if ( nodelist[j].id == str ) return j
     }
     return -1;
-}
+};
 
 presets.initialize();
 

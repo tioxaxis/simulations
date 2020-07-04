@@ -377,8 +377,7 @@ export class SPerson {
 
 static reset(){
     SPerson.all = [];
-    SPerson.counter = 0;
-    
+    SPerson.counter = 0;  
 };
 
 constructor (ahead){

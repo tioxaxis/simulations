@@ -112,7 +112,7 @@ simu.moveDisplayAll = function(){
     
 
 const theStage = {
-    normalSpeed : .25,
+    normalSpeed : .25,    //.25 pixels per millisecond
     width: 1000,
     height: 300,
     pathY: 100,
@@ -346,10 +346,10 @@ pull () {
      };
      clear (){
          this.list.forEach(function(y){ y.proc = null;})
-     }
+     };
      reset (){
          this.list = [];
-     }
+     };
      mark (x,proc){
          let k = this.list.findIndex(y => y.item == x);
          if (k<0){
@@ -363,7 +363,7 @@ pull () {
          let count = 0;
          for (let y of this.list){
              if(y.proc == null ) count++;
-         }
+         };
          return count;
      };
      
@@ -376,8 +376,6 @@ pull () {
 
  export class Person extends SPerson {
     static anim = null;
-//    static all = [];
-//    static personCounter = 0;
     static checkPointer = null;
     static updateForSpeed(){
         Person.all.forEach(p => p.computeCountDelta( p.pathList[0] ));
@@ -418,14 +416,14 @@ pull () {
                  this.cur.x += path.deltaX;
                  this.cur.y += path.deltaY;
                  path.count--;
-             }
+             };
                 
             if( this.cur.x > 2000 || this.cur.y > 500){
                 alert(' found person with too large coord');
                 console.log(this);
                 debugger;
-            }
-         }
+            };
+         };
          this.graphic.set('left',this.cur.x)
                     .set('top',this.cur.y).setCoords();    
      };
@@ -485,7 +483,7 @@ static  check(){
          //       foundError('behind too close',q.behind.cur.x);
         }
         q = q.behind;
-    }
+    };
     while (q && q.graphic.fill == 'purple') {
         if ( q.cur.x > 80 ){
             if (q.cur.x > 851)foundError('too big x',851);
@@ -495,7 +493,7 @@ static  check(){
 //                foundError('behind too close',q.behind.cur.x);
         }
        q = q.behind;
-    }
+    };
     while (q && q.graphic.fill == 'orange') {
         if ( q.cur.x > 80 ){ 
             
@@ -511,9 +509,9 @@ static  check(){
             if (q.cur.y > 101) foundError('y is off',100);
 //            if (q.behind.cur.x > q.cur.x -deltaX)
 //                foundError('behind too close',q.behind.cur.x);
-        }
+        };
         q = q.behind;
-    }
+    };
     while (q && q.graphic.fill == 'green') {
        if ( q.cur.x > 80 ){
            if (q.cur.x > 801)foundError('too big x',801);
@@ -531,7 +529,7 @@ static  check(){
 //                    foundError('behind too close',q.behind.cur.x);
        }
         q = q.behind;
-    }
+    };
     function foundError(message, s) {
         console.log(' found inconsistency at person ',q.which, q.graphic.fill,'/n (x,y) = (',q.cur.x,q.cur.y,')', message,
                     'with value ',s)
@@ -545,9 +543,9 @@ static  check(){
         };
         
         debugger;
-    }
+    };
 
-} 
+}; 
 
   };  // end class Person
 
