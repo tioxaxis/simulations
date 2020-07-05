@@ -239,12 +239,12 @@ export const presets = {
         
         function keyDownFunction (evt) {
             const key = evt.key; 
-            if (key === "Escape"){
+            if (key == "Escape"){
                 let elem = document.getElementById( 'exportBoxOuter');
                 if (elem.style.display  == 'block' ) 
                     elem.style.display = 'none'
                 else presets.deleteTextInpBox();
-            } else if (key === "Enter"){
+            } else if (key == "Enter"){
                 if ( presets.editMode ) 
                     if ( presets.textMode ) presets.saveModifiedDesc();
                     else  presets.addTextBox(presets.currentLi.innerHTML);
@@ -290,15 +290,24 @@ export const presets = {
    addRow: function() {
         let desc =''
         if ( presets.ulPointer.childElementCount > 0 )
-                desc = presets.saveModifiedDesc() + " copy";
+                desc = createCopyName(presets.saveModifiedDesc());
         if ( presets.currentLi )      
                 presets.currentLi.classList.remove("selected");
 
         const li = createOne(presets.currentLi.dataset)
+        li.innerHTML = li.dataset.desc = desc;
         li.classList.add("selected");
         presets.ulPointer.append(li);
         presets.currentLi = li;
-        }, 
+       
+       function createCopyName(str){
+           let reg = str.match(/(.*) (copy) *(\d*)/);
+           if (!reg) return str+' copy';
+           const n = reg[3]=='' ? ' 2':++reg[3];
+           return reg[1]+' copy '+ n;
+           };
+        },
+    
     
     nextRow: function() { 
       if ( document.activeElement.tagName=="BODY"){        

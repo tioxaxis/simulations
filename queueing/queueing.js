@@ -5,7 +5,7 @@ const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
 import {GammaRV, Heap} from './modules/utility.js';
 //    from './modules/utility.js';
 import {simu, Queue, WalkAndDestroy, MachineCenter, 
-        InfiniteMachineCenter,SPerson}
+        InfiniteMachineCenter,SPerson,allSPerson}
     from './modules/procsteps.js' ;
 import {simuParams} 
     from './modules/simuParams.js';
@@ -107,7 +107,7 @@ simu.reset2 = function(){
 
 
 simu.moveDisplayAll = function(){
-        Person.all.forEach(p=> p.moveDisplayWithPath(false))
+        allSPerson.forEach(p=> p.moveDisplayWithPath(false))
     } 
     
 
@@ -274,11 +274,11 @@ var theProcessCollection = new ProcessCollection();
     initialize: function (){
     
         // random variables
-        let r = simuParams.getParam('ar');
-        let cv = simuParams.getParam('acv'); 
+        let r = document.getElementById('ar').value;
+        let cv = document.getElementById('acv').value; 
         theSimulation.interarrivalRV = new GammaRV(r/tioxTimeConv,cv);
-        r = simuParams.getParam('sr');
-        cv = simuParams.getParam('scv');
+        r = document.getElementById('sr').value;
+        cv = document.getElementById('scv').value;
         theSimulation.serviceRV = new GammaRV(r/tioxTimeConv,cv);
         
         //queues
@@ -337,60 +337,60 @@ pull () {
 
 
 
- class PersonCheck {
-     constructor(){
-         this.list = [];
-     };
-     push (x){
-         this.list.push({item:x,proc: null});
-     };
-     clear (){
-         this.list.forEach(function(y){ y.proc = null;})
-     };
-     reset (){
-         this.list = [];
-     };
-     mark (x,proc){
-         let k = this.list.findIndex(y => y.item == x);
-         if (k<0){
-             console.log(' in ',proc, 'cant find',x);  
-         } else if (this.list.proc){
-             console.log('for item ',x, ' found in list but already has proc ',this.list[k].proc, 'vs ',proc);
-             
-         } else this.list[k].proc = proc;
-     };
-     countUnmarked () {
-         let count = 0;
-         for (let y of this.list){
-             if(y.proc == null ) count++;
-         };
-         return count;
-     };
-     
-     delete(p){
-        let k = this.list.findIndex(y => y.item === p);
-         this.list.splice(k,1);
-     };
-     
- }; 
+// class PersonCheck {
+//     constructor(){
+//         this.list = [];
+//     };
+//     push (x){
+//         this.list.push({item:x,proc: null});
+//     };
+//     clear (){
+//         this.list.forEach(function(y){ y.proc = null;})
+//     };
+//     reset (){
+//         this.list = [];
+//     };
+//     mark (x,proc){
+//         let k = this.list.findIndex(y => y.item == x);
+//         if (k<0){
+//             console.log(' in ',proc, 'cant find',x);  
+//         } else if (this.list.proc){
+//             console.log('for item ',x, ' found in list but already has proc ',this.list[k].proc, 'vs ',proc);
+//             
+//         } else this.list[k].proc = proc;
+//     };
+//     countUnmarked () {
+//         let count = 0;
+//         for (let y of this.list){
+//             if(y.proc == null ) count++;
+//         };
+//         return count;
+//     };
+//     
+//     delete(p){
+//        let k = this.list.findIndex(y => y.item === p);
+//         this.list.splice(k,1);
+//     };
+//     
+// }; 
 
  export class Person extends SPerson {
-    static anim = null;
-    static checkPointer = null;
+//    static anim = null;
+//    static checkPointer = null;
     static updateForSpeed(){
-        Person.all.forEach(p => p.computeCountDelta( p.pathList[0] ));
+        allSPerson.forEach(p => p.computeCountDelta( p.pathList[0] ));
     };
     
 
     static reset(){
         super.reset();
-        Person.checkPointer = null;
+//        Person.checkPointer = null;
     };
 
     constructor (ahead, x,y= 100,w = 30,h = 30) {
         super(ahead);
         // capture first person;
-        if(!Person.checkPointer) Person.checkPointer = this;                  
+//        if(!Person.checkPointer) Person.checkPointer = this;                  
         this.cur = {t: simu.now, x: x, y: y};
         this.width = w;
         this.pathList = [];
@@ -465,87 +465,87 @@ pull () {
      };
 
 
-static  check(){
-    let deltaX = 35;
-    let d;
-    let kq,ka;
-    let q = Person.checkPointer;
-   // let prevX = 850 + deltaX;
-    while (q && q.graphic.fill == 'black' ) {
-        if ( q.cur.x > 80 ){
-            if (q.cur.x > 1101)foundError('too big x',1101);
-            //   if (q.cur.x < 850 && q.cur.x < prevX-deltaX)
-     //       foundError('too small x',850);
-     //   prevX = q.cur.x
-            //if (q.cur.y < 99) foundError('too small y',99);
-            if (q.cur.y > 301) foundError('too big y',301);
-        //if (q.behind.cur.x > q.cur.x -deltaX)
-         //       foundError('behind too close',q.behind.cur.x);
-        }
-        q = q.behind;
-    };
-    while (q && q.graphic.fill == 'purple') {
-        if ( q.cur.x > 80 ){
-            if (q.cur.x > 851)foundError('too big x',851);
-            //if (q.cur.x < 800) foundError('too small x',800);
-            //if (q.cur.y > 101) foundError('y is high',100);
-//            if (q.behind.cur.x > q.cur.x -deltaX) 
-//                foundError('behind too close',q.behind.cur.x);
-        }
-       q = q.behind;
-    };
-    while (q && q.graphic.fill == 'orange') {
-        if ( q.cur.x > 80 ){ 
-            
-            if (q.cur.x > 801)foundError('too big x',801);
-            //if (q.cur.x < 100) foundError('too small x',100);
-       
-            if(q.ahead.graphic.fill == 'orange') { 
-//                if ( (d= q.ahead.cur.x-q.cur.x) >60)
-//                    foundError('oranges separated in currents there is a blank of size', d);
-////                if( (d= q.ahead.pathList[0].x-q.pathList[0].x) > 60)
-//                    foundErrror(' Oranges separated in destinations  blank of size',d);
-            }
-            if (q.cur.y > 101) foundError('y is off',100);
-//            if (q.behind.cur.x > q.cur.x -deltaX)
-//                foundError('behind too close',q.behind.cur.x);
-        };
-        q = q.behind;
-    };
-    while (q && q.graphic.fill == 'green') {
-       if ( q.cur.x > 80 ){
-           if (q.cur.x > 801)foundError('too big x',801);
-            //if (q.cur.x < 50) foundError('too small x',50);
-            if (q.cur.y > 101) foundError('y is high ',100);
-//            if( q.ahead  && q.ahead.graphic.fill == 'green'){
-//                kq = q.pathList.length-1;
-//                ka = q.ahead.pathList.length-1;
-//                if ( (d = q.ahead.pathList[ka].x-q.pathList[kq].x) > 60) 
-//                foundError(' Greens separated in destinations ',d);
-//            } 
-
-//             if (q.behind.cur.x > q.cur.x -deltaX 
-//                && q.behind.graphic.fill == 'green')
-//                    foundError('behind too close',q.behind.cur.x);
-       }
-        q = q.behind;
-    };
-    function foundError(message, s) {
-        console.log(' found inconsistency at person ',q.which, q.graphic.fill,'/n (x,y) = (',q.cur.x,q.cur.y,')', message,
-                    'with value ',s)
-        
-        let k = 0;
-        let p = initialPointer;
-        while (p){
-            console.log(p.which,'(x,y)=',p.cur.x,p.cur.y,p.graphic.fill);
-            p = p.behind;
-            if (k++ > 30){alert('infinite loop?'); break}
-        };
-        
-        debugger;
-    };
-
-}; 
+//static  check(){
+//    let deltaX = 35;
+//    let d;
+//    let kq,ka;
+//    let q = Person.checkPointer;
+//   // let prevX = 850 + deltaX;
+//    while (q && q.graphic.fill == 'black' ) {
+//        if ( q.cur.x > 80 ){
+//            if (q.cur.x > 1101)foundError('too big x',1101);
+//            //   if (q.cur.x < 850 && q.cur.x < prevX-deltaX)
+//     //       foundError('too small x',850);
+//     //   prevX = q.cur.x
+//            //if (q.cur.y < 99) foundError('too small y',99);
+//            if (q.cur.y > 301) foundError('too big y',301);
+//        //if (q.behind.cur.x > q.cur.x -deltaX)
+//         //       foundError('behind too close',q.behind.cur.x);
+//        }
+//        q = q.behind;
+//    };
+//    while (q && q.graphic.fill == 'purple') {
+//        if ( q.cur.x > 80 ){
+//            if (q.cur.x > 851)foundError('too big x',851);
+//            //if (q.cur.x < 800) foundError('too small x',800);
+//            //if (q.cur.y > 101) foundError('y is high',100);
+////            if (q.behind.cur.x > q.cur.x -deltaX) 
+////                foundError('behind too close',q.behind.cur.x);
+//        }
+//       q = q.behind;
+//    };
+//    while (q && q.graphic.fill == 'orange') {
+//        if ( q.cur.x > 80 ){ 
+//            
+//            if (q.cur.x > 801)foundError('too big x',801);
+//            //if (q.cur.x < 100) foundError('too small x',100);
+//       
+//            if(q.ahead.graphic.fill == 'orange') { 
+////                if ( (d= q.ahead.cur.x-q.cur.x) >60)
+////                    foundError('oranges separated in currents there is a blank of size', d);
+//////                if( (d= q.ahead.pathList[0].x-q.pathList[0].x) > 60)
+////                    foundErrror(' Oranges separated in destinations  blank of size',d);
+//            }
+//            if (q.cur.y > 101) foundError('y is off',100);
+////            if (q.behind.cur.x > q.cur.x -deltaX)
+////                foundError('behind too close',q.behind.cur.x);
+//        };
+//        q = q.behind;
+//    };
+//    while (q && q.graphic.fill == 'green') {
+//       if ( q.cur.x > 80 ){
+//           if (q.cur.x > 801)foundError('too big x',801);
+//            //if (q.cur.x < 50) foundError('too small x',50);
+//            if (q.cur.y > 101) foundError('y is high ',100);
+////            if( q.ahead  && q.ahead.graphic.fill == 'green'){
+////                kq = q.pathList.length-1;
+////                ka = q.ahead.pathList.length-1;
+////                if ( (d = q.ahead.pathList[ka].x-q.pathList[kq].x) > 60) 
+////                foundError(' Greens separated in destinations ',d);
+////            } 
+//
+////             if (q.behind.cur.x > q.cur.x -deltaX 
+////                && q.behind.graphic.fill == 'green')
+////                    foundError('behind too close',q.behind.cur.x);
+//       }
+//        q = q.behind;
+//    };
+//    function foundError(message, s) {
+//        console.log(' found inconsistency at person ',q.which, q.graphic.fill,'/n (x,y) = (',q.cur.x,q.cur.y,')', message,
+//                    'with value ',s)
+//        
+//        let k = 0;
+//        let p = initialPointer;
+//        while (p){
+//            console.log(p.which,'(x,y)=',p.cur.x,p.cur.y,p.graphic.fill);
+//            p = p.behind;
+//            if (k++ > 30){alert('infinite loop?'); break}
+//        };
+//        
+//        debugger;
+//    };
+//
+//}; 
 
   };  // end class Person
 
@@ -747,7 +747,7 @@ function predictedWait(){
     if (rho >= 1) return null;
     let p = ( rho / (1-rho) / theSimulation.serviceRV.rate/10000 )*
         (theSimulation.interarrivalRV.CV**2 + theSimulation.serviceRV.CV**2)/2;
-    console.log(' predicted wait / 10000 ', p/10000);
+//    console.log(' predicted wait / 10000 ', p/10000);
     return p;
 }
 

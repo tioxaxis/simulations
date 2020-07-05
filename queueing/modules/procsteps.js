@@ -60,6 +60,8 @@ function togglePlayPause() {
 
 function play(){ 
         if ( simu.isRunning ) return;
+        if (document.getElementById('editBox')
+            .style.display == 'none' ) return
         document.getElementById('playButton').style.display = 'none';
         document.getElementById('pauseButton').style.display = 'inline';  
         simu.intervalTimer = setInterval(eachFrame, simu.frameInterval );
@@ -79,7 +81,7 @@ document.addEventListener('keydown',keyDownFunction);
 
 function keyDownFunction (evt) {
             const key = evt.key; 
-            if (evt.code === "Space") {
+            if (evt.code == "Space") {
                 togglePlayPause();
             }
 }
@@ -152,7 +154,7 @@ reset (){
     this.lastAdded = null;
     this.numSeatsUsed = 0;
     this.anim.reset();
-    }
+    };
 
 empty (){
     return this.numSeatsUsed == 0;
@@ -209,7 +211,7 @@ pull (procTime) {
     printQueue(){
 //        this.q.forEach(p => console.log('which',p.which,p));
         return;
-    }
+    };
 
 };   //end class Queue
      
@@ -253,7 +255,7 @@ destroy (person) {
     if (b) b.ahead = person;
     if (a) a.behind = person;
     person.destroy();
-}
+};
 };  //end export class WalkAndDestroy
 
 //   MACHINE CENTER         
@@ -283,7 +285,7 @@ destroy (person) {
              this.machs[k] = {status : 'idle', person : null, index: k};
          }
         this.anim.reset(this.numMachines);
-    }
+    };
     
      getAverageProcTime(){
        return this.procTime.mean;  
@@ -371,29 +373,30 @@ destroy (person) {
 };  //end class InfiniteMachineCenter
 
 // minimal Person with properties only for the simulation, the procsteps
+export var allSPerson = [];
+var counterSPerson = 0;
 export class SPerson {
-    static all = [];
-    static counter = 0;
 
 static reset(){
-    SPerson.all = [];
-    SPerson.counter = 0;  
+    allSPerson = [];
+    counterSPerson = 0;  
 };
 
+
 constructor (ahead){
-    this.which = ++SPerson.counter;
+    this.which = ++counterSPerson;
     this.ahead = ahead;
     this.behind = null;
-    SPerson.all.push(this);
+    allSPerson.push(this);
     this.arrivalTime = null;
     this.machine = null;
     if ( ahead ) ahead.behind = this;
 };
 
 destroy(){
-    let k = SPerson.all.indexOf(this);
+    let k = allSPerson.indexOf(this);
         if (k < 0){alert('failed to find person in all');debugger}
-        SPerson.all.splice(k,1);
+        allSPerson.splice(k,1);
         if ( this.behind ) {
             this.behind.ahead = null;
         }   ;

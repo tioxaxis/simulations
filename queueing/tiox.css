@@ -200,12 +200,21 @@ datalist {
 }
 
 /* this defines the list of presets  All the way through "inputText" */
-.listbox {
+
+#listbox1 {
+    max-height: 40%;
+    overflow:auto;
     width : 80%;
-    margin: 20px       ;
+    margin-top: 3vh;
+    margin-left: 3vw;
     position: relative;
 }
-    
+#listbox2 {
+    width : 80%;
+    margin-left: 3vw       ;
+    position: relative;
+}
+ 
 /* ul, li  define the format for the text boxes with the preset names  */
 /* Remove margins and padding from the list */
 ul {
