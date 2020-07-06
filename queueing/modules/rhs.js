@@ -1,56 +1,48 @@
-import {simuParams} 
-    from './simuParams.js';
-
+// two parts:  Sliders are on top of rhs
+// the list of presets are below on the rhs
 export const sliders = {
-         
-    // this goes with the next function
     initialize: function(){
         document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderG);
         function captureChangeInSliderG(event){
             let inputElem = event.target.closest('input');
             if (!inputElem) return
-            else {
-                if( event.isTrusted && presets.editMode ){
-                    let k = event.target.id;
-                    let v = inputElem.value;
-                    let t = inputElem.type;
-                    let ds = presets.currentLi.dataset;
-                    // pull value into preset based on type of input
-                    switch (t) {    
-                        case 'range':
-                            ds[k] = v;
-                            break;
-                        case 'checkbox':
-                            ds[k] = inputElem.checked.toString();
-                            break;
-                        case 'radio':
-                            ds['action'] = k;
-                            break;
-                        default:
-                    }
-
-                } else {
-                    if ( presets.currentLi ) presets.currentLi.classList.remove("selected");
-                    presets.currentLi = null;  
-                };
+            if( event.isTrusted && presets.editMode ){
+                let id = event.target.id;
+                let v = inputElem.value;
+                let t = inputElem.type;
+                let ds = presets.currentLi.dataset;
+                // pull value into preset based on type of input
+                switch (t) {    
+                    case 'range':
+                        ds[id] = v;
+                        break;
+                    case 'checkbox':
+                        ds[id] = inputElem.checked.toString();
+                        break;
+                    case 'radio':    //only one radio button set: action
+                        ds['action'] = id;
+                        break;
+                    default:
                 }
+            // changing a slider in non edit mode just deselects preset.
+            } else {
+                if ( presets.currentLi ) presets.currentLi.classList.remove("selected");
+                presets.currentLi = null;  
+            };
         };         
     },
 
 
 
 
-    
+    // this is specific to queueing and should be elsewhere
     tpes : {ar:'range', acv:'range', sr:'range', scv:'range',
-            
-    speed:'range', action:'radio', reset:'checkbox'},
+            speed:'range', action:'radio', reset:'checkbox'},
     
     inputEvent : new Event('input',{bubbles: true}),
     
     setSlidersFrom: function (aPreset){
         const precision = {ar:1,acv:1,sr:1,scv:1,speed:0};
-//        const inputBoxes = document.getElementById("sliderBigBox")
-//                .querySelectorAll("input"); 
         let inputBox;  
         for (let key in sliders.tpes ) {
             let t = sliders.tpes[key];
@@ -67,19 +59,17 @@ export const sliders = {
                 let theNodeList = document.getElementsByName(key);
                 let j = findId(theNodeList,v);
                 theNodeList[j].checked = true;
-            }
-                 
+            }        
         }
         // not in edit mode then may cause a reset, a play, or a pause.
-        //console.log(aPreset.reset, aPreset.action);
-          if ( !presets.editMode ){
+        if ( !presets.editMode ){
             if ( aPreset.reset == 'true' )
                 document.getElementById('resetButton').click();
             if ( aPreset.action == 'play' )
                 document.getElementById('playButton').click();
             else if ( aPreset.action == 'pause' )
                 document.getElementById('pauseButton').click();
-            }
+        }
     },
     
     getSliders: function () {
@@ -99,13 +89,14 @@ export const sliders = {
                     aPreset[k] = theNodeList[getChecked(theNodeList)].id; 
                     break;
                 default:
-            }
-            
+            }   
         }
         return aPreset;
     },
 };
 sliders.initialize();
+
+
 //const inputRangeElems = document.querySelectorAll('input[type="range"]');
 //for ( let i = 0; i < inputRangeElems.length; i++) {
 //     inputRangeElems[i].addEventListener('keydown keyup keypress', 
@@ -175,8 +166,6 @@ export const presets = {
         this.textInpBox.placeholder = "preset name";
         
         this.ulPointer = document.getElementById("ULPresetList");
-        this.ulPointer.addEventListener('click', this.liClicked);
-        this.ulPointer.addEventListener('dblclick', this.liDblClicked);
         
         
         // get the presets from the URL, or local storage or .json file in that order
@@ -207,7 +196,12 @@ export const presets = {
         //presets.currentLi = null;
         this.started = true;
         
-        document.getElementById('addButton')
+        
+        //set up event listeners for user interface
+        
+        this.ulPointer.addEventListener('click', this.liClicked);
+        this.ulPointer.addEventListener('dblclick', this.liDblClicked);
+       document.getElementById('addButton')
             .addEventListener('click',presets.addRow);
         document.getElementById('deleteButton')
             .addEventListener('click',presets.deleteSelected);
@@ -262,7 +256,8 @@ export const presets = {
         //console.log(presets.ulPointer);
     },
     
-    // utilities for the text box:  Delete, Save, Add  from the CurrentLi row.
+    // utilities for the text box:  
+    //  Delete, Save, Add  from the CurrentLi row.
     deleteTextInpBox : function () {
         if ( presets.textMode ) {
             presets.currentLi.removeChild(this.textInpBox);
@@ -410,7 +405,8 @@ export const presets = {
         document.getElementById('urlDisplay').innerHTML = createURL();
     },
     
-    //  user clicked on an item in the list, possibly changing the selected choice
+    //  user clicked on an item in the list, 
+    //  possibly changing the selected choice
     //  and if textMode save the last entered name into the selected row
     liClicked: function(ev) {
         if (ev.target == presets.currentLi  || ev.target.parentNode == presets.currentLi ) return;
@@ -421,7 +417,8 @@ export const presets = {
         };
     },
         
-    // 2. double click on item in UL list;  start editing name if in edit mode
+    // 2. double click on item in UL list;  
+    //    start editing name if in edit mode
     liDblClicked: function(ev){
         if( !presets.editMode ) return;
         if ( presets.textMode ) return;  // ignore if in text mode already; everything is setup.
@@ -431,11 +428,11 @@ export const presets = {
     }
 };
 
-function createURL() {
+function createURL() {    //from current UL
     return encodeURI(location.href+'?presets='+ createJSON());
 };
 
-function createJSON() {
+function createJSON() {   //from curreent UL
             let rows= [];
             let contents = document.querySelectorAll('#ULPresetList li');
             for (let i = 0; i <contents.length; i++) {
@@ -446,7 +443,7 @@ function createJSON() {
             return JSONstr;
 };
 
-function createList(presetsRows) {
+function createList(presetsRows) {    //from row of objects in argument
     presets.ulPointer.innerHTML ='';
     if (presetsRows) {
         for (let row of presetsRows){
@@ -463,9 +460,11 @@ function getChecked (nodelist){
     }
     return -1;
 };
+
 function setChecked (nodelist,j) {
     nodelist[j].checked = true;
 };
+
 function findId(nodelist,str){
     for ( let j = 0; j<nodelist.length; j++ ) {
         if ( nodelist[j].id == str ) return j

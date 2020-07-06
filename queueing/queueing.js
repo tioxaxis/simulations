@@ -7,9 +7,8 @@ import {GammaRV, Heap} from './modules/utility.js';
 import {simu, Queue, WalkAndDestroy, MachineCenter, 
         InfiniteMachineCenter,SPerson,allSPerson}
     from './modules/procsteps.js' ;
-import {simuParams} 
-    from './modules/simuParams.js';
-//import {slides} from './modules/rhs.js';
+
+
 
 class ProcessCollection {
  constructor (){
@@ -23,10 +22,6 @@ class ProcessCollection {
  reset () {
      this.processList.forEach( aProcess => aProcess.reset() );
  };
-
-// moveDisplay() {
-//     Person.all.forEach(p=> p.moveDisplayWithPath(false))
-// };
 }; // end class processCollection
 
 var qLenDisplay= null;
@@ -49,44 +44,47 @@ function captureChangeInSliderS(event){
 //    console.log('is event '+(event.isTrusted?'real':'scripted'));
     let inputElem = event.target.closest('input');
     if (!inputElem) return
-    else {
-        var id = inputElem.id;
-        if (inputElem.type == 'range'){
-            var v = Number( inputElem.value )       
-                    .toFixed(precision[id]);
-            document.getElementById(id+'Display').innerHTML = v;
-        }
-        switch(id) {
-        case 'ar':  
-            theSimulation.interarrivalRV.setRate(v/tioxTimeConv);
-            break;
-        case 'acv':  
-            theSimulation.interarrivalRV.setCV(v);
-            break;        
-
-        case 'sr':  
-            theSimulation.serviceRV.setRate(v/tioxTimeConv);
-            break;
-        case 'scv':  
-            theSimulation.serviceRV.setCV(v);
-            break;       
-
-        case 'speed':
-            simu.framedelta = simu.framedeltaFor1X *speeds[v];
-            simu.frameSpeed = speeds[v];
-            theChart.continue();
-            Person.updateForSpeed();
-                document.getElementById(id+'Display').innerHTML = speeds[v];
-            break;
-                        
-        default:
-            console.log(' reached part for default');
-            break;
-        }
-//        console.log(' adjusted '+ id+' to '+ v);
-            
-                
+    
+    var id = inputElem.id;
+    if (inputElem.type == 'range'){
+        var v = Number( inputElem.value )       
+                .toFixed(precision[id]);
+        document.getElementById(id+'Display')
+            .innerHTML = v;
     }
+    switch(id) {
+    case 'ar':  
+        theSimulation.interarrivalRV
+            .setRate(v/tioxTimeConv);
+        break;
+            
+    case 'acv':  
+        theSimulation.interarrivalRV.setCV(v);
+        break;        
+
+    case 'sr':  
+        theSimulation.serviceRV
+            .setRate(v/tioxTimeConv);
+        break;
+            
+    case 'scv':  
+        theSimulation.serviceRV.setCV(v);
+        break;       
+
+    case 'speed':
+        simu.framedelta = simu.framedeltaFor1X * 
+            speeds[v];
+        simu.frameSpeed = speeds[v];
+        theChart.continue();
+        Person.updateForSpeed();
+        document.getElementById(id+'Display')
+            .innerHTML = speeds[v];
+        break;
+
+    default:
+        console.log(' reached part for default');
+        break;                       
+    }   
 }
 
 
@@ -94,21 +92,19 @@ function captureChangeInSliderS(event){
 simu.reset2 = function(){
     resetBackground();
     Person.reset();
-    theChart.reset();
-    
-          
+    theChart.reset();     
     theProcessCollection.reset();
         
     // schedule the initial Person to arrive and start the simulation/animation.
     theSimulation.supply.previous = null;
     theSimulation.creator.knockFromPrevious();
     simu.theCanvas.renderAll();
-    };
+};
 
 
 simu.moveDisplayAll = function(){
-        allSPerson.forEach(p=> p.moveDisplayWithPath(false))
-    } 
+    allSPerson.forEach(p=> p.moveDisplayWithPath(false))
+} 
     
 
 const theStage = {
@@ -119,7 +115,7 @@ const theStage = {
     person: {dx: 40, dy: 60}   
 };
 {
-    theStage.offStageLeft = {x: -50, y: theStage.pathY};
+    theStage.offStageLeft = {x: -100, y: theStage.pathY};
     theStage.offStageRight = {x: theStage.width*1.1, y: theStage.pathY};
     
     theStage.headQueue = {x: theStage.width*0.70, y: theStage.pathY};
@@ -130,6 +126,9 @@ const theStage = {
     theStage.scannerDelta = {dx: 0, dy: theStage.person.dy};
 };
 
+//  One variable for each process step or queue
+//  that contains the functions to do the specific
+//  animation for that process step
 
 const animForQueue = {
     loc : theStage.headQueue,
@@ -148,11 +147,11 @@ const animForQueue = {
         person.pathList[0] = {t: arrivalTime, 
                          x: animForQueue.loc.x - animForQueue.delta.dx * nInQueue,
                          y: animForQueue.loc.y };
-        person.graphic.set('fill', "green");  
+  //     person.setColor( "green");  
     },
 
     arrive: function (nSeatsUsed, person) {
-        person.graphic.set('fill', "orange");
+  //      person.setColor( "orange");
         if ( nSeatsUsed > 10 ) qLenDisplay.set('text',
                     'Queue Length = ' + nSeatsUsed).set('visible',true);
     },
@@ -194,7 +193,7 @@ const animForWalkOffStage = {
 //            person.pathList[3] = {t: simu.now+60/theStage.normalSpeed, x: 890, y: 100 };
             person.pathList[0] = {t: simu.now+this.walkingTime,
                           x: this.loc.x, y: this.loc.y }
-            person.graphic.set('fill',  "black");  
+  //          person.setColor(  "black");  
     }
 };
         
@@ -208,7 +207,7 @@ const animForWalkOffStage = {
     start: function (theProcTime,person,m)  {  // only 1 machine for creator m=1
        person.setDestWithProcTime(theProcTime,
             animForCreator.loc.x,animForCreator.loc.y);
-        person.graphic.set('fill',"red");
+ //       person.setColor("red");
     },
      
      finish: function () {},
@@ -229,10 +228,10 @@ const animForTSA = {
          let locY = animForTSA.firstLoc.y;
          for( let k = 0; k< numMachines; k++ ){
             const rect1 = new fabric.Rect(
-                {left: theStage.scanner.x -10, 
-                 top: theStage.scanner.y -15 + k*animForTSA.delta.dy,
+                {left: theStage.scanner.x , 
+                 top: theStage.scanner.y -35 + k*animForTSA.delta.dy,
                 fill: 'white', stroke: 'blue', strokeWidth: 5,
-                width: 45, height: 45});
+                width: 55, height: 150});
             simu.theCanvas.add(rect1);
             animForTSA.machLoc[k] = {x :locX, y :locY, rect: rect1};
             locX += animForTSA.delta.dx;
@@ -242,7 +241,7 @@ const animForTSA = {
     start: function (theProcTime, person, m){
         person.setDestWithProcTime(theProcTime,
                 animForTSA.machLoc[m].x,animForTSA.machLoc[m].y);
-        person.graphic.set('fill',"purple");
+ //       person.setColor("purple");
         if (animForTSA.lastFinPerson){
             let path = animForTSA.lastFinPerson.pathList[0];
             if (path.t > simu.now){
@@ -261,10 +260,11 @@ const animForTSA = {
 var theProcessCollection = new ProcessCollection();
 
  const theSimulation = {
-     interarrivalRV: null,
+    //  the two random variables in the simulation
+    interarrivalRV: null,
     serviceRV : null,
-     
-     
+    
+     // the 5 process steps in the simulation
     supply : null,
     queue : null,
     walkOffStage :null,
@@ -282,14 +282,15 @@ var theProcessCollection = new ProcessCollection();
         theSimulation.serviceRV = new GammaRV(r/tioxTimeConv,cv);
         
         //queues
-        this.supply = new Supplier( -50, 100);
+        this.supply = new Supplier
+              ( theStage.offStageLeft.x, theStage.offStageLeft.y);
     
                 
         this.queue = new Queue("theQueue",-1, animForQueue.walkingTime,     
                 animForQueue,
                 recordQueueArrival, recordQueueLeave  );
         
-        // define the helper functions
+        // define the helper functions for theQueue
         function recordQueueArrival (person){
             person.arrivalTime = simu.now;
         };
@@ -302,18 +303,21 @@ var theProcessCollection = new ProcessCollection();
     
     
         // machine centers 
-        this.creator = new MachineCenter("creator", 1,theSimulation.interarrivalRV,
-                                         this.supply, this.queue, 
-                                         animForCreator);
+        this.creator = new MachineCenter("creator", 
+             1,theSimulation.interarrivalRV,
+             this.supply, this.queue, 
+             animForCreator);
             
-        this.TSAagent = new MachineCenter("TSAagent",1,theSimulation.serviceRV,
-                                          this.queue, this.walkOffStage,
-                                         animForTSA);
+        this.TSAagent = new MachineCenter("TSAagent",
+              1,theSimulation.serviceRV,
+              this.queue, this.walkOffStage,
+              animForTSA);
          
         //link the queue to machine before and after
-        this.queue.setPreviousNext(this.creator,this.TSAagent);
+        this.queue.setPreviousNext(
+            this.creator,this.TSAagent);
 
-        // put all the things with visible people in theProcessCollection
+        // put all the process steps with visible people in theProcessCollection
         theProcessCollection.push(this.creator);
         theProcessCollection.push(this.queue);
         theProcessCollection.push(this.TSAagent);
@@ -322,87 +326,53 @@ var theProcessCollection = new ProcessCollection();
 };
 
 // SUPPLIER
- class Supplier {
-constructor ( x, y ){
-    this.x = x;
-    this.y = y;
-    this.previous = null;
-};
+class Supplier {
+    constructor ( x, y ){
+        this.x = x;
+        this.y = y;
+        this.previous = null;
+    };
 
-pull () {
-    return this.previous = new Person(this.previous, this.x, this.y); 
- }
+    pull () {
+        const colors =['red','orange','blue','green',
+                      'purple','green-yellow','magenta',
+                      'brown','gray','coral']
+         let n = Math.floor(Math.random()*colors.length );
+        this.previous = new Person(this.previous, this.x, this.y); 
+        this.previous.setColor(colors[n]);
+        return this.previous;
+     }
 };   //end class Supplier
 
 
-
-
-// class PersonCheck {
-//     constructor(){
-//         this.list = [];
-//     };
-//     push (x){
-//         this.list.push({item:x,proc: null});
-//     };
-//     clear (){
-//         this.list.forEach(function(y){ y.proc = null;})
-//     };
-//     reset (){
-//         this.list = [];
-//     };
-//     mark (x,proc){
-//         let k = this.list.findIndex(y => y.item == x);
-//         if (k<0){
-//             console.log(' in ',proc, 'cant find',x);  
-//         } else if (this.list.proc){
-//             console.log('for item ',x, ' found in list but already has proc ',this.list[k].proc, 'vs ',proc);
-//             
-//         } else this.list[k].proc = proc;
-//     };
-//     countUnmarked () {
-//         let count = 0;
-//         for (let y of this.list){
-//             if(y.proc == null ) count++;
-//         };
-//         return count;
-//     };
-//     
-//     delete(p){
-//        let k = this.list.findIndex(y => y.item === p);
-//         this.list.splice(k,1);
-//     };
-//     
-// }; 
-
  export class Person extends SPerson {
-//    static anim = null;
-//    static checkPointer = null;
     static updateForSpeed(){
         allSPerson.forEach(p => p.computeCountDelta( p.pathList[0] ));
     };
     
-
     static reset(){
         super.reset();
-//        Person.checkPointer = null;
     };
 
     constructor (ahead, x,y= 100,w = 30,h = 30) {
         super(ahead);
-        // capture first person;
-//        if(!Person.checkPointer) Person.checkPointer = this;                  
         this.cur = {t: simu.now, x: x, y: y};
         this.width = w;
         this.pathList = [];
         this.pathList[0]= {t: -1, x: -50, y: 100};
         
-        this.graphic = new fabric.Rect({top: 100,left:-50, width: w, height: h , fill: "blue" })
-        simu.theCanvas.add(this.graphic);
+        this.graphic = new StickFigure('blue', 80);
+        this.graphic.initialPosition(-50,100);
+//        new fabric.Rect({top: 100,left:-50, width: w, height: h , fill: "blue" })
+        simu.theCanvas.add(this.graphic.figure);
      };
+     setColor(aColor){
+         this.graphic.setColor(aColor);
+     }
     
     destroy(){
         super.destroy();
-        simu.theCanvas.remove(this.graphic);  
+        simu.theCanvas.remove(this.graphic.figure);  
     };
     
      moveDisplayWithPath (dontOverlap){
@@ -424,8 +394,7 @@ pull () {
                 debugger;
             };
          };
-         this.graphic.set('left',this.cur.x)
-                    .set('top',this.cur.y).setCoords();    
+         this.graphic.moveTo(this.cur.x);    
      };
     
     setTime(time){
@@ -464,96 +433,84 @@ pull () {
          this.computeCountDelta(this.pathList[0]);
      };
 
-
-//static  check(){
-//    let deltaX = 35;
-//    let d;
-//    let kq,ka;
-//    let q = Person.checkPointer;
-//   // let prevX = 850 + deltaX;
-//    while (q && q.graphic.fill == 'black' ) {
-//        if ( q.cur.x > 80 ){
-//            if (q.cur.x > 1101)foundError('too big x',1101);
-//            //   if (q.cur.x < 850 && q.cur.x < prevX-deltaX)
-//     //       foundError('too small x',850);
-//     //   prevX = q.cur.x
-//            //if (q.cur.y < 99) foundError('too small y',99);
-//            if (q.cur.y > 301) foundError('too big y',301);
-//        //if (q.behind.cur.x > q.cur.x -deltaX)
-//         //       foundError('behind too close',q.behind.cur.x);
-//        }
-//        q = q.behind;
-//    };
-//    while (q && q.graphic.fill == 'purple') {
-//        if ( q.cur.x > 80 ){
-//            if (q.cur.x > 851)foundError('too big x',851);
-//            //if (q.cur.x < 800) foundError('too small x',800);
-//            //if (q.cur.y > 101) foundError('y is high',100);
-////            if (q.behind.cur.x > q.cur.x -deltaX) 
-////                foundError('behind too close',q.behind.cur.x);
-//        }
-//       q = q.behind;
-//    };
-//    while (q && q.graphic.fill == 'orange') {
-//        if ( q.cur.x > 80 ){ 
-//            
-//            if (q.cur.x > 801)foundError('too big x',801);
-//            //if (q.cur.x < 100) foundError('too small x',100);
-//       
-//            if(q.ahead.graphic.fill == 'orange') { 
-////                if ( (d= q.ahead.cur.x-q.cur.x) >60)
-////                    foundError('oranges separated in currents there is a blank of size', d);
-//////                if( (d= q.ahead.pathList[0].x-q.pathList[0].x) > 60)
-////                    foundErrror(' Oranges separated in destinations  blank of size',d);
-//            }
-//            if (q.cur.y > 101) foundError('y is off',100);
-////            if (q.behind.cur.x > q.cur.x -deltaX)
-////                foundError('behind too close',q.behind.cur.x);
-//        };
-//        q = q.behind;
-//    };
-//    while (q && q.graphic.fill == 'green') {
-//       if ( q.cur.x > 80 ){
-//           if (q.cur.x > 801)foundError('too big x',801);
-//            //if (q.cur.x < 50) foundError('too small x',50);
-//            if (q.cur.y > 101) foundError('y is high ',100);
-////            if( q.ahead  && q.ahead.graphic.fill == 'green'){
-////                kq = q.pathList.length-1;
-////                ka = q.ahead.pathList.length-1;
-////                if ( (d = q.ahead.pathList[ka].x-q.pathList[kq].x) > 60) 
-////                foundError(' Greens separated in destinations ',d);
-////            } 
-//
-////             if (q.behind.cur.x > q.cur.x -deltaX 
-////                && q.behind.graphic.fill == 'green')
-////                    foundError('behind too close',q.behind.cur.x);
-//       }
-//        q = q.behind;
-//    };
-//    function foundError(message, s) {
-//        console.log(' found inconsistency at person ',q.which, q.graphic.fill,'/n (x,y) = (',q.cur.x,q.cur.y,')', message,
-//                    'with value ',s)
-//        
-//        let k = 0;
-//        let p = initialPointer;
-//        while (p){
-//            console.log(p.which,'(x,y)=',p.cur.x,p.cur.y,p.graphic.fill);
-//            p = p.behind;
-//            if (k++ > 30){alert('infinite loop?'); break}
-//        };
-//        
-//        debugger;
-//    };
-//
-//}; 
-
   };  // end class Person
 
+class   StickFigure {
+    constructor (theColor,size){
+        this.theArm1 = new fabric.Rect({
+            originX:"center", originY:"top",left:50, top: 4.5/7*size, 
+            fill: theColor,width:size/12,height:(4/7*size),
+            angle: 30
+            });
+        this.theArm2 = new fabric.Rect({
+            originX:"center", originY:"top",left:50, top: 4.5/7*size,
+            fill: theColor,width:size/12,height:(4/7*size),
+            angle: -30
+            });
+        this.theBody = new fabric.Rect({
+            originX:"center", originY:"top", left: 50, top: 4/7*size,
+            fill: theColor, width:size/10, height: 3/7*size,
+            });
+        this.theHead = new fabric.Circle({
+            originX:"center", originY:"center",left: 50, top: 3/7*size,
+            fill: theColor, radius :size/6
+            });
+        this.theLeg1 = new fabric.Rect({
+            originX:"center", originY:"top",left:50, top: size, 
+            fill: theColor,width:size/10,height:4/7*size,
+            angle: 30,
+            centeredRotation: true});
+        this.theLeg2 = new fabric.Rect({
+            originX:"center", originY:"top",left:50, top: size,
+            fill: theColor,width:size/10,height:4/7*size,
+            angle: -30,
+            centeredRotation: true});
+        this.figure = new fabric.Group([this.theArm1, this.theArm2, this.theBody, this.theHead, this.theLeg1, this.theLeg2])
+        this.cur = {};
+        this.cur.x = 100;
+        this.cur.y = 50;
+        this.deltaMaxX = size*(3/7);
+        
+        this.maxLegAngle = 50;
+        this.maxArmAngle = 40;
+        this.walkDelta = 1;
+    };
+        
+    initialPosition (x,y){
+        this.curLegAngle = 0;
+        this.figure.set('left',x).set('top',y).setCoords();
+    };
+    
+    setColor (aColor){
+        let parts = this.figure.getObjects();
+        for (let i = 0, len = parts.length; i < len; i++) {
+            parts[i].set('fill',aColor);
+        }
+    }
+    
+     moveTo(x){
+        let deltaAngle = Math.abs(x-this.cur.x)/this.deltaMaxX*this.maxLegAngle;
+        this.curLegAngle = (this.curLegAngle + deltaAngle) % this.maxLegAngle;
+        this.theLeg1.set('angle', this.curLegAngle-this.maxLegAngle/2);
+        this.theLeg2.set('angle', -this.theLeg1.get('angle'));
+        this.theArm1.set('angle', this.curLegAngle
+                         * this.maxArmAngle/this.maxLegAngle-this.maxArmAngle/2);
+        this.theArm2.set('angle', -this.theArm1.get('angle')); 
+        this.cur.x = x;
+        this.figure.set('left',this.cur.x).setCoords();
+    };
 
+    updateFigure(){
+        let x = this.figure.get('left');
+        if ( x > rightWall )  this.walkDelta = - 1;
+        if ( x < leftWall ) this.walkDelta = +.5;
+        x += this.walkDelta;
+        this.moveTo(x);  
+    };
+};// end of class StickFigure
+    
 
-     
-
- function initializeAll(){    //exported so index.html can call it
+ function initializeAll(){ 
     Math.seedrandom('this is the Queueing Simulation');
     simu.initialize();   // the generic
     theSimulation.initialize();   // the specific to queueing
@@ -561,9 +518,6 @@ pull () {
     document.getElementById('resetButton').click();   
 };
 document.addEventListener("DOMContentLoaded",initializeAll);
-
-//  
-
  
 
 //   TheChart variable is the interface to create the charts using Chart.js
@@ -680,7 +634,8 @@ export const theChart ={
     initialize: function(){
         this.canvas = document.getElementById('chart')
         this.ctx = this.canvas.getContext('2d'); 
-        this.chart =  new Chart(this.ctx, this.stuff); 
+        this.chart =  new Chart(this.ctx, this.stuff);
+        resizeChart();
         this.reset();
     }, 
     reset: function(){

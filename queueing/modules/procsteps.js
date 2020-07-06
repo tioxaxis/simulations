@@ -6,8 +6,8 @@ export var simu = {
     heap: new Heap ((x,y) => x.time < y.time ),
    
     frametime : 0,        // like 'now' which is simulated time, but rounded to framedelta
-    framedelta : 20,      //simulated time increment per frame
-    framedeltaFor1X : 20,
+    framedelta : 5,      //simulated time increment per frame
+    framedeltaFor1X : 5,
     frameInterval:  20,    //milliseconds between frames
     frameSpeed : 1.0 ,       //framedelta/framedeltaFor1X
     intervalTimer : null,
@@ -60,9 +60,9 @@ function togglePlayPause() {
 
 function play(){ 
         if ( simu.isRunning ) return;
-        if (document.getElementById('editBox')
-            .style.display == 'none' ) return
-        document.getElementById('playButton').style.display = 'none';
+        let elemStyle = document.getElementById('playButton').style;
+        if (elemStyle.display == 'none') return
+        elemStyle.display = 'none';
         document.getElementById('pauseButton').style.display = 'inline';  
         simu.intervalTimer = setInterval(eachFrame, simu.frameInterval );
         simu.isRunning = true;;
@@ -87,8 +87,6 @@ function keyDownFunction (evt) {
 }
 
 function eachFrame () {
- //       simu.checkChangeSimuParams();
-        
         let theTop ;
         while( (theTop = simu.heap.top())  &&
                 theTop.time <= simu.frametime ){
@@ -108,16 +106,8 @@ function eachFrame () {
             console.log('reached limit and cleared Interval',            
                         simu.intervalTimer, simu.now);
         }
-        // Person.check();
         simu.theCanvas.renderAll();
     };
-
-
-
-
-
-
-
 
 
 export class Queue {
@@ -402,4 +392,5 @@ destroy(){
         }   ;
     
 };
-}
+} ;    // end of class SPerson
+
