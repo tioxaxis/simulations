@@ -6,7 +6,7 @@ export const sliders = {
         function captureChangeInSliderG(event){
             let inputElem = event.target.closest('input');
             if (!inputElem) return
-            if( event.isTrusted && presets.editMode ){
+            if( event.isTrusted && presets.editMode && presets.currentLi ){
                 let id = event.target.id;
                 let v = inputElem.value;
                 let t = inputElem.type;
@@ -97,13 +97,6 @@ export const sliders = {
 sliders.initialize();
 
 
-//const inputRangeElems = document.querySelectorAll('input[type="range"]');
-//for ( let i = 0; i < inputRangeElems.length; i++) {
-//     inputRangeElems[i].addEventListener('keydown keyup keypress', 
-// function (event) {
-//        if ( event.key == "ArrowDown"  || event.key == "PageDown" ||
-//            event.key == "ArrowUp"  || event.key == "PageUp" ) 
-//                event.preventDefault();});};
 
 function createOne(params) {
             const liElem = document.createElement("LI");
@@ -214,22 +207,7 @@ export const presets = {
         document.getElementById('exportButton')
             .addEventListener('click',presets.popupExport);
         document.addEventListener('keydown',keyDownFunction);
-//        document.addEventListener('keyup keydown',captureKeyUp,true)
-//        
-//        
-//        function captureKeyUp(evt){
-//            if( evt.key == "ArrowDown"  || evt.key == "PageDown" ){
-//                presets.nextRow();
-//                evt.stopPropagation();
-//                evt.preventDefault();
-//            } else if( evt.key == "ArrowUp"  || evt.key == "PageUp" ){
-//                presets.previousRow();
-//                evt.stopPropagation();
-//                evt.preventDefault();
-//            }
-//            
-//        };
-        
+                
         
         function keyDownFunction (evt) {
             const key = evt.key; 
@@ -244,8 +222,10 @@ export const presets = {
                     else  presets.addTextBox(presets.currentLi.innerHTML);
             } 
             else if( key == "ArrowDown"  || key == "PageDown" ){
+                evt.preventDefault();
                 presets.nextRow();
             } else if( key == "ArrowUp"  || key == "PageUp" ){
+                evt.preventDefault();
                 presets.previousRow();
             }
         }
@@ -283,13 +263,13 @@ export const presets = {
     
     // for adding an new Preset row
    addRow: function() {
-        let desc =''
-        if ( presets.ulPointer.childElementCount > 0 )
-                desc = createCopyName(presets.saveModifiedDesc());
-        if ( presets.currentLi )      
-                presets.currentLi.classList.remove("selected");
+        let desc ='(blank)'
+        if ( presets.currentLi ) {     
+            desc = createCopyName(presets.saveModifiedDesc());
+            presets.currentLi.classList.remove("selected");
+        }
 
-        const li = createOne(presets.currentLi.dataset)
+        const li = createOne(sliders.getSliders());   //presets.currentLi.dataset)
         li.innerHTML = li.dataset.desc = desc;
         li.classList.add("selected");
         presets.ulPointer.append(li);
@@ -305,15 +285,15 @@ export const presets = {
     
     
     nextRow: function() { 
-      if ( document.activeElement.tagName=="BODY"){        
+//      if ( document.activeElement.tagName=="BODY"){        
           presets.changeCurrentLiTo(nextLi());
-      }
+//      }
     },
     
     previousRow: function() {
-        if ( document.activeElement.tagName=="BODY"){                   
+//        if ( document.activeElement.tagName=="BODY"){                   
             presets.changeCurrentLiTo( previousLi());
-        }
+//        }
     },
     
     deleteSelected: function (){
@@ -328,8 +308,8 @@ export const presets = {
         presets.saveModifiedDesc();
         if ( presets.currentLi ) this.currentLi.classList.remove("selected");
         if ( newRow ) {
-            newRow.classList.add("selected");
             sliders.setSlidersFrom(newRow.dataset);
+            newRow.classList.add("selected");
         };
         presets.currentLi = newRow;
     },
@@ -345,10 +325,10 @@ export const presets = {
         let theButton = document.getElementById('pauseButton')
                 if (theButton.style.display != 'none' ) theButton.click();
         
-        // if nothing is selected as we enter edit mode pick first preset;  Also pause.
-        let x = presets.ulPointer.firstElementChild;
-        if ( !presets.currentLi ) presets.changeCurrentLiTo(x);
-        
+        // if nothing is selected as we enter edit mode pick first preset;  
+//        let x = presets.ulPointer.firstElementChild;
+//        if ( !presets.currentLi ) presets.changeCurrentLiTo(x);
+//        
         document.getElementById("addButton").style.display = "block";
         document.getElementById('deleteButton').style.display = 'block';
         document.getElementById('menuBox').style.display = 'block';

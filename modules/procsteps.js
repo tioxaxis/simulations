@@ -60,9 +60,9 @@ function togglePlayPause() {
 
 function play(){ 
         if ( simu.isRunning ) return;
-        let elemStyle = document.getElementById('playButton').style;
-        if (elemStyle.display == 'none') return
-        elemStyle.display = 'none';
+        if (document.getElementById('playButtons')
+            .style.display == 'none') return
+        document.getElementById('playButton').style.display = 'none';
         document.getElementById('pauseButton').style.display = 'inline';  
         simu.intervalTimer = setInterval(eachFrame, simu.frameInterval );
         simu.isRunning = true;;
@@ -85,9 +85,12 @@ function keyDownFunction (evt) {
                 togglePlayPause();
             }
 }
-
+var maxtime = 0;
 function eachFrame () {
-        let theTop ;
+//        let date = new Date() ;
+//        let t = date.getMilliseconds();
+        let theTop;
+        //console.log ('frametime ',simu.frametime);
         while( (theTop = simu.heap.top())  &&
                 theTop.time <= simu.frametime ){
              const event = simu.heap.pull();
@@ -107,6 +110,10 @@ function eachFrame () {
                         simu.intervalTimer, simu.now);
         }
         simu.theCanvas.renderAll();
+//        let ndate = new Date();
+//        let nt = ndate.getMilliseconds();
+//        maxtime = Math.max(maxtime, nt-t);
+//        console.log(' max time ',maxtime);
     };
 
 
