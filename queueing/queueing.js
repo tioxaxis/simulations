@@ -232,15 +232,16 @@ const animForTSA = {
                  top: theStage.scanner.y -35 + k*animForTSA.delta.dy,
                 fill: 'white', stroke: 'blue', strokeWidth: 5,
                 width: 55, height: 150});
-            rect1.lockMovementX = true;
-            rect1.lockMovementY = true;
-            rect1.lockScalingX = true;
-            rect1.lockScalingY = true;
-            rect1.lockRotation = true;
-            rect1.lockScalingFlip = true;
-             rect1.hasBorders = false;
-             rect1.hasControls = false;
-       
+            rect1.selectable = false;
+//             rect1.lockMovementX = true;
+//            rect1.lockMovementY = true;
+//            rect1.lockScalingX = true;
+//            rect1.lockScalingY = true;
+//            rect1.lockRotation = true;
+//            rect1.lockScalingFlip = true;
+//             rect1.hasBorders = false;
+//             rect1.hasControls = false;
+//       
             simu.theCanvas.add(rect1);
             animForTSA.machLoc[k] = {x :locX, y :locY, rect: rect1};
             locX += animForTSA.delta.dx;
@@ -475,14 +476,15 @@ class   StickFigure {
             angle: -30,
             centeredRotation: true});
         this.figure = new fabric.Group([this.theArm1, this.theArm2, this.theBody, this.theHead, this.theLeg1, this.theLeg2])
-        this.figure.lockMovementX = true;
-        this.figure.lockMovementY = true;
-        this.figure.lockScalingX = true;
-        this.figure.lockScalingY = true;
-        this.figure.lockRotation = true;
-        this.figure.lockScalingFlip = true;
-        this.figure.hasBorders = false;
-        this.figure.hasControls = false;
+        this.figure.selectable = false;
+//        this.figure.lockMovementX = true;
+//        this.figure.lockMovementY = true;
+//        this.figure.lockScalingX = true;
+//        this.figure.lockScalingY = true;
+//        this.figure.lockRotation = true;
+//        this.figure.lockScalingFlip = true;
+//        this.figure.hasBorders = false;
+//        this.figure.hasControls = false;
       this.cur = {};
         this.cur.x = 100;
         this.cur.y = 50;
@@ -503,7 +505,7 @@ class   StickFigure {
         for (let i = 0, len = parts.length; i < len; i++) {
             parts[i].set('fill',aColor);
         }
-    }
+    };
     
      moveTo(x){
         let deltaAngle = Math.abs(x-this.cur.x)/this.deltaMaxX*this.maxLegAngle;
