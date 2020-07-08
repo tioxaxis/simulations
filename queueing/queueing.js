@@ -2,12 +2,17 @@
 // declaration of Globals
 
 const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
-import {GammaRV, Heap} from './modules/utility.js';
+import {GammaRV, Heap} from '../modules/utility.js';
 //    from './modules/utility.js';
 import {simu, Queue, WalkAndDestroy, MachineCenter, 
         InfiniteMachineCenter,SPerson,allSPerson}
-    from './modules/procsteps.js' ;
+    from '../modules/procsteps.js' ;
 
+// specific info for queueing needed by general routines
+// in procsteps and rhs.
+simu.nameOfSimulation = 'queueing';    //name for local storage
+simu.sliderTypes = {ar:'range', acv:'range', sr:'range',
+    scv:'range', speed:'range', action:'radio', reset:'checkbox'};
 
 
 class ProcessCollection {
@@ -471,6 +476,10 @@ class   StickFigure {
             fill: theColor,width:size/10,height:4/7*size,
             angle: -30,
             centeredRotation: true});
+        this.badge = new fabric.Text('82',{visible: false,
+             left: 50+1/10*size, top: 4/7*size,
+             fontSize:3/5*size});
+        
         this.figure = new fabric.Group([this.theArm1, this.theArm2, this.theBody, this.theHead, this.theLeg1, this.theLeg2])
         this.figure.selectable = false;
         this.cur = {};
@@ -487,6 +496,13 @@ class   StickFigure {
         this.curLegAngle = 0;
         this.figure.set('left',x).set('top',y).setCoords();
     };
+    
+    badgeDisplay (bool){
+        this.badge.set('visible',bool);
+    }
+    badgeSet(n){
+        this.badge.set('text',n.toString());
+    }
     
     setColor (aColor){
         let parts = this.figure.getObjects();

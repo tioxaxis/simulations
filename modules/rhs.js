@@ -1,6 +1,9 @@
 // two parts:  Sliders are on top of rhs
 // the list of presets are below on the rhs
-export const sliders = {
+import {simu}  from './procsteps.js' ;
+
+var simulationName = 'Tiox-'+simu.nameOfSimulation;
+const sliders = {
     initialize: function(){
         document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderG);
         function captureChangeInSliderG(event){
@@ -35,17 +38,14 @@ export const sliders = {
 
 
 
-    // this is specific to queueing and should be elsewhere
-    tpes : {ar:'range', acv:'range', sr:'range', scv:'range',
-            speed:'range', action:'radio', reset:'checkbox'},
-    
+     
     inputEvent : new Event('input',{bubbles: true}),
     
     setSlidersFrom: function (aPreset){
-        const precision = {ar:1,acv:1,sr:1,scv:1,speed:0};
         let inputBox;  
-        for (let key in sliders.tpes ) {
-            let t = sliders.tpes[key];
+        //console.log(simu.sliderTypes);
+        for (let key in simu.sliderTypes ) {
+            let t = simu.sliderTypes[key];
             inputBox = document.getElementById(key);
             let v = aPreset[key];
             if( t == 'range' ){
@@ -74,9 +74,9 @@ export const sliders = {
     
     getSliders: function () {
         let aPreset = {};
-        for ( let k in sliders.tpes ){
+        for ( let k in simu.slidersTypes ){
             let inputElem = document.getElementById(k);
-            let t = sliders.tpes[k] ;
+            let t = simu.slidersTypes[k] ;
             switch (t) {
                 case 'range':
                     aPreset[k] = inputElem.value
@@ -138,7 +138,7 @@ function neighborLi() {
 
 
 
-export const presets = {
+ const presets = {
         
         currentLi: null,     // poiner to current  LI in the UL in the HTML
         ulPointer: null,     //pointer to the UL in the HTML
@@ -169,7 +169,7 @@ export const presets = {
             presetsString = decodeURI(presetsString.slice(9));
             presetsRows = JSON.parse(presetsString);
         } else {
-            presetsString = localStorage.getItem("TIOX");
+            presetsString = localStorage.getItem(simulationName);
             if (presetsString) {
                 presetsRows = JSON.parse(presetsString);
             } else {
@@ -365,7 +365,7 @@ export const presets = {
         }
         
         sortTheUL(presets.ulPointer);
-        localStorage.setItem("TIOX",createJSON());
+        localStorage.setItem(simulationName,createJSON());
     },
     
     exitEdit: function() {

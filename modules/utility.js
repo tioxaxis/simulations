@@ -13,6 +13,11 @@ export class GammaRV {
         this.rate = rate;
         this.setParams(this.rate,this.CV);
     };
+    
+    setTime(time){
+        this.rate = 1/time;
+        this.setParams(this.rate,this.CV);
+    }
    
     setCV(CV) {
            this.CV = CV;

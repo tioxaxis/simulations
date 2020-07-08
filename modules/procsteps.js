@@ -12,6 +12,7 @@ export var simu = {
     frameSpeed : 1.0 ,       //framedelta/framedeltaFor1X
     intervalTimer : null,
     isRunning: false,
+    nameOfSimulation: null,
     theCanvas : null,
     
     initialize: function(  ) {
@@ -220,7 +221,7 @@ constructor (name, animForWalkAndDestroy, dontOverlap){
     this.name = name;
     this.animForWalkAndDestroy = animForWalkAndDestroy;
     
-    this.walkingTime =this.animForWalkAndDestroy.setWalkingTime();
+    this.walkingTime =this.animForWalkAndDestroy.computeWalkingTime();
     this.dontOverlap = dontOverlap;
     this.lastAdded = null;
     //this.q = [];   
@@ -271,7 +272,7 @@ destroy (person) {
          this.recordStart = recordStart;
          this.recordFinish = recordFinish;
          
-         this.machs = null;
+         this.machs = [];
          // setup machines if finite number with positions offset by dx,dy
          // if infinite number of machines then create them on the fly in same position.
      };
@@ -349,10 +350,11 @@ destroy (person) {
 
 // INFINITE MACHINE CENTER
  export class InfiniteMachineCenter  extends MachineCenter {
-     constructor (name,  procTime, input, output){
+     constructor (name,  procTime, input, output,anim,
+                  recordStart,recordFinish){
          super(name, -1,  procTime,
-                   previousQ, nextQ, 
-                  null, null, null) ;
+                   input, output, 
+                  anim, recordStart,recordFinish) ;
          //create a first machine to avoid a nasty edge case, make the machine idle with noone.
         this.machs.push( {status : 'idle', person : null } );
         this.name = name;
@@ -363,7 +365,7 @@ destroy (person) {
         let m = this.machs.findIndex( x => x.status == 'idle' )
         if (m >= 0) return m;
         else { // infinite number of machines and none is free so create a new one.  
-               this.machs.push( {status: 'idle', person: null, x: this.firstLoc.x, y: this.firstLoc.y});
+               this.machs.push( {status: 'idle', person: null });
                return this.machs.length -1; 
          }
      };

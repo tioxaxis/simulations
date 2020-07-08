@@ -4,26 +4,26 @@
 
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="Res/tiox3.png">
+    <link rel="shortcut icon" href="../Res/tiox3.png">
         
     <!-- my CSS  -->
         <link rel="stylesheet" type="text/css" href="tiox.css">
     
     <!-- software to do the charting  -->
-        <script src="res/chart.js"></script> 
+        <script src="../res/chart.js"></script> 
     
     <!--software for random number generation-->
-       <script src='res/jstat.min.js'></script>  
+       <script src='../res/jstat.min.js'></script>  
     
     <!-- converts Math.random() to be seeded    -->
-        <script src='res/seedrandom.min.js'></script>
+        <script src='../res/seedrandom.min.js'></script>
 
     <!--  package to do canvas animation  -->
-        <script src="res/fabric.js"></script>
+        <script src="../res/fabric.js"></script>
     
      <!--  my JavaScript -->
-    <script type = 'module' src = 'modules/rhs.js'></script>
-    <script type = 'module' src = 'queueing.js'>
+    <script type = 'module' src = '../modules/rhs.js'></script>
+    <script type = 'module' src = './little.js'>
 //      import {initializeAll} from './queueing.js';
 //      document.addEventListener("DOMContentLoaded",
 //                                initializeAll);
@@ -68,7 +68,7 @@
             <p>Arrival Rate = 
             <span id="arDisplay">9.0</span></p>
                 <input id="ar" 
-                   type="range" min="0" max="10" step="0.5" value="5.0" class="slider"  list="arOptions">
+                   type="range" min="0" max="5" step="1" value="1.0" class="slider"  list="arOptions">
             <datalist class="scale1" id="arOptions">
                     <option value="0"> 0</option>
                     <option value="2"> 2</option>
@@ -94,17 +94,16 @@
         </div>
 
         <div class="sliderbox"> 
-            <p>Service Rate = 
-                <span id="srDisplay">9.0</span></p>
+            <p>Service Time = 
+                <span id="srDisplay">5.0</span></p>
             <input id="sr" 
-                   type="range" min="0" max="10" step="0.5" value="6.0" class="slider"  list="srOptions">
+                   type="range" min="0" max="20" step="1" value="5.0" class="slider"  list="srOptions">
             <datalist class="scale1" id="srOptions">
                     <option value="0"> 0</option>
-                    <option value="2"> 2</option>
-                    <option value="4"> 4</option>
-                    <option value="6"> 6</option>
-                    <option value="8"> 8</option>
-                    <option value="10">10</option>
+                    <option value="5"> </option>
+                    <option value="10"> 10</option>
+                    <option value="15"> </option>
+                    <option value="20">20</option>
             </datalist>
         </div>
 
