@@ -6,7 +6,7 @@ export var simu = {
     heap: new Heap ((x,y) => x.time < y.time ),
    
     frametime : 0,        // like 'now' which is simulated time, but rounded to framedelta
-    framedelta : 5,      //simulated time increment per frame
+    framedelta : 5,  //simulated time increment per frame
     framedeltaFor1X : 5,
     frameInterval:  20,    //milliseconds between frames
     frameSpeed : 1.0 ,       //framedelta/framedeltaFor1X
@@ -106,10 +106,10 @@ function eachFrame () {
         simu.moveDisplayAll();
         
         //escape hatch.
-        if (simu.frametime > 1000000 ){pause();
-            console.log('reached limit and cleared Interval',            
-                        simu.intervalTimer, simu.now);
-        }
+//        if (simu.frametime > 1000000 ){pause();
+//            console.log('reached limit and cleared Interval',            
+//                        simu.intervalTimer, simu.now);
+//        }
         simu.theCanvas.renderAll();
 //        let ndate = new Date();
 //        let nt = ndate.getMilliseconds();
@@ -264,6 +264,7 @@ destroy (person) {
                   recordStart = null, recordFinish = null){
          this.name = name;
          this.numMachines = numMachines;
+         this.numberBusy = 0;
          this.procTime = procTime;
          
          this.previousQ = previousQ;
@@ -283,12 +284,16 @@ destroy (person) {
              this.machs[k] = {status : 'idle', person : null, index: k};
          }
         this.anim.reset(this.numMachines);
+        this.numberBusy = 0
     };
     
      getAverageProcTime(){
        return this.procTime.mean;  
      };
-
+     
+     getNumberBusy () {return this.numberBusy};
+         
+     
      findIdle() {
         return  this.machs.findIndex( x => x.status == 'idle' );
      };
@@ -318,12 +323,13 @@ destroy (person) {
              person.machine = machine;
              
              machine.status = 'busy';
+             
              machine.person = person;
 
              simu.heap.push( {time:simu.now+theProcTime, 
                 proc: this.finish.bind(this), item: machine});
              if (this.recordStart) this.recordStart(person);
-             
+             this.numberBusy++;
              //remove 'person' from doubly linked list
              if (person.behind) person.behind.ahead = null;
              person.behind = null;
@@ -344,6 +350,7 @@ destroy (person) {
          else {
              machine.status = 'blocked';
          }
+        this.numberBusy--;
      };   
 
 };  //end class MachineCenter

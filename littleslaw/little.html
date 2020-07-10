@@ -66,16 +66,16 @@
 
         <div class="sliderbox"> 
             <p>Arrival Rate = 
-            <span id="arDisplay">9.0</span></p>
+            <span id="arDisplay">1.0</span></p>
                 <input id="ar" 
-                   type="range" min="0" max="5" step="1" value="1.0" class="slider"  list="arOptions">
+                   type="range" min="1" max="6" step="1" value="1.0" class="slider"  list="arOptions">
             <datalist class="scale1" id="arOptions">
-                    <option value="0"> 0</option>
+                    <option value="1"> 1</option>
                     <option value="2"> 2</option>
+                    <option value="3"> 3</option>
                     <option value="4"> 4</option>
-                    <option value="6"> 6</option>
-                    <option value="8"> 8</option>
-                    <option value="10">10</option>
+                    <option value="5"> 5</option>
+                    <option value="6"> 6</option>
             </datalist>
         </div>
 
@@ -95,15 +95,15 @@
 
         <div class="sliderbox"> 
             <p>Service Time = 
-                <span id="srDisplay">5.0</span></p>
+                <span id="srDisplay">5</span></p>
             <input id="sr" 
-                   type="range" min="0" max="20" step="1" value="5.0" class="slider"  list="srOptions">
+                   type="range" min="5" max="25" step="5" value="5" class="slider"  list="srOptions">
             <datalist class="scale1" id="srOptions">
-                    <option value="0"> 0</option>
-                    <option value="5"> </option>
-                    <option value="10"> 10</option>
-                    <option value="15"> </option>
-                    <option value="20">20</option>
+                    <option value="5"> 5</option>
+                    <option value="10"> </option>
+                    <option value="15"> 15</option>
+                    <option value="20"> </option>
+                    <option value="25">25</option>
             </datalist>
         </div>
 
@@ -155,7 +155,7 @@
             <p>Speed = 
                 <span id="speedDisplay">1</span>x</p>
             <input id="speed" 
-                   type="range" min="0" max="4" step="1" value="1" class="slider"  list="speedOptions">
+                   type="range" min="0" max="4" step="1" value="0" class="slider"  list="speedOptions">
             <datalist class="scale1" id="speedOptions">
                     <option value="0">slow</option>
                     <option value="1"> </option>

@@ -8,6 +8,43 @@ import {simu, Queue, WalkAndDestroy, MachineCenter,
         InfiniteMachineCenter,SPerson,allSPerson}
     from '../modules/procsteps.js' ;
 
+const theStage = {
+    normalSpeed : .020,    //.25 pixels per millisecond
+    width: 1000,
+    height: 300,
+    
+    person: {width: 40, height: 60}   
+};
+{
+    
+    
+    theStage.headQueue = {x: 150, y: theStage.pathY};
+    theStage.box = {width:700,
+                    height: 250,
+                    fill: 'white', 
+                    stroke: 'blue', 
+                    strokeWidth: 3};
+    theStage.box.top = (theStage.height - theStage.box.height)/2;
+    theStage.box.left = (theStage.width - theStage.box.width)/2;
+    theStage.box.entryX = theStage.box.left;
+    theStage.box.entryY = 
+        (theStage.box.height - theStage.person.height)/2 + theStage.box.top;
+    theStage.box.exitX = theStage.box.entryX + theStage.box.width;
+    theStage.box.exitY = theStage.box.entryY;
+    theStage.pathY = theStage.box.entryY;
+    theStage.headQueue = { x: theStage.box.entryX, 
+                           y: theStage.box.entryY};
+    theStage.pathway = {left: 0, top: theStage.box.entryY,
+                fill: 'white', stroke: 'green', strokeWidth: 0,
+                width: theStage.width, height: theStage.person.height};
+    
+    theStage.offStageLeft = {x: -100, y: theStage.pathY};
+    theStage.offStageRight = {x: theStage.width+100, y: theStage.pathY};
+};
+
+
+simu.framedelta = 200;
+simu.framedeltaFor1X = 200;
 simu.nameOfSimulation = 'littleslaw'    //name for local storage
 simu.sliderTypes = {ar:'range', acv:'range', sr:'range',
     scv:'range', speed:'range', action:'radio', reset:'checkbox'},
@@ -31,23 +68,14 @@ class ProcessCollection {
 //var qLenDisplay= null;
 
  function resetBackground(){
-        let theFabricCanvas = simu.theCanvas;
-        theFabricCanvas.clear();
-     const rect1 = new fabric.Rect( {left: 150, top: 10,
-                fill: 'white', stroke: 'blue', strokeWidth: 3,
-                width: 700, height: 275});
-     const pathway = new fabric.Rect({left: 0, top: 115,
-                fill: 'white', stroke: 'green', strokeWidth: 0,
-                width: 1000, height: 70});
-     theFabricCanvas.add(rect1);
-     theFabricCanvas.add(pathway);
-////        qLenDisplay = new fabric.Text( 'Queue Length = 0', 
-//            { fontSize: 20, visible: false, 
-//             left: 100, top: 250 });
-//        theFabricCanvas.add(qLenDisplay); 
-//        
-        // put other things that are fixed and not people on stage.
-    };
+    const c = simu.theCanvas;
+    c.clear();
+     let box = theStage.box;
+     
+    c.add( new fabric.Rect( box ) );
+    c.add( new fabric.Rect( theStage.pathway ) );
+     c.renderAll();
+};
 
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
 const speeds = [1,2,5,10,25];
@@ -74,8 +102,7 @@ function captureChangeInSliderS(event){
         break;        
 
     case 'sr':  
-        theSimulation.serviceRV
-            .setTime(v/tioxTimeConv);
+        theSimulation.serviceRV.setTime(v*tioxTimeConv);
         break;
             
     case 'scv':  
@@ -99,12 +126,15 @@ function captureChangeInSliderS(event){
 }
 
 
-
+var totInv, totTime, totPeople, lastArrDep;
 simu.reset2 = function(){
     resetBackground();
     Person.reset();
     theChart.reset();     
     theProcessCollection.reset();
+    totInv = totTime = totPeople = lastArrDep = 0;
+    
+    
         
     // schedule the initial Person to arrive and start the simulation/animation.
     theSimulation.supply.previous = null;
@@ -123,24 +153,6 @@ simu.moveDisplayAll = function(){
 } 
     
 
-const theStage = {
-    normalSpeed : .25,    //.25 pixels per millisecond
-    width: 1000,
-    height: 300,
-    pathY: 125,
-    person: {dx: 40, dy: 60}   
-};
-{
-    theStage.offStageLeft = {x: -100, y: theStage.pathY};
-    theStage.offStageRight = {x: theStage.width+100, y: theStage.pathY};
-    
-    theStage.headQueue = {x: 150, y: theStage.pathY};
-//    theStage.queueDelta = {dx: theStage.person.dx, dy: 0};
-    theStage.boxExit = {x: 850, y: theStage.pathY};
-//    theStage.pastScanner = {x: theStage.width*0.75+theStage.person.dx,
-//                           y: theStage.pathY};
-//    theStage.scannerDelta = {dx: 0, dy: theStage.person.dy};
-};
 
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
@@ -148,49 +160,21 @@ const theStage = {
 
 const animForQueue = {
     loc : theStage.headQueue,
-//    delta : theStage.queueDelta,
-//    dontOverlap: true,
     walkingTime: (theStage.headQueue.x-theStage.offStageLeft.x)/theStage.normalSpeed,
 
     reset : function (){  
     },
 
     join: function ( nInQueue, arrivalTime, person ) {
-//        if ( person.isThereOverlap() ){
-//            person.cur.y = person.ahead.cur.y - 10;
-//        }
-        person.pathList[0] = {t: arrivalTime, 
+        person.addPath( {t: arrivalTime, 
                          x: animForQueue.loc.x,
-                         y: animForQueue.loc.y };
-  //     person.setColor( "green");  
+                         y: animForQueue.loc.y } );
     },
 
     arrive: function (nSeatsUsed, person) {
-  //      person.setColor( "orange");
-//        if ( nSeatsUsed > 10 ) qLenDisplay.set('text',
-//                    'Queue Length = ' + nSeatsUsed).set('visible',true);
     },
 
     leave: function (procTime, nSeatsUsed) {
-//        if ( nSeatsUsed > 5 )                
-//            qLenDisplay.set('text', 'Queue Length = ' + nSeatsUsed);
-//        else qLenDisplay.set('visible',false);
-        
-        
-        // is any of this needed??
-        for (let k = 0; k < theSimulation.queue.q.length; k++){
-            let time;
-            let p = theSimulation.queue.q[k];
-            let dest = p.pathList[0];
-
-            if ( k < theSimulation.queue.numSeatsUsed) 
-                     dest.t = simu.now +
-                         Math.min(animForQueue.delta.dx/theStage.normalSpeed,procTime); 
-                         
-             dest.x += animForQueue.delta.dx;
-             dest.y += animForQueue.delta.dy;
-             p.computeCountDelta(p.pathList[0]);
-        }
     }
 };
 
@@ -198,19 +182,15 @@ const animForWalkOffStage = {
     loc: theStage.offStageRight,
     walkingTime: null,
 
-
     computeWalkingTime: function (){
-         return Math.abs(theStage.boxExit.x - this.loc.x)/theStage.normalSpeed;
+         this.walkingTime = Math.abs(theStage.box.exitX - this.loc.x)/theStage.normalSpeed;
+        return this.walkingTime;
     },
 
     start: function (person){
-//         if ( person.isThereOverlap() ){
-//            person.cur.y = person.ahead.cur.y - 10;
-//         }
-//            person.pathList[3] = {t: simu.now+60/theStage.normalSpeed, x: 890, y: 100 };
-            person.pathList[0] = {t: simu.now+this.walkingTime,
-                          x: this.loc.x, y: this.loc.y }
-  //          person.setColor(  "black");  
+        person.addPath( {t: simu.now + 
+                theSimulation.walkOffStage.walkingTime,
+                x: this.loc.x, y: this.loc.y } );
     }
 };
 
@@ -224,7 +204,6 @@ const animForWalkOffStage = {
     start: function (theProcTime,person,m)  {  // only 1 machine for creator m=1
        person.setDestWithProcTime(theProcTime,
             animForCreator.loc.x,animForCreator.loc.y);
- //       person.setColor("red");
     },
      
      finish: function () {},
@@ -232,44 +211,37 @@ const animForWalkOffStage = {
 };
         
 const animForLittlesBox = {
-//    firstLoc : theStage.scanner,
-//    delta : theStage.scannerDelta,
-//    dontOverlap: true,
-//
-//    machLoc: null,
     lastFinPerson: null,
     
-    reset:function (  ) { let x =9;
-//         animForTSA.machLoc = [];
-//         let locX = animForTSA.firstLoc.x;
-//         let locY = animForTSA.firstLoc.y;
-//         for( let k = 0; k< numMachines; k++ ){
-//            const rect1 = new fabric.Rect(
-//                {left: theStage.scanner.x , 
-//                 top: theStage.scanner.y -35 + k*animForTSA.delta.dy,
-//                fill: 'white', stroke: 'blue', strokeWidth: 5,
-//                width: 55, height: 150});
-//            rect1.selectable = false;
-//            simu.theCanvas.add(rect1);
-//            animForTSA.machLoc[k] = {x :locX, y :locY, rect: rect1};
-//            locX += animForTSA.delta.dx;
-//            locY += animForTSA.delta.dy;
-//        }    
+    reset:function (  ) {
     },
+    
     start: function (theProcTime, person, m){
-        /// fix this.  ////
-        person.pathList[0] ={ t: simu.now + theProcTime,
-                x: theStage.boxExit.x, y: theStage.boxExit.y};
- //       person.setColor("purple");
+        let walkT = 100000;
+        if ( theProcTime < walkT/2 ){
+            person.addPath( {t: simu.now + theProcTime,
+                    x: theStage.box.exitX, 
+                    y: theStage.box.exitY} );
+        } else { 
+            walkT = Math.min( walkT, theProcTime);
+            let rx = Math.random() * .5 * 0.8 * theStage.box.width+
+                theStage.box.width * 0.1;
+            let ry = Math.random() * (theStage.box.height - 
+                theStage.person.height) + theStage.box.top;
+            let w = theStage.box.width;
+            person.addPath( {t: simu.now + walkT * rx/w,
+                    x: rx + theStage.box.entryX, 
+                    y: ry} );
+            person.addPath( 
+                {t: simu.now +  walkT * rx/w + theProcTime - walkT,
+                    x: rx + theStage.box.entryX, 
+                    y: ry} );
+            person.addPath( {t: simu.now + theProcTime,
+                    x: theStage.box.exitX, 
+                    y: theStage.box.exitY} );   
+        }
         person.graphic.badgeDisplay(true);
         person.arrivalTime = simu.now;
-//        if (animForLittlesBox.lastFinPerson){
-//            let path = animForLittlesBox.lastFinPerson.pathList[0];
-//            if (path.t > simu.now){
-//                    animForLittlesBox.lastFinPerson.setTime( 
-//                        Math.min(path.t, simu.now+theProcTime));
-//            }
-//        }    
     },
     
     finish: function(person){
@@ -336,10 +308,26 @@ var theProcessCollection = new ProcessCollection();
               animForLittlesBox,LBRecordStart,LBRecordFinish);
         
         function LBRecordStart (person){
-            console.log('LB record start',simu.now,person);
+            
+            person.arrivalTime = simu.now;
+            totInv += (simu.now - lastArrDep) * 
+                ( theSimulation.LittlesBox.getNumberBusy());
+            lastArrDep = simu.now;
+            console.log(' LB start', person);
+            //console.log('LB record start',simu.now,person);
+            
         };
         function LBRecordFinish (person){
-            console.log('LB record start',simu.now,person);
+            totInv += (simu.now - lastArrDep) * 
+                ( theSimulation.LittlesBox.getNumberBusy());
+            lastArrDep = simu.now;
+            totPeople++;
+            console.log(' at LB finish', simu.now,person.arrivalTime,person.which);
+            totTime += simu.now - person.arrivalTime;
+            
+            theChart.push(simu.now, totInv/simu.now, totTime/simu.now );
+            
+            //console.log('LB record start',simu.now,person);
         };
         
          
@@ -368,31 +356,33 @@ class Supplier {
                       'purple','green-yellow','magenta',
                       'brown','gray','coral']
          let n = Math.floor(Math.random()*colors.length );
-        this.previous = new Person(this.previous, this.x, this.y); 
+        this.previous = new Person(this.previous, this.x, this.y,
+                                  30, theStage.person.height); 
         this.previous.setColor(colors[n]);
         return this.previous;
      }
 };   //end class Supplier
 
 
- export class Person extends SPerson {
+
+export class Person extends SPerson {
     static updateForSpeed(){
-        allSPerson.forEach(p => p.computeCountDelta( p.pathList[0] ));
+        allSPerson.forEach(p => p.updateAllPaths());
     };
     
     static reset(){
         super.reset();
     };
 
-    constructor (ahead, x,y= 125,w = 30,h = 30) {
+    //  **** how do we start a person   with empty PathList!
+    constructor (ahead, x,y= 60,w = 30,h = 30) {
         super(ahead);
         this.cur = {t: simu.now, x: x, y: y};
         this.width = w;
         this.pathList = [];
-        this.pathList[0]= {t: -1, x: -100, y: 100};
         
         
-        this.graphic = new StickFigure('blue', 60);
+        this.graphic = new StickFigure('blue', h);
         this.graphic.initialPosition(-100,100);
 //        new fabric.Rect({top: 100,left:-50, width: w, height: h , fill: "blue" })
         this.updateBadge = true;
@@ -409,42 +399,66 @@ class Supplier {
     
      moveDisplayWithPath (dontOverlap){
         if (this.updateBadge){ 
-            this.graphic.badgeSet(Math.floor((simu.now-this.arrivalTime)/1000).toString()) 
+            this.graphic.badgeSet(Math.round((simu.now-this.arrivalTime)/10000).toString()) 
         }
+         
+         if (this.pathList.length == 0) return;
          let path = this.pathList[0];
-         if (path.deltaX == null) this.computeCountDelta(path);  //first time only 
-         else {
-             if (path.count <= 0){
-                 this.cur.x = path.x;
-                 path.t = simu.frametime;
-             } else {
-                 this.cur.x += path.deltaX;
-                 this.cur.y += path.deltaY;
-                 path.count--;
-             };
-                
-            if( this.cur.x > 2000 || this.cur.y > 500){
-                alert(' found person with too large coord');
-                console.log(this);
-                debugger;
-            };
+         if (path.count <= 0){
+             this.cur.x = path.x;
+             this.cur.y = path.y;
+             this.pathList.splice(0,1);
+         } else {
+             this.cur.x += path.deltaX;
+             this.cur.y += path.deltaY;
+             path.count--;
          };
-         this.graphic.moveTo(this.cur.x);    
+
+        if( this.cur.x > 2000 || this.cur.y > 500){
+            alert(' found person with too large coord');
+            console.log(this);
+            debugger;
+        };
+         this.graphic.moveTo(this.cur.x,this.cur.y);    
      };
     
-    setTime(time){
-        this.pathList[0].t = time;
-        this.computeCountDelta(this.pathList[0]);  
-    };
+//    setTime(time){
+//        this.pathList[0].t = time;
+//        this.computeCountDelta(this.pathList[0]);  
+//    };
+//    
+     updateAllPaths(){
+         let oldList = this.pathList;
+         this.pathList = [];
+         for ( let triple of oldList ){
+             this.addPath( triple );
+         }
+     };
     
-     computeCountDelta(path){
+    
+    
+    
+    addPath(triple){
+         this.pathList.push(triple);
+         const n = this.pathList.length;
+         let last = {};
+        if (n == 1 ) {
+            last = {t: simu.now, x: this.cur.x, y: this.cur.y };
+        } else {
+            last = this.pathList[n-2];
+        }
          
-         let previousFrameTime = Math.floor(simu.now / simu.framedelta)
-         * simu.framedelta;
-         path.count = Math.floor((path.t - previousFrameTime)/simu.framedelta);
-         
-        path.deltaX = ( path.x - this.cur.x ) / path.count;
-         path.deltaY = ( path.y - this.cur.y ) / path.count;
+         let previousFrameTime = Math.floor(last.t / simu.framedelta)
+                                        * simu.framedelta;
+         let path = this.pathList[n-1];
+         path.count = Math.floor((path.t - previousFrameTime) /                                     simu.framedelta);
+         if ( path.count == 0 ){
+             path.deltaX = 0;
+             path.deltaY = 0;
+         } else {
+            path.deltaX = ( path.x - last.x ) / path.count;
+            path.deltaY = ( path.y - last.y ) / path.count;
+         }
      };
     
     isThereOverlap() {
@@ -464,57 +478,56 @@ class Supplier {
          let distance = Math.max(Math.abs(this.cur.x-x),
                                  Math.abs(this.cur.y-y));  
          let deltaTime = Math.min(distance/theStage.normalSpeed,procTime);
-         this.pathList[0] = {t:simu.now +deltaTime, x:x, y:y};
-         this.computeCountDelta(this.pathList[0]);
+         this.addPath({t:simu.now +deltaTime, x:x, y:y});
      };
 
   };  // end class Person
 
 class   StickFigure {
     constructor (theColor,size){
-        this.theArm1 = new fabric.Rect({
-            originX:"center", originY:"top",left:50, top: 4.5/7*size, 
-            fill: theColor,width:size/12,height:(4/7*size),
-            angle: 30
-            });
-        this.theArm2 = new fabric.Rect({
-            originX:"center", originY:"top",left:50, top: 4.5/7*size,
-            fill: theColor,width:size/12,height:(4/7*size),
-            angle: -30
-            });
-        this.theBody = new fabric.Rect({
-            originX:"center", originY:"top", left: 50, top: 4/7*size,
-            fill: theColor, width:size/10, height: 3/7*size,
-            });
         this.theHead = new fabric.Circle({
-            originX:"center", originY:"center",left: 50, top: 3/7*size,
-            fill: theColor, radius :size/6
+            originX:"center", originY:"top",left: 0, top: 0,
+            fill: theColor, radius :size/8
             });
         this.theLeg1 = new fabric.Rect({
-            originX:"center", originY:"top",left:50, top: size, 
-            fill: theColor,width:size/10,height:4/7*size,
-            angle: 30,
+            originX:"center", originY:"top",left:0, top: 5/9*size, 
+            fill: theColor,width:size/12,height: size*4/9,
+            angle: 30, strokeWidth: 1, stroke: 'black', 
             centeredRotation: true});
-        this.theLeg2 = new fabric.Rect({
-            originX:"center", originY:"top",left:50, top: size,
-            fill: theColor,width:size/10,height:4/7*size,
-            angle: -30,
-            centeredRotation: true});
-        this.badge = new fabric.Text('82',{visible: false,
-             left: 50+1/10*size, top: 4/7*size,
-             fontSize:3/5*size});
+        this.theArm2 = new fabric.Rect({
+            originX:"center", originY:"top",left:0, top: .25*size,
+            fill: theColor,width:size/16,height:(size*4/9),
+            angle: -30, strokeWidth: 1, stroke: 'black',
+            });
+        this.theBody = new fabric.Rect({
+            originX:"center", originY:"top", left: 0, top: .22*size,
+            fill: theColor, width:size/10, height: size*3/9,
+            });
         
-        this.figure = new fabric.Group([this.theArm1, this.theArm2, this.theBody, this.theHead, this.theLeg1, this.theLeg2,
-                                       this.badge])
+        this.theLeg2 = new fabric.Rect({
+            originX:"center", originY:"top",left:0, top: 5/9*size,
+            fill: theColor,width:size/12,height: size*4/9,
+            angle: -30, strokeWidth: 1, stroke: 'black', 
+            centeredRotation: true});
+        this.theArm1 = new fabric.Rect({
+            originX:"center", originY:"top",left:0, top: .25*size, 
+            fill: theColor,width:size/16,height:(size*4/9),
+            angle: 30, strokeWidth: 1, stroke: 'black'
+            });
+        this.badge = new fabric.Text('82',{visible: false,
+             left: 1/10*size, top: size/5,
+             fontSize:2/5*size});
+        
+         this.figure = new fabric.Group([this.theArm1, this.theLeg1,  this.theBody, this.theHead, this.theLeg2, this.theArm2, this.badge]);
         this.figure.selectable = false;
         this.cur = {};
         this.cur.x = 100;
         this.cur.y = 50;
         this.deltaMaxX = size*(3/7);
         
-        this.maxLegAngle = 50;
-        this.maxArmAngle = 40;
-        this.walkDelta = 1;
+     this.maxLegAngle = 100;
+        this.maxArmAngle = 80;
+        this.ratio = this.maxArmAngle/this.maxLegAngle;      this.walkDelta = 1;
     };
         
     initialPosition (x,y){
@@ -536,16 +549,17 @@ class   StickFigure {
         }
     };
     
-     moveTo(x){
-        let deltaAngle = Math.abs(x-this.cur.x)/this.deltaMaxX*this.maxLegAngle;
+     moveTo(x,y){
+        let deltaAngle = Math.abs(x-this.cur.x)/this.deltaMaxX*this.maxLegAngle/2;
         this.curLegAngle = (this.curLegAngle + deltaAngle) % this.maxLegAngle;
-        this.theLeg1.set('angle', this.curLegAngle-this.maxLegAngle/2);
-        this.theLeg2.set('angle', -this.theLeg1.get('angle'));
-        this.theArm1.set('angle', this.curLegAngle
-                         * this.maxArmAngle/this.maxLegAngle-this.maxArmAngle/2);
-        this.theArm2.set('angle', -this.theArm1.get('angle')); 
+         let adjLegAngle = Math.abs(this.curLegAngle - this.maxLegAngle/2)-this.maxLegAngle/4;
+        this.theLeg1.set('angle', adjLegAngle);
+        this.theLeg2.set('angle', -adjLegAngle);
+        this.theArm2.set('angle', adjLegAngle * this.ratio);
+        this.theArm1.set('angle', -this.theArm2.get('angle'));
         this.cur.x = x;
-        this.figure.set('left',this.cur.x).setCoords();
+        this.cur.y = y;
+        this.figure.set('left',this.cur.x).set('top',this.cur.y).setCoords();
     };
 
     updateFigure(){
@@ -579,7 +593,7 @@ export const theChart ={
         data: {
        	    datasets: [
                 {  //*** Series #1
-                label: 'individual wait',
+                label: 'avg. inventory',
                 pointBackgroundColor: 'rgba(0,0,220,1)',
                 pointBorderColor: 'rgba(0,0,220,1)',
                 showLine: true,
@@ -592,7 +606,7 @@ export const theChart ={
                 data: []
                 },
                 {   //*** Series #2
-                label: 'average wait',
+                label: 'avg. rate * avg. time',
                 pointBackgroundColor: 'rgba(0,150,0,1)',
                 pointBorderColor: 'rgba(0,150,0,1)',
                 showLine: true,
@@ -605,7 +619,7 @@ export const theChart ={
                 data: [],
                 },
                 {   //*** Series #3
-                label: 'predicted wait',
+                label: 'predicted inventory',
                 pointBackgroundColor: 'rgb(185, 26, 26)',
                 pointBorderColor: 'rgba(185, 26, 26)',
                 showLine: true,
@@ -646,7 +660,7 @@ export const theChart ={
             title:{
                display: true,
                 position: 'top',
-                text: 'Waiting Time',
+                text: 'Inventory',
                 //fontSize: 20,
             },   
             scales: {
@@ -671,8 +685,8 @@ export const theChart ={
             },
     total: null,
     count: null,
-    graphInitialTimeWidth: 2,
-    graphInitialTimeShift: 2,
+    graphInitialTimeWidth: 100,
+    graphInitialTimeShift: 100,
     graphTimeWidth: null,
     graphTimeShift: null,
     graphMin: null,
@@ -698,6 +712,7 @@ export const theChart ={
         this.graphMin = 0;
         this.graphMax = this.graphInitialTimeWidth;
         this.chart.options.scales.yAxes[0].ticks.min = 0;
+        //this.yAxisScale = this.aVAxis.update(predictedInv()*2);
         this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
         this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
         this.continue();
@@ -710,48 +725,42 @@ export const theChart ={
         this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
         this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
         this.chart.options.scales.xAxes[0].ticks.stepSize = this.graphTimeWidth - this.graphTimeShift;
-        var points = Math.max(1,Math.floor( (11-this.graphScale)/2));
-        this.chart.data.datasets[0].pointRadius = points;
+        var points = Math.max(1,Math.floor( (11-this.graphScale)/4));
+        this.chart.data.datasets[0].pointRadius = 0;
         this.chart.data.datasets[0].borderWidth = points;
-        this.chart.data.datasets[1].pointRadius = points;
+        this.chart.data.datasets[1].pointRadius = 0;
         this.chart.data.datasets[1].borderWidth = points;
         this.chart.data.datasets[2].borderWidth = points;
         this.chart.update();
     },
-    push: function (t,w){ 
+    push: function (t,inv,rt){
+        
         t /= 10000;
-        w /= 10000;
-        this.total += w;
-        this.count++;
+        
         if (t > this.graphMax) {
             this.graphMin += this.graphTimeShift;
             this.graphMax += this.graphTimeShift;
             this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
             this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
             }
-        const pW = predictedWait();
-        if ( w > this.yAxisScale.max  || ( pW  && pW > this.yAxisScale.max ) ){
-            this.yAxisScale = this.aVAxis.update(w);
-            if ( pW ) this.yAxisScale = this.aVAxis.update(pW);
+        const pI = predictedInv();
+        console.log( 'at chart ',t,inv,rt,pI);
+        if ( inv > this.yAxisScale.max  || ( pI  && pI > this.yAxisScale.max ) ){
+            this.yAxisScale = this.aVAxis.update(inv);
+            this.yAxisScale = this.aVAxis.update(pI*2);
             this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
             this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
         }
-        this.chart.data.datasets[0].data.push({x:t,y:w});
-        this.chart.data.datasets[1].data.push({x:t,y:this.total/this.count});
-        if (pW) this.chart.data.datasets[2].data.push({x:t,y:pW});
+        this.chart.data.datasets[0].data.push({x:t,y:inv});
+        this.chart.data.datasets[1].data.push({x:t,y:rt});
+        if (pI) this.chart.data.datasets[2].data.push({x:t,y:pI});
         this.chart.update();
         // update graph with time, this.total/this.waits.length
     } 
 }
 
 function predictedInv(){
-//    if (theSimulation.serviceRV.rate == 0 ) return null;
-//    let rho = theSimulation.interarrivalRV.rate/theSimulation.serviceRV.rate;
-//    if (rho >= 1) return null;
-//    let p = ( rho / (1-rho) / theSimulation.serviceRV.rate/10000 )*
-//        (theSimulation.interarrivalRV.CV**2 + theSimulation.serviceRV.CV**2)/2;
-////    console.log(' predicted wait / 10000 ', p/10000);
-//    return p;
+    return (theSimulation.serviceRV.mean/tioxTimeConv)/(theSimulation.interarrivalRV.mean/tioxTimeConv);
 }
 
 class VerticalAxisValue {

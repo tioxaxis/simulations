@@ -8,11 +8,33 @@ import {simu, Queue, WalkAndDestroy, MachineCenter,
         InfiniteMachineCenter,SPerson,allSPerson}
     from '../modules/procsteps.js' ;
 
+const theStage = {
+    normalSpeed : .25,    //.25 pixels per millisecond
+    width: 1000,
+    height: 300,
+    pathY: 100,
+    person: {dx: 40, dy: 60}   
+};
+{
+    theStage.offStageLeft = {x: -100, y: theStage.pathY};
+    theStage.offStageRight = {x: theStage.width*1.1, y: theStage.pathY};
+    
+    theStage.headQueue = {x: theStage.width*0.70, y: theStage.pathY};
+    theStage.queueDelta = {dx: theStage.person.dx, dy: 0};
+    theStage.scanner = {x: theStage.width*0.75, y: theStage.pathY};
+    theStage.pastScanner = {x: theStage.width*0.75+theStage.person.dx,
+                           y: theStage.pathY};
+    theStage.scannerDelta = {dx: 0, dy: theStage.person.dy};
+};
+
+
 // specific info for queueing needed by general routines
 // in procsteps and rhs.
 simu.nameOfSimulation = 'queueing';    //name for local storage
 simu.sliderTypes = {ar:'range', acv:'range', sr:'range',
     scv:'range', speed:'range', action:'radio', reset:'checkbox'};
+simu.framedelta = 5;
+simu.framedeltaFor1X = 5;
 
 
 class ProcessCollection {
@@ -117,24 +139,6 @@ simu.moveDisplayAll = function(){
 } 
     
 
-const theStage = {
-    normalSpeed : .25,    //.25 pixels per millisecond
-    width: 1000,
-    height: 300,
-    pathY: 100,
-    person: {dx: 40, dy: 60}   
-};
-{
-    theStage.offStageLeft = {x: -100, y: theStage.pathY};
-    theStage.offStageRight = {x: theStage.width*1.1, y: theStage.pathY};
-    
-    theStage.headQueue = {x: theStage.width*0.70, y: theStage.pathY};
-    theStage.queueDelta = {dx: theStage.person.dx, dy: 0};
-    theStage.scanner = {x: theStage.width*0.75, y: theStage.pathY};
-    theStage.pastScanner = {x: theStage.width*0.75+theStage.person.dx,
-                           y: theStage.pathY};
-    theStage.scannerDelta = {dx: 0, dy: theStage.person.dy};
-};
 
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
@@ -191,9 +195,9 @@ const animForWalkOffStage = {
     loc: theStage.offStageRight,
     walkingTime: null,
 
-    setWalkingTime: function (){
-         this.walkingTime = Math.abs(theStage.scanner.x - this.loc.x)/theStage.normalSpeed;
-        return this.walkingTime;
+    computeWalkingTime: function (){
+         this.walkingTime =  Math.abs(theStage.scanner.x - this.loc.x)/theStage.normalSpeed;
+        return this.walkingTime
     },
 
     start: function (person){
@@ -448,47 +452,49 @@ class Supplier {
 
 class   StickFigure {
     constructor (theColor,size){
-        this.theArm1 = new fabric.Rect({
-            originX:"center", originY:"top",left:50, top: 4.5/7*size, 
-            fill: theColor,width:size/12,height:(4/7*size),
-            angle: 30
-            });
-        this.theArm2 = new fabric.Rect({
-            originX:"center", originY:"top",left:50, top: 4.5/7*size,
-            fill: theColor,width:size/12,height:(4/7*size),
-            angle: -30
-            });
-        this.theBody = new fabric.Rect({
-            originX:"center", originY:"top", left: 50, top: 4/7*size,
-            fill: theColor, width:size/10, height: 3/7*size,
-            });
         this.theHead = new fabric.Circle({
-            originX:"center", originY:"center",left: 50, top: 3/7*size,
-            fill: theColor, radius :size/6
+            originX:"center", originY:"top",left: 0, top: 0,
+            fill: theColor, radius :size/8
             });
         this.theLeg1 = new fabric.Rect({
-            originX:"center", originY:"top",left:50, top: size, 
-            fill: theColor,width:size/10,height:4/7*size,
-            angle: 30,
+            originX:"center", originY:"top",left:0, top: 5/9*size, 
+            fill: theColor,width:size/12,height: size*4/9,
+            angle: 30, strokeWidth: 1, stroke: 'black', 
             centeredRotation: true});
-        this.theLeg2 = new fabric.Rect({
-            originX:"center", originY:"top",left:50, top: size,
-            fill: theColor,width:size/10,height:4/7*size,
-            angle: -30,
-            centeredRotation: true});
-        this.badge = new fabric.Text('82',{visible: false,
-             left: 50+1/10*size, top: 4/7*size,
-             fontSize:3/5*size});
+        this.theArm2 = new fabric.Rect({
+            originX:"center", originY:"top",left:0, top: .25*size,
+            fill: theColor,width:size/16,height:(size*4/9),
+            angle: -30, strokeWidth: 1, stroke: 'black',
+            });
+        this.theBody = new fabric.Rect({
+            originX:"center", originY:"top", left: 0, top: .22*size,
+            fill: theColor, width:size/10, height: size*3/9,
+            });
         
-        this.figure = new fabric.Group([this.theArm1, this.theArm2, this.theBody, this.theHead, this.theLeg1, this.theLeg2])
+        this.theLeg2 = new fabric.Rect({
+            originX:"center", originY:"top",left:0, top: 5/9*size,
+            fill: theColor,width:size/12,height: size*4/9,
+            angle: -30, strokeWidth: 1, stroke: 'black', 
+            centeredRotation: true});
+        this.theArm1 = new fabric.Rect({
+            originX:"center", originY:"top",left:0, top: .25*size, 
+            fill: theColor,width:size/16,height:(size*4/9),
+            angle: 30, strokeWidth: 1, stroke: 'black'
+            });
+        this.badge = new fabric.Text('82',{visible: false,
+             left: 1/10*size, top: size/5,
+             fontSize:2/5*size});
+        
+        this.figure = new fabric.Group([this.theArm1, this.theLeg1,  this.theBody, this.theHead, this.theLeg2, this.theArm2, this.badge]);
         this.figure.selectable = false;
         this.cur = {};
         this.cur.x = 100;
         this.cur.y = 50;
         this.deltaMaxX = size*(3/7);
         
-        this.maxLegAngle = 50;
-        this.maxArmAngle = 40;
+        this.maxLegAngle = 100;
+        this.maxArmAngle = 80;
+        this.ratio = this.maxArmAngle/this.maxLegAngle;
         this.walkDelta = 1;
     };
         
@@ -512,13 +518,13 @@ class   StickFigure {
     };
     
      moveTo(x){
-        let deltaAngle = Math.abs(x-this.cur.x)/this.deltaMaxX*this.maxLegAngle;
+        let deltaAngle = Math.abs(x-this.cur.x)/this.deltaMaxX*this.maxLegAngle/2;
         this.curLegAngle = (this.curLegAngle + deltaAngle) % this.maxLegAngle;
-        this.theLeg1.set('angle', this.curLegAngle-this.maxLegAngle/2);
-        this.theLeg2.set('angle', -this.theLeg1.get('angle'));
-        this.theArm1.set('angle', this.curLegAngle
-                         * this.maxArmAngle/this.maxLegAngle-this.maxArmAngle/2);
-        this.theArm2.set('angle', -this.theArm1.get('angle')); 
+         let adjLegAngle = Math.abs(this.curLegAngle - this.maxLegAngle/2)-this.maxLegAngle/4;
+        this.theLeg1.set('angle', adjLegAngle);
+        this.theLeg2.set('angle', -adjLegAngle);
+        this.theArm2.set('angle', adjLegAngle * this.ratio);
+        this.theArm1.set('angle', -this.theArm2.get('angle'));  
         this.cur.x = x;
         this.figure.set('left',this.cur.x).setCoords();
     };
