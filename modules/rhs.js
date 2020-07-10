@@ -3,7 +3,7 @@
 import {simu}  from './procsteps.js' ;
 
 var simulationName = 'Tiox-'+simu.nameOfSimulation;
-const sliders = {
+export const sliders = {
     initialize: function(){
         document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderG);
         function captureChangeInSliderG(event){
@@ -74,9 +74,9 @@ const sliders = {
     
     getSliders: function () {
         let aPreset = {};
-        for ( let k in simu.slidersTypes ){
+        for ( let k in simu.sliderTypes ){
             let inputElem = document.getElementById(k);
-            let t = simu.slidersTypes[k] ;
+            let t = simu.sliderTypes[k] ;
             switch (t) {
                 case 'range':
                     aPreset[k] = inputElem.value
@@ -94,7 +94,7 @@ const sliders = {
         return aPreset;
     },
 };
-sliders.initialize();
+//sliders.initialize();
 
 
 
@@ -138,7 +138,7 @@ function neighborLi() {
 
 
 
- const presets = {
+ export const presets = {
         
         currentLi: null,     // poiner to current  LI in the UL in the HTML
         ulPointer: null,     //pointer to the UL in the HTML
@@ -173,7 +173,8 @@ function neighborLi() {
             if (presetsString) {
                 presetsRows = JSON.parse(presetsString);
             } else {
-                let response = await fetch('presets.json');
+                let response = await fetch(
+                        simu.nameOfSimulation + '.json');
                 if (response.ok) {
                     presetsRows = await response.json();
                 } else {
@@ -452,5 +453,5 @@ function findId(nodelist,str){
     return -1;
 };
 
-presets.initialize();
+//presets.initialize();
 

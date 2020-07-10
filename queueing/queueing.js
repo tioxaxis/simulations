@@ -7,6 +7,7 @@ import {GammaRV, Heap} from '../modules/utility.js';
 import {simu, Queue, WalkAndDestroy, MachineCenter, 
         InfiniteMachineCenter,SPerson,allSPerson}
     from '../modules/procsteps.js' ;
+import {presets, sliders } from '../modules/rhs.js';
 
 const theStage = {
     normalSpeed : .25,    //.25 pixels per millisecond
@@ -35,6 +36,9 @@ simu.sliderTypes = {ar:'range', acv:'range', sr:'range',
     scv:'range', speed:'range', action:'radio', reset:'checkbox'};
 simu.framedelta = 5;
 simu.framedeltaFor1X = 5;
+
+sliders.initialize();
+presets.initialize();
 
 
 class ProcessCollection {

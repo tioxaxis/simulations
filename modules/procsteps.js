@@ -32,6 +32,7 @@ export var simu = {
         
     }
     
+    
 };
 
 function resizeCanvas() {

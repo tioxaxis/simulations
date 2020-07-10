@@ -7,6 +7,7 @@ import {GammaRV, Heap} from '../modules/utility.js';
 import {simu, Queue, WalkAndDestroy, MachineCenter, 
         InfiniteMachineCenter,SPerson,allSPerson}
     from '../modules/procsteps.js' ;
+import {presets, sliders } from '../modules/rhs.js';
 
 const theStage = {
     normalSpeed : .020,    //.25 pixels per millisecond
@@ -43,13 +44,16 @@ const theStage = {
 };
 
 
+
 simu.framedelta = 200;
 simu.framedeltaFor1X = 200;
-simu.nameOfSimulation = 'littleslaw'    //name for local storage
+simu.nameOfSimulation = 'little'    //name for local storage
 simu.sliderTypes = {ar:'range', acv:'range', sr:'range',
     scv:'range', speed:'range', action:'radio', reset:'checkbox'},
 simu.precision = {ar:1,acv:1,sr:1,scv:1,speed:0};
 
+sliders.initialize();
+presets.initialize();
 
 class ProcessCollection {
  constructor (){
