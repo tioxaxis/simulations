@@ -104,7 +104,7 @@ function eachFrame () {
         // move frame time ahead delta = 40 milliseconds => 25 frames/minute.
         simu.now = simu.frametime;
         simu.frametime += simu.framedelta;             
-        simu.moveDisplayAll();
+        SPerson.moveDisplayAll();
         
         //escape hatch.
 //        if (simu.frametime > 1000000 ){pause();
@@ -388,6 +388,11 @@ static reset(){
     allSPerson = [];
     counterSPerson = 0;  
 };
+static moveDisplayAll (){
+    allSPerson.forEach(p=> p.moveDisplayWithPath(false))
+} 
+    
+    
 
 
 constructor (ahead){
@@ -411,3 +416,81 @@ destroy(){
 };
 } ;    // end of class SPerson
 
+export class   StickFigure {
+    constructor (theColor,size){
+        this.theHead = new fabric.Circle({
+            originX:"center", originY:"top",left: 0, top: 0,
+            fill: theColor, radius :size/8
+            });
+        this.theLeg1 = new fabric.Rect({
+            originX:"center", originY:"top",left:0, top: 5/9*size, 
+            fill: theColor,width:size/12,height: size*4/9,
+            angle: 30, strokeWidth: 1, stroke: 'black', 
+            centeredRotation: true});
+        this.theArm2 = new fabric.Rect({
+            originX:"center", originY:"top",left:0, top: .25*size,
+            fill: theColor,width:size/16,height:(size*4/9),
+            angle: -30, strokeWidth: 1, stroke: 'black',
+            });
+        this.theBody = new fabric.Rect({
+            originX:"center", originY:"top", left: 0, top: .22*size,
+            fill: theColor, width:size/10, height: size*3/9,
+            });
+        
+        this.theLeg2 = new fabric.Rect({
+            originX:"center", originY:"top",left:0, top: 5/9*size,
+            fill: theColor,width:size/12,height: size*4/9,
+            angle: -30, strokeWidth: 1, stroke: 'black', 
+            centeredRotation: true});
+        this.theArm1 = new fabric.Rect({
+            originX:"center", originY:"top",left:0, top: .25*size, 
+            fill: theColor,width:size/16,height:(size*4/9),
+            angle: 30, strokeWidth: 1, stroke: 'black'
+            });
+        this.badge = new fabric.Text('82',{visible: false,
+             left: 1/10*size, top: size/5,
+             fontSize:2/5*size});
+        
+        this.figure = new fabric.Group([this.theArm1, this.theLeg1,  this.theBody,
+                                this.theHead, this.theLeg2, this.theArm2, this.badge]);
+        this.figure.selectable = false;
+        this.deltaMaxX = size*(4/9);
+        
+     this.maxLegAngle = 100;
+        this.maxArmAngle = 80;
+        this.ratio = this.maxArmAngle/this.maxLegAngle;      this.walkDelta = 1;
+    };
+        
+    initialPosition (x,y){
+        this.curLegAngle = 0;
+        this.figure.set('left',x).set('top',y).setCoords();
+    };
+    
+    badgeDisplay (bool){
+        this.badge.set('visible',bool);
+    }
+    badgeSet(n){
+        this.badge.set('text',n.toString());
+    }
+    
+    setColor (bodyColor,borderColor){
+        let parts = this.figure.getObjects();
+        for ( let i = 0, len = parts.length; i < len; i++ ) {
+            parts[i].set('fill',bodyColor).set('stroke',borderColor);
+        }
+    };
+    
+    // curLegAngle cycles thru [0,120] and actual goes thru [-30,30] then [30,-30]
+    // via formula actual = abs( angle - 120/2) - 120/4
+     moveTo(x,y){
+        let deltaAngle = Math.abs(x-this.figure.get('left'))/this.deltaMaxX*this.maxLegAngle/2;
+        this.curLegAngle = (this.curLegAngle + deltaAngle) % this.maxLegAngle;
+        let adjLegAngle = Math.abs(this.curLegAngle - this.maxLegAngle/2)-this.maxLegAngle/4;
+        let adjArmAngle = adjLegAngle * this.ratio
+        this.theLeg1.set('angle', adjLegAngle);
+        this.theLeg2.set('angle', -adjLegAngle);
+        this.theArm2.set('angle', adjArmAngle );
+        this.theArm1.set('angle', -adjArmAngle);
+        this.figure.set('left',x).set('top',y).setCoords();
+    };
+};       // end of class StickFigure

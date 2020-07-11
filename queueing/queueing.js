@@ -5,7 +5,7 @@ const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
 import {GammaRV, Heap} from '../modules/utility.js';
 //    from './modules/utility.js';
 import {simu, Queue, WalkAndDestroy, MachineCenter, 
-        InfiniteMachineCenter,SPerson,allSPerson}
+        InfiniteMachineCenter,SPerson,allSPerson, StickFigure}
     from '../modules/procsteps.js' ;
 import {presets, sliders } from '../modules/rhs.js';
 
@@ -32,6 +32,8 @@ const theStage = {
 // specific info for queueing needed by general routines
 // in procsteps and rhs.
 simu.nameOfSimulation = 'queueing';    //name for local storage
+console.log(' in queueing setting name of Simulation to ',simu.nameOfSimulation);
+
 simu.sliderTypes = {ar:'range', acv:'range', sr:'range',
     scv:'range', speed:'range', action:'radio', reset:'checkbox'};
 simu.framedelta = 5;
@@ -246,7 +248,7 @@ const animForTSA = {
          let locY = animForTSA.firstLoc.y;
          for( let k = 0; k< numMachines; k++ ){
             const rect1 = new fabric.Rect(
-                {left: theStage.scanner.x , 
+                {left: theStage.scanner.x -10 , 
                  top: theStage.scanner.y -35 + k*animForTSA.delta.dy,
                 fill: 'white', stroke: 'blue', strokeWidth: 5,
                 width: 55, height: 150});
@@ -369,9 +371,6 @@ class Supplier {
         allSPerson.forEach(p => p.computeCountDelta( p.pathList[0] ));
     };
     
-    static reset(){
-        super.reset();
-    };
 
     constructor (ahead, x,y= 100,w = 30,h = 30) {
         super(ahead);
@@ -413,7 +412,7 @@ class Supplier {
                 debugger;
             };
          };
-         this.graphic.moveTo(this.cur.x);    
+         this.graphic.moveTo(this.cur.x,this.cur.y);    
      };
     
     setTime(time){
@@ -454,93 +453,6 @@ class Supplier {
 
   };  // end class Person
 
-class   StickFigure {
-    constructor (theColor,size){
-        this.theHead = new fabric.Circle({
-            originX:"center", originY:"top",left: 0, top: 0,
-            fill: theColor, radius :size/8
-            });
-        this.theLeg1 = new fabric.Rect({
-            originX:"center", originY:"top",left:0, top: 5/9*size, 
-            fill: theColor,width:size/12,height: size*4/9,
-            angle: 30, strokeWidth: 1, stroke: 'black', 
-            centeredRotation: true});
-        this.theArm2 = new fabric.Rect({
-            originX:"center", originY:"top",left:0, top: .25*size,
-            fill: theColor,width:size/16,height:(size*4/9),
-            angle: -30, strokeWidth: 1, stroke: 'black',
-            });
-        this.theBody = new fabric.Rect({
-            originX:"center", originY:"top", left: 0, top: .22*size,
-            fill: theColor, width:size/10, height: size*3/9,
-            });
-        
-        this.theLeg2 = new fabric.Rect({
-            originX:"center", originY:"top",left:0, top: 5/9*size,
-            fill: theColor,width:size/12,height: size*4/9,
-            angle: -30, strokeWidth: 1, stroke: 'black', 
-            centeredRotation: true});
-        this.theArm1 = new fabric.Rect({
-            originX:"center", originY:"top",left:0, top: .25*size, 
-            fill: theColor,width:size/16,height:(size*4/9),
-            angle: 30, strokeWidth: 1, stroke: 'black'
-            });
-        this.badge = new fabric.Text('82',{visible: false,
-             left: 1/10*size, top: size/5,
-             fontSize:2/5*size});
-        
-        this.figure = new fabric.Group([this.theArm1, this.theLeg1,  this.theBody, this.theHead, this.theLeg2, this.theArm2, this.badge]);
-        this.figure.selectable = false;
-        this.cur = {};
-        this.cur.x = 100;
-        this.cur.y = 50;
-        this.deltaMaxX = size*(3/7);
-        
-        this.maxLegAngle = 100;
-        this.maxArmAngle = 80;
-        this.ratio = this.maxArmAngle/this.maxLegAngle;
-        this.walkDelta = 1;
-    };
-        
-    initialPosition (x,y){
-        this.curLegAngle = 0;
-        this.figure.set('left',x).set('top',y).setCoords();
-    };
-    
-    badgeDisplay (bool){
-        this.badge.set('visible',bool);
-    }
-    badgeSet(n){
-        this.badge.set('text',n.toString());
-    }
-    
-    setColor (aColor){
-        let parts = this.figure.getObjects();
-        for (let i = 0, len = parts.length; i < len; i++) {
-            parts[i].set('fill',aColor);
-        }
-    };
-    
-     moveTo(x){
-        let deltaAngle = Math.abs(x-this.cur.x)/this.deltaMaxX*this.maxLegAngle/2;
-        this.curLegAngle = (this.curLegAngle + deltaAngle) % this.maxLegAngle;
-         let adjLegAngle = Math.abs(this.curLegAngle - this.maxLegAngle/2)-this.maxLegAngle/4;
-        this.theLeg1.set('angle', adjLegAngle);
-        this.theLeg2.set('angle', -adjLegAngle);
-        this.theArm2.set('angle', adjLegAngle * this.ratio);
-        this.theArm1.set('angle', -this.theArm2.get('angle'));  
-        this.cur.x = x;
-        this.figure.set('left',this.cur.x).setCoords();
-    };
-
-    updateFigure(){
-        let x = this.figure.get('left');
-        if ( x > rightWall )  this.walkDelta = - 1;
-        if ( x < leftWall ) this.walkDelta = +.5;
-        x += this.walkDelta;
-        this.moveTo(x);  
-    };
-};// end of class StickFigure
     
 
  function initializeAll(){ 

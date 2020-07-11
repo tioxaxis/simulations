@@ -5,7 +5,7 @@ const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
 import {GammaRV, Heap} from '../modules/utility.js';
 //    from './modules/utility.js';
 import {simu, Queue, WalkAndDestroy, MachineCenter, 
-        InfiniteMachineCenter,SPerson,allSPerson}
+        InfiniteMachineCenter,SPerson,allSPerson, StickFigure}
     from '../modules/procsteps.js' ;
 import {presets, sliders } from '../modules/rhs.js';
 
@@ -24,7 +24,8 @@ const theStage = {
                     height: 250,
                     fill: 'white', 
                     stroke: 'blue', 
-                    strokeWidth: 3};
+                    strokeWidth: 3,
+                   selectable: false};
     theStage.box.top = (theStage.height - theStage.box.height)/2;
     theStage.box.left = (theStage.width - theStage.box.width)/2;
     theStage.box.entryX = theStage.box.left;
@@ -37,6 +38,7 @@ const theStage = {
                            y: theStage.box.entryY};
     theStage.pathway = {left: 0, top: theStage.box.entryY,
                 fill: 'white', stroke: 'green', strokeWidth: 0,
+                        selectable: false,
                 width: theStage.width, height: theStage.person.height};
     
     theStage.offStageLeft = {x: -100, y: theStage.pathY};
@@ -48,6 +50,8 @@ const theStage = {
 simu.framedelta = 200;
 simu.framedeltaFor1X = 200;
 simu.nameOfSimulation = 'little'    //name for local storage
+console.log(" in littles law setting name of Simulation to ",simu.nameOfSimulation);
+
 simu.sliderTypes = {ar:'range', acv:'range', sr:'range',
     scv:'range', speed:'range', action:'radio', reset:'checkbox'},
 simu.precision = {ar:1,acv:1,sr:1,scv:1,speed:0};
@@ -228,8 +232,8 @@ const animForLittlesBox = {
                     y: theStage.box.exitY} );
         } else { 
             walkT = Math.min( walkT, theProcTime);
-            let rx = Math.random() * .5 * 0.8 * theStage.box.width+
-                theStage.box.width * 0.1;
+            let rx = Math.random()  * 0.8 * theStage.box.width+
+                theStage.box.width * 0.05;
             let ry = Math.random() * (theStage.box.height - 
                 theStage.person.height) + theStage.box.top;
             let w = theStage.box.width;
@@ -317,7 +321,7 @@ var theProcessCollection = new ProcessCollection();
             totInv += (simu.now - lastArrDep) * 
                 ( theSimulation.LittlesBox.getNumberBusy());
             lastArrDep = simu.now;
-            console.log(' LB start', person);
+//            console.log(' LB start', person);
             //console.log('LB record start',simu.now,person);
             
         };
@@ -326,7 +330,7 @@ var theProcessCollection = new ProcessCollection();
                 ( theSimulation.LittlesBox.getNumberBusy());
             lastArrDep = simu.now;
             totPeople++;
-            console.log(' at LB finish', simu.now,person.arrivalTime,person.which);
+//            console.log(' at LB finish', simu.now,person.arrivalTime,person.which);
             totTime += simu.now - person.arrivalTime;
             
             theChart.push(simu.now, totInv/simu.now, totTime/simu.now );
@@ -356,13 +360,21 @@ class Supplier {
     };
 
     pull () {
-        const colors =['red','orange','blue','green',
+        const oldcolors =['red','orange','blue','green',
                       'purple','green-yellow','magenta',
-                      'brown','gray','coral']
+                      'brown','gray','coral'];
+        const colors = ['rgb(28, 62, 203)', 'rgb(80, 212, 146)',
+                        'rgb(151, 78, 224)', 'rgb(234, 27, 234)',
+                        'rgb(232, 100, 51)', 'yellow',
+                        'rgb(0, 0, 0)', 'rgb(74, 26, 204)',
+                        'rgb(6, 190, 234)', 'rgb(206, 24, 115)'];
+        const borders = ['black', 'black', 'black', 'black',
+                         'gray', 'black', 'rgb(80, 212, 146)', 'black',
+                         'black', 'gray', 'black', 'black']
          let n = Math.floor(Math.random()*colors.length );
         this.previous = new Person(this.previous, this.x, this.y,
                                   30, theStage.person.height); 
-        this.previous.setColor(colors[n]);
+        this.previous.setColor(colors[n],borders[n]);
         return this.previous;
      }
 };   //end class Supplier
@@ -392,8 +404,8 @@ export class Person extends SPerson {
         this.updateBadge = true;
         simu.theCanvas.add(this.graphic.figure);
      };
-     setColor(aColor){
-         this.graphic.setColor(aColor);
+     setColor(bodyColor,borderColor){
+         this.graphic.setColor(bodyColor,borderColor);
      }
     
     destroy(){
@@ -487,93 +499,84 @@ export class Person extends SPerson {
 
   };  // end class Person
 
-class   StickFigure {
-    constructor (theColor,size){
-        this.theHead = new fabric.Circle({
-            originX:"center", originY:"top",left: 0, top: 0,
-            fill: theColor, radius :size/8
-            });
-        this.theLeg1 = new fabric.Rect({
-            originX:"center", originY:"top",left:0, top: 5/9*size, 
-            fill: theColor,width:size/12,height: size*4/9,
-            angle: 30, strokeWidth: 1, stroke: 'black', 
-            centeredRotation: true});
-        this.theArm2 = new fabric.Rect({
-            originX:"center", originY:"top",left:0, top: .25*size,
-            fill: theColor,width:size/16,height:(size*4/9),
-            angle: -30, strokeWidth: 1, stroke: 'black',
-            });
-        this.theBody = new fabric.Rect({
-            originX:"center", originY:"top", left: 0, top: .22*size,
-            fill: theColor, width:size/10, height: size*3/9,
-            });
-        
-        this.theLeg2 = new fabric.Rect({
-            originX:"center", originY:"top",left:0, top: 5/9*size,
-            fill: theColor,width:size/12,height: size*4/9,
-            angle: -30, strokeWidth: 1, stroke: 'black', 
-            centeredRotation: true});
-        this.theArm1 = new fabric.Rect({
-            originX:"center", originY:"top",left:0, top: .25*size, 
-            fill: theColor,width:size/16,height:(size*4/9),
-            angle: 30, strokeWidth: 1, stroke: 'black'
-            });
-        this.badge = new fabric.Text('82',{visible: false,
-             left: 1/10*size, top: size/5,
-             fontSize:2/5*size});
-        
-         this.figure = new fabric.Group([this.theArm1, this.theLeg1,  this.theBody, this.theHead, this.theLeg2, this.theArm2, this.badge]);
-        this.figure.selectable = false;
-        this.cur = {};
-        this.cur.x = 100;
-        this.cur.y = 50;
-        this.deltaMaxX = size*(3/7);
-        
-     this.maxLegAngle = 100;
-        this.maxArmAngle = 80;
-        this.ratio = this.maxArmAngle/this.maxLegAngle;      this.walkDelta = 1;
-    };
-        
-    initialPosition (x,y){
-        this.curLegAngle = 0;
-        this.figure.set('left',x).set('top',y).setCoords();
-    };
-    
-    badgeDisplay (bool){
-        this.badge.set('visible',bool);
-    }
-    badgeSet(n){
-        this.badge.set('text',n.toString());
-    }
-    
-    setColor (aColor){
-        let parts = this.figure.getObjects();
-        for (let i = 0, len = parts.length; i < len; i++) {
-            parts[i].set('fill',aColor);
-        }
-    };
-    
-     moveTo(x,y){
-        let deltaAngle = Math.abs(x-this.cur.x)/this.deltaMaxX*this.maxLegAngle/2;
-        this.curLegAngle = (this.curLegAngle + deltaAngle) % this.maxLegAngle;
-         let adjLegAngle = Math.abs(this.curLegAngle - this.maxLegAngle/2)-this.maxLegAngle/4;
-        this.theLeg1.set('angle', adjLegAngle);
-        this.theLeg2.set('angle', -adjLegAngle);
-        this.theArm2.set('angle', adjLegAngle * this.ratio);
-        this.theArm1.set('angle', -this.theArm2.get('angle'));
-        this.cur.x = x;
-        this.cur.y = y;
-        this.figure.set('left',this.cur.x).set('top',this.cur.y).setCoords();
-    };
-
-    updateFigure(){
-        let x = this.figure.get('left');
-        if ( x > rightWall )  this.walkDelta = - 1;
-        if ( x < leftWall ) this.walkDelta = +.5;
-        x += this.walkDelta;
-        this.moveTo(x);  
-    };
-};// end of class StickFigure
+//class   StickFigure {
+//    constructor (theColor,size){
+//        this.theHead = new fabric.Circle({
+//            originX:"center", originY:"top",left: 0, top: 0,
+//            fill: theColor, radius :size/8
+//            });
+//        this.theLeg1 = new fabric.Rect({
+//            originX:"center", originY:"top",left:0, top: 5/9*size, 
+//            fill: theColor,width:size/12,height: size*4/9,
+//            angle: 30, strokeWidth: 1, stroke: 'black', 
+//            centeredRotation: true});
+//        this.theArm2 = new fabric.Rect({
+//            originX:"center", originY:"top",left:0, top: .25*size,
+//            fill: theColor,width:size/16,height:(size*4/9),
+//            angle: -30, strokeWidth: 1, stroke: 'black',
+//            });
+//        this.theBody = new fabric.Rect({
+//            originX:"center", originY:"top", left: 0, top: .22*size,
+//            fill: theColor, width:size/10, height: size*3/9,
+//            });
+//        
+//        this.theLeg2 = new fabric.Rect({
+//            originX:"center", originY:"top",left:0, top: 5/9*size,
+//            fill: theColor,width:size/12,height: size*4/9,
+//            angle: -30, strokeWidth: 1, stroke: 'black', 
+//            centeredRotation: true});
+//        this.theArm1 = new fabric.Rect({
+//            originX:"center", originY:"top",left:0, top: .25*size, 
+//            fill: theColor,width:size/16,height:(size*4/9),
+//            angle: 30, strokeWidth: 1, stroke: 'black'
+//            });
+//        this.badge = new fabric.Text('82',{visible: false,
+//             left: 1/10*size, top: size/5,
+//             fontSize:2/5*size});
+//        
+//        this.figure = new fabric.Group([this.theArm1, this.theLeg1,  this.theBody,
+//                                this.theHead, this.theLeg2, this.theArm2, this.badge]);
+//        this.figure.selectable = false;
+//        this.deltaMaxX = size*(4/9);
+//        
+//     this.maxLegAngle = 100;
+//        this.maxArmAngle = 80;
+//        this.ratio = this.maxArmAngle/this.maxLegAngle;      this.walkDelta = 1;
+//    };
+//        
+//    initialPosition (x,y){
+//        this.curLegAngle = 0;
+//        this.figure.set('left',x).set('top',y).setCoords();
+//    };
+//    
+//    badgeDisplay (bool){
+//        this.badge.set('visible',bool);
+//    }
+//    badgeSet(n){
+//        this.badge.set('text',n.toString());
+//    }
+//    
+//    setColor (bodyColor,borderColor){
+//        let parts = this.figure.getObjects();
+//        for ( let i = 0, len = parts.length; i < len; i++ ) {
+//            parts[i].set('fill',bodyColor).set('stroke',borderColor);
+//        }
+//    };
+//    
+//    // curLegAngle cycles thru [0,120] and actual goes thru [-30,30] then [30,-30]
+//    // via formula actual = abs( angle - 120/2) - 120/4
+//     moveTo(x,y){
+//        let deltaAngle = Math.abs(x-this.figure.get('left'))/this.deltaMaxX*this.maxLegAngle/2;
+//        this.curLegAngle = (this.curLegAngle + deltaAngle) % this.maxLegAngle;
+//        let adjLegAngle = Math.abs(this.curLegAngle - this.maxLegAngle/2)-this.maxLegAngle/4;
+//        let adjArmAngle = adjLegAngle * this.ratio
+//        this.theLeg1.set('angle', adjLegAngle);
+//        this.theLeg2.set('angle', -adjLegAngle);
+//        this.theArm2.set('angle', adjArmAngle );
+//        this.theArm1.set('angle', -adjArmAngle);
+//        this.figure.set('left',x).set('top',y).setCoords();
+//    };
+//};       // end of class StickFigure
     
 
  function initializeAll(){ 
@@ -748,7 +751,7 @@ export const theChart ={
             this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
             }
         const pI = predictedInv();
-        console.log( 'at chart ',t,inv,rt,pI);
+//        console.log( 'at chart ',t,inv,rt,pI);
         if ( inv > this.yAxisScale.max  || ( pI  && pI > this.yAxisScale.max ) ){
             this.yAxisScale = this.aVAxis.update(inv);
             this.yAxisScale = this.aVAxis.update(pI*2);
