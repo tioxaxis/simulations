@@ -1,28 +1,27 @@
 import {Heap} from './utility.js';
 
-export var simu = {
-    now: 0,
+simu.now = 0;
     
-    heap: new Heap ((x,y) => x.time < y.time ),
+simu.heap = new Heap ((x,y) => x.time < y.time );
    
-    frametime : 0,        // like 'now' which is simulated time, but rounded to framedelta
-    framedelta : 5,  //simulated time increment per frame
-    framedeltaFor1X : 5,
-    frameInterval:  20,    //milliseconds between frames
-    frameSpeed : 1.0 ,       //framedelta/framedeltaFor1X
-    intervalTimer : null,
-    isRunning: false,
-    nameOfSimulation: null,
-    theCanvas : null,
+simu.frametime = 0;       // like 'now' which is simulated time, but rounded to framedelta
+simu.framedelta = 5;  //simulated time increment per frame
+simu.framedeltaFor1X = 5;
+simu.frameInterval =  20;    //milliseconds between frames
+simu.frameSpeed = 1.0;    //framedelta/framedeltaFor1X
+simu.intervalTimer = null;
+simu.isRunning = false;
+simu.nameOfSimulation = null;
+simu.theCanvas = null;
     
-    initialize: function(  ) {
+simu.initialize = function(  ) {
         simu.theCanvas = new fabric.Canvas('theCanvas', { renderOnAddRemove: false });
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         //simu.reset();
-    },
+    };
     
-    reset: function() {
+simu.reset = function() {
         simu.now = 0;
         simu.heap.reset();
         
@@ -30,10 +29,12 @@ export var simu = {
         // the various process steps will be called on reset theSimulation.
         simu.reset2();
         
-    }
+    };
     
     
-};
+
+//console.log(' inside procsteps &&&&&&& and global test = ',globalTest);
+//console.log(simu);
 
 function resizeCanvas() {
     let theFabricCanvas = simu.theCanvas;
@@ -384,76 +385,177 @@ export var allSPerson = [];
 var counterSPerson = 0;
 export class SPerson {
 
-static reset(){
-    allSPerson = [];
-    counterSPerson = 0;  
-};
-static moveDisplayAll (){
-    allSPerson.forEach(p=> p.moveDisplayWithPath(false))
-} 
+    static reset(){
+        allSPerson = [];
+        counterSPerson = 0;  
+    };
+    static moveDisplayAll (){
+        allSPerson.forEach(p=> p.moveDisplayWithPath())
+    } 
     
+    static updateForSpeed(){
+        allSPerson.forEach(p => p.updateAllPaths());
+    };
+
+    constructor (ahead, x, y){
+        this.which = ++counterSPerson;
+        this.ahead = ahead;
+        this.behind = null;
+        allSPerson.push(this);
+        this.cur = {t: simu.now, x: x, y: y};
+        this.pathList = [];
+        this.arrivalTime = null;
+        this.machine = null;
+        this.graphic = null;
+        if ( ahead ) ahead.behind = this;
+    };
     
+   setColor(bodyColor,borderColor){
+         this.graphic.setColor(bodyColor,borderColor);
+     }
+    
+   moveDisplayWithPath (){
+         if (this.pathList.length == 0) return;
+         let path = this.pathList[0];
+         if (path.count <= 0){
+             this.cur.x = path.x;
+             this.cur.y = path.y;
+             this.pathList.splice(0,1);
+         } else {
+             this.cur.x += path.deltaX;
+             this.cur.y += path.deltaY;
+             path.count--;
+         };
 
+        if( this.cur.x > 2000 || this.cur.y > 500){
+            alert(' found person with too large coord');
+            console.log(this);
+            debugger;
+        };
+         this.graphic.moveTo(this.cur.x,this.cur.y);    
+     };  
+    
+    updatePathDelta(t,dx,dy){
+        if (this.pathList.length > 1 ){
+             alert( 'pathlist has length greater than 1 on update');
+             debugger;
+         }
+        let tempPath = this.pathList[0];
+        this.pathList.splice(0,1);
+        this.addPath( {t: t,
+                  x: tempPath.x+dx,
+                  y: tempPath.y+dy} )
+    };
 
-constructor (ahead){
-    this.which = ++counterSPerson;
-    this.ahead = ahead;
-    this.behind = null;
-    allSPerson.push(this);
-    this.arrivalTime = null;
-    this.machine = null;
-    if ( ahead ) ahead.behind = this;
-};
+    updatePath(triple) {
+         if (this.pathList.length > 1 ){
+             alert( 'pathlist has length greater than 1 on update');
+             debugger;
+         }
+         this.pathList.splice(0,1);
+         this.addPath(triple);
+     };
+     
+    updateAllPaths(){
+         let oldList = this.pathList;
+         this.pathList = [];
+         for ( let triple of oldList ){
+             this.addPath( triple );
+         }
+    };
 
-destroy(){
-    let k = allSPerson.indexOf(this);
+    addPath(triple){
+        this.pathList.push(triple);
+        const n = this.pathList.length;
+        let last = {};
+        if ( n == 1 ) {
+            last = {t: simu.now, x: this.cur.x, y: this.cur.y };
+        } else {
+            last = this.pathList[n-2];
+        }
+
+        let previousFrameTime = Math.floor(last.t / simu.framedelta)
+                                    * simu.framedelta;
+        let path = this.pathList[n-1];
+        path.count = Math.floor((path.t - previousFrameTime) /                                     simu.framedelta);
+        if ( path.count == 0 ){
+             path.deltaX = 0;
+             path.deltaY = 0;
+        } else {
+            path.deltaX = ( path.x - last.x ) / path.count;
+            path.deltaY = ( path.y - last.y ) / path.count;
+        }
+    };  
+
+    destroy(){
+        let k = allSPerson.indexOf(this);
         if (k < 0){alert('failed to find person in all');debugger}
         allSPerson.splice(k,1);
         if ( this.behind ) {
             this.behind.ahead = null;
-        }   ;
-    
-};
+        };
+        simu.theCanvas.remove(this.graphic.figure);
+    };
 } ;    // end of class SPerson
 
 export class   StickFigure {
-    constructor (theColor,size){
+    static colors = ['rgb(28, 62, 203)', 'rgb(80, 212, 146)',
+                        'rgb(151, 78, 224)', 'rgb(234, 27, 234)',
+                        'rgb(232, 100, 51)', 'yellow',
+                        'rgb(0, 0, 0)', 'rgb(74, 26, 204)',
+                        'rgb(6, 190, 234)', 'rgb(206, 24, 115)'];
+    static borders = ['black', 'black', 'black', 'black',
+                         'gray', 'black', 'rgb(80, 212, 146)', 'black',
+                         'black', 'gray', 'black', 'black'];
+        
+    constructor (size){
+        let n = Math.floor(Math.random()*StickFigure.colors.length );
+        let theColor = StickFigure.colors[n];
+        let theBorder = StickFigure.borders[n];
         this.theHead = new fabric.Circle({
             originX:"center", originY:"top",left: 0, top: 0,
-            fill: theColor, radius :size/8
+            fill: theColor,stroke: theBorder,
+            radius :size/8
             });
         this.theLeg1 = new fabric.Rect({
             originX:"center", originY:"top",left:0, top: 5/9*size, 
-            fill: theColor,width:size/12,height: size*4/9,
-            angle: 30, strokeWidth: 1, stroke: 'black', 
+            fill: theColor, stroke: theBorder, 
+            width:size/12,height: size*4/9,
+            angle: 30, strokeWidth: 1,  
             centeredRotation: true});
         this.theArm2 = new fabric.Rect({
             originX:"center", originY:"top",left:0, top: .25*size,
-            fill: theColor,width:size/16,height:(size*4/9),
-            angle: -30, strokeWidth: 1, stroke: 'black',
+            fill: theColor, stroke: theBorder,
+            width:size/16,height:(size*4/9),
+            angle: -30, strokeWidth: 1, 
             });
         this.theBody = new fabric.Rect({
             originX:"center", originY:"top", left: 0, top: .22*size,
-            fill: theColor, width:size/10, height: size*3/9,
+            fill: theColor, stroke: theBorder,
+            width:size/10, height: size*3/9,
             });
         
         this.theLeg2 = new fabric.Rect({
             originX:"center", originY:"top",left:0, top: 5/9*size,
-            fill: theColor,width:size/12,height: size*4/9,
-            angle: -30, strokeWidth: 1, stroke: 'black', 
+            fill: theColor, stroke: theBorder,
+            width:size/12,height: size*4/9,
+            angle: -30, strokeWidth: 1,  
             centeredRotation: true});
         this.theArm1 = new fabric.Rect({
             originX:"center", originY:"top",left:0, top: .25*size, 
-            fill: theColor,width:size/16,height:(size*4/9),
-            angle: 30, strokeWidth: 1, stroke: 'black'
+            fill: theColor, stroke: theBorder,
+            width:size/16,height:(size*4/9),
+            angle: 30, strokeWidth: 1, 
             });
         this.badge = new fabric.Text('82',{visible: false,
              left: 1/10*size, top: size/5,
+              fill: theColor, stroke: theBorder, strokeWidth: 1,                            
              fontSize:2/5*size});
         
         this.figure = new fabric.Group([this.theArm1, this.theLeg1,  this.theBody,
                                 this.theHead, this.theLeg2, this.theArm2, this.badge]);
         this.figure.selectable = false;
+        simu.theCanvas.add(this.figure);
         this.deltaMaxX = size*(4/9);
         
      this.maxLegAngle = 100;

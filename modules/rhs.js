@@ -1,9 +1,12 @@
 // two parts:  Sliders are on top of rhs
 // the list of presets are below on the rhs
-import {simu}  from './procsteps.js' ;
+//import {simu}  from './procsteps.js' ;
 
-var simulationName = 'Tiox-'+simu.nameOfSimulation;
-export const sliders = {
+var keyForLocalStorage = 'Tiox-'+simu.nameOfSimulation;
+//export 
+
+console.log (keyForLocalStorage,' here is the key for local storage');
+const sliders = {
     initialize: function(){
         document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderG);
         function captureChangeInSliderG(event){
@@ -138,7 +141,8 @@ function neighborLi() {
 
 
 
- export const presets = {
+ //export 
+const presets = {
         
         currentLi: null,     // poiner to current  LI in the UL in the HTML
         ulPointer: null,     //pointer to the UL in the HTML
@@ -169,7 +173,7 @@ function neighborLi() {
             presetsString = decodeURI(presetsString.slice(9));
             presetsRows = JSON.parse(presetsString);
         } else {
-            presetsString = localStorage.getItem(simulationName);
+            presetsString = localStorage.getItem(keyForLocalStorage);
             if (presetsString) {
                 presetsRows = JSON.parse(presetsString);
             } else {
@@ -275,6 +279,7 @@ function neighborLi() {
         li.classList.add("selected");
         presets.ulPointer.append(li);
         presets.currentLi = li;
+        presets.addTextBox(presets.currentLi.innerHTML);
        
        function createCopyName(str){
            let reg = str.match(/(.*) (copy) *(\d*)/);
@@ -366,7 +371,7 @@ function neighborLi() {
         }
         
         sortTheUL(presets.ulPointer);
-        localStorage.setItem(simulationName,createJSON());
+        localStorage.setItem(keyForLocalStorage,createJSON());
     },
     
     exitEdit: function() {
@@ -453,5 +458,6 @@ function findId(nodelist,str){
     return -1;
 };
 
-//presets.initialize();
+sliders.initialize();
+presets.initialize();
 

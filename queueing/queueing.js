@@ -4,10 +4,10 @@
 const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
 import {GammaRV, Heap} from '../modules/utility.js';
 //    from './modules/utility.js';
-import {simu, Queue, WalkAndDestroy, MachineCenter, 
+import { Queue, WalkAndDestroy, MachineCenter, 
         InfiniteMachineCenter,SPerson,allSPerson, StickFigure}
     from '../modules/procsteps.js' ;
-import {presets, sliders } from '../modules/rhs.js';
+//import {presets, sliders } from '../modules/rhs.js';
 
 const theStage = {
     normalSpeed : .25,    //.25 pixels per millisecond
@@ -31,16 +31,11 @@ const theStage = {
 
 // specific info for queueing needed by general routines
 // in procsteps and rhs.
-simu.nameOfSimulation = 'queueing';    //name for local storage
-console.log(' in queueing setting name of Simulation to ',simu.nameOfSimulation);
-
 simu.sliderTypes = {ar:'range', acv:'range', sr:'range',
     scv:'range', speed:'range', action:'radio', reset:'checkbox'};
 simu.framedelta = 5;
 simu.framedeltaFor1X = 5;
 
-sliders.initialize();
-presets.initialize();
 
 
 class ProcessCollection {
@@ -140,9 +135,6 @@ simu.reset2 = function(){
 };
 
 
-simu.moveDisplayAll = function(){
-    allSPerson.forEach(p=> p.moveDisplayWithPath(false))
-} 
     
 
 
@@ -161,13 +153,13 @@ const animForQueue = {
     },
 
     join: function ( nInQueue, arrivalTime, person ) {
+        person.addPath( {t: arrivalTime, 
+                         x: animForQueue.loc.x - animForQueue.delta.dx * nInQueue,
+                         y: animForQueue.loc.y } );
         if ( person.isThereOverlap() ){
             person.cur.y = person.ahead.cur.y - 10;
         }
-        person.pathList[0] = {t: arrivalTime, 
-                         x: animForQueue.loc.x - animForQueue.delta.dx * nInQueue,
-                         y: animForQueue.loc.y };
-  //     person.setColor( "green");  
+          
     },
 
     arrive: function (nSeatsUsed, person) {
@@ -182,20 +174,32 @@ const animForQueue = {
         else qLenDisplay.set('visible',false);
         
         for (let k = 0; k < theSimulation.queue.q.length; k++){
-            let time;
             let p = theSimulation.queue.q[k];
-            let dest = p.pathList[0];
-
-            if ( k < theSimulation.queue.numSeatsUsed) 
-                     dest.t = simu.now +
-                         Math.min(animForQueue.delta.dx/theStage.normalSpeed,procTime); 
-                         
-             dest.x += animForQueue.delta.dx;
-             dest.y += animForQueue.delta.dy;
-             p.computeCountDelta(p.pathList[0]);
+            let time = simu.now + Math.min( animForQueue.delta.dx / theStage.normalSpeed, procTime);
+            if( p.pathList.length == 0 ) {
+                p.addPath( 
+                    {t: time,
+                     x: p.cur.x + animForQueue.delta.dx,
+                     y: p.cur.y + animForQueue.delta.dy} );
+            } else {
+                let dest = p.pathList[0];
+                p.updatePathDelta(Math.max(time,dest.t), 
+                     animForQueue.delta.dx, animForQueue.delta.dy )
+            }
         }
+        
     }
 };
+
+//function printPath(p, str){
+//   
+//    if(p.pathList.length == 0) 
+//        console.log(str,'person',p.which,'no path****');
+//    for ( let i = 0; i < p.pathList.length; i++ ) {
+//        let pt = p.pathList[i];
+//        console.log(str,'person',p.which, pt.t,pt.x,pt.y);
+//    }
+//};
 
 const animForWalkOffStage = {
     loc: theStage.offStageRight,
@@ -207,13 +211,12 @@ const animForWalkOffStage = {
     },
 
     start: function (person){
-         if ( person.isThereOverlap() ){
+        person.addPath( {t: simu.now+this.walkingTime,
+                          x: this.loc.x, y: this.loc.y } );
+        if ( person.isThereOverlap() ){
             person.cur.y = person.ahead.cur.y - 10;
          }
-//            person.pathList[3] = {t: simu.now+60/theStage.normalSpeed, x: 890, y: 100 };
-            person.pathList[0] = {t: simu.now+this.walkingTime,
-                          x: this.loc.x, y: this.loc.y }
-  //          person.setColor(  "black");  
+        
     }
 };
         
@@ -266,8 +269,8 @@ const animForTSA = {
         if (animForTSA.lastFinPerson){
             let path = animForTSA.lastFinPerson.pathList[0];
             if (path.t > simu.now){
-                    animForTSA.lastFinPerson.setTime( 
-                        Math.min(path.t, simu.now+theProcTime));
+                    animForTSA.lastFinPerson.updatePathDelta( 
+                        Math.min(path.t, simu.now+theProcTime),0,0);
             }
         }    
     },
@@ -355,80 +358,26 @@ class Supplier {
     };
 
     pull () {
-        const colors =['red','orange','blue','green',
-                      'purple','green-yellow','magenta',
-                      'brown','gray','coral']
-         let n = Math.floor(Math.random()*colors.length );
-        this.previous = new Person(this.previous, this.x, this.y); 
-        this.previous.setColor(colors[n]);
+       
+        this.previous = new Person(this.previous, this.x, this.y,
+                                  30, theStage.person.height); 
         return this.previous;
      }
 };   //end class Supplier
 
 
  export class Person extends SPerson {
-    static updateForSpeed(){
-        allSPerson.forEach(p => p.computeCountDelta( p.pathList[0] ));
-    };
     
-
+    
     constructor (ahead, x,y= 100,w = 30,h = 30) {
-        super(ahead);
-        this.cur = {t: simu.now, x: x, y: y};
+        super(ahead, x, y);
         this.width = w;
-        this.pathList = [];
-        this.pathList[0]= {t: -1, x: -100, y: 100};
         
-        this.graphic = new StickFigure('blue', 80);
+        this.graphic = new StickFigure( 80);
         this.graphic.initialPosition(-100,100);
-//        new fabric.Rect({top: 100,left:-50, width: w, height: h , fill: "blue" })
-        simu.theCanvas.add(this.graphic.figure);
+        //simu.theCanvas.add(this.graphic.figure);
      };
-     setColor(aColor){
-         this.graphic.setColor(aColor);
-     }
-    
-    destroy(){
-        super.destroy();
-        simu.theCanvas.remove(this.graphic.figure);  
-    };
-    
-     moveDisplayWithPath (dontOverlap){
-         let path = this.pathList[0];
-         if (path.deltaX == null) this.computeCountDelta(path);  //first time only 
-         else {
-             if (path.count <= 0){
-                 this.cur.x = path.x;
-                 path.t = simu.frametime;
-             } else {
-                 this.cur.x += path.deltaX;
-                 this.cur.y += path.deltaY;
-                 path.count--;
-             };
-                
-            if( this.cur.x > 2000 || this.cur.y > 500){
-                alert(' found person with too large coord');
-                console.log(this);
-                debugger;
-            };
-         };
-         this.graphic.moveTo(this.cur.x,this.cur.y);    
-     };
-    
-    setTime(time){
-        this.pathList[0].t = time;
-        this.computeCountDelta(this.pathList[0]);  
-    };
-    
-     computeCountDelta(path){
-         
-         let previousFrameTime = Math.floor(simu.now / simu.framedelta)
-         * simu.framedelta;
-         path.count = Math.floor((path.t - previousFrameTime)/simu.framedelta);
-         
-        path.deltaX = ( path.x - this.cur.x ) / path.count;
-         path.deltaY = ( path.y - this.cur.y ) / path.count;
-     };
+     
     
     isThereOverlap() {
         // is 'p' graph above the 'a' graph in [0, p.count] ?
@@ -437,6 +386,7 @@ class Supplier {
         if ( !a ) return false;
         let pPath = p.pathList[0];
         let aPath = a.pathList[0];
+        if ( !aPath ) return false;
         
         if (  p.cur.x + p.width > a.cur.x ) return true;
         if ( pPath.deltaX <= aPath.deltaX ) return false;
@@ -447,8 +397,7 @@ class Supplier {
          let distance = Math.max(Math.abs(this.cur.x-x),
                                  Math.abs(this.cur.y-y));  
          let deltaTime = Math.min(distance/theStage.normalSpeed,procTime);
-         this.pathList[0] = {t:simu.now +deltaTime, x:x, y:y};
-         this.computeCountDelta(this.pathList[0]);
+         this.addPath( {t:simu.now +deltaTime, x:x, y:y} );
      };
 
   };  // end class Person

@@ -22,12 +22,13 @@
         <script src="../res/fabric.js"></script>
     
      <!--  my JavaScript -->
-    <script type = 'module' src = '../modules/rhs.js'></script>
-    <script type = 'module' src = './little.js'>
-//      import {initializeAll} from './queueing.js';
-//      document.addEventListener("DOMContentLoaded",
-//                                initializeAll);
+    <script>
+        var simu = {};
+        simu.nameOfSimulation = 'little' ;   //name for .json for preset file and key for local Storage
     </script>
+    
+    <script type = 'module' src = '../modules/rhs.js'></script>
+    <script type = 'module' src = './little.js'></script>
     
 </head>
   <body >
