@@ -1,31 +1,32 @@
-"use strict";
+'use strict';
+
 // declaration of Globals
 
-const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
-import {GammaRV, Heap} from '../modules/utility.js';
-//    from './modules/utility.js';
-import { Queue, WalkAndDestroy, MachineCenter, 
-        InfiniteMachineCenter,SPerson,allSPerson, StickFigure}
-    from '../modules/procsteps.js' ;
-//import {presets, sliders } from '../modules/rhs.js';
 
+import {GammaRV, Heap} from "../modules/utility.js";
+//    from './modules/utility.js';
+import { Queue, WalkAndDestroy, MachineCenter,
+    InfiniteMachineCenter,SPerson,allSPerson, StickFigure}
+from "../modules/procsteps.js" ;
+//import {presets, sliders } from '../modules/rhs.js';
+const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
 const theStage = {
-    normalSpeed : .25,    //.25 pixels per millisecond
-    width: 1000,
-    height: 300,
-    pathY: 100,
-    person: {dx: 40, dy: 60}   
+normalSpeed : .25,    //.25 pixels per millisecond
+width: 1000,
+height: 300,
+pathY: 100,
+person: {dx: 40, dy: 60}   
 };
 {
-    theStage.offStageLeft = {x: -100, y: theStage.pathY};
-    theStage.offStageRight = {x: theStage.width*1.1, y: theStage.pathY};
-    
-    theStage.headQueue = {x: theStage.width*0.70, y: theStage.pathY};
-    theStage.queueDelta = {dx: theStage.person.dx, dy: 0};
-    theStage.scanner = {x: theStage.width*0.75, y: theStage.pathY};
-    theStage.pastScanner = {x: theStage.width*0.75+theStage.person.dx,
-                           y: theStage.pathY};
-    theStage.scannerDelta = {dx: 0, dy: theStage.person.dy};
+theStage.offStageLeft = {x: -100, y: theStage.pathY};
+theStage.offStageRight = {x: theStage.width*1.1, y: theStage.pathY};
+
+theStage.headQueue = {x: theStage.width*0.70, y: theStage.pathY};
+theStage.queueDelta = {dx: theStage.person.dx, dy: 0};
+theStage.scanner = {x: theStage.width*0.75, y: theStage.pathY};
+theStage.pastScanner = {x: theStage.width*0.75+theStage.person.dx,
+                       y: theStage.pathY};
+theStage.scannerDelta = {dx: 0, dy: theStage.person.dy};
 };
 
 
@@ -162,8 +163,11 @@ const animForQueue = {
     },
 
     join: function ( nInQueue, arrivalTime, person ) {
+        let dist = nInQueue * animForQueue.delta.dx;
+        let time = simu.now + dist/theStage.normalSpeed;
+        person.addPath( {t: time, x: person.cur.x, y: person.cur.y});
         person.addPath( {t: arrivalTime, 
-                         x: animForQueue.loc.x - animForQueue.delta.dx * nInQueue,
+                         x: animForQueue.loc.x - dist,
                          y: animForQueue.loc.y } );
         if ( person.isThereOverlap() ){
             person.cur.y = person.ahead.cur.y - 10;
@@ -191,7 +195,7 @@ const animForQueue = {
                      x: p.cur.x + animForQueue.delta.dx,
                      y: p.cur.y + animForQueue.delta.dy} );
             } else {
-                let dest = p.pathList[0];
+                let dest = p.pathList[p.pathList.length-1];
                 p.updatePathDelta(Math.max(time,dest.t), 
                      animForQueue.delta.dx, animForQueue.delta.dy )
             }
@@ -237,10 +241,10 @@ const animForWalkOffStage = {
     },
 
     start: function (theProcTime,person,m)  {  // only 1 machine for creator m=1
-    let x = animForCreator.loc.x - person.width *    
-        theSimulation.queue.queueLength();
-    person.addPath({t:simu.now+theProcTime, 
-                    x:x, y: animForCreator.loc.y});
+//    let x = animForCreator.loc.x - person.width *    
+//        theSimulation.queue.queueLength();
+//    person.addPath({t:simu.now+theProcTime, 
+//                    x:x, y: animForCreator.loc.y});
  //       person.setColor("red");
     },
      
@@ -390,7 +394,7 @@ class Supplier {
         this.width = w;
         
         this.graphic = new StickFigure( 80);
-        this.graphic.initialPosition(-100,100);
+        this.graphic.initialPosition(x,y);
         //simu.theCanvas.add(this.graphic.figure);
      };
      

@@ -335,7 +335,8 @@ const presets = {
 //        let x = presets.ulPointer.firstElementChild;
 //        if ( !presets.currentLi ) presets.changeCurrentLiTo(x);
 //        
-//       document.getElementById("listbox2").style.display = "block"; document.getElementById("addButton").style.display = "block";
+       document.getElementById("listbox2").style.display = "block"; 
+//        document.getElementById("addButton").style.display = "block";
 //        document.getElementById('deleteButton').style.display = 'block';
         document.getElementById('menuBox').style.display = 'block';
         document.getElementById('editBox').style.display = 'none';

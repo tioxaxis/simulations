@@ -213,7 +213,7 @@ pull (procTime) {
     }
 };
     printQueue(){
-//        this.q.forEach(p => console.log('which',p.which,p));
+        this.q.forEach(p => console.log('which',p.which,p.pathList, p));
         return;
     };
 
@@ -446,12 +446,14 @@ export class SPerson {
      };  
     
     updatePathDelta(t,dx,dy){
-        if (this.pathList.length > 1 ){
-             alert( 'pathlist has length greater than 1 on update');
-             debugger;
-         }
-        let tempPath = this.pathList[0];
-        this.pathList.splice(0,1);
+        let n = this.pathList.length;
+        let tempPath = this.pathList[n-1];
+//        if (this.pathList.length > 1 ){
+//             alert( 'pathlist has length greater than 1 on update');
+//             debugger;
+//         }
+        if (this.which == 4) debugger;
+        this.pathList.splice(n-1,1);
         this.addPath( {t: t,
                   x: tempPath.x+dx,
                   y: tempPath.y+dy} )

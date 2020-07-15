@@ -5,7 +5,8 @@
 .blueBox {
     border: blue solid 5px;
     margin: 0% 5%;
-    background: white; 
+    background: white;
+    font-size: 2vh;
     
 }
 #exportBoxOuter{
@@ -21,9 +22,9 @@
 #exportPresetsBox {
     position: fixed;
     top:10%;
-    bottom: 15%;
-    left: 8%;
-    right: 8%;
+    bottom: 10%;
+    left: 5%;
+    right: 5%;
     padding-bottom:;
     background-color: #b8becb;
     
@@ -41,7 +42,7 @@
 #exportPresetsBox button {
     position: fixed;
     top: 11%;
-    right: 9%;
+    right: 6%;
 }
 
 #containerOuter { 
