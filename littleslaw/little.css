@@ -292,8 +292,9 @@ ul li.selected {
     float:left;
     
     font-size: 2vw;
-    background: white;
+    
     border: black 1px solid;
+    background: white;
     color: black;
     z-index: 2;
     cursor: pointer;
