@@ -268,7 +268,7 @@ const presets = {
     
     // for adding an new Preset row
    addRow: function() {
-        let desc ='(blank)'
+        let desc =''
         if ( presets.currentLi ) {     
             desc = createCopyName(presets.saveModifiedDesc());
             presets.currentLi.classList.remove("selected");
@@ -335,8 +335,8 @@ const presets = {
 //        let x = presets.ulPointer.firstElementChild;
 //        if ( !presets.currentLi ) presets.changeCurrentLiTo(x);
 //        
-        document.getElementById("addButton").style.display = "block";
-        document.getElementById('deleteButton').style.display = 'block';
+//       document.getElementById("listbox2").style.display = "block"; document.getElementById("addButton").style.display = "block";
+//        document.getElementById('deleteButton').style.display = 'block';
         document.getElementById('menuBox').style.display = 'block';
         document.getElementById('editBox').style.display = 'none';
         document.getElementById('actionOptions').style.display = 'flex';
@@ -377,8 +377,9 @@ const presets = {
     exitEdit: function() {
         presets.editMode = false;
         presets.saveModifiedDesc();
-        document.getElementById("addButton").style.display = "none";
-        document.getElementById('deleteButton').style.display = 'none';
+        document.getElementById("listbox2").style.display = "none";
+//        document.getElementById("addButton").style.display = "none";
+//        document.getElementById('deleteButton').style.display = 'none';
         document.getElementById('menuBox').style.display = 'none';
         document.getElementById('editBox').style.display = 'block';
         document.getElementById('actionOptions').style.display = 'none';
@@ -409,7 +410,11 @@ const presets = {
         if( !presets.editMode ) return;
         if ( presets.textMode ) return;  // ignore if in text mode already; everything is setup.
         if(ev.target == presets.currentLi) {
-            presets.addTextBox(ev.target.childNodes[0].nodeValue);
+            if ( ev.target.childNodes[0] ){
+                presets.addTextBox(ev.target.childNodes[0].nodeValue);
+            } else {
+                presets.addTextBox('');
+            }
          }
     }
 };

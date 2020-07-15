@@ -102,6 +102,7 @@ function captureChangeInSliderS(event){
     case 'ar':  
         theSimulation.interarrivalRV
             .setRate(v/tioxTimeConv);
+        theChart.updatePredictedInv();   
         break;
             
     case 'acv':  
@@ -110,6 +111,7 @@ function captureChangeInSliderS(event){
 
     case 'sr':  
         theSimulation.serviceRV.setTime(v*tioxTimeConv);
+        theChart.updatePredictedInv();   
         break;
             
     case 'scv':  
@@ -245,6 +247,7 @@ const animForLittlesBox = {
                     y: theStage.box.exitY} );   
         }
         person.graphic.badgeDisplay(true);
+        person.updateBadge = true;
         person.arrivalTime = simu.now;
     },
     
@@ -373,7 +376,7 @@ export class Person extends SPerson {
         
         this.graphic = new StickFigure( h);
         this.graphic.initialPosition(-100,100);
-        this.updateBadge = true;
+        this.updateBadge = false;
 //        simu.theCanvas.add(this.graphic.figure);
      };
      
@@ -382,6 +385,12 @@ export class Person extends SPerson {
         if (this.updateBadge){ 
             this.graphic.badgeSet(Math.round((simu.now-this.arrivalTime)/10000).toString()) 
         }       
+//         {let k = Number(this.graphic.badge.get('text'));
+//          if (k > 20) {console.log('found a large badge', k);
+//          console.log('badge',this.graphic.badge.get('text'), this.arrivalTime);
+//         }
+//         }
+//         
          super.moveDisplayWithPath();
      };
        
@@ -413,6 +422,7 @@ export class Person extends SPerson {
     simu.initialize();   // the generic
     theSimulation.initialize();   // the specific to queueing
     //reset first time to make sure it is ready to play.
+     theChart.initialize();
     document.getElementById('resetButton').click();   
 };
 document.addEventListener("DOMContentLoaded",initializeAll);
@@ -421,6 +431,7 @@ document.addEventListener("DOMContentLoaded",initializeAll);
 //   TheChart variable is the interface to create the charts using Chart.js
 
 export const theChart ={
+    predictedInvValue: null,
     canvas: null,
     ctx: null,
     chart: null,
@@ -521,8 +532,8 @@ export const theChart ={
             },
     total: null,
     count: null,
-    graphInitialTimeWidth: 100,
-    graphInitialTimeShift: 100,
+    graphInitialTimeWidth: 200,
+    graphInitialTimeShift: 150,
     graphTimeWidth: null,
     graphTimeShift: null,
     graphMin: null,
@@ -535,6 +546,7 @@ export const theChart ={
         this.chart =  new Chart(this.ctx, this.stuff);
         resizeChart();
         this.reset();
+        this.predictedInvValue = this.predictedInv();
     }, 
     reset: function(){
         this.stuff.data.datasets[0].data=[];
@@ -548,7 +560,6 @@ export const theChart ={
         this.graphMin = 0;
         this.graphMax = this.graphInitialTimeWidth;
         this.chart.options.scales.yAxes[0].ticks.min = 0;
-        //this.yAxisScale = this.aVAxis.update(predictedInv()*2);
         this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
         this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
         this.continue();
@@ -579,25 +590,34 @@ export const theChart ={
             this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
             this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
             }
-        const pI = predictedInv();
-//        console.log( 'at chart ',t,inv,rt,pI);
-        if ( inv > this.yAxisScale.max  || ( pI  && pI > this.yAxisScale.max ) ){
+        //        console.log( 'at chart ',t,inv,rt,pI);
+        if ( inv > this.yAxisScale.max  ||
+            (  theChart.predictedInvValue > this.yAxisScale.max ) ){
             this.yAxisScale = this.aVAxis.update(inv);
-            this.yAxisScale = this.aVAxis.update(pI*2);
+            this.yAxisScale = this.aVAxis.update(theChart.predictedInvValue * 2);
             this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
             this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
         }
         this.chart.data.datasets[0].data.push({x:t,y:inv});
         this.chart.data.datasets[1].data.push({x:t,y:rt});
-        if (pI) this.chart.data.datasets[2].data.push({x:t,y:pI});
+        this.chart.data.datasets[2].data.push({x:t,y:theChart.predictedInvValue});
         this.chart.update();
         // update graph with time, this.total/this.waits.length
-    } 
+    },
+        
+     updatePredictedInv: function(){
+        this.chart.data.datasets[2].data.push(
+            {x:(simu.now-1)/10000, y:theChart.predictedInvValue});
+        theChart.predictedInvValue = theChart.predictedInv();
+        this.chart.data.datasets[2].data.push(
+            {x:(simu.now/10000), y:theChart.predictedInvValue});
+        this.chart.update();
+     },
+     predictedInv: function (){
+        return (theSimulation.serviceRV.mean)/(theSimulation.interarrivalRV.mean);
+     }
 }
 
-function predictedInv(){
-    return (theSimulation.serviceRV.mean/tioxTimeConv)/(theSimulation.interarrivalRV.mean/tioxTimeConv);
-}
 
 class VerticalAxisValue {
     constructor(){
@@ -634,6 +654,6 @@ function resizeChart(){
     //alert(' in resize and w,h = '+wW+'  new font size');
     };
 window.addEventListener('resize', resizeChart);
-theChart.initialize();
+
 
 

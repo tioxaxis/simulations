@@ -84,19 +84,28 @@ function captureChangeInSliderS(event){
     case 'ar':  
         theSimulation.interarrivalRV
             .setRate(v/tioxTimeConv);
+        simu.heap.modify('finish/creator',theSimulation.interarrivalRV);
+        theChart.updatePredictedWait();
         break;
             
     case 'acv':  
         theSimulation.interarrivalRV.setCV(v);
+        simu.heap.modify('finish/creator',theSimulation.interarrivalRV);
+        theChart.updatePredictedWait();
+
         break;        
 
     case 'sr':  
         theSimulation.serviceRV
             .setRate(v/tioxTimeConv);
+        simu.heap.modify('finish/TSAagent',theSimulation.serviceRV);
+        theChart.updatePredictedWait();
         break;
             
     case 'scv':  
         theSimulation.serviceRV.setCV(v);
+        simu.heap.modify('finish/TSAagent',theSimulation.serviceRV);    
+        theChart.updatePredictedWait();
         break;       
 
     case 'speed':
@@ -128,8 +137,8 @@ simu.reset2 = function(){
     theSimulation.creator.knockFromPrevious();
     
     //fudge to get animation started quickly
-    let t = simu.heap.top().time-1;
-    simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
+//    let t = simu.heap.top().time-1;
+//    simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
     
     simu.theCanvas.renderAll();
 };
@@ -228,8 +237,10 @@ const animForWalkOffStage = {
     },
 
     start: function (theProcTime,person,m)  {  // only 1 machine for creator m=1
-       person.setDestWithProcTime(theProcTime,
-            animForCreator.loc.x,animForCreator.loc.y);
+    let x = animForCreator.loc.x - person.width *    
+        theSimulation.queue.queueLength();
+    person.addPath({t:simu.now+theProcTime, 
+                    x:x, y: animForCreator.loc.y});
  //       person.setColor("red");
     },
      
@@ -266,7 +277,8 @@ const animForTSA = {
         person.setDestWithProcTime(theProcTime,
                 animForTSA.machLoc[m].x,animForTSA.machLoc[m].y);
  //       person.setColor("purple");
-        if (animForTSA.lastFinPerson){
+        if (animForTSA.lastFinPerson &&
+           animForTSA.lastFinPerson.pathList.length > 0 ){
             let path = animForTSA.lastFinPerson.pathList[0];
             if (path.t > simu.now){
                     animForTSA.lastFinPerson.updatePathDelta( 
@@ -342,6 +354,7 @@ var theProcessCollection = new ProcessCollection();
             this.creator,this.TSAagent);
 
         // put all the process steps with visible people in theProcessCollection
+        theProcessCollection.push(this.supply);
         theProcessCollection.push(this.creator);
         theProcessCollection.push(this.queue);
         theProcessCollection.push(this.TSAagent);
@@ -356,6 +369,9 @@ class Supplier {
         this.y = y;
         this.previous = null;
     };
+    reset() {
+        this.previous = null;
+    }
 
     pull () {
        
@@ -396,7 +412,7 @@ class Supplier {
      setDestWithProcTime(procTime,x,y){
          let distance = Math.max(Math.abs(this.cur.x-x),
                                  Math.abs(this.cur.y-y));  
-         let deltaTime = Math.min(distance/theStage.normalSpeed,procTime);
+         let deltaTime = Math.min( distance / theStage.normalSpeed,  procTime);
          this.addPath( {t:simu.now +deltaTime, x:x, y:y} );
      };
 
@@ -408,6 +424,7 @@ class Supplier {
     Math.seedrandom('this is the Queueing Simulation');
     simu.initialize();   // the generic
     theSimulation.initialize();   // the specific to queueing
+     theChart.initialize();
     //reset first time to make sure it is ready to play.
     document.getElementById('resetButton').click();   
 };
@@ -417,6 +434,7 @@ document.addEventListener("DOMContentLoaded",initializeAll);
 //   TheChart variable is the interface to create the charts using Chart.js
 
 export const theChart ={
+    predictedWaitValue : null,
     canvas: null,
     ctx: null,
     chart: null,
@@ -517,8 +535,8 @@ export const theChart ={
             },
     total: null,
     count: null,
-    graphInitialTimeWidth: 2,
-    graphInitialTimeShift: 2,
+    graphInitialTimeWidth: 5,
+    graphInitialTimeShift: 4,
     graphTimeWidth: null,
     graphTimeShift: null,
     graphMin: null,
@@ -531,6 +549,7 @@ export const theChart ={
         this.chart =  new Chart(this.ctx, this.stuff);
         resizeChart();
         this.reset();
+        this.predictedWaitValue = this.predictedWait();
     }, 
     reset: function(){
         this.stuff.data.datasets[0].data=[];
@@ -575,25 +594,52 @@ export const theChart ={
             this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
             this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
             }
-        const pW = predictedWait();
-        if ( w > this.yAxisScale.max  || ( pW  && pW > this.yAxisScale.max ) ){
+        const pW = theChart.predictedWaitValue;
+        if ( w > this.yAxisScale.max  || 
+            ( pW > this.yAxisScale.max && pW < Infinity) ){
             this.yAxisScale = this.aVAxis.update(w);
-            if ( pW ) this.yAxisScale = this.aVAxis.update(pW);
+            if ( pW >= 0 && pW < Infinity )
+                    this.yAxisScale = this.aVAxis.update(pW);
             this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
             this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
         }
         this.chart.data.datasets[0].data.push({x:t,y:w});
         this.chart.data.datasets[1].data.push({x:t,y:this.total/this.count});
-        if (pW) this.chart.data.datasets[2].data.push({x:t,y:pW});
+        if ( pW >= 0 && pW < Infinity) {
+            this.chart.data.datasets[2].data.push({x:t,y:pW})
+        }
         this.chart.update();
         // update graph with time, this.total/this.waits.length
-    } 
+    },
+    updatePredictedWait: function(){
+        let pW = theChart.predictedWaitValue;
+        let pDS = this.chart.data.datasets[2];
+        
+        pDS.data.push( {x:(simu.now-1)/10000, y:pW});
+        pW = theChart.predictedWait();
+        pDS.data.push( {x:(simu.now/10000), y:pW});
+        pDS.label = 'predicted wait' + ((pW == Infinity)? ' = ∞':'');
+        
+        theChart.predictedWaitValue = pW;
+        this.chart.generateLegend();
+        this.chart.update();
+     },
+    
+     predictedWait: function(){
+        if (theSimulation.serviceRV.rate == 0 ) return Infinity;
+        let rho = theSimulation.interarrivalRV.rate/theSimulation.serviceRV.rate;
+        if (rho >= 1) return Infinity;
+        let p = ( rho / (1-rho) / theSimulation.serviceRV.rate/10000 )*
+            (theSimulation.interarrivalRV.CV**2 + theSimulation.serviceRV.CV**2)/2;
+        return p;
+     },   
+
 }
 
 function predictedWait(){
-    if (theSimulation.serviceRV.rate == 0 ) return null;
+    if (theSimulation.serviceRV.rate == 0 ) return -1;
     let rho = theSimulation.interarrivalRV.rate/theSimulation.serviceRV.rate;
-    if (rho >= 1) return null;
+    if (rho >= 1) return -1;
     let p = ( rho / (1-rho) / theSimulation.serviceRV.rate/10000 )*
         (theSimulation.interarrivalRV.CV**2 + theSimulation.serviceRV.CV**2)/2;
 //    console.log(' predicted wait / 10000 ', p/10000);
@@ -635,6 +681,6 @@ function resizeChart(){
     //alert(' in resize and w,h = '+wW+'  new font size');
     };
 window.addEventListener('resize', resizeChart);
-theChart.initialize();
+
 
 

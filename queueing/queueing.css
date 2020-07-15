@@ -9,18 +9,24 @@
     
 }
 #exportBoxOuter{
-    position: relative;
+    position: absolute;
+ backdrop-filter: blur(2px);   
+  background-position: top;
+  background-repeat: no-repeat;
+  height: 100%;
+  width: 100%;
+    z-index : 6;
     
 }
 #exportPresetsBox {
     position: fixed;
-    top:5%;
-    bottom: 10%;
-    left: 5%;
-    right: 5%;
-    height: 80%;
+    top:10%;
+    bottom: 15%;
+    left: 8%;
+    right: 8%;
     padding-bottom:;
     background-color: #b8becb;
+    
     z-index : 9;
     margin: auto;
     width:;
@@ -34,8 +40,8 @@
 }
 #exportPresetsBox button {
     position: fixed;
-    top: 8%;
-    right: 5%;
+    top: 11%;
+    right: 9%;
 }
 
 #containerOuter { 
@@ -266,6 +272,7 @@ ul li.selected {
     position: absolute;
         top:0;
         left:0;
+    display: block;
     box-sizing: border-box;
         height: 100%;
         width: 100%;

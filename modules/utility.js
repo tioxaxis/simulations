@@ -107,4 +107,34 @@ export class Heap {
         }
         return v;
     }
+    
+    
+    heapify() {
+        // resort in place
+        for ( let k = 0; k < this.h.length; k++ ) {
+          while ( k >= 1 ){
+            let pk = Math.floor( (k+1)/2 ) - 1;
+            if ( this.compare(this.h[pk],this.h[k]) ) return;
+            const temp = this.h[pk];
+            this.h[pk] = this.h[k];
+            this.h[k] = temp;
+            k = pk;
+            }
+            // after while h[0:k] is organized as a heap.
+        }
+        
+    }
+    
+    modify ( type, RV ){
+//        let cnt = 0;
+        for ( let i = 0; i < this.h.length; i++ ) {
+            if (this.h[i].type == type ) {
+                this.h[i].time = simu.now + RV.observe();
+//                cnt++
+            }
+        }
+//        console.log('found ', cnt, 'events in the heap of type ',type,' and ', 
+//                   this.h.length - cnt, ' which are not');
+        this.heapify();
+    }
     }; //end class Heap

@@ -163,6 +163,10 @@ empty (){
 front () {
     if( this.numSeatsUsed > 0) return this.q[0];
 };
+    
+queueLength () {
+    return this.q.length;
+}
 
 push (person) {
 //   console.log('added person', person.which,person,' on queue ', this.name);
@@ -179,7 +183,7 @@ push (person) {
         this.lastAdded = person;
 
         
-        simu.heap.push( {time: arrivalTime,
+        simu.heap.push( {time: arrivalTime, type: 'arrive',
             proc: this.arrive.bind(this), item: person});
         this.printQueue();
         return true;
@@ -244,7 +248,7 @@ push (person) {
     this.animForWalkAndDestroy.start(person);
     
     
-    simu.heap.push( {time:simu.now+this.walkingTime, 
+    simu.heap.push( {time:simu.now+this.walkingTime, type: 'walkoff', 
             proc: this.destroy.bind(this), item: person});
     return true;
 };
@@ -328,14 +332,14 @@ destroy (person) {
              
              machine.person = person;
 
-             simu.heap.push( {time:simu.now+theProcTime, 
+             simu.heap.push( {time:simu.now+theProcTime, type:'finish/'+this.name,
                 proc: this.finish.bind(this), item: machine});
              if (this.recordStart) this.recordStart(person);
              this.numberBusy++;
              //remove 'person' from doubly linked list
              if (person.behind) person.behind.ahead = null;
              person.behind = null;
-         }
+         };
      };
     
     finish (machine) {
@@ -353,6 +357,12 @@ destroy (person) {
              machine.status = 'blocked';
          }
         this.numberBusy--;
+//        {
+//            console.log('time =', simu.now);
+//            for( let p of allSPerson){
+//                console.log(p.which,p.arrivalTime);
+//            }
+//        }
      };   
 
 };  //end class MachineCenter
@@ -485,6 +495,8 @@ export class SPerson {
             path.deltaX = ( path.x - last.x ) / path.count;
             path.deltaY = ( path.y - last.y ) / path.count;
         }
+        console.log('in add Path', this.which,this.pathList, this);
+//        debugger;
     };  
 
     destroy(){
@@ -498,20 +510,28 @@ export class SPerson {
     };
 } ;    // end of class SPerson
 
-export class   StickFigure {
-    static colors = ['rgb(28, 62, 203)', 'rgb(80, 212, 146)',
+var SFcolors = ['rgb(28, 62, 203)', 'rgb(80, 212, 146)',
                         'rgb(151, 78, 224)', 'rgb(234, 27, 234)',
                         'rgb(232, 100, 51)', 'yellow',
                         'rgb(0, 0, 0)', 'rgb(74, 26, 204)',
                         'rgb(6, 190, 234)', 'rgb(206, 24, 115)'];
-    static borders = ['black', 'black', 'black', 'black',
+var SFborders = ['black', 'black', 'black', 'black',
                          'gray', 'black', 'rgb(80, 212, 146)', 'black',
-                         'black', 'gray', 'black', 'black'];
+                         'black', 'gray', 'black', 'black']; 
+export class   StickFigure {
+//    static colors = ['rgb(28, 62, 203)', 'rgb(80, 212, 146)',
+//                        'rgb(151, 78, 224)', 'rgb(234, 27, 234)',
+//                        'rgb(232, 100, 51)', 'yellow',
+//                        'rgb(0, 0, 0)', 'rgb(74, 26, 204)',
+//                        'rgb(6, 190, 234)', 'rgb(206, 24, 115)'];
+//    static borders = ['black', 'black', 'black', 'black',
+//                         'gray', 'black', 'rgb(80, 212, 146)', 'black',
+//                         'black', 'gray', 'black', 'black'];
         
     constructor (size){
-        let n = Math.floor(Math.random()*StickFigure.colors.length );
-        let theColor = StickFigure.colors[n];
-        let theBorder = StickFigure.borders[n];
+        let n = Math.floor(Math.random()*SFcolors.length );
+        let theColor = SFcolors[n];
+        let theBorder = SFborders[n];
         this.theHead = new fabric.Circle({
             originX:"center", originY:"top",left: 0, top: 0,
             fill: theColor,stroke: theBorder,
@@ -547,7 +567,7 @@ export class   StickFigure {
             width:size/16,height:(size*4/9),
             angle: 30, strokeWidth: 1, 
             });
-        this.badge = new fabric.Text('82',{visible: false,
+        this.badge = new fabric.Text('0',{visible: false,
              left: 1/10*size, top: size/5,
               fill: theColor, stroke: theBorder, strokeWidth: 1,                            
              fontSize:2/5*size});
@@ -558,13 +578,13 @@ export class   StickFigure {
         simu.theCanvas.add(this.figure);
         this.deltaMaxX = size*(4/9);
         
-     this.maxLegAngle = 100;
+        this.maxLegAngle = 100;
         this.maxArmAngle = 80;
         this.ratio = this.maxArmAngle/this.maxLegAngle;      this.walkDelta = 1;
     };
         
     initialPosition (x,y){
-        this.curLegAngle = 0;
+        this.curLegAngle = Math.random()*this.maxLegAngle;
         this.figure.set('left',x).set('top',y).setCoords();
     };
     
