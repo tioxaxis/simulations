@@ -287,7 +287,7 @@ ul li.selected {
   min-width: 30px;
     border-width: 2px;
     margin-top: 5px;
-    text-align: :center;
+    text-align: center;
     position: relative;
     float:left;
     
@@ -305,7 +305,6 @@ ul li.selected {
 
  /* these three buttons begin as NOT displayed   */
 #deleteButton, #addButton, #exitButton {
-    display: none;
     text-align: center;
 }
     
