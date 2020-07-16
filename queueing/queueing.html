@@ -134,19 +134,21 @@
      
         <div class="actionBox" id="actionOptions"> 
             <div>Action:</div>
-            <div class="radiopair">
-                <input type="radio" name="action" id="none" value="none" checked >
-               <label for="none">  None</label>
-            </div>
-    
-            <div class="radiopair">    
-                <input type="radio" name="action" id="pause" value="pause">
-                 <label for="pause">Pause</label>
-            </div> 
-    
-            <div class="radiopair">          
-                <input type="radio" name="action" id="play" value="play">
-                <label for="play">Play</label>
+            <div>
+                <div class="radiopair">
+                    <input type="radio" name="action" id="none" value="none" checked >
+                   <label for="none">  None</label>
+                </div>
+
+                <div class="radiopair">    
+                    <input type="radio" name="action" id="pause" value="pause">
+                     <label for="pause">Pause</label>
+                </div> 
+
+                <div class="radiopair">          
+                    <input type="radio" name="action" id="play" value="play">
+                    <label for="play">Play</label>
+                </div>
             </div>
     
             <div class="radiopair">
@@ -173,20 +175,16 @@
      </div>   <!-- end of SliderBigBox -->
     
      
-     <div id="listbox1">    
-        <ul id="ULPresetList"></ul>
+      <div id="scenarios">
+    <div id="scenariosTop">Scenarios</div>
+     <div id="scenariosMid">
+         <ul id="ULPresetList"> </ul>
+        </div>   
+        <div style="display:none" id="scenariosBot">
+        <button id="addButton"> &plus;</button>
+        <button id="deleteButton"> &minus;</button>
+        </div>
     </div>
-     
-    <!-- The + and - buttons for adding and deleting rows --> 
-   <div id='listbox2' style='display:none'>
-       <div class="addDeleteBox">
-        <span id="addButton" >&plus;</span>
-        </div>
-
-        <div  class="addDeleteBox"> 
-        <span id="deleteButton" >&minus;</span>
-        </div>
-   </div>
 
     
     

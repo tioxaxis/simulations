@@ -173,7 +173,7 @@
         display: flex;
         flex-wrap:nowrap;
         flex-direction: row;
-        justify-content: center;
+        justify-content: left;
     }
 
 input[type="range"] {
@@ -232,19 +232,21 @@ ul {
     display: flex;
         flex-direction: column;
         align-items: flex-start;
+    height: 100%;
+    overflow:auto;
 }
 
 /* Style the list items */
 li {
   position: relative;
   width: 100%;    
-  height: 2vw;  
+  min-height: 2vw;  
     font-size: 1vw;
     font-family: "Times New Roman";
   cursor: pointer;
   
   padding: 3px 1px 0px 3px;
-    border: black 1px solid;
+    border-bottom: grey 1px solid;
     margin-top: 3px;
   list-style-type: none;
   
@@ -283,6 +285,29 @@ ul li.selected {
     background-color: lightblue;    
     }
 /* Style the "+" and "-"  buttons to add and delete presets */
+#scenarios {
+    position: relative;
+    margin: 10% 20%;
+    height: 
+    width: 60%;
+    border: solid grey 1px
+}
+
+#scenariosTop {
+    font-size: 1vw;
+    color: grey;
+    font-weight: bold;
+    border-bottom: solid grey 1px
+}
+#scenariosMid{
+    overflow:auto;
+    height:30vh;
+}
+#scenariosBot{
+    width: 100%;
+    bottom: 0px;
+    border-top: solid grey 1px
+}
 .addDeleteBox {
   min-width: 30px;
     border-width: 2px;
@@ -299,7 +324,7 @@ ul li.selected {
     z-index: 2;
     cursor: pointer;
 }
-.addDeleteBox:hover, #editBox :hover, #menuBox button:hover {
+#addButton :hover,#deleteButton : hover, #editBox :hover, #menuBox button:hover {
     background-color: #a0a7f2;
     color: white;  
 }

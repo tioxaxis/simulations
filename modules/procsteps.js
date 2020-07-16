@@ -213,7 +213,7 @@ pull (procTime) {
     }
 };
     printQueue(){
-        this.q.forEach(p => console.log('which',p.which,p.pathList, p));
+//        this.q.forEach(p => console.log('which',p.which,p.pathList, p));
         return;
     };
 
@@ -452,7 +452,6 @@ export class SPerson {
 //             alert( 'pathlist has length greater than 1 on update');
 //             debugger;
 //         }
-        if (this.which == 4) debugger;
         this.pathList.splice(n-1,1);
         this.addPath( {t: t,
                   x: tempPath.x+dx,
@@ -497,7 +496,7 @@ export class SPerson {
             path.deltaX = ( path.x - last.x ) / path.count;
             path.deltaY = ( path.y - last.y ) / path.count;
         }
-        console.log('in add Path', this.which,this.pathList, this);
+//        console.log('in add Path', this.which,this.pathList, this);
 //        debugger;
     };  
 
