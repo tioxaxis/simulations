@@ -223,8 +223,8 @@ const animForLittlesBox = {
     },
     
     start: function (theProcTime, person, m){
-        let walkT = 100000;
-        if ( theProcTime < walkT/2 ){
+        let walkT = 50000;
+        if ( theProcTime < walkT+ 30000 ){
             person.addPath( {t: simu.now + theProcTime,
                     x: theStage.box.exitX, 
                     y: theStage.box.exitY} );
