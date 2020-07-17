@@ -279,15 +279,6 @@ input[type=range]:focus::-ms-fill-upper {
             justify-content:space-between;
 }
 
-datalist {
-        width: 88%;
-        display:flex;
-            flex-direction: row;
-            flex-wrap:nowrap;
-            justify-content:space-between;
-    }
-
-
 
  button {
     font-family: arial, sans-serif;
