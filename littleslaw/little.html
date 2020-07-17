@@ -72,57 +72,51 @@
             <p>Arrival Rate = 
             <span id="arDisplay">1.0</span></p>
                 <input id="ar" 
-                   type="range" min="1" max="6" step="1" value="1.0" class="slider"  list="arOptions">
-            <datalist class="scale1" id="arOptions">
-                    <option value="1"> 1</option>
-                    <option value="2"> 2</option>
-                    <option value="3"> 3</option>
-                    <option value="4"> 4</option>
-                    <option value="5"> 5</option>
-                    <option value="6"> 6</option>
-            </datalist>
+                   type="range" min="1" max="6" step="1" value="1.0" class="slider"  >
+            <div class='spreadValues'> 
+                <span>1</span>
+                <span>2</span>
+                <span>3</span>
+                <span>4</span>
+                <span>5</span>
+                <span>6</span>
+            </div>
         </div>
 
         <div class="sliderbox"> 
             <p>Arrival Variability = 
                 <span id="acvDisplay">1.0</span></p>
             <input id="acv" 
-                   type="range" min="0" max="2" step="0.5" value="0.0" class="slider"  list="acvOptions">
-            <datalist class="scale1" id="acvOptions">
-                    <option value="0.0">0.0</option>
-                    <option value="0.5"></option>
-                    <option value="1.0">1.0</option>
-                    <option value="1.5"></option>
-                    <option value="2.0">2.0</option>
-            </datalist>
+                   type="range" min="0" max="2" step="0.5" value="0.0" class="slider"  >
+            <div class='spreadValues'> 
+                <span>0.0</span>
+                <span>1.0</span>
+                <span>2.0</span>
+            </div>
         </div>
 
         <div class="sliderbox"> 
             <p>Service Time = 
                 <span id="srDisplay">5</span></p>
             <input id="sr" 
-                   type="range" min="5" max="25" step="1" value="5" class="slider"  list="srOptions">
-            <datalist class="scale1" id="srOptions">
-                    <option value="5"> 5</option>
-                    <option value="10"> </option>
-                    <option value="15"> 15</option>
-                    <option value="20"> </option>
-                    <option value="25">25</option>
-            </datalist>
+                   type="range" min="5" max="25" step="1" value="5" class="slider"  >
+            <div class='spreadValues'> 
+                <span>5</span>
+                <span>15</span>
+                <span>25</span>
+            </div>
         </div>
 
         <div class="sliderbox"> 
             <p>Service Variability = 
                 <span id="scvDisplay">1.0</span></p>
             <input id="scv" 
-                   type="range" min="0" max="2" step="0.5" value="0.0" class="slider"  list="scvOptions">
-            <datalist class="scale1" id="scvOptions">
-                    <option value="0.0">0.0</option>
-                    <option value="0.5"></option>
-                    <option value="1.0">1.0</option>
-                    <option value="1.5"></option>
-                    <option value="2.0">2.0</option>
-            </datalist>
+                   type="range" min="0" max="2" step="0.5" value="0.0" class="slider"  >
+            <div class='spreadValues'> 
+                <span>0.0</span>
+                <span>1.0</span>
+                <span>2.0</span>
+            </div>
         </div>
 
         <div class="playButtons" id="playButtons">
@@ -152,8 +146,9 @@
                 
     
             <div class="radiopair">
-                <input type="checkbox" id="reset" value="reset">
-                <label for="actionReset">Reset</label>
+                <label for="reset">
+                    <input type="checkbox" id="reset" value="reset">
+                    Reset </label>
             </div>
     
         </div>
@@ -162,14 +157,11 @@
             <p>Speed = 
                 <span id="speedDisplay">1</span>x</p>
             <input id="speed" 
-                   type="range" min="0" max="4" step="1" value="0" class="slider"  list="speedOptions">
-            <datalist class="scale1" id="speedOptions">
-                    <option value="0">slow</option>
-                    <option value="1"> </option>
-                    <option value="2"> </option>
-                    <option value="3"> </option>
-                    <option value="4">fast</option>
-            </datalist>
+                   type="range" min="0" max="4" step="1" value="0" class="slider"  >
+            <div class='spreadValues'> 
+                <span>slow</span>
+                <span>fast</span>
+            </div>
         </div>
     
      </div>   <!-- end of SliderBigBox -->
