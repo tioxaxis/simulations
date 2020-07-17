@@ -311,7 +311,7 @@ ul {
 /* Style the list items */
 li {
   position: relative;
-  display: block;
+  display: flex;
   align-items: center;
     width: 96%;    
   min-height: 2vw;  
