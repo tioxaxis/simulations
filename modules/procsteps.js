@@ -569,7 +569,7 @@ export class   StickFigure {
             angle: 30, strokeWidth: 1, 
             });
         this.badge = new fabric.Text('0',{visible: false,
-             left: 1/4*size, top: size/5,
+             left: 1/8*size, top: size/5,
               fill: theColor, stroke: theBorder, strokeWidth: 1,                            
              fontSize:2/5*size});
         
