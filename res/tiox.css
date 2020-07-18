@@ -158,8 +158,9 @@ input[type=range] {
     display: none;    /* starts out as none but is changed to flex when editing presets */
         flex-wrap: wrap;
         flex-direction: row;
-        justify-content: flex-start;
+        justify-content: center;
         align-content:center;
+    align-items: flex-start
 }
 
 .playButtons {
@@ -177,10 +178,19 @@ input[type=range] {
         display: flex;
         flex-wrap:nowrap;
         flex-direction: row;
+        align-items: center;
         justify-content: flex-start;
+        align-content:flex-start;
     }
 
+button[type=radio]{
+  -ms-transform: scale(1.5); /* IE 9 */
+    -webkit-transform: scale(1.5); /* Chrome, Safari, Opera */
+    transform: scale(1.5);
+}
 
+input[type=checkbox]{ 
+}
 input[type=range] {
   -webkit-appearance: none;
   margin: .5vw ;
@@ -396,7 +406,7 @@ ul li.selected {
     cursor: pointer;
 }
 #addButton :hover,#deleteButton : hover, #editBox :hover, #menuBox button:hover {
-    background-color: #a0a7f2;
+    background-color: #1a2065;
     color: white;  
 }
 
