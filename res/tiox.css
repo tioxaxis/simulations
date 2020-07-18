@@ -158,8 +158,7 @@ input[type=range] {
     display: none;    /* starts out as none but is changed to flex when editing presets */
         flex-wrap: wrap;
         flex-direction: row;
-        justify-content: space-around;
-        align-items: center;
+        justify-content: flex-start;
         align-content:center;
 }
 
@@ -178,7 +177,7 @@ input[type=range] {
         display: flex;
         flex-wrap:nowrap;
         flex-direction: row;
-        justify-content: left;
+        justify-content: flex-start;
     }
 
 
