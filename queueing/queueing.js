@@ -138,8 +138,8 @@ simu.reset2 = function(){
     theSimulation.creator.knockFromPrevious();
     
     //fudge to get animation started quickly
-//    let t = simu.heap.top().time-1;
-//    simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
+    let t = simu.heap.top().time-1;
+    simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
     
     simu.theCanvas.renderAll();
 };
@@ -262,6 +262,7 @@ const animForTSA = {
     
     reset:function ( numMachines ) {
          animForTSA.machLoc = [];
+         animForTSA.lastFinPerson = null;
          let locX = animForTSA.firstLoc.x;
          let locY = animForTSA.firstLoc.y;
          for( let k = 0; k< numMachines; k++ ){

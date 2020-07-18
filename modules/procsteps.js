@@ -85,6 +85,7 @@ document.addEventListener('keydown',keyDownFunction);
 function keyDownFunction (evt) {
             const key = evt.key; 
             if (evt.code == "Space") {
+                evt.preventDefault();
                 togglePlayPause();
             }
 }
