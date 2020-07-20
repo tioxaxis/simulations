@@ -81,7 +81,7 @@ class ProcessCollection {
      
     c.add( new fabric.Rect( box ) );
     c.add( new fabric.Rect( theStage.pathway ) );
-     c.renderAll();
+     c.requestRenderAll();
 };
 
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
@@ -153,7 +153,7 @@ simu.reset2 = function(){
     let t = simu.heap.top().time-1;
     simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
     
-    simu.theCanvas.renderAll();
+    simu.theCanvas.requestRenderAll();
 };
 
 

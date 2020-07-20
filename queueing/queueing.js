@@ -141,7 +141,7 @@ simu.reset2 = function(){
     let t = simu.heap.top().time-1;
     simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
     
-    simu.theCanvas.renderAll();
+    simu.theCanvas.requestRenderAll();
 };
 
 

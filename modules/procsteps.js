@@ -113,7 +113,7 @@ function eachFrame () {
 //            console.log('reached limit and cleared Interval',            
 //                        simu.intervalTimer, simu.now);
 //        }
-        simu.theCanvas.renderAll();
+        simu.theCanvas.requestRenderAll();
 //        let ndate = new Date();
 //        let nt = ndate.getMilliseconds();
 //        maxtime = Math.max(maxtime, nt-t);
@@ -554,7 +554,7 @@ export class   StickFigure {
         this.theBody = new fabric.Rect({
             originX:"center", originY:"top", left: 0, top: .22*size,
             fill: theColor, stroke: theBorder,
-            width:size/10, height: size*3/9,
+            width:size/10, height: size*3.5/9,
             });
         
         this.theLeg2 = new fabric.Rect({
@@ -574,8 +574,8 @@ export class   StickFigure {
               fill: theColor, stroke: theBorder, strokeWidth: 1,                            
              fontSize:2/5*size});
         
-        this.figure = new fabric.Group([this.theArm1, this.theLeg1,  this.theBody,
-                                this.theHead, this.theLeg2, this.theArm2, this.badge]);
+        this.figure = new fabric.Group([this.theArm1, 
+                        this.theLeg1,  this.theHead, this.theLeg2, this.theBody, this.theArm2, this.badge]);
         this.figure.selectable = false;
         simu.theCanvas.add(this.figure);
         this.deltaMaxX = size*(4/9);

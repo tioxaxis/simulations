@@ -1,5 +1,6 @@
 * {
     box-sizing: border-box;
+    font-family: "Arial";    
 }
 
 .blueBox {
@@ -118,7 +119,7 @@ input[type=range] {
 #sliderBigBox{
         width: 100%;
         margin: .5vw 2vw .5vw .5vw;
-        font-size: 1.1vw;
+        
         display: flex;
             flex-wrap: wrap;
             flex-direction: row;
@@ -290,9 +291,9 @@ input[type=range]:focus::-ms-fill-upper {
 
 
  button {
-    font-family: arial, sans-serif;
-    font-size: 1.2vw;
+    font-size: 1vw;
      cursor: pointer;
+     
 }
 /* not sure these next one does anything   so commenting them out for now.
 .finalValue {
@@ -324,7 +325,7 @@ li {
   align-items: center;
     width: 96%;    
   min-height: 2vw;  
-    font-size: 1.2vw;
+    font-size: 1vw;
     font-family: "Times New Roman";
   cursor: pointer;
   
@@ -342,9 +343,14 @@ li {
 }
 
 /* Darker background-color on hover */
-ul li:hover {
+ul li:hover, button:hover {
   background: #a0a7f2;
     color: white;
+}
+button {
+    -webkit-border-radius: 10; 
+    -moz-border-radius: 10;  
+    border-radius: 8px;
 }
 
 /* When clicked on, add a background color and strike out text */
@@ -362,7 +368,7 @@ ul li.selected {
     box-sizing: border-box;
         height: 100%;
         width: 100%;
-        font-size: 1.2vw;
+        font-size: 1vw;
         font-family: "Times New Roman";
         color: black;
     background-color: lightblue;    
@@ -405,10 +411,12 @@ ul li.selected {
     z-index: 2;
     cursor: pointer;
 }
-#addButton :hover,#deleteButton : hover, #editBox :hover, #menuBox button:hover {
-    background-color: #1a2065;
+/*
+#addButton:hover,#deleteButton:hover, #editBox:hover, #menuBox button:hover {
+    background-color: #9ba0dd;
     color: white;  
 }
+*/
 
  /* these three buttons begin as NOT displayed   */
 #deleteButton, #addButton, #exitButton {
