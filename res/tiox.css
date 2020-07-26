@@ -1,6 +1,7 @@
 * {
     box-sizing: border-box;
-    font-family: "Arial";    
+    font-family: "Arial";
+    font-size: 1vw;
 }
 
 .blueBox {
@@ -88,6 +89,7 @@
     height: 42%;
     border: solid #7a8dd0;
     border-width: .5vw 1px 0px ;
+    clip-path: content-box;
     
 }
         
@@ -119,7 +121,6 @@ input[type=range] {
 #sliderBigBox{
         width: 100%;
         margin: .5vw 2vw .5vw .5vw;
-        
         display: flex;
             flex-wrap: wrap;
             flex-direction: row;

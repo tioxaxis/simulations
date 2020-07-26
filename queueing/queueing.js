@@ -6,7 +6,8 @@
 import {GammaRV, Heap} from "../modules/utility.js";
 //    from './modules/utility.js';
 import { Queue, WalkAndDestroy, MachineCenter,
-    InfiniteMachineCenter,SPerson,allSPerson, StickFigure}
+    InfiniteMachineCenter,SPerson,allSPerson, StickFigure,
+       GStickFigure, NStickFigure }
 from "../modules/procsteps.js" ;
 //import {presets, sliders } from '../modules/rhs.js';
 const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
@@ -56,12 +57,12 @@ class ProcessCollection {
 var qLenDisplay= null;
 
  function resetBackground(){
-        let theFabricCanvas = simu.theCanvas;
-        theFabricCanvas.clear();
-        qLenDisplay = new fabric.Text( 'Queue Length = 0', 
-            { fontSize: 20, visible: false, 
-             left: 100, top: 250 });
-        theFabricCanvas.add(qLenDisplay); 
+//        let theFabricCanvas = simu.theCanvas;
+//        theFabricCanvas.clear();
+//        qLenDisplay = new fabric.Text( 'Queue Length = 0', 
+//            { fontSize: 20, visible: false, 
+//             left: 100, top: 250 });
+//        theFabricCanvas.add(qLenDisplay); 
         
         // put other things that are fixed and not people on stage.
     };
@@ -141,7 +142,6 @@ simu.reset2 = function(){
     let t = simu.heap.top().time-1;
     simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
     
-    simu.theCanvas.requestRenderAll();
 };
 
 
@@ -266,14 +266,14 @@ const animForTSA = {
          let locX = animForTSA.firstLoc.x;
          let locY = animForTSA.firstLoc.y;
          for( let k = 0; k< numMachines; k++ ){
-            const rect1 = new fabric.Rect(
-                {left: theStage.scanner.x -10 , 
-                 top: theStage.scanner.y -35 + k*animForTSA.delta.dy,
-                fill: 'white', stroke: 'blue', strokeWidth: 5,
-                width: 55, height: 150});
-            rect1.selectable = false;
-            simu.theCanvas.add(rect1);
-            animForTSA.machLoc[k] = {x :locX, y :locY, rect: rect1};
+//            const rect1 = new fabric.Rect(
+//                {left: theStage.scanner.x -10 , 
+//                 top: theStage.scanner.y -35 + k*animForTSA.delta.dy,
+//                fill: 'white', stroke: 'blue', strokeWidth: 5,
+//                width: 55, height: 150});
+//            rect1.selectable = false;
+//            simu.theCanvas.add(rect1);
+            animForTSA.machLoc[k] = {x :locX, y :locY} //, rect: rect1};
             locX += animForTSA.delta.dx;
             locY += animForTSA.delta.dy;
         }    
@@ -386,6 +386,7 @@ class Supplier {
      }
 };   //end class Supplier
 
+var gSF = new GStickFigure(80);
 
  export class Person extends SPerson {
     
@@ -394,8 +395,7 @@ class Supplier {
         super(ahead, x, y);
         this.width = w;
         
-        this.graphic = new StickFigure( 80);
-        this.graphic.initialPosition(x,y);
+        this.graphic = new NStickFigure( gSF, x, y );
         //simu.theCanvas.add(this.graphic.figure);
      };
      

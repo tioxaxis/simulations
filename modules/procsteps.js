@@ -13,9 +13,13 @@ simu.intervalTimer = null;
 simu.isRunning = false;
 simu.nameOfSimulation = null;
 simu.theCanvas = null;
+simu.context = null; 
+simu.requestAFId = null;
     
 simu.initialize = function(  ) {
-        simu.theCanvas = new fabric.Canvas('theCanvas', { renderOnAddRemove: false });
+        simu.theCanvas = document.getElementById('theCanvas');
+            //new fabric.Canvas('theCanvas', { renderOnAddRemove: false });
+        simu.context = simu.theCanvas.getContext('2d');
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         //simu.reset();
@@ -28,6 +32,7 @@ simu.reset = function() {
         simu.frametime= 0;
         // the various process steps will be called on reset theSimulation.
         simu.reset2();
+//        window.requestAnimationFrame(null);
         
     };
     
@@ -37,21 +42,40 @@ simu.reset = function() {
 //console.log(simu);
 
 function resizeCanvas() {
-    let theFabricCanvas = simu.theCanvas;
+    //let theFabricCanvas = simu.theCanvas;
     
     // w for wrapper,  c for canvas, W for width, H for height
     const w = document.getElementById('canvasWrapper');
-    const cW = theFabricCanvas.getWidth();
-    const cH = theFabricCanvas.getHeight();
-    const ratio = cW / cH;
+    const cW = simu.theCanvas.clientWidth;
+    if (cW == 0)debugger;
+    //const cH = theFabricCanvas.getHeight();
+    //const ratio = cW / cH;
     const wW   = w.clientWidth;
-    const wH  = w.clientHeight;
+    const wH = w.clientHeight;
+    //const wH  = w.clientHeight;
     
-    const scale = wW /cW;
-    const zoom  = theFabricCanvas.getZoom() * scale;
+    const ratio = wW /cW;
+//    const zoom  = theFabricCanvas.getZoom() * scale;
+//    
+//    theFabricCanvas.setDimensions({width: wW, height: wW / ratio});
+//    theFabricCanvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0]); 
+    //simu.context.resetTransform();
     
-    theFabricCanvas.setDimensions({width: wW, height: wW / ratio});
-    theFabricCanvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0]); 
+    simu.context.clearRect(0,0,simu.theCanvas.width,simu.theCanvas.height);
+//    simu.context.beginPath();
+//    simu.context.rect(0,0,wW,wH);
+//    simu.context.clip();
+    console.log(' resize cW  wW ', cW, wW, ratio, simu.theCanvas.clientWidth, simu.theCanvas.clientHeight);
+    
+    
+//    simu.theCanvas.style.width = wW+"px";
+//    simu.theCanvas.style.height = Math.floor((wW*3/10))+"px";
+//    
+//    simu.theCanvas.width = wW;
+//    simu.theCanvas.height = Math.floor(wW*3/10);
+//    
+    
+//    simu.context.scale(ratio,ratio);
 }
 
 
@@ -67,14 +91,14 @@ function play(){
             .style.display == 'none') return
         document.getElementById('playButton').style.display = 'none';
         document.getElementById('pauseButton').style.display = 'inline';  
-        simu.intervalTimer = setInterval(eachFrame, simu.frameInterval );
+        simu.requestAFId = window.requestAnimationFrame(eachFrame);
         simu.isRunning = true;;
     };
 function pause(){
         if ( !simu.isRunning ) return; 
         document.getElementById('pauseButton').style.display ='none';
         document.getElementById('playButton').style.display = 'block';
-        clearInterval(simu.intervalTimer);
+        window.cancelAnimationFrame(simu.requestAFId);
         simu.isRunning = false;
 };
 document.getElementById('playButton').addEventListener('click',play);
@@ -90,6 +114,7 @@ function keyDownFunction (evt) {
             }
 }
 var maxtime = 0;
+//var eFC = 0;
 function eachFrame () {
 //        let date = new Date() ;
 //        let t = date.getMilliseconds();
@@ -103,17 +128,27 @@ function eachFrame () {
          }
         
             
-        // move frame time ahead delta = 40 milliseconds => 25 frames/minute.
+        // move frame time ahead delta = 40 milliseconds => 25 frames/second.
         simu.now = simu.frametime;
         simu.frametime += simu.framedelta;             
+        //eFC++;
+       // if( eFC >375) debugger;
+        resizeCanvas();
+
         SPerson.moveDisplayAll();
+    
+       
+        //draw the background??
+    
+    
         
         //escape hatch.
 //        if (simu.frametime > 1000000 ){pause();
 //            console.log('reached limit and cleared Interval',            
 //                        simu.intervalTimer, simu.now);
 //        }
-        simu.theCanvas.requestRenderAll();
+        simu.requestAFId = window.requestAnimationFrame(eachFrame);
+
 //        let ndate = new Date();
 //        let nt = ndate.getMilliseconds();
 //        maxtime = Math.max(maxtime, nt-t);
@@ -443,7 +478,8 @@ export class SPerson {
             console.log(this);
             debugger;
         };
-         this.graphic.moveTo(this.cur.x,this.cur.y);    
+         this.graphic.moveTo(this.cur.x,this.cur.y);
+         this.graphic.draw();
      };  
     
     updatePathDelta(t,dx,dy){
@@ -508,7 +544,7 @@ export class SPerson {
         if ( this.behind ) {
             this.behind.ahead = null;
         };
-        simu.theCanvas.remove(this.graphic.figure);
+        //simu.theCanvas.remove(this.graphic.figure);
     };
 } ;    // end of class SPerson
 
@@ -572,7 +608,7 @@ export class   StickFigure {
         this.badge = new fabric.Text('0',{visible: false,
              left: 1/8*size, top: size/5,
               fill: theColor, stroke: theBorder, strokeWidth: 1,                            
-             fontSize:2/5*size});
+             fontSize: 2/5*size});
         
         this.figure = new fabric.Group([this.theArm1, 
                         this.theLeg1,  this.theHead, this.theLeg2, this.theBody, this.theArm2, this.badge]);
@@ -618,3 +654,139 @@ export class   StickFigure {
         this.figure.set('left',x).set('top',y).setCoords();
     };
 };       // end of class StickFigure
+
+
+
+
+const pi2 = Math.PI*2;
+ export class GStickFigure {
+    constructor (size) {
+        let radius = size/8;
+        this.head = {x:0,y:radius,r:radius,stroke:1};
+        this.body = {x:0,y:0.22*size,w:size/10,h:size*0.4};
+        this.leg = {x:0,y:size*5/9,w:size/12,h:size*4/9};
+        this.arm = {x:0,y:size/4,w:size/16,h:size*4/9};
+        this.badge = {x: 1/8*size, y: 1/5*size };
+        this.deltaMaxX = size*(4/9);
+        this.fontSize = Math.floor(2/5*size);
+        simu.context.font = Math.floor(2/5*size)+'px Arial';
+
+    }
+
+};
+        
+export class NStickFigure {
+    constructor ( gSF, x = 200, y = 100 ){
+        let n = Math.floor(Math.random()*SFcolors.length );
+        this.color = SFcolors[n];
+        this.bdaryColor = SFborders[n];
+        this.armAngleRadians = pi2/15;
+        this.legAngleRadians = pi2/12;
+        this.legAngleDegrees = 30;
+        this.gSF = gSF;
+        this.maxLegAngle = 120;
+        this.maxArmAngle = 90;
+        this.badgeText = null;
+        this.badgeVisible = false;
+        this.ratio = this.maxArmAngle / this.maxLegAngle ;
+        this.x = x;
+        this.y = y;
+        
+
+
+    };
+    
+    initialPosition(x,y){
+       this.x = x;
+       this.y = y; 
+    };
+    
+     badgeDisplay (bool){
+        this.badgeVisible = bool;
+    };
+    badgeSet(n){
+        this.badgeText = n;
+    };
+    
+    moveTo(x,y){
+        let deltaAngle = Math.abs(x-this.x)/this.gSF.deltaMaxX*this.maxLegAngle/2;
+        this.legAngleDegrees = (this.legAngleDegrees + deltaAngle) % this.maxLegAngle;
+        this.legAngleRadians = (Math.abs(this.legAngleDegrees -
+                                         this.maxLegAngle/2) - this.maxLegAngle/4) * pi2 / 360;
+        this.armAngleRadians = this.legAngleRadians * this.ratio;
+        this.x = x;
+        this.y = y;
+    };
+
+
+    draw (){
+        // use x,y as starting point and draw the rest of the
+        // parts by translating and rotating from there
+
+        let c = simu.context;
+        c.save();
+        c.strokeStyle = this.bdaryColor;
+        c.fillStyle = this.color;
+        c.translate(this.x,this.y);
+//        console.log( this.color, this.x, this.y);
+        c.beginPath();
+        
+        // arm1
+        c.save();
+        c.translate(this.gSF.arm.x, this.gSF.arm.y);
+        c.rotate(this.armAngleRadians);
+        c.rect(-this.gSF.arm.w/2,0,this.gSF.arm.w,this.gSF.arm.h);
+        c.restore();
+
+        // leg2
+        c.save();
+        c.translate(this.gSF.leg.x, this.gSF.leg.y);
+        c.rotate(-this.legAngleRadians);
+        c.rect(-this.gSF.leg.w/2,0,this.gSF.leg.w,this.gSF.leg.h);
+        c.restore();
+      
+        // body
+        c.save();
+        c.translate(this.gSF.body.x, this.gSF.body.y);
+        c.rect(-this.gSF.body.w/2, 0, this.gSF.body.w,
+                     this.gSF.body.h);
+        c.restore();
+        
+        //  leg 1
+        c.save();
+        c.translate(this.gSF.leg.x, this.gSF.leg.y);
+        c.rotate(this.legAngleRadians);
+        c.rect(-this.gSF.leg.w/2,0,this.gSF.leg.w,this.gSF.leg.h);
+        c.restore();
+        
+         // arm2
+        c.save();
+        c.translate(this.gSF.arm.x, this.gSF.arm.y);
+        c.rotate(-this.armAngleRadians);
+        c.rect(-this.gSF.arm.w/2,0,this.gSF.arm.w,this.gSF.arm.h);
+        c.restore();
+       
+        // head
+        c.save();
+        c.translate(this.gSF.head.x, this.gSF.head.y);
+        c.arc(0,0,this.gSF.head.r,0,pi2,true);
+        c.restore();
+         
+        // draw the entire figure
+        c.stroke();
+        c.fill();
+        
+         //badge
+        if( this.badgeVisible ){
+            c.save();
+//            let temp =  this.gSF.fontSize+'px Arial';
+//            console.log('font size ',temp);
+//            c.font = temp;
+            c.fillText( this.badgeText, this.gSF.badge.x,this.gSF.badge.y);
+            c.restore();
+        }
+       
+        c.restore();
+    };
+
+};

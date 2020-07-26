@@ -5,7 +5,8 @@ const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
 import {GammaRV, Heap} from '../modules/utility.js';
 //    from './modules/utility.js';
 import { Queue, WalkAndDestroy, MachineCenter, 
-        InfiniteMachineCenter,SPerson,allSPerson, StickFigure}
+        InfiniteMachineCenter,SPerson,allSPerson, StickFigure,
+       GStickFigure, NStickFigure }
     from '../modules/procsteps.js' ;
 //import {presets, sliders } from '../modules/rhs.js';
 
@@ -75,13 +76,13 @@ class ProcessCollection {
 //var qLenDisplay= null;
 
  function resetBackground(){
-    const c = simu.theCanvas;
-    c.clear();
-     let box = theStage.box;
-     
-    c.add( new fabric.Rect( box ) );
-    c.add( new fabric.Rect( theStage.pathway ) );
-     c.requestRenderAll();
+//    const c = simu.theCanvas;
+//    c.clear();
+//     let box = theStage.box;
+//     
+//    c.add( new fabric.Rect( box ) );
+//    c.add( new fabric.Rect( theStage.pathway ) );
+//     c.requestRenderAll();
 };
 
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
@@ -142,6 +143,7 @@ simu.reset2 = function(){
     theChart.reset();     
     theProcessCollection.reset();
     totInv = totTime = totPeople = lastArrDep = 0;
+    gSF = new GStickFigure( 80 );
     
     
         
@@ -153,7 +155,6 @@ simu.reset2 = function(){
     let t = simu.heap.top().time-1;
     simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
     
-    simu.theCanvas.requestRenderAll();
 };
 
 
@@ -366,7 +367,7 @@ class Supplier {
 };   //end class Supplier
 
 
-
+var gSF ;
 export class Person extends SPerson {
     
     constructor (ahead, x,y= 60,w = 30,h = 30) {
@@ -374,8 +375,7 @@ export class Person extends SPerson {
         
         this.width = w;
         
-        this.graphic = new StickFigure( h);
-        this.graphic.initialPosition(-100,100);
+        this.graphic = new NStickFigure( gSF, x, y);
         this.updateBadge = false;
 //        simu.theCanvas.add(this.graphic.figure);
      };
