@@ -1,15 +1,12 @@
 'use strict';
 
 // declaration of Globals
-
-
 import {GammaRV, Heap} from "../modules/utility.js";
 //    from './modules/utility.js';
 import { Queue, WalkAndDestroy, MachineCenter,
-    InfiniteMachineCenter,SPerson,allSPerson, StickFigure,
+    InfiniteMachineCenter,SPerson,allSPerson, 
        GStickFigure, NStickFigure }
 from "../modules/procsteps.js" ;
-//import {presets, sliders } from '../modules/rhs.js';
 const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
 const theStage = {
 normalSpeed : .10,    //.25 pixels per millisecond
@@ -37,8 +34,6 @@ simu.sliderTypes = {ar:'range', acv:'range', sr:'range',
     scv:'range', speed:'range', action:'radio', reset:'checkbox'};
 simu.framedelta = 5;
 simu.framedeltaFor1X = 5;
-
-
 
 class ProcessCollection {
  constructor (){
@@ -126,8 +121,6 @@ function captureChangeInSliderS(event){
     }   
 }
 
-
-
 simu.reset2 = function(){
     resetBackground();
     Person.reset();
@@ -144,10 +137,6 @@ simu.reset2 = function(){
     simu.now = simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
     
 };
-
-
-    
-
 
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
@@ -177,15 +166,9 @@ const animForQueue = {
     },
 
     arrive: function (nSeatsUsed, person) {
-  //      person.setColor( "orange");
-//        if ( nSeatsUsed > 10 ) qLenDisplay.set('text',
-//                    'Queue Length = ' + nSeatsUsed).set('visible',true);
     },
 
     leave: function (procTime, nSeatsUsed) {
-//        if ( nSeatsUsed > 5 )                
-//            qLenDisplay.set('text', 'Queue Length = ' + nSeatsUsed);
-//        else qLenDisplay.set('visible',false);
         
         for (let k = 0; k < theSimulation.queue.q.length; k++){
             let p = theSimulation.queue.q[k];
@@ -241,15 +224,9 @@ const animForWalkOffStage = {
     reset: function () {
     },
 
-    start: function (theProcTime,person,m)  {  // only 1 machine for creator m=1
-//    let x = animForCreator.loc.x - person.width *    
-//        theSimulation.queue.queueLength();
-//    person.addPath({t:simu.now+theProcTime, 
-//                    x:x, y: animForCreator.loc.y});
- //       person.setColor("red");
-    },
+    start: function (theProcTime,person,m)  {},
      
-     finish: function () {},
+    finish: function () {},
        
 };
         

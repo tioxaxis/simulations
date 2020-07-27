@@ -1,81 +1,45 @@
 import {Heap} from './utility.js';
 
 simu.now = 0;
-    
+ simu.frametime = 0;    
 simu.heap = new Heap ((x,y) => x.time < y.time );
    
-simu.frametime = 0;       // like 'now' which is simulated time, but rounded to framedelta
 simu.framedelta = 5;  //simulated time increment per frame
 simu.framedeltaFor1X = 5;
-simu.frameInterval =  20;    //milliseconds between frames
+simu.frameInterval =  20;    //not used??? between frames
 simu.frameSpeed = 1.0;    //framedelta/framedeltaFor1X
-simu.intervalTimer = null;
+
 simu.isRunning = false;
 simu.nameOfSimulation = null;
 simu.theCanvas = null;
-simu.context = null; 
-simu.requestAFId = null;
+simu.context = null;     //context for drawing on theCanvas
+simu.requestAFId = null;  // id for requestAnimationFrame
     
 simu.initialize = function(  ) {
         simu.theCanvas = document.getElementById('theCanvas');
-            //new fabric.Canvas('theCanvas', { renderOnAddRemove: false });
         simu.context = simu.theCanvas.getContext('2d');
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
-        //simu.reset();
     };
     
 simu.reset = function() {
         simu.now = 0;
-        simu.heap.reset();
-        
         simu.frametime= 0;
-        // the various process steps will be called on reset theSimulation.
+        simu.heap.reset();
         simu.reset2();
-//        window.requestAnimationFrame(null);
-        
     };
     
-    
-
-//console.log(' inside procsteps &&&&&&& and global test = ',globalTest);
-//console.log(simu);
-
-function resizeCanvas() {
-    //let theFabricCanvas = simu.theCanvas;
-    
+function resizeCanvas() {    
     // w for wrapper,  c for canvas, W for width, H for height
+    // none of this is useful after I got the right 
+    // width and height and style width and height
     const w = document.getElementById('canvasWrapper');
     const cW = simu.theCanvas.clientWidth;
-    if (cW == 0)debugger;
-    //const cH = theFabricCanvas.getHeight();
-    //const ratio = cW / cH;
     const wW   = w.clientWidth;
     const wH = w.clientHeight;
-    //const wH  = w.clientHeight;
-    
     const ratio = wW /cW;
-//    const zoom  = theFabricCanvas.getZoom() * scale;
-//    
-//    theFabricCanvas.setDimensions({width: wW, height: wW / ratio});
-//    theFabricCanvas.setViewportTransform([zoom, 0, 0, zoom, 0, 0]); 
-    //simu.context.resetTransform();
     
     simu.context.clearRect(0,0,simu.theCanvas.width,simu.theCanvas.height);
-//    simu.context.beginPath();
-//    simu.context.rect(0,0,wW,wH);
-//    simu.context.clip();
-//    console.log(' resize cW  wW ', cW, wW, ratio, simu.theCanvas.clientWidth, simu.theCanvas.clientHeight);
-    
-    
-//    simu.theCanvas.style.width = wW+"px";
-//    simu.theCanvas.style.height = Math.floor((wW*3/10))+"px";
-//    
-//    simu.theCanvas.width = wW;
-//    simu.theCanvas.height = Math.floor(wW*3/10);
-//    
-    
-//    simu.context.scale(ratio,ratio);
 }
 
 
@@ -114,9 +78,8 @@ function keyDownFunction (evt) {
                 evt.preventDefault();
                 togglePlayPause();
             }
-}
-var maxtime = 0;
-//var eFC = 0;
+};
+
 function eachFrame (currentTime) {
         let deltaT = currentTime - simu.lastFrame;
         simu.lastFrame = currentTime;
@@ -129,37 +92,15 @@ function eachFrame (currentTime) {
         
         while( (theTop = simu.heap.top())  &&
                 theTop.time <= simu.now ){
-//            s console.log ('in each Frame Simulation ',simu.now,simu.frametime);
              const event = simu.heap.pull();
              simu.now = event.time;
              event.proc(event.item);
          }
         
-            
-        // move frame time ahead delta = 40 milliseconds => 25 frames/second.
-//                console.log('in each frame', simu.now);               
         resizeCanvas();
-
-//        console.log('in each frame deltaSimT=',deltaSimT);
-    SPerson.moveDisplayAll(deltaSimT);
-    
-       
-        //draw the background??
-    
-    
-        
-        //escape hatch.
-//        if (simu.frametime > 1000000 ){pause();
-//            console.log('reached limit and cleared Interval',            
-//                        simu.intervalTimer, simu.now);
-//        }
+        SPerson.moveDisplayAll(deltaSimT);
         simu.requestAFId = window.requestAnimationFrame(eachFrame);
-
-//        let ndate = new Date();
-//        let nt = ndate.getMilliseconds();
-//        maxtime = Math.max(maxtime, nt-t);
-//        console.log(' max time ',maxtime);
-    };
+};
 
 
 export class Queue {
@@ -254,6 +195,7 @@ pull (procTime) {
         return person;
     }
 };
+
     printQueue(){
 //        this.q.forEach(p => console.log('which',p.which,p.pathList, p));
         return;
@@ -272,23 +214,17 @@ constructor (name, animForWalkAndDestroy, dontOverlap){
     this.walkingTime =this.animForWalkAndDestroy.computeWalkingTime();
     this.dontOverlap = dontOverlap;
     this.lastAdded = null;
-    //this.q = [];   
 };
     
 reset(){
-   // this.q = [];
     };
 
 push (person) {
-    // *******
-    
-    //this.q.push(person);
     // insert into end of doubly linked list
     person.ahead = this.lastAdded;
     if (this.lastAdded) this.lastAdded.behind = person;
     this.lastAdded = person;
     this.animForWalkAndDestroy.start(person);
-    
     
     simu.heap.push( {time:simu.now+this.walkingTime, type: 'walkoff', 
             proc: this.destroy.bind(this), item: person});
@@ -385,7 +321,6 @@ destroy (person) {
      };
     
     finish (machine) {
-         //console.log('finishing person', machine.person.which,' on machine ', this.name);
         
         let success = this.nextQ.push(machine.person);
         if ( success ) {
@@ -399,12 +334,6 @@ destroy (person) {
              machine.status = 'blocked';
          }
         this.numberBusy--;
-//        {
-//            console.log('time =', simu.now);
-//            for( let p of allSPerson){
-//                console.log(p.which,p.arrivalTime);
-//            }
-//        }
      };   
 
 };  //end class MachineCenter
@@ -480,15 +409,7 @@ export class SPerson {
                  this.cur.y += path.speedY * deltaSimT;
                  break;
              };
-
-//            if( this.cur.x > 2000 || this.cur.y > 500){
-//                alert(' found person with too large coord');
-//                console.log(this);
-//                debugger;
-//            };
-             
         }
-//       console.log('in MDwithPath ',this.cur.x,deltaSimT);
         this.graphic.moveTo(this.cur.x,this.cur.y); 
         this.graphic.draw();
      };  
@@ -496,10 +417,6 @@ export class SPerson {
     updatePathDelta(t,dx,dy){
         let n = this.pathList.length;
         let tempPath = this.pathList[n-1];
-//        if (this.pathList.length > 1 ){
-//             alert( 'pathlist has length greater than 1 on update');
-//             debugger;
-//         }
         this.pathList.splice(n-1,1);
         this.addPath( {t: t,
                   x: tempPath.x+dx,
@@ -543,8 +460,6 @@ export class SPerson {
             path.speedX = ( path.x - last.x ) / deltaT;
             path.speedY = ( path.y - last.y ) / deltaT;
         }
-//        console.log('in add Path', this.which,this.pathList, this);
-//        debugger;
     };  
 
     destroy(){
@@ -554,7 +469,6 @@ export class SPerson {
         if ( this.behind ) {
             this.behind.ahead = null;
         };
-        //simu.theCanvas.remove(this.graphic.figure);
     };
 } ;    // end of class SPerson
 
@@ -566,106 +480,6 @@ var SFcolors = ['rgb(28, 62, 203)', 'rgb(80, 212, 146)',
 var SFborders = ['black', 'black', 'black', 'black',
                          'gray', 'black', 'rgb(80, 212, 146)', 'black',
                          'black', 'gray', 'black', 'black']; 
-export class   StickFigure {
-//    static colors = ['rgb(28, 62, 203)', 'rgb(80, 212, 146)',
-//                        'rgb(151, 78, 224)', 'rgb(234, 27, 234)',
-//                        'rgb(232, 100, 51)', 'yellow',
-//                        'rgb(0, 0, 0)', 'rgb(74, 26, 204)',
-//                        'rgb(6, 190, 234)', 'rgb(206, 24, 115)'];
-//    static borders = ['black', 'black', 'black', 'black',
-//                         'gray', 'black', 'rgb(80, 212, 146)', 'black',
-//                         'black', 'gray', 'black', 'black'];
-        
-    constructor (size){
-        let n = Math.floor(Math.random()*SFcolors.length );
-        let theColor = SFcolors[n];
-        let theBorder = SFborders[n];
-        this.theHead = new fabric.Circle({
-            originX:"center", originY:"top",left: 0, top: 0,
-            fill: theColor,stroke: theBorder,
-            radius :size/8
-            });
-        this.theLeg1 = new fabric.Rect({
-            originX:"center", originY:"top",left:0, top: 5/9*size, 
-            fill: theColor, stroke: theBorder, 
-            width:size/12,height: size*4/9,
-            angle: 30, strokeWidth: 1,  
-            centeredRotation: true});
-        this.theArm2 = new fabric.Rect({
-            originX:"center", originY:"top",left:0, top: .25*size,
-            fill: theColor, stroke: theBorder,
-            width:size/16,height:(size*4/9),
-            angle: -30, strokeWidth: 1, 
-            });
-        this.theBody = new fabric.Rect({
-            originX:"center", originY:"top", left: 0, top: .22*size,
-            fill: theColor, stroke: theBorder,
-            width:size/10, height: size*3.5/9,
-            });
-        
-        this.theLeg2 = new fabric.Rect({
-            originX:"center", originY:"top",left:0, top: 5/9*size,
-            fill: theColor, stroke: theBorder,
-            width:size/12,height: size*4/9,
-            angle: -30, strokeWidth: 1,  
-            centeredRotation: true});
-        this.theArm1 = new fabric.Rect({
-            originX:"center", originY:"top",left:0, top: .25*size, 
-            fill: theColor, stroke: theBorder,
-            width:size/16,height:(size*4/9),
-            angle: 30, strokeWidth: 1, 
-            });
-        this.badge = new fabric.Text('0',{visible: false,
-             left: 1/8*size, top: size/5,
-              fill: theColor, stroke: theBorder, strokeWidth: 1,                            
-             fontSize: 2/5*size});
-        
-        this.figure = new fabric.Group([this.theArm1, 
-                        this.theLeg1,  this.theHead, this.theLeg2, this.theBody, this.theArm2, this.badge]);
-        this.figure.selectable = false;
-        simu.theCanvas.add(this.figure);
-        this.deltaMaxX = size*(4/9);
-        
-        this.maxLegAngle = 100;
-        this.maxArmAngle = 80;
-        this.ratio = this.maxArmAngle/this.maxLegAngle;      this.walkDelta = 1;
-    };
-        
-    initialPosition (x,y){
-        this.curLegAngle = Math.random()*this.maxLegAngle;
-        this.figure.set('left',x).set('top',y).setCoords();
-    };
-    
-    badgeDisplay (bool){
-        this.badge.set('visible',bool);
-    }
-    badgeSet(n){
-        this.badge.set('text',n.toString());
-    }
-    
-    setColor (bodyColor,borderColor){
-        let parts = this.figure.getObjects();
-        for ( let i = 0, len = parts.length; i < len; i++ ) {
-            parts[i].set('fill',bodyColor).set('stroke',borderColor);
-        }
-    };
-    
-    // curLegAngle cycles thru [0,120] and actual goes thru [-30,30] then [30,-30]
-    // via formula actual = abs( angle - 120/2) - 120/4
-     moveTo(x,y){
-        let deltaAngle = Math.abs(x-this.figure.get('left'))/this.deltaMaxX*this.maxLegAngle/2;
-        this.curLegAngle = (this.curLegAngle + deltaAngle) % this.maxLegAngle;
-        let adjLegAngle = Math.abs(this.curLegAngle - this.maxLegAngle/2)-this.maxLegAngle/4;
-        let adjArmAngle = adjLegAngle * this.ratio
-        this.theLeg1.set('angle', adjLegAngle);
-        this.theLeg2.set('angle', -adjLegAngle);
-        this.theArm2.set('angle', adjArmAngle );
-        this.theArm1.set('angle', -adjArmAngle);
-        this.figure.set('left',x).set('top',y).setCoords();
-    };
-};       // end of class StickFigure
-
-
 
 
 const pi2 = Math.PI*2;
@@ -680,9 +494,7 @@ const pi2 = Math.PI*2;
         this.deltaMaxX = size*(4/9);
         this.fontSize = Math.floor(2/5*size);
         simu.context.font = Math.floor(2/5*size)+'px Arial';
-
     }
-
 };
         
 export class NStickFigure {
@@ -701,9 +513,6 @@ export class NStickFigure {
         this.ratio = this.maxArmAngle / this.maxLegAngle ;
         this.x = Math.floor(x);
         this.y = Math.floor(y);
-        
-
-
     };
     
     initialPosition(x,y){
@@ -738,7 +547,6 @@ export class NStickFigure {
         c.strokeStyle = this.bdaryColor;
         c.fillStyle = this.color;
         c.translate(this.x,this.y);
-//        console.log( this.color, this.x, this.y);
         c.beginPath();
         
         // arm1
@@ -782,16 +590,13 @@ export class NStickFigure {
         c.arc(0,0,this.gSF.head.r,0,pi2,true);
         c.restore();
          
-        // draw the entire figure
+        // draw (fill and stroke) the entire figure
         c.stroke();
         c.fill();
         
          //badge
         if( this.badgeVisible ){
             c.save();
-//            let temp =  this.gSF.fontSize+'px Arial';
-//            console.log('font size ',temp);
-//            c.font = temp;
             c.fillText( this.badgeText, this.gSF.badge.x,this.gSF.badge.y);
             c.restore();
         }

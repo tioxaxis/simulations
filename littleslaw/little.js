@@ -5,10 +5,9 @@ const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
 import {GammaRV, Heap} from '../modules/utility.js';
 //    from './modules/utility.js';
 import { Queue, WalkAndDestroy, MachineCenter, 
-        InfiniteMachineCenter,SPerson,allSPerson, StickFigure,
+        InfiniteMachineCenter,SPerson,allSPerson, 
        GStickFigure, NStickFigure }
     from '../modules/procsteps.js' ;
-//import {presets, sliders } from '../modules/rhs.js';
 
 const theStage = {
     normalSpeed : .020,    //.25 pixels per millisecond
@@ -18,10 +17,7 @@ const theStage = {
     person: {width: 40, height: 60}   
 };
 
-{
-    
-    
-    theStage.headQueue = {x: 150, y: theStage.pathY};
+{   theStage.headQueue = {x: 150, y: theStage.pathY};
     theStage.box = {width:700,
                     height: 250,
                     fill: 'white', 
@@ -51,13 +47,9 @@ const theStage = {
 
 simu.framedelta = 200;
 simu.framedeltaFor1X = 200;
-//simu.nameOfSimulation = 'little'    //name for .json for preset file and key for local Storage
-//console.log(" in littles law setting name of Simulation to ***===> ",simu.nameOfSimulation);
-
 simu.sliderTypes = {ar:'range', acv:'range', sr:'range',
     scv:'range', speed:'range', action:'radio', reset:'checkbox'},
 simu.precision = {ar:1,acv:1,sr:1,scv:1,speed:0};
-
 
 class ProcessCollection {
  constructor (){
@@ -156,10 +148,6 @@ simu.reset2 = function(){
     simu.now = simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
     
 };
-
-
-    
-
 
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
@@ -291,16 +279,7 @@ var theProcessCollection = new ProcessCollection();
         this.queue = new Queue("theQueue",-1, animForQueue.walkingTime,     
                 animForQueue,
                 null, null  );
-        
-//        // define the helper functions for theQueue
-//        function recordQueueArrival (person){
-//            person.arrivalTime = simu.now;
-//        };
-//        function recordQueueLeave(person) {            
-//            theChart.push(simu.now,simu.now-person.arrivalTime);
-//         };
-//            
-      
+              
         this.walkOffStage = new WalkAndDestroy("walkOff",  animForWalkOffStage, true);
     
     
@@ -330,7 +309,6 @@ var theProcessCollection = new ProcessCollection();
                 ( theSimulation.LittlesBox.getNumberBusy());
             lastArrDep = simu.now;
             totPeople++;
-//            console.log(' at LB finish', simu.now,person.arrivalTime,person.which);
             totTime += simu.now - person.arrivalTime;
             
             theChart.push(simu.now, totInv/simu.now, totTime/simu.now );
@@ -382,15 +360,9 @@ export class Person extends SPerson {
      
     
      moveDisplayWithPath (deltaSimT){
-        if (this.updateBadge){ 
+         if (this.updateBadge){ 
             this.graphic.badgeSet(Math.round((simu.now-this.arrivalTime)/10000).toString()) 
-        }       
-//         {let k = Number(this.graphic.badge.get('text'));
-//          if (k > 20) {console.log('found a large badge', k);
-//          console.log('badge',this.graphic.badge.get('text'), this.arrivalTime);
-//         }
-//         }
-//         
+         }       
          super.moveDisplayWithPath(deltaSimT);
      };
        

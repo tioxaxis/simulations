@@ -5,7 +5,6 @@
 var keyForLocalStorage = 'Tiox-'+simu.nameOfSimulation;
 //export 
 
-//console.log (keyForLocalStorage,' here is the key for local storage');
 const sliders = {
     initialize: function(){
         document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderG);
@@ -37,11 +36,7 @@ const sliders = {
             };
         };         
     },
-
-
-
-
-     
+    
     inputEvent : new Event('input',{bubbles: true}),
     
     setSlidersFrom: function (aPreset){
@@ -97,9 +92,6 @@ const sliders = {
         return aPreset;
     },
 };
-//sliders.initialize();
-
-
 
 function createOne(params) {
             const liElem = document.createElement("LI");
@@ -336,8 +328,6 @@ const presets = {
 //        if ( !presets.currentLi ) presets.changeCurrentLiTo(x);
 //        
        document.getElementById("scenariosBot").style.display = "block"; 
-//        document.getElementById("addButton").style.display = "block";
-//        document.getElementById('deleteButton').style.display = 'block';
         document.getElementById('menuBox').style.display = 'block';
         document.getElementById('editBox').style.display = 'none';
         document.getElementById('actionOptions').style.display = 'flex';
@@ -379,8 +369,6 @@ const presets = {
         presets.editMode = false;
         presets.saveModifiedDesc();
         document.getElementById("scenariosBot").style.display = "none";
-//        document.getElementById("addButton").style.display = "none";
-//        document.getElementById('deleteButton').style.display = 'none';
         document.getElementById('menuBox').style.display = 'none';
         document.getElementById('editBox').style.display = 'block';
         document.getElementById('actionOptions').style.display = 'none';
