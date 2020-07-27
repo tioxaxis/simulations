@@ -153,7 +153,7 @@ simu.reset2 = function(){
     
     //fudge to get animation started quickly
     let t = simu.heap.top().time-1;
-    simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
+    simu.now = simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
     
 };
 
@@ -381,7 +381,7 @@ export class Person extends SPerson {
      };
      
     
-     moveDisplayWithPath (dontOverlap){
+     moveDisplayWithPath (deltaSimT){
         if (this.updateBadge){ 
             this.graphic.badgeSet(Math.round((simu.now-this.arrivalTime)/10000).toString()) 
         }       
@@ -391,7 +391,7 @@ export class Person extends SPerson {
 //         }
 //         }
 //         
-         super.moveDisplayWithPath();
+         super.moveDisplayWithPath(deltaSimT);
      };
        
     isThereOverlap() {

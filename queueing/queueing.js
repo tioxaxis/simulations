@@ -12,7 +12,7 @@ from "../modules/procsteps.js" ;
 //import {presets, sliders } from '../modules/rhs.js';
 const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
 const theStage = {
-normalSpeed : .25,    //.25 pixels per millisecond
+normalSpeed : .10,    //.25 pixels per millisecond
 width: 1000,
 height: 300,
 pathY: 100,
@@ -133,6 +133,7 @@ simu.reset2 = function(){
     Person.reset();
     theChart.reset();     
     theProcessCollection.reset();
+    gSF = new GStickFigure(80);
         
     // schedule the initial Person to arrive and start the simulation/animation.
     theSimulation.supply.previous = null;
@@ -140,7 +141,7 @@ simu.reset2 = function(){
     
     //fudge to get animation started quickly
     let t = simu.heap.top().time-1;
-    simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
+    simu.now = simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
     
 };
 
@@ -177,14 +178,14 @@ const animForQueue = {
 
     arrive: function (nSeatsUsed, person) {
   //      person.setColor( "orange");
-        if ( nSeatsUsed > 10 ) qLenDisplay.set('text',
-                    'Queue Length = ' + nSeatsUsed).set('visible',true);
+//        if ( nSeatsUsed > 10 ) qLenDisplay.set('text',
+//                    'Queue Length = ' + nSeatsUsed).set('visible',true);
     },
 
     leave: function (procTime, nSeatsUsed) {
-        if ( nSeatsUsed > 5 )                
-            qLenDisplay.set('text', 'Queue Length = ' + nSeatsUsed);
-        else qLenDisplay.set('visible',false);
+//        if ( nSeatsUsed > 5 )                
+//            qLenDisplay.set('text', 'Queue Length = ' + nSeatsUsed);
+//        else qLenDisplay.set('visible',false);
         
         for (let k = 0; k < theSimulation.queue.q.length; k++){
             let p = theSimulation.queue.q[k];
@@ -386,7 +387,7 @@ class Supplier {
      }
 };   //end class Supplier
 
-var gSF = new GStickFigure(80);
+var gSF ;
 
  export class Person extends SPerson {
     

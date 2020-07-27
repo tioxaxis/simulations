@@ -65,7 +65,7 @@ function resizeCanvas() {
 //    simu.context.beginPath();
 //    simu.context.rect(0,0,wW,wH);
 //    simu.context.clip();
-    console.log(' resize cW  wW ', cW, wW, ratio, simu.theCanvas.clientWidth, simu.theCanvas.clientHeight);
+//    console.log(' resize cW  wW ', cW, wW, ratio, simu.theCanvas.clientWidth, simu.theCanvas.clientHeight);
     
     
 //    simu.theCanvas.style.width = wW+"px";
@@ -91,8 +91,10 @@ function play(){
             .style.display == 'none') return
         document.getElementById('playButton').style.display = 'none';
         document.getElementById('pauseButton').style.display = 'inline';  
+        simu.lastFrame = performance.now();
         simu.requestAFId = window.requestAnimationFrame(eachFrame);
-        simu.isRunning = true;;
+        simu.isRunning = true;
+        
     };
 function pause(){
         if ( !simu.isRunning ) return; 
@@ -115,13 +117,19 @@ function keyDownFunction (evt) {
 }
 var maxtime = 0;
 //var eFC = 0;
-function eachFrame () {
-//        let date = new Date() ;
-//        let t = date.getMilliseconds();
+function eachFrame (currentTime) {
+        let deltaT = currentTime - simu.lastFrame;
+        simu.lastFrame = currentTime;
+        let deltaSimT = deltaT * simu.frameSpeed;
+        simu.now += deltaSimT;
+        simu.frametime = simu.now; 
+    
+    
         let theTop;
-        //console.log ('frametime ',simu.frametime);
+        
         while( (theTop = simu.heap.top())  &&
-                theTop.time <= simu.frametime ){
+                theTop.time <= simu.now ){
+//            s console.log ('in each Frame Simulation ',simu.now,simu.frametime);
              const event = simu.heap.pull();
              simu.now = event.time;
              event.proc(event.item);
@@ -129,13 +137,11 @@ function eachFrame () {
         
             
         // move frame time ahead delta = 40 milliseconds => 25 frames/second.
-        simu.now = simu.frametime;
-        simu.frametime += simu.framedelta;             
-        //eFC++;
-       // if( eFC >375) debugger;
+//                console.log('in each frame', simu.now);               
         resizeCanvas();
 
-        SPerson.moveDisplayAll();
+//        console.log('in each frame deltaSimT=',deltaSimT);
+    SPerson.moveDisplayAll(deltaSimT);
     
        
         //draw the background??
@@ -435,8 +441,8 @@ export class SPerson {
         allSPerson = [];
         counterSPerson = 0;  
     };
-    static moveDisplayAll (){
-        allSPerson.forEach(p=> p.moveDisplayWithPath())
+    static moveDisplayAll (deltaSimT){
+        allSPerson.forEach(p=> p.moveDisplayWithPath(deltaSimT))
     } 
     
     static updateForSpeed(){
@@ -460,26 +466,31 @@ export class SPerson {
          this.graphic.setColor(bodyColor,borderColor);
      }
     
-   moveDisplayWithPath (){
-         if (this.pathList.length == 0) return;
-         let path = this.pathList[0];
-         if (path.count <= 0){
-             this.cur.x = path.x;
-             this.cur.y = path.y;
-             this.pathList.splice(0,1);
-         } else {
-             this.cur.x += path.deltaX;
-             this.cur.y += path.deltaY;
-             path.count--;
-         };
+   moveDisplayWithPath (deltaSimT){
+         while (this.pathList.length > 0) {
+             var path = this.pathList[0];
+             
+             if ( path.t < simu.now ){
+                 this.cur.x = path.x;
+                 this.cur.y = path.y;
+                 this.pathList.splice(0,1);
+                 deltaSimT = simu.now - path.t;
+             } else {
+                 this.cur.x += path.speedX * deltaSimT;
+                 this.cur.y += path.speedY * deltaSimT;
+                 break;
+             };
 
-        if( this.cur.x > 2000 || this.cur.y > 500){
-            alert(' found person with too large coord');
-            console.log(this);
-            debugger;
-        };
-         this.graphic.moveTo(this.cur.x,this.cur.y);
-         this.graphic.draw();
+//            if( this.cur.x > 2000 || this.cur.y > 500){
+//                alert(' found person with too large coord');
+//                console.log(this);
+//                debugger;
+//            };
+             
+        }
+//       console.log('in MDwithPath ',this.cur.x,deltaSimT);
+        this.graphic.moveTo(this.cur.x,this.cur.y); 
+        this.graphic.draw();
      };  
     
     updatePathDelta(t,dx,dy){
@@ -522,16 +533,15 @@ export class SPerson {
             last = this.pathList[n-2];
         }
 
-        let previousFrameTime = Math.floor(last.t / simu.framedelta)
-                                    * simu.framedelta;
         let path = this.pathList[n-1];
-        path.count = Math.floor((path.t - previousFrameTime) /                                     simu.framedelta);
-        if ( path.count == 0 ){
-             path.deltaX = 0;
-             path.deltaY = 0;
+        let deltaT = path.t - last.t;
+
+        if ( deltaT == 0 ){
+             path.speedX = 0;
+             path.speedY = 0;
         } else {
-            path.deltaX = ( path.x - last.x ) / path.count;
-            path.deltaY = ( path.y - last.y ) / path.count;
+            path.speedX = ( path.x - last.x ) / deltaT;
+            path.speedY = ( path.y - last.y ) / deltaT;
         }
 //        console.log('in add Path', this.which,this.pathList, this);
 //        debugger;
@@ -689,16 +699,16 @@ export class NStickFigure {
         this.badgeText = null;
         this.badgeVisible = false;
         this.ratio = this.maxArmAngle / this.maxLegAngle ;
-        this.x = x;
-        this.y = y;
+        this.x = Math.floor(x);
+        this.y = Math.floor(y);
         
 
 
     };
     
     initialPosition(x,y){
-       this.x = x;
-       this.y = y; 
+        this.x = Math.floor(x);
+        this.y = Math.floor(y);
     };
     
      badgeDisplay (bool){
