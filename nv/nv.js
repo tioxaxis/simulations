@@ -1,39 +1,41 @@
-'use strict';
-
+"use strict";
 // declaration of Globals
-import {GammaRV, Heap} from "../modules/utility.js";
-//    from './modules/utility.js';
-import { Queue, WalkAndDestroy, MachineCenter,
-    InfiniteMachineCenter,SPerson,allSPerson, 
+
+const tioxTimeConv = 1000;  //time are in milliseconds
+import {GammaRV, UniformRV, Heap} from '../modules/utility.js';
+import { Queue, WalkAndDestroy, MachineCenter, 
+        InfiniteMachineCenter,SPerson,allSPerson, 
        GStickFigure, NStickFigure }
-from "../modules/procsteps.js" ;
-const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
+    from '../modules/procsteps.js' ;
+
 const theStage = {
-normalSpeed : .10,    //.25 pixels per millisecond
-width: 1000,
-height: 300,
-pathY: 100,
-person: {dx: 40, dy: 60}   
-};
-{
-theStage.offStageLeft = {x: -100, y: theStage.pathY};
-theStage.offStageRight = {x: theStage.width*1.1, y: theStage.pathY};
-
-theStage.headQueue = {x: theStage.width*0.70, y: theStage.pathY};
-theStage.queueDelta = {dx: theStage.person.dx, dy: 0};
-theStage.scanner = {x: theStage.width*0.75, y: theStage.pathY};
-theStage.pastScanner = {x: theStage.width*0.75+theStage.person.dx,
-                       y: theStage.pathY};
-theStage.scannerDelta = {dx: 0, dy: theStage.person.dy*1.8};
+    normalSpeed : .10,    //.25 pixels per millisecond
+    width: 1000,
+    height: 300,
+    
+    person: {width: 40, height: 60}   
 };
 
+{   theStage.store = {left: 720, top: 50, width:100, height: 200,
+                     stroke:1};
+    
+    
+    theStage.pathLeft = -100;
+    theStage.pathRight = 700;
+    theStage.pathTop = 50;
+   theStage.pathBot = 200;
+   theStage.offStageEntry = {x: theStage.pathLeft, y: theStage.pathTop};
+    theStage.offStageExit = {x: theStage.pathLeft, y: theStage.pathBot};
+    theStage.headQueue = {x: theStage.pathRight, y: theStage.pathBot};
+};
 
-// specific info for queueing needed by general routines
-// in procsteps and rhs.
-simu.sliderTypes = {ar:'range', acv:'range', sr:'range',
-    scv:'range', speed:'range', action:'radio', reset:'checkbox'};
-simu.framedelta = 5;
-simu.framedeltaFor1X = 5;
+
+simu.theStage = theStage;
+simu.framedelta = 200;
+simu.framedeltaFor1X = 200;
+simu.sliderTypes = {dr:'range', dcv:'range', Cu:'range',
+    Co:'range', quan: 'range', speed:'range', action:'radio', reset:'checkbox'},
+simu.precision = {dr:0,dcv:1,Cu:0,Co:0,quant: 0,speed:0};
 
 class ProcessCollection {
  constructor (){
@@ -49,22 +51,25 @@ class ProcessCollection {
  };
 }; // end class processCollection
 
-var qLenDisplay= null;
+//var qLenDisplay= null;
 
- function resetBackground(){
-//        let theFabricCanvas = simu.theCanvas;
-//        theFabricCanvas.clear();
-//        qLenDisplay = new fabric.Text( 'Queue Length = 0', 
-//            { fontSize: 20, visible: false, 
-//             left: 100, top: 250 });
-//        theFabricCanvas.add(qLenDisplay); 
-        
-        // put other things that are fixed and not people on stage.
-    };
+ function setBackground(){
+    const background = document.getElementById('theBackground');
+    const c = background.getContext('2d');
+     const s = theStage.store;
+     c.resetTransform();
+     c.strokeStyle = 'black';
+     c.lineWidth= c.stroke;;
+     c.beginPath();
+     c.strokeRect(s.left, s.top, s.width, s.height);
+     c.moveTo(s.left, s.top);
+     c.lineTo(s.left+s.width/2,s.top+20);
+     c.lineTo(s.line+s.width,s.top);
+     c.closePath();
+ };
 
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
-const precision = {ar:1,acv:1,sr:1,scv:1,speed:0}
-const speeds = [1,2,5,10,25];
+const speeds = [1,3,9,27,81];
 function captureChangeInSliderS(event){
 //    console.log('is event '+(event.isTrusted?'real':'scripted'));
     let inputElem = event.target.closest('input');
@@ -73,36 +78,28 @@ function captureChangeInSliderS(event){
     var id = inputElem.id;
     if (inputElem.type == 'range'){
         var v = Number( inputElem.value )       
-                .toFixed(precision[id]);
+                .toFixed(simu.precision[id]);
         document.getElementById(id+'Display')
             .innerHTML = v;
     }
     switch(id) {
-    case 'ar':  
-        theSimulation.interarrivalRV
-            .setRate(v/tioxTimeConv);
-        simu.heap.modify('finish/creator',theSimulation.interarrivalRV);
-        theChart.updatePredictedWait();
+    case 'dr':  
+        theSimulation.demandRV
+            .setMean(v/tioxTimeConv);
+//        theChart.updatePredictedInv();   
         break;
             
-    case 'acv':  
-        theSimulation.interarrivalRV.setCV(v);
-        simu.heap.modify('finish/creator',theSimulation.interarrivalRV);
-        theChart.updatePredictedWait();
-
+    case 'dcv':  
+        theSimulation.demandRV.setCV(v);
         break;        
 
-    case 'sr':  
-        theSimulation.serviceRV
-            .setRate(v/tioxTimeConv);
-        simu.heap.modify('finish/TSAagent',theSimulation.serviceRV);
-        theChart.updatePredictedWait();
+    case 'Cu':  
+//        theSimulation.serviceRV.setTime(v*tioxTimeConv);
+//        theChart.updatePredictedInv();   
         break;
             
-    case 'scv':  
-        theSimulation.serviceRV.setCV(v);
-        simu.heap.modify('finish/TSAagent',theSimulation.serviceRV);    
-        theChart.updatePredictedWait();
+    case 'Co':  
+//        theSimulation.serviceRV.setCV(v);
         break;       
 
     case 'speed':
@@ -121,20 +118,24 @@ function captureChangeInSliderS(event){
     }   
 }
 
+
+//var totInv, totTime, totPeople, lastArrDep, LBRFcount ;
 simu.reset2 = function(){
-    resetBackground();
     Person.reset();
     theChart.reset();     
     theProcessCollection.reset();
-    gSF = new GStickFigure(80);
+//    totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
+    gSF = new GStickFigure( theStage.person.height );
+    
+    
         
     // schedule the initial Person to arrive and start the simulation/animation.
     theSimulation.supply.previous = null;
-    theSimulation.creator.knockFromPrevious();
+//    theSimulation.creator.knockFromPrevious();
     
     //fudge to get animation started quickly
-    let t = simu.heap.top().time-1;
-    simu.now = simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
+//    let t = simu.heap.top().time-1;
+//    simu.now = simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
     
 };
 
@@ -143,139 +144,94 @@ simu.reset2 = function(){
 //  animation for that process step
 
 const animForQueue = {
-    loc : theStage.headQueue,
-    delta : theStage.queueDelta,
-    dontOverlap: true,
-    walkingTime: (theStage.headQueue.x-theStage.offStageLeft.x)/theStage.normalSpeed,
-
+    walkingTime1: (theStage.pathRight - theStage.offStageEntry.x)/theStage.normalSpeed,
+    walkingTime2: (theStage.pathBot - theStage.pathTop)/theStage.normalSpeed,
+    
     reset : function (){  
-        this.loc = theStage.headQueue;
     },
 
-    join: function ( nInQueue, arrivalTime, person ) {
-        let dist = nInQueue * animForQueue.delta.dx;
-        let time = simu.now + dist/theStage.normalSpeed;
-        person.addPath( {t: time, x: person.cur.x, y: person.cur.y});
+    join: function ( qLength, arrivalTime, person ) {
+         person.addPath( {t: arrivalTime - this.walkingTime2, 
+                         x: theStage.pathRight,
+                         y: theStage.pathTop } );
         person.addPath( {t: arrivalTime, 
-                         x: animForQueue.loc.x - dist,
-                         y: animForQueue.loc.y } );
-        if ( person.isThereOverlap() ){
-            person.cur.y = person.ahead.cur.y - 10;
-        }
-          
+                         x: theStage.pathRight,
+                         y: theStage.pathBot } );
     },
 
     arrive: function (nSeatsUsed, person) {
     },
 
     leave: function (procTime, nSeatsUsed) {
-        
-        for (let k = 0; k < theSimulation.queue.q.length; k++){
-            let p = theSimulation.queue.q[k];
-            let time = simu.now + Math.min( animForQueue.delta.dx / theStage.normalSpeed, procTime);
-            if( p.pathList.length == 0 ) {
-                p.addPath( 
-                    {t: time,
-                     x: p.cur.x + animForQueue.delta.dx,
-                     y: p.cur.y + animForQueue.delta.dy} );
-            } else {
-                let dest = p.pathList[p.pathList.length-1];
-                p.updatePathDelta(Math.max(time,dest.t), 
-                     animForQueue.delta.dx, animForQueue.delta.dy )
-            }
-        }
-        
     }
 };
 
-//function printPath(p, str){
-//   
-//    if(p.pathList.length == 0) 
-//        console.log(str,'person',p.which,'no path****');
-//    for ( let i = 0; i < p.pathList.length; i++ ) {
-//        let pt = p.pathList[i];
-//        console.log(str,'person',p.which, pt.t,pt.x,pt.y);
-//    }
-//};
-
 const animForWalkOffStage = {
-    loc: theStage.offStageRight,
     walkingTime: null,
 
     computeWalkingTime: function (){
-         this.walkingTime =  Math.abs(theStage.scanner.x - this.loc.x)/theStage.normalSpeed;
-        return this.walkingTime
+         this.walkingTime = (theStage.pathRight - theStage.pathLeft) / theStage.normalSpeed;
+        return this.walkingTime;
     },
 
     start: function (person){
-        person.addPath( {t: simu.now + 50/theStage.normalSpeed, x: 800, y: 100});
-        person.addPath( {t: simu.now+this.walkingTime - 50/theStage.normalSpeed,
-                          x: this.loc.x, y: this.loc.y } );
-        
-        if ( person.isThereOverlap() ){
-            person.cur.y = person.ahead.cur.y - 10;
-         }
-        
+        person.addPath( {t: simu.now + 
+                this.walkingTime,
+                x: theStage.pathLeft, y: theStage.pathBot } );
     }
 };
-        
- const animForCreator = {
-    loc: theStage.offStageLeft,
-    dontOverlap: false,
 
+ const animForCreator = {
+    loc: theStage.offStageEntry,
     reset: function () {
     },
 
-    start: function (theProcTime,person,m)  {},
+    start: function (theProcTime,person,m)  {  // only 1 machine for creator m=1
+       person.setDestWithProcTime(theProcTime,
+            animForCreator.loc.x,animForCreator.loc.y);
+    },
      
-    finish: function () {},
-       
-};
- 
-
-
-
-
-const animForTSA = {
-    firstLoc : theStage.scanner,
-    delta : theStage.scannerDelta,
-    dontOverlap: true,
-
-    machLoc: null,
+     finish: function () {},
+    };
+        
+const animForNV = {
     lastFinPerson: null,
     
-    reset:function ( numMachines ) {
-         animForTSA.machLoc = [];
-         animForTSA.lastFinPerson = null;
-         let locX = animForTSA.firstLoc.x;
-         let locY = animForTSA.firstLoc.y;
-        const background = document.getElementById('theBackground');
-        const c = background.getContext('2d');
-        c.resetTransform();
-        c.strokeStyle = 'blue';
-        c.lineWidth= 5;
-        c.beginPath();
-        for( let k = 0; k< numMachines; k++ ){
-            c.strokeRect(locX-28, locY -15, 55, 100);
-            animForTSA.machLoc[k] = {x :locX, y :locY};
-            locX += animForTSA.delta.dx;
-            locY += animForTSA.delta.dy;
-        } 
-        c.closePath();
+    reset:function (  ) {
     },
+    
     start: function (theProcTime, person, m){
-        person.setDestWithProcTime(theProcTime,
-                animForTSA.machLoc[m].x,animForTSA.machLoc[m].y);
- //       person.setColor("purple");
-        if (animForTSA.lastFinPerson &&
-           animForTSA.lastFinPerson.pathList.length > 1 ){
-            let path = animForTSA.lastFinPerson.pathList[0];
-            path.t = Math.min(path.t, simu.now+theProcTime);
-        }    
+//        let walkT = 5 * tioxTimeConv;
+//        if ( theProcTime < walkT+ 3 * tioxTimeConv ){
+//            person.addPath( {t: simu.now + theProcTime,
+//                    x: theStage.box.exitX, 
+//                    y: theStage.box.exitY} );
+//        } else { 
+//            walkT = Math.min( walkT, theProcTime);
+//            let rx = Math.random()  * 0.8 * theStage.box.width+
+//                theStage.box.width * 0.05;
+//            let ry = Math.random() * (theStage.box.height - 
+//                theStage.person.height) + theStage.box.top;
+//            let w = theStage.box.width;
+//            person.addPath( {t: simu.now + walkT * rx/w,
+//                    x: rx + theStage.box.entryX, 
+//                    y: ry} );
+//            person.addPath( 
+//                {t: simu.now +  walkT * rx/w + theProcTime - walkT,
+//                    x: rx + theStage.box.entryX, 
+//                    y: ry} );
+//            person.addPath( {t: simu.now + theProcTime,
+//                    x: theStage.box.exitX, 
+//                    y: theStage.box.exitY} );   
+//        }
+        
+        
+//        person.graphic.badgeDisplay(true);
+        person.arrivalTime = simu.now;
     },
     
     finish: function(person){
-        animForTSA.lastFinPerson = person;  
+        animForLittlesBox.lastFinPerson = person;
     }
 };
 
@@ -284,67 +240,93 @@ var theProcessCollection = new ProcessCollection();
 
  const theSimulation = {
     //  the two random variables in the simulation
-    interarrivalRV: null,
-    serviceRV : null,
-    
+    demandRV: null,
+        
      // the 5 process steps in the simulation
     supply : null,
     queue : null,
     walkOffStage :null,
-    creator : null,
-    TSAagent: null,
+    demand : null,
+    newsVendor: null,
+     Cu : null,
+     Co : null,
     
     initialize: function (){
-    
-        // random variables
-        let r = document.getElementById('ar').value;
-        let cv = document.getElementById('acv').value; 
-        theSimulation.interarrivalRV = new GammaRV(r/tioxTimeConv,cv);
-        r = document.getElementById('sr').value;
-        cv = document.getElementById('scv').value;
-        theSimulation.serviceRV = new GammaRV(r/tioxTimeConv,cv);
+        setBackground();
         
+        
+        
+        
+        // random variables
+        let r = document.getElementById('dr').value;
+        let cv = document.getElementById('dcv').value; 
+        theSimulation.demandRV = new UniformRV(dr,cv);
+//        let t = document.getElementById('sr').value;
+//        cv = document.getElementById('scv').value;
+        theSimulation.serviceRV = new GammaRV(0,0);
+//        
         //queues
         this.supply = new Supplier
-              ( theStage.offStageLeft.x, theStage.offStageLeft.y);
+              ( theStage.offStageEntry.x, theStage.offStageEntry.y);
     
                 
         this.queue = new Queue("theQueue",-1, animForQueue.walkingTime,     
                 animForQueue,
-                recordQueueArrival, recordQueueLeave  );
-        
-        // define the helper functions for theQueue
-        function recordQueueArrival (person){
-            person.arrivalTime = simu.now;
-        };
-        function recordQueueLeave(person) {            
-            theChart.push(simu.now,simu.now-person.arrivalTime);
-         };
-            
-      
+                null, null  );
+              
         this.walkOffStage = new WalkAndDestroy("walkOff",  animForWalkOffStage, true);
     
     
         // machine centers 
-        this.creator = new MachineCenter("creator", 
-             1,theSimulation.interarrivalRV,
-             this.supply, this.queue, 
-             animForCreator);
+//        this.creator = new MachineCenter("creator", 
+//             1,theSimulation.demandRV,
+//             this.supply, this.queue, 
+//             animForCreator);
             
-        this.TSAagent = new MachineCenter("TSAagent",
-              1,theSimulation.serviceRV,
+        this.demand = new DemandCreator(20000, theSimulation.demandRV);
+        
+        this.newsVendor = new MachineCenter("newsVendor",1,
+              theSimulation.serviceRV,
               this.queue, this.walkOffStage,
-              animForTSA);
+              animForNV,null,null);
+        
+//        function LBRecordStart (person){
+//            
+//            person.arrivalTime = simu.now;
+//            totInv += (simu.now - lastArrDep) * 
+//                ( theSimulation.LittlesBox.getNumberBusy());
+//            lastArrDep = simu.now;
+////            console.log(' LB start', person);
+//            //console.log('LB record start',simu.now,person);
+//            
+//        };
+//        function LBRecordFinish (person){
+//            totInv += (simu.now - lastArrDep) * 
+//                ( theSimulation.LittlesBox.getNumberBusy());
+//            lastArrDep = simu.now;
+//            totPeople++;
+//            totTime += simu.now - person.arrivalTime;
+//            LBRFcount = (LBRFcount + 1) % (simu.frameSpeed*5);
+//            if (!LBRFcount){
+//                theChart.push(simu.now, totInv/simu.now, totTime/simu.now );
+//                console.log( 'in LBRF tot people ',totPeople)
+//            };
+//            
+            
+            
+            //console.log('LB record start',simu.now,person);
+        
+        
          
         //link the queue to machine before and after
         this.queue.setPreviousNext(
-            this.creator,this.TSAagent);
+            this.creator,this.newsVendor);
 
         // put all the process steps with visible people in theProcessCollection
-        theProcessCollection.push(this.supply);
-        theProcessCollection.push(this.creator);
+//        theProcessCollection.push(this.creator);
+        theProcessCollection.push(this.demand);
         theProcessCollection.push(this.queue);
-        theProcessCollection.push(this.TSAagent);
+        theProcessCollection.push(this.newsVendor);
         theProcessCollection.push(this.walkOffStage);
      },
 };
@@ -356,32 +338,58 @@ class Supplier {
         this.y = y;
         this.previous = null;
     };
-    reset() {
-        this.previous = null;
-    }
 
     pull () {
-       
         this.previous = new Person(this.previous, this.x, this.y,
                                   30, theStage.person.height); 
         return this.previous;
      }
 };   //end class Supplier
 
-var gSF ;
+class DemandCreator {
+    constructor (cycleLength, demandRV ){
+        this.cycleLength = cycleLength;
+        this.demandRV = demandRV;
+        };
 
- export class Person extends SPerson {
+    reset() {};
     
+    cycle() {
+        let d = Math.floor(demandRV.observe());
+        let t = simu.now;
+        let deltaT = 70*simu.normalSpeed;
+
+        for ( let i = 0; i < d; i++ ){
+            t += deltaT
+            let person = theSimulation.supply.pull();
+            simu.heap.push( t, theSimulation.queue.push.bind(theSimulation.queue), person);
+        }
+        simu.heap.push( simu.now+ cycleLength, this.cycle.bind(this), null);
+
+    };
+}
+
+var gSF ;
+export class Person extends SPerson {
     
-    constructor (ahead, x,y= 100,w = 30,h = 30) {
+    constructor (ahead, x,y= 60,w = 30,h = 30) {
         super(ahead, x, y);
+        
         this.width = w;
         
-        this.graphic = new NStickFigure( gSF, x, y );
-        //simu.theCanvas.add(this.graphic.figure);
+        this.graphic = new NStickFigure( gSF, x, y);
+        this.updateBadge = false;
+//        simu.theCanvas.add(this.graphic.figure);
      };
      
     
+     moveDisplayWithPath (deltaSimT){
+         if (this.updateBadge){ 
+            this.graphic.badgeSet(Math.round((simu.now-this.arrivalTime)/tioxTimeConv).toString()) 
+         }       
+         super.moveDisplayWithPath(deltaSimT);
+     };
+       
     isThereOverlap() {
         // is 'p' graph above the 'a' graph in [0, p.count] ?
         let p = this;
@@ -389,41 +397,39 @@ var gSF ;
         if ( !a ) return false;
         let pPath = p.pathList[0];
         let aPath = a.pathList[0];
-        if ( !aPath ) return false;
-       console.log ( 'persons ',p.which,a.which, ' time ', pPath.t,pPath.x, aPath.t + a.width/aPath.speedX, aPath.x);
-           return false;
-        return ( pPath.t <aPath.t + a.width/aPath.speedX)
-//        if (  p.cur.x + p.width > a.cur.x ) return true;
-//        if ( pPath.deltaX <= aPath.deltaX ) return false;
-//        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
+        
+        if (  p.cur.x + p.width > a.cur.x ) return true;
+        if ( pPath.deltaX <= aPath.deltaX ) return false;
+        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
     };
      
      setDestWithProcTime(procTime,x,y){
          let distance = Math.max(Math.abs(this.cur.x-x),
                                  Math.abs(this.cur.y-y));  
-         let deltaTime = Math.min( distance / theStage.normalSpeed,  procTime);
-         this.addPath( {t:simu.now +deltaTime, x:x, y:y} );
+         let deltaTime = Math.min(distance/theStage.normalSpeed,procTime);
+         this.addPath({t:simu.now +deltaTime, x:x, y:y});
      };
 
   };  // end class Person
-
     
 
  function initializeAll(){ 
     Math.seedrandom('this is the Queueing Simulation');
     simu.initialize();   // the generic
     theSimulation.initialize();   // the specific to queueing
-     theChart.initialize();
     //reset first time to make sure it is ready to play.
+     theChart.initialize();
     document.getElementById('resetButton').click();   
 };
+
+
 document.addEventListener("DOMContentLoaded",initializeAll);
  
 
 //   TheChart variable is the interface to create the charts using Chart.js
 
 export const theChart ={
-    predictedWaitValue : null,
+    predictedInvValue: null,
     canvas: null,
     ctx: null,
     chart: null,
@@ -432,7 +438,7 @@ export const theChart ={
         data: {
        	    datasets: [
                 {  //*** Series #1
-                label: 'individual wait',
+                label: 'avg. inventory',
                 pointBackgroundColor: 'rgba(0,0,220,1)',
                 pointBorderColor: 'rgba(0,0,220,1)',
                 showLine: true,
@@ -445,7 +451,7 @@ export const theChart ={
                 data: []
                 },
                 {   //*** Series #2
-                label: 'average wait',
+                label: 'avg. rate * avg. time',
                 pointBackgroundColor: 'rgba(0,150,0,1)',
                 pointBorderColor: 'rgba(0,150,0,1)',
                 showLine: true,
@@ -458,7 +464,7 @@ export const theChart ={
                 data: [],
                 },
                 {   //*** Series #3
-                label: 'predicted wait',
+                label: 'predicted inventory',
                 pointBackgroundColor: 'rgb(185, 26, 26)',
                 pointBorderColor: 'rgba(185, 26, 26)',
                 showLine: true,
@@ -499,7 +505,7 @@ export const theChart ={
             title:{
                display: true,
                 position: 'top',
-                text: 'Waiting Time',
+                text: 'Inventory',
                 //fontSize: 20,
             },   
             scales: {
@@ -524,8 +530,8 @@ export const theChart ={
             },
     total: null,
     count: null,
-    graphInitialTimeWidth: 5,
-    graphInitialTimeShift: 4,
+    graphInitialTimeWidth: 40,
+    graphInitialTimeShift: 30,
     graphTimeWidth: null,
     graphTimeShift: null,
     graphMin: null,
@@ -538,7 +544,7 @@ export const theChart ={
         this.chart =  new Chart(this.ctx, this.stuff);
         resizeChart();
         this.reset();
-        this.predictedWaitValue = this.predictedWait();
+        this.predictedInvValue = this.predictedInv();
     }, 
     reset: function(){
         this.stuff.data.datasets[0].data=[];
@@ -564,76 +570,52 @@ export const theChart ={
         this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
         this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
         this.chart.options.scales.xAxes[0].ticks.stepSize = this.graphTimeWidth - this.graphTimeShift;
-        var points = Math.max(1,Math.floor( (11-this.graphScale)/2));
-        this.chart.data.datasets[0].pointRadius = points;
+        var points = Math.max(1,Math.floor( (11-this.graphScale)/4));
+        this.chart.data.datasets[0].pointRadius = 0;
         this.chart.data.datasets[0].borderWidth = points;
-        this.chart.data.datasets[1].pointRadius = points;
+        this.chart.data.datasets[1].pointRadius = 0;
         this.chart.data.datasets[1].borderWidth = points;
         this.chart.data.datasets[2].borderWidth = points;
         this.chart.update();
     },
-    push: function (t,w){ 
-        t /= 10000;
-        w /= 10000;
-        this.total += w;
-        this.count++;
+    push: function (t,inv,rt){
+        
+        t /= tioxTimeConv;
+        
         if (t > this.graphMax) {
             this.graphMin += this.graphTimeShift;
             this.graphMax += this.graphTimeShift;
             this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
             this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
             }
-        const pW = theChart.predictedWaitValue;
-        if ( w > this.yAxisScale.max  || 
-            ( pW > this.yAxisScale.max && pW < Infinity) ){
-            this.yAxisScale = this.aVAxis.update(w);
-            if ( pW >= 0 && pW < Infinity )
-                    this.yAxisScale = this.aVAxis.update(pW);
+        //        console.log( 'at chart ',t,inv,rt,pI);
+        if ( inv > this.yAxisScale.max  ||
+            (  theChart.predictedInvValue > this.yAxisScale.max ) ){
+            this.yAxisScale = this.aVAxis.update(inv);
+            this.yAxisScale = this.aVAxis.update(theChart.predictedInvValue * 2);
             this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
             this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
         }
-        this.chart.data.datasets[0].data.push({x:t,y:w});
-        this.chart.data.datasets[1].data.push({x:t,y:this.total/this.count});
-        if ( pW >= 0 && pW < Infinity) {
-            this.chart.data.datasets[2].data.push({x:t,y:pW})
-        }
+        this.chart.data.datasets[0].data.push({x:t,y:inv});
+        this.chart.data.datasets[1].data.push({x:t,y:rt});
+        this.chart.data.datasets[2].data.push({x:t,y:theChart.predictedInvValue});
         this.chart.update();
         // update graph with time, this.total/this.waits.length
     },
-    updatePredictedWait: function(){
-        let pW = theChart.predictedWaitValue;
-        let pDS = this.chart.data.datasets[2];
         
-        pDS.data.push( {x:(simu.now-1)/10000, y:pW});
-        pW = theChart.predictedWait();
-        pDS.data.push( {x:(simu.now/10000), y:pW});
-        pDS.label = 'predicted wait' + ((pW == Infinity)? ' = ∞':'');
-        
-        theChart.predictedWaitValue = pW;
-        this.chart.generateLegend();
+     updatePredictedInv: function(){
+        this.chart.data.datasets[2].data.push(
+            {x:(simu.now-1)/10000, y:theChart.predictedInvValue});
+        theChart.predictedInvValue = theChart.predictedInv();
+        this.chart.data.datasets[2].data.push(
+            {x:(simu.now/10000), y:theChart.predictedInvValue});
         this.chart.update();
      },
-    
-     predictedWait: function(){
-        if (theSimulation.serviceRV.rate == 0 ) return Infinity;
-        let rho = theSimulation.interarrivalRV.rate/theSimulation.serviceRV.rate;
-        if (rho >= 1) return Infinity;
-        let p = ( rho / (1-rho) / theSimulation.serviceRV.rate/10000 )*
-            (theSimulation.interarrivalRV.CV**2 + theSimulation.serviceRV.CV**2)/2;
-        return p;
-     },   
-
+     predictedInv: function (){
+//        return (theSimulation.serviceRV.mean)/(theSimulation.interarrivalRV.mean);
+     }
 }
 
-function predictedWait(){
-    if (theSimulation.serviceRV.rate == 0 ) return -1;
-    let rho = theSimulation.interarrivalRV.rate/theSimulation.serviceRV.rate;
-    if (rho >= 1) return -1;
-    let p = ( rho / (1-rho) / theSimulation.serviceRV.rate/10000 )*
-        (theSimulation.interarrivalRV.CV**2 + theSimulation.serviceRV.CV**2)/2;
-//    console.log(' predicted wait / 10000 ', p/10000);
-    return p;
-}
 
 class VerticalAxisValue {
     constructor(){

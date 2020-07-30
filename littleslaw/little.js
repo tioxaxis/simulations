@@ -1,7 +1,7 @@
 "use strict";
 // declaration of Globals
 
-const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
+const tioxTimeConv = 1000;  //time are in milliseconds
 import {GammaRV, Heap} from '../modules/utility.js';
 //    from './modules/utility.js';
 import { Queue, WalkAndDestroy, MachineCenter, 
@@ -10,7 +10,7 @@ import { Queue, WalkAndDestroy, MachineCenter,
     from '../modules/procsteps.js' ;
 
 const theStage = {
-    normalSpeed : .020,    //.25 pixels per millisecond
+    normalSpeed : .10,    //.25 pixels per millisecond
     width: 1000,
     height: 300,
     
@@ -44,7 +44,7 @@ const theStage = {
 };
 
 
-
+simu.theStage = theStage;
 simu.framedelta = 200;
 simu.framedeltaFor1X = 200;
 simu.sliderTypes = {ar:'range', acv:'range', sr:'range',
@@ -67,15 +67,21 @@ class ProcessCollection {
 
 //var qLenDisplay= null;
 
- function resetBackground(){
-//    const c = simu.theCanvas;
-//    c.clear();
-//     let box = theStage.box;
-//     
-//    c.add( new fabric.Rect( box ) );
-//    c.add( new fabric.Rect( theStage.pathway ) );
-//     c.requestRenderAll();
-};
+ function setBackground(){
+    const background = document.getElementById('theBackground');
+    const c = background.getContext('2d');
+     const b = theStage.box;
+     c.resetTransform();
+     c.strokeStyle = b.stroke;
+     c.lineWidth= b.strokeWidth;
+     c.beginPath();
+     c.strokeRect(150, b.top, b.width, b.height);
+     c.closePath();
+     c.fillStyle = 'white';
+     c.beginPath();
+     c.fillRect(0,b.entryY-2,1000,theStage.person.height+4);
+     c.closePath();
+ };
 
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
 const speeds = [1,2,5,10,25];
@@ -128,14 +134,13 @@ function captureChangeInSliderS(event){
 }
 
 
-var totInv, totTime, totPeople, lastArrDep;
+var totInv, totTime, totPeople, lastArrDep, LBRFcount ;
 simu.reset2 = function(){
-    resetBackground();
     Person.reset();
     theChart.reset();     
     theProcessCollection.reset();
-    totInv = totTime = totPeople = lastArrDep = 0;
-    gSF = new GStickFigure( 80 );
+    totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
+    gSF = new GStickFigure( theStage.person.height );
     
     
         
@@ -212,8 +217,8 @@ const animForLittlesBox = {
     },
     
     start: function (theProcTime, person, m){
-        let walkT = 50000;
-        if ( theProcTime < walkT+ 30000 ){
+        let walkT = 5 * tioxTimeConv;
+        if ( theProcTime < walkT+ 3 * tioxTimeConv ){
             person.addPath( {t: simu.now + theProcTime,
                     x: theStage.box.exitX, 
                     y: theStage.box.exitY} );
@@ -262,7 +267,8 @@ var theProcessCollection = new ProcessCollection();
     TSAagent: null,
     
     initialize: function (){
-    
+        setBackground();
+        
         // random variables
         let r = document.getElementById('ar').value;
         let cv = document.getElementById('acv').value; 
@@ -310,8 +316,13 @@ var theProcessCollection = new ProcessCollection();
             lastArrDep = simu.now;
             totPeople++;
             totTime += simu.now - person.arrivalTime;
+            LBRFcount = (LBRFcount + 1) % (simu.frameSpeed*5);
+            if (!LBRFcount){
+                theChart.push(simu.now, totInv/simu.now, totTime/simu.now );
+                console.log( 'in LBRF tot people ',totPeople)
+            };
             
-            theChart.push(simu.now, totInv/simu.now, totTime/simu.now );
+            
             
             //console.log('LB record start',simu.now,person);
         };
@@ -361,7 +372,7 @@ export class Person extends SPerson {
     
      moveDisplayWithPath (deltaSimT){
          if (this.updateBadge){ 
-            this.graphic.badgeSet(Math.round((simu.now-this.arrivalTime)/10000).toString()) 
+            this.graphic.badgeSet(Math.round((simu.now-this.arrivalTime)/tioxTimeConv).toString()) 
          }       
          super.moveDisplayWithPath(deltaSimT);
      };
@@ -504,8 +515,8 @@ export const theChart ={
             },
     total: null,
     count: null,
-    graphInitialTimeWidth: 200,
-    graphInitialTimeShift: 150,
+    graphInitialTimeWidth: 40,
+    graphInitialTimeShift: 30,
     graphTimeWidth: null,
     graphTimeShift: null,
     graphMin: null,
@@ -554,7 +565,7 @@ export const theChart ={
     },
     push: function (t,inv,rt){
         
-        t /= 10000;
+        t /= tioxTimeConv;
         
         if (t > this.graphMax) {
             this.graphMin += this.graphTimeShift;

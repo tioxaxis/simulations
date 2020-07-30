@@ -92,7 +92,24 @@
     clip-path: content-box;
     
 }
-        
+.theStage {
+   
+}
+#theCanvas {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+/*    border: red solid 3px*/
+}
+#theBackground{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+/*    border: green solid 5px;*/
+}
+
 #chartWrapper {
     position:absolute;
     bottom: 0;

@@ -50,12 +50,12 @@
 
    <div  id="containerInner">
       <div id="leftHandSideBox">
-        <div id="canvasWrapper">
-            <canvas id="theCanvas" 
-                   style="width:100%; height:100%;" 
-                   width=1000 height=300> 
+        <div id="canvasWrapper">    <!--start ANIMATION Stage -->
+            <canvas class="theStage" id="theCanvas"  width=1000 height=300> 
             </canvas>
-        </div>
+            <canvas class="theStage" id="theBackground" width=1000 height=300>
+            </canvas>
+        </div>                      <!--end ANIMATION Stage -->
         <div id="chartWrapper" class="chart-container" 
              >
             <canvas id="chart"></canvas>

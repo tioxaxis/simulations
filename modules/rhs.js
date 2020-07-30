@@ -174,7 +174,7 @@ const presets = {
                 if (response.ok) {
                     presetsRows = await response.json();
                 } else {
-                    alert("json file HTTP-Error: " + response.status);
+                    console.log("json file HTTP-Error: " + response.status);
                 }
             }     
         }

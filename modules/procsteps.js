@@ -18,27 +18,18 @@ simu.requestAFId = null;  // id for requestAnimationFrame
 simu.initialize = function(  ) {
         simu.theCanvas = document.getElementById('theCanvas');
         simu.context = simu.theCanvas.getContext('2d');
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
+//        window.addEventListener('resize', resizeCanvas);
     };
     
 simu.reset = function() {
+        clearCanvas();
         simu.now = 0;
         simu.frametime= 0;
         simu.heap.reset();
         simu.reset2();
     };
     
-function resizeCanvas() {    
-    // w for wrapper,  c for canvas, W for width, H for height
-    // none of this is useful after I got the right 
-    // width and height and style width and height
-    const w = document.getElementById('canvasWrapper');
-    const cW = simu.theCanvas.clientWidth;
-    const wW   = w.clientWidth;
-    const wH = w.clientHeight;
-    const ratio = wW /cW;
-    
+function clearCanvas() {        
     simu.context.clearRect(0,0,simu.theCanvas.width,simu.theCanvas.height);
 }
 
@@ -56,6 +47,7 @@ function play(){
         document.getElementById('playButton').style.display = 'none';
         document.getElementById('pauseButton').style.display = 'inline';  
         simu.lastFrame = performance.now();
+        console.log('at play', simu.lastFrame);
         simu.requestAFId = window.requestAnimationFrame(eachFrame);
         simu.isRunning = true;
         
@@ -81,23 +73,27 @@ function keyDownFunction (evt) {
 };
 
 function eachFrame (currentTime) {
-        let deltaT = currentTime - simu.lastFrame;
-        simu.lastFrame = currentTime;
+        // cuurentTime seems off
+        let alternateTime = performance.now();
+//        console.log( 'at each frame',currentTime, alternateTime, 'lastFrame', simu.lastFrame);
+    
+        let deltaT = Math.min(100,alternateTime - simu.lastFrame);
+        simu.lastFrame = alternateTime;
         let deltaSimT = deltaT * simu.frameSpeed;
-        simu.now += deltaSimT;
-        simu.frametime = simu.now; 
+        simu.frametime += deltaSimT;
     
     
         let theTop;
         
         while( (theTop = simu.heap.top())  &&
-                theTop.time <= simu.now ){
+                theTop.time <= simu.frametime ){
              const event = simu.heap.pull();
              simu.now = event.time;
              event.proc(event.item);
          }
-        
-        resizeCanvas();
+        simu.now =simu.frametime;
+    
+        clearCanvas();
         SPerson.moveDisplayAll(deltaSimT);
         simu.requestAFId = window.requestAnimationFrame(eachFrame);
 };
@@ -398,18 +394,36 @@ export class SPerson {
    moveDisplayWithPath (deltaSimT){
          while (this.pathList.length > 0) {
              var path = this.pathList[0];
-             
-             if ( path.t < simu.now ){
+//            console.log('BEFORE mDWP person ', this.which, 'now=',simu.now,'cur.x,path.x',this.cur.x, path.x,' deltaT=',deltaSimT)
+             let deltaX = path.speedX * deltaSimT;
+             if ( path.t < simu.now || path.x < this.cur.x + deltaX ){
+                 this.cur.t = path.t;
                  this.cur.x = path.x;
                  this.cur.y = path.y;
                  this.pathList.splice(0,1);
-                 deltaSimT = simu.now - path.t;
+                 deltaSimT = Math.max(0,simu.now - path.t);
              } else {
+                 this.cur.t = simu.now;
                  this.cur.x += path.speedX * deltaSimT;
+                 //*********
+                 if( this.cur.x > path.x +20 ){
+                     alert(' reached destination early');
+                     debugger;
+                 };
                  this.cur.y += path.speedY * deltaSimT;
                  break;
              };
-        }
+             
+        };
+//       console.log('AFTER  mDWP person ',this.which, 'now =', 'cur.x,path.x',this.cur.x);
+        //*******
+//       if (this.cur.x > simu.theStage.box.exitX+5  &&
+//            this.cur.y > simu.theStage.box.exitY+10 ){
+//            alert(' found person in wrong place');
+//            debugger;
+//        };
+       // console.log( 'in mDWP person', this.which, 'this.cur.x', this.cur.x);
+                    
         this.graphic.moveTo(this.cur.x,this.cur.y); 
         this.graphic.draw();
      };  
@@ -472,11 +486,10 @@ export class SPerson {
     };
 } ;    // end of class SPerson
 
-var SFcolors = ['rgb(28, 62, 203)', 'rgb(80, 212, 146)',
-                        'rgb(151, 78, 224)', 'rgb(234, 27, 234)',
-                        'rgb(232, 100, 51)', 'yellow',
-                        'rgb(0, 0, 0)', 'rgb(74, 26, 204)',
-                        'rgb(6, 190, 234)', 'rgb(206, 24, 115)'];
+var SFcolors = ['rgb(28, 62, 203)', 'rgb(80, 212, 146)', 'rgb(151, 78, 224)',
+                'rgb(234, 27, 234)', 'rgb(164, 132, 252)', 'rgb(29, 157, 127)',
+                'rgb(0, 0, 0)', 'rgb(74, 26, 204)', 'rgb(6, 190, 234)', 'rgb(206, 24, 115)']
+    
 var SFborders = ['black', 'black', 'black', 'black',
                          'gray', 'black', 'rgb(80, 212, 146)', 'black',
                          'black', 'gray', 'black', 'black']; 
@@ -490,7 +503,7 @@ const pi2 = Math.PI*2;
         this.body = {x:0,y:0.22*size,w:size/10,h:size*0.4};
         this.leg = {x:0,y:size*5/9,w:size/12,h:size*4/9};
         this.arm = {x:0,y:size/4,w:size/16,h:size*4/9};
-        this.badge = {x: 1/8*size, y: 1/5*size };
+        this.badge = {x: 1/6*size, y: 2/5*size };
         this.deltaMaxX = size*(4/9);
         this.fontSize = Math.floor(2/5*size);
         simu.context.font = Math.floor(2/5*size)+'px Arial';

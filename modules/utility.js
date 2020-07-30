@@ -43,6 +43,18 @@ export class GammaRV {
        return Math.max(this.minimumTime,jStat.gamma.inv(p,this.shape,this.scale));
    }; 
 }; 
+
+export class UniformRV {
+  constructor (mean,variance){
+      this.mean = mean;
+      this.variance = variance;  
+  }  ;
+    
+    observe (){
+        return mean;
+        return this.mean-this.variance + 2 * this.variance * Math.random();
+    }
+};
  
 export class Heap {
     constructor(compare){
