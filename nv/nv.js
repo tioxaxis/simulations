@@ -90,7 +90,7 @@ function captureChangeInSliderS(event){
         break;
             
     case 'dcv':  
-        theSimulation.demandRV.setCV(v);
+        theSimulation.demandRV.setVariance(v);
         break;        
 
     case 'Cu':  

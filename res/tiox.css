@@ -300,11 +300,16 @@ input[type=range]:focus::-ms-fill-upper {
 }
 
 .spreadValues {
-    width: 80%;
+    
+    width: 90%;
     display: flex;
             flex-direction: row;
             flex-wrap:nowrap;
-            justify-content:space-between;
+            justify-content:space-around;
+}
+.spreadValues span {
+    border: solid 1px;
+
 }
 
 

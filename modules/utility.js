@@ -46,10 +46,18 @@ export class GammaRV {
 
 export class UniformRV {
   constructor (mean,variance){
-      this.mean = mean;
-      this.variance = variance;  
-  }  ;
-    
+      this.setParams(mean,variance); 
+  };
+    setParams(mean, variance){
+        this.mean = mean;
+        this.variance = variance; 
+    };
+    setMean(m){
+        this.mean = m;
+    }
+    setVariance(variance){
+        this.variance = variance;
+    }
     observe (){
         return mean;
         return this.mean-this.variance + 2 * this.variance * Math.random();
