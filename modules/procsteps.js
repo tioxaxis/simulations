@@ -65,7 +65,8 @@ document.getElementById('resetButton').addEventListener('click',simu.reset);
 document.addEventListener('keydown',keyDownFunction);
 
 function keyDownFunction (evt) {
-            const key = evt.key; 
+    if( simu.editMode ) return;
+    const key = evt.key; 
             if (evt.code == "Space") {
                 evt.preventDefault();
                 togglePlayPause();
@@ -92,7 +93,7 @@ function eachFrame (currentTime) {
              event.proc(event.item);
          }
         simu.now =simu.frametime;
-    
+       // console.log('in eachFrame now=', simu.now);
         clearCanvas();
         SPerson.moveDisplayAll(deltaSimT);
         simu.requestAFId = window.requestAnimationFrame(eachFrame);
@@ -392,11 +393,16 @@ export class SPerson {
      }
     
    moveDisplayWithPath (deltaSimT){
-         while (this.pathList.length > 0) {
+    
+       while (this.pathList.length > 0) {
+//           if (this.which <= 2 ){
+//        console.log(this.which, 'path ',this.pathList[0].t, this.pathList[0].x, 'cur x', this.cur.x, deltaSimT, simu.now)
+//    }   ;
              var path = this.pathList[0];
 //            console.log('BEFORE mDWP person ', this.which, 'now=',simu.now,'cur.x,path.x',this.cur.x, path.x,' deltaT=',deltaSimT)
              let deltaX = path.speedX * deltaSimT;
-             if ( path.t < simu.now || path.x < this.cur.x + deltaX ){
+             if (deltaX > 0 && this.cur.x > path.x+10) debugger;
+             if ( path.t < simu.now ) {
                  this.cur.t = path.t;
                  this.cur.x = path.x;
                  this.cur.y = path.y;
@@ -405,18 +411,26 @@ export class SPerson {
              } else {
                  this.cur.t = simu.now;
                  this.cur.x += path.speedX * deltaSimT;
-                 //*********
-                 if( this.cur.x > path.x +20 ){
-                     alert(' reached destination early');
-                     debugger;
-                 };
+                 if ( path.speedX > 0 ) 
+                     this.cur.x = Math.min( this.cur.x, path.x );
+                 else 
+                     this.cur.x = Math.max( this.cur.x, path.x );
                  this.cur.y += path.speedY * deltaSimT;
+                 if ( path.speedY > 0 ) 
+                     this.cur.y = Math.min( this.cur.y, path.y );
+                 else 
+                     this.cur.y = Math.max( this.cur.y, path.y );
+//                 let extra = this.cur.x + path.speedX * (path.t-this.cur.t)- path.x;
+//                 if ( this.which <=2 && extra > 0){
+//                  console.log ('extra', extra, this.cur, path, );
+//                     }
+//                 ;
                  break;
              };
              
         };
 //       console.log('AFTER  mDWP person ',this.which, 'now =', 'cur.x,path.x',this.cur.x);
-        //*******
+        //*******     *****
 //       if (this.cur.x > simu.theStage.box.exitX+5  &&
 //            this.cur.y > simu.theStage.box.exitY+10 ){
 //            alert(' found person in wrong place');
@@ -426,6 +440,16 @@ export class SPerson {
                     
         this.graphic.moveTo(this.cur.x,this.cur.y); 
         this.graphic.draw();
+       
+        function crossTarget(x,delta,target){
+            if (delta > 0) {
+                return ( x <= target ) && ( target <= x + delta)
+            } else if (delta < 0) {
+                return ( x + delta <= target ) && ( target <= x)
+            } else {
+                return false;
+            }
+        };
      };  
     
     updatePathDelta(t,dx,dy){
@@ -459,7 +483,7 @@ export class SPerson {
         const n = this.pathList.length;
         let last = {};
         if ( n == 1 ) {
-            last = {t: simu.now, x: this.cur.x, y: this.cur.y };
+            last = {t: simu.frametime, x: this.cur.x, y: this.cur.y };
         } else {
             last = this.pathList[n-2];
         }

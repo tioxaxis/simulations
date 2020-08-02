@@ -86,7 +86,7 @@
     top:0;
     left:0;
     width: 100%;
-    height: 42%;
+    height: 40%;
     border: solid #7a8dd0;
     border-width: .5vw 1px 0px ;
     clip-path: content-box;
@@ -115,7 +115,7 @@
     bottom: 0;
     left:0;
     width: 100%;
-    height: 58%;
+    height: 60%;
     border: solid #7a8dd0;
     border-width:  .5vw 1px ;
     padding: 0;
@@ -301,14 +301,17 @@ input[type=range]:focus::-ms-fill-upper {
 
 .spreadValues {
     
-    width: 90%;
+    margin: 0% 8% 0% 6%;
+    width: 84%;
     display: flex;
             flex-direction: row;
             flex-wrap:nowrap;
-            justify-content:space-around;
+            justify-content:space-between;
 }
 .spreadValues span {
-    border: solid 1px;
+/*    border: solid 1px;*/
+    min-width: 1.5vw;
+    text-align: center;
 
 }
 

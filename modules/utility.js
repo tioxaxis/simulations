@@ -59,8 +59,10 @@ export class UniformRV {
         this.variance = variance;
     }
     observe (){
-        return mean;
-        return this.mean-this.variance + 2 * this.variance * Math.random();
+        let v = this.variance * this.mean;
+        let x = this.mean- v + 2 * v * Math.random();
+        console.log('in demand RV observe=', x);
+        return x;
     }
 };
  

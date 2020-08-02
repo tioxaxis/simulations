@@ -11,7 +11,7 @@ const sliders = {
         function captureChangeInSliderG(event){
             let inputElem = event.target.closest('input');
             if (!inputElem) return
-            if( event.isTrusted && presets.editMode && presets.currentLi ){
+            if( event.isTrusted && simu.editMode && presets.currentLi ){
                 let id = event.target.id;
                 let v = inputElem.value;
                 let t = inputElem.type;
@@ -60,7 +60,7 @@ const sliders = {
             }        
         }
         // not in edit mode then may cause a reset, a play, or a pause.
-        if ( !presets.editMode ){
+        if ( !simu.editMode ){
             if ( aPreset.reset == 'true' )
                 document.getElementById('resetButton').click();
             if ( aPreset.action == 'play' )
@@ -214,7 +214,7 @@ const presets = {
                     elem.style.display = 'none'
                 else presets.deleteTextInpBox();
             } else if (key == "Enter"){
-                if ( presets.editMode ) 
+                if ( simu.editMode ) 
                     if ( presets.textMode ) presets.saveModifiedDesc();
                     else  presets.addTextBox(presets.currentLi.innerHTML);
             } 
@@ -318,7 +318,7 @@ const presets = {
         presets.save = {slidersValues : sliders.getSliders(), theJSON: createJSON()};
         //    save / clone the list ulPointer.
         
-        presets.editMode = true; 
+        simu.editMode = true; 
         // simulate a click on pause if running.
         let theButton = document.getElementById('pauseButton')
                 if (theButton.style.display != 'none' ) theButton.click();
@@ -366,7 +366,7 @@ const presets = {
     },
     
     exitEdit: function() {
-        presets.editMode = false;
+        simu.editMode = false;
         presets.saveModifiedDesc();
         document.getElementById("scenariosBot").style.display = "none";
         document.getElementById('menuBox').style.display = 'none';
@@ -396,7 +396,7 @@ const presets = {
     // 2. double click on item in UL list;  
     //    start editing name if in edit mode
     liDblClicked: function(ev){
-        if( !presets.editMode ) return;
+        if( !simu.editMode ) return;
         if ( presets.textMode ) return;  // ignore if in text mode already; everything is setup.
         if(ev.target == presets.currentLi) {
             if ( ev.target.childNodes[0] ){

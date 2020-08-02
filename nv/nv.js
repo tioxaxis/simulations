@@ -16,7 +16,7 @@ const theStage = {
     person: {width: 40, height: 60}   
 };
 
-{   theStage.store = {left: 720, top: 50, width:100, height: 200,
+{   theStage.store = {left: 720, top:80, width:200, height: 200,
                      stroke:1};
     
     
@@ -36,6 +36,7 @@ simu.framedeltaFor1X = 200;
 simu.sliderTypes = {dr:'range', dcv:'range', Cu:'range',
     Co:'range', quan: 'range', speed:'range', action:'radio', reset:'checkbox'},
 simu.precision = {dr:0,dcv:1,Cu:0,Co:0,quant: 0,speed:0};
+simu.editMode = false;
 
 class ProcessCollection {
  constructor (){
@@ -59,17 +60,18 @@ class ProcessCollection {
      const s = theStage.store;
      c.resetTransform();
      c.strokeStyle = 'black';
-     c.lineWidth= c.stroke;;
+     c.lineWidth= s.stroke;;
+      c.strokeRect(s.left, s.top, s.width, s.height);
      c.beginPath();
-     c.strokeRect(s.left, s.top, s.width, s.height);
      c.moveTo(s.left, s.top);
-     c.lineTo(s.left+s.width/2,s.top+20);
-     c.lineTo(s.line+s.width,s.top);
+     c.lineTo(s.left+s.width/2,s.top-50);
+     c.lineTo(s.left+s.width,s.top);
      c.closePath();
+     c.stroke();
  };
 
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
-const speeds = [1,3,9,27,81];
+const speeds = [1,3,10,30];
 function captureChangeInSliderS(event){
 //    console.log('is event '+(event.isTrusted?'real':'scripted'));
     let inputElem = event.target.closest('input');
@@ -94,13 +96,16 @@ function captureChangeInSliderS(event){
         break;        
 
     case 'Cu':  
-//        theSimulation.serviceRV.setTime(v*tioxTimeConv);
-//        theChart.updatePredictedInv();   
+        theSimulation.Cu = v;
         break;
             
     case 'Co':  
-//        theSimulation.serviceRV.setCV(v);
-        break;       
+        theSimulation.Co = v;
+        break;  
+            
+    case 'quan':
+        theSimulation.quantityOrdered = v;
+        break;
 
     case 'speed':
         simu.framedelta = simu.framedeltaFor1X * 
@@ -136,6 +141,8 @@ simu.reset2 = function(){
     //fudge to get animation started quickly
 //    let t = simu.heap.top().time-1;
 //    simu.now = simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
+    simu.heap.push( {time: simu.now+500, type: 'new cycle', 
+        proc: theSimulation.demand.cycle.bind(theSimulation.demand), item: null});
     
 };
 
@@ -146,8 +153,10 @@ simu.reset2 = function(){
 const animForQueue = {
     walkingTime1: (theStage.pathRight - theStage.offStageEntry.x)/theStage.normalSpeed,
     walkingTime2: (theStage.pathBot - theStage.pathTop)/theStage.normalSpeed,
+    walkingTime : ( (theStage.pathRight - theStage.offStageEntry.x) +
+             (theStage.pathBot - theStage.pathTop)) /theStage.normalSpeed,
     
-    reset : function (){  
+    reset : function (){ 
     },
 
     join: function ( qLength, arrivalTime, person ) {
@@ -231,7 +240,7 @@ const animForNV = {
     },
     
     finish: function(person){
-        animForLittlesBox.lastFinPerson = person;
+        animForNV.lastFinPerson = person;
     }
 };
 
@@ -250,6 +259,7 @@ var theProcessCollection = new ProcessCollection();
     newsVendor: null,
      Cu : null,
      Co : null,
+     quantityOrdered : null,
     
     initialize: function (){
         setBackground();
@@ -260,10 +270,14 @@ var theProcessCollection = new ProcessCollection();
         // random variables
         let r = document.getElementById('dr').value;
         let cv = document.getElementById('dcv').value; 
-        theSimulation.demandRV = new UniformRV(dr,cv);
+        theSimulation.demandRV = new UniformRV(r,cv);
 //        let t = document.getElementById('sr').value;
 //        cv = document.getElementById('scv').value;
-        theSimulation.serviceRV = new GammaRV(0,0);
+        theSimulation.serviceRV = new UniformRV(0,0);
+        theSimulation.Co = document.getElementById('Co').value;
+            theSimulation.Cu = document.getElementById('Cu').value;
+            theSimulation.quantityOrdered = document.getElementById('quan').value;;
+        
 //        
         //queues
         this.supply = new Supplier
@@ -346,27 +360,55 @@ class Supplier {
      }
 };   //end class Supplier
 
+const peopleSpacing = 60;
 class DemandCreator {
     constructor (cycleLength, demandRV ){
         this.cycleLength = cycleLength;
         this.demandRV = demandRV;
+        this.totCost =null;
+        this.nRounds = null;
+        this.curDemand = null;
+        
         };
 
-    reset() {};
+    reset() {
+        this.totCost = 0
+        this.nRounds = 0;
+    };
     
     cycle() {
-        let d = Math.floor(demandRV.observe());
-        let t = simu.now;
-        let deltaT = 70*simu.normalSpeed;
+        this.curDemand = Math.floor(theSimulation.demandRV.observe());
+        let t = simu.now ;
+        let deltaT = peopleSpacing/theStage.normalSpeed;
 
-        for ( let i = 0; i < d; i++ ){
+        for ( let i = 0; i < this.curDemand; i++ ){
             t += deltaT
             let person = theSimulation.supply.pull();
-            simu.heap.push( t, theSimulation.queue.push.bind(theSimulation.queue), person);
+            simu.heap.push({time:t, type: 'create',
+            proc: theSimulation.queue.push.bind(theSimulation.queue), 
+                            item: person});
         }
-        simu.heap.push( simu.now+ cycleLength, this.cycle.bind(this), null);
+        simu.heap.push( 
+            {time: t + this.cycleLength - 2000,
+             type: 'plot', 
+             proc: this.graph.bind(theSimulation.demand),
+             item: null } )
+        simu.heap.push( 
+            {time: t + this.cycleLength,
+             type: 'new cycle',
+             proc: this.cycle.bind(this),
+             item: null} );
 
     };
+    graph(){
+        this.nRounds ++;
+        let excess = theSimulation.quantityOrdered - this.curDemand; 
+        let overageForDay = theSimulation.Co * Math.max(0,excess);
+        let underageForDay = theSimulation.Cu * Math.max(0, - excess);
+        this.totCost += overageForDay + underageForDay;
+        theChart.push(this.nRounds, underageForDay, overageForDay, this.totCost/this.nRounds);
+        
+    }
 }
 
 var gSF ;
@@ -438,23 +480,23 @@ export const theChart ={
         data: {
        	    datasets: [
                 {  //*** Series #1
-                label: 'avg. inventory',
-                pointBackgroundColor: 'rgba(0,0,220,1)',
-                pointBorderColor: 'rgba(0,0,220,1)',
-                showLine: true,
+                label: 'underage',
+                pointBackgroundColor: 'rgb(220, 0, 0)',
+                pointBorderColor: 'rgb(220, 0, 0)',
+                showLine: false,
                 lineTension:0,
                 pointRadius: 5,
-                borderColor: 'rgba(0,0,220,1)',
+                borderColor: 'rgb(220, 0, 0)',
                     borderWidth: 3,
                 fill: false,
 
                 data: []
                 },
                 {   //*** Series #2
-                label: 'avg. rate * avg. time',
+                label: 'overage',
                 pointBackgroundColor: 'rgba(0,150,0,1)',
                 pointBorderColor: 'rgba(0,150,0,1)',
-                showLine: true,
+                showLine: false,
                 lineTension: 0,
                 pointRadius: 3,
                 borderColor: 'rgba(0,150,0,1)',
@@ -464,14 +506,13 @@ export const theChart ={
                 data: [],
                 },
                 {   //*** Series #3
-                label: 'predicted inventory',
-                pointBackgroundColor: 'rgb(185, 26, 26)',
-                pointBorderColor: 'rgba(185, 26, 26)',
+                label: 'average cost',
+                pointBackgroundColor: 'rgb(26, 26, 185)',
+                pointBorderColor: 'rgb(26, 26, 185)',
                 showLine: true,
-                    hidden: true,
                 lineTension: 0,
                 pointRadius: 0,
-                borderColor: 'rgba(185, 26, 26)',
+                borderColor: 'rgb(26, 26, 185)',
                     borderWidth: 3,
                 fill: false,
 
@@ -505,7 +546,7 @@ export const theChart ={
             title:{
                display: true,
                 position: 'top',
-                text: 'Inventory',
+                text: '$ of cost per day',
                 //fontSize: 20,
             },   
             scales: {
@@ -530,8 +571,8 @@ export const theChart ={
             },
     total: null,
     count: null,
-    graphInitialTimeWidth: 40,
-    graphInitialTimeShift: 30,
+    graphInitialTimeWidth: 20,
+    graphInitialTimeShift: 15,
     graphTimeWidth: null,
     graphTimeShift: null,
     graphMin: null,
@@ -544,7 +585,7 @@ export const theChart ={
         this.chart =  new Chart(this.ctx, this.stuff);
         resizeChart();
         this.reset();
-        this.predictedInvValue = this.predictedInv();
+//        this.predictedInvValue = this.predictedInv();
     }, 
     reset: function(){
         this.stuff.data.datasets[0].data=[];
@@ -553,7 +594,7 @@ export const theChart ={
         this.total = 0;
         this.count = 0;
         this.graphScale = 1;
-        this.yAxisScale = {max: 1, stepSize: .2};
+        this.yAxisScale = {max: 100, stepSize: 20};
         this.aVAxis = new VerticalAxisValue();
         this.graphMin = 0;
         this.graphMax = this.graphInitialTimeWidth;
@@ -571,49 +612,47 @@ export const theChart ={
         this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
         this.chart.options.scales.xAxes[0].ticks.stepSize = this.graphTimeWidth - this.graphTimeShift;
         var points = Math.max(1,Math.floor( (11-this.graphScale)/4));
-        this.chart.data.datasets[0].pointRadius = 0;
+        this.chart.data.datasets[0].pointRadius = points;
         this.chart.data.datasets[0].borderWidth = points;
-        this.chart.data.datasets[1].pointRadius = 0;
+        this.chart.data.datasets[1].pointRadius = points;
         this.chart.data.datasets[1].borderWidth = points;
         this.chart.data.datasets[2].borderWidth = points;
         this.chart.update();
     },
-    push: function (t,inv,rt){
+    push: function (n,under,over,avg){
         
-        t /= tioxTimeConv;
         
-        if (t > this.graphMax) {
+        if (n > this.graphMax) {
             this.graphMin += this.graphTimeShift;
             this.graphMax += this.graphTimeShift;
             this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
             this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
             }
         //        console.log( 'at chart ',t,inv,rt,pI);
-        if ( inv > this.yAxisScale.max  ||
-            (  theChart.predictedInvValue > this.yAxisScale.max ) ){
-            this.yAxisScale = this.aVAxis.update(inv);
-            this.yAxisScale = this.aVAxis.update(theChart.predictedInvValue * 2);
+        let bigger = Math.max(over, under);
+        if ( bigger > this.yAxisScale.max ){
+            this.yAxisScale = this.aVAxis.update(bigger);
             this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
             this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
         }
-        this.chart.data.datasets[0].data.push({x:t,y:inv});
-        this.chart.data.datasets[1].data.push({x:t,y:rt});
-        this.chart.data.datasets[2].data.push({x:t,y:theChart.predictedInvValue});
+        this.chart.data.datasets[0].data.push({x:n,y:under});
+        this.chart.data.datasets[1].data.push({x:n,y:over});
+        this.chart.data.datasets[2].data.push({x:n,y:avg});
         this.chart.update();
         // update graph with time, this.total/this.waits.length
     },
         
-     updatePredictedInv: function(){
-        this.chart.data.datasets[2].data.push(
-            {x:(simu.now-1)/10000, y:theChart.predictedInvValue});
-        theChart.predictedInvValue = theChart.predictedInv();
-        this.chart.data.datasets[2].data.push(
-            {x:(simu.now/10000), y:theChart.predictedInvValue});
-        this.chart.update();
-     },
-     predictedInv: function (){
-//        return (theSimulation.serviceRV.mean)/(theSimulation.interarrivalRV.mean);
-     }
+//     updatePredictedInv: function(){
+//        this.chart.data.datasets[2].data.push(
+//            {x:(simu.now-1)/10000, y:theChart.predictedInvValue});
+//        theChart.predictedInvValue = theChart.predictedInv();
+//        this.chart.data.datasets[2].data.push(
+//            {x:(simu.now/10000), y:theChart.predictedInvValue});
+//        this.chart.update();
+//     },
+//     predictedInv: function (){
+////        return (theSimulation.serviceRV.mean)/(theSimulation.interarrivalRV.mean);
+//     }
 }
 
 

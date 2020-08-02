@@ -50,6 +50,7 @@ simu.framedeltaFor1X = 200;
 simu.sliderTypes = {ar:'range', acv:'range', sr:'range',
     scv:'range', speed:'range', action:'radio', reset:'checkbox'},
 simu.precision = {ar:1,acv:1,sr:1,scv:1,speed:0};
+simu.editMode = false;
 
 class ProcessCollection {
  constructor (){
