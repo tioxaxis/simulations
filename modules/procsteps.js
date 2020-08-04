@@ -359,6 +359,7 @@ destroy (person) {
 };  //end class InfiniteMachineCenter
 
 // minimal Person with properties only for the simulation, the procsteps
+
 export var allSPerson = [];
 var counterSPerson = 0;
 export class SPerson {
@@ -510,11 +511,11 @@ export class SPerson {
     };
 } ;    // end of class SPerson
 
-var SFcolors = ['rgb(28, 62, 203)', 'rgb(80, 212, 146)', 'rgb(151, 78, 224)',
+export var tioxColors = ['rgb(28, 62, 203)', 'rgb(80, 212, 146)', 'rgb(151, 78, 224)',
                 'rgb(234, 27, 234)', 'rgb(164, 132, 252)', 'rgb(29, 157, 127)',
                 'rgb(0, 0, 0)', 'rgb(74, 26, 204)', 'rgb(6, 190, 234)', 'rgb(206, 24, 115)']
     
-var SFborders = ['black', 'black', 'black', 'black',
+var tioxBorders = ['black', 'black', 'black', 'black',
                          'gray', 'black', 'rgb(80, 212, 146)', 'black',
                          'black', 'gray', 'black', 'black']; 
 
@@ -536,9 +537,9 @@ const pi2 = Math.PI*2;
         
 export class NStickFigure {
     constructor ( gSF, x = 200, y = 100 ){
-        let n = Math.floor(Math.random()*SFcolors.length );
-        this.color = SFcolors[n];
-        this.bdaryColor = SFborders[n];
+        let n = Math.floor(Math.random()*tioxColors.length );
+        this.color = tioxColors[n];
+        this.bdaryColor = tioxBorders[n];
         this.armAngleRadians = pi2/15;
         this.legAngleRadians = pi2/12;
         this.legAngleDegrees = 30;

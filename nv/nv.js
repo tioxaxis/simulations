@@ -5,7 +5,7 @@ const tioxTimeConv = 1000;  //time are in milliseconds
 import {GammaRV, UniformRV, Heap} from '../modules/utility.js';
 import { Queue, WalkAndDestroy, MachineCenter, 
         InfiniteMachineCenter,SPerson,allSPerson, 
-       GStickFigure, NStickFigure }
+       GStickFigure, NStickFigure, tioxColors}
     from '../modules/procsteps.js' ;
 
 const theStage = {
@@ -87,24 +87,35 @@ function captureChangeInSliderS(event){
     switch(id) {
     case 'dr':  
         theSimulation.demandRV
-            .setMean(v/tioxTimeConv);
-//        theChart.updatePredictedInv();   
+            .setMean(Number(v));
+//        theChart.updatePredictedInv(); 
+            setExpected(theSimulation.quantityOrdered,
+                        theSimulation.demandRV.mean,
+                        theSimulation.demandRV.variance);
         break;
             
     case 'dcv':  
-        theSimulation.demandRV.setVariance(v);
+        theSimulation.demandRV.setVariance(Number(v));
+            setExpected(theSimulation.quantityOrdered,
+                        theSimulation.demandRV.mean,
+                        theSimulation.demandRV.variance);
         break;        
 
     case 'Cu':  
-        theSimulation.Cu = v;
+        theSimulation.Cu = Number(v);
+         setDesired(theSimulation.Cu,theSimulation.Co);
         break;
             
     case 'Co':  
-        theSimulation.Co = v;
+        theSimulation.Co = Number(v);
+        setDesired(theSimulation.Cu,theSimulation.Co); 
         break;  
             
     case 'quan':
-        theSimulation.quantityOrdered = v;
+        theSimulation.quantityOrdered = Number(v);
+            setExpected(theSimulation.quantityOrdered,
+                        theSimulation.demandRV.mean,
+                        theSimulation.demandRV.variance);
         break;
 
     case 'speed':
@@ -123,6 +134,28 @@ function captureChangeInSliderS(event){
     }   
 }
 
+function setDesired(under, over){
+    document.getElementById('desiredPerc').innerHTML =
+        (100*under/(under+over)).toFixed(2);
+}
+
+function setExpected(q,m,v){
+    let perc ;
+    // r.v has a range of [m(1-v)], m(1+v)] 
+    // modQ finds the "q" in the range above.
+    let modQ = Math.max(Math.min(q,m*(1+v)),m*(1-v));
+    if ( v != 0 ) perc = 100*(modQ-m*(1-v))/(2*m*v);
+    else if ( q < m ) perc = 0;
+    else perc = 100;
+        
+    document.getElementById('expectedPerc').innerHTML =
+        (perc).toFixed(2);
+}
+function setActual(enough,total){
+     document.getElementById('actualPerc').innerHTML =
+        (100*enough/total).toFixed(2);
+}
+
 
 //var totInv, totTime, totPeople, lastArrDep, LBRFcount ;
 simu.reset2 = function(){
@@ -131,8 +164,10 @@ simu.reset2 = function(){
     theProcessCollection.reset();
 //    totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
     gSF = new GStickFigure( theStage.person.height );
-    
-    
+    setDesired(theSimulation.Cu,theSimulation.Co);
+    setExpected(theSimulation.quantityOrdered,
+                        theSimulation.demandRV.mean,
+                        theSimulation.demandRV.variance);
         
     // schedule the initial Person to arrive and start the simulation/animation.
     theSimulation.supply.previous = null;
@@ -237,10 +272,21 @@ const animForNV = {
         
 //        person.graphic.badgeDisplay(true);
         person.arrivalTime = simu.now;
+        if ( theSimulation.demand.store.inventory > 0) {
+            theSimulation.demand.store.remove(1);
+            person.graphic.package = tioxColors[ removeBox().color ];
+        }  else {
+            person.graphic.color = 'grey';
+        };
+            // test if inventory left and assign inventory to person
+        // and remove inventory from store
+        // or make person grey (sad) 
     },
     
     finish: function(person){
+        
         animForNV.lastFinPerson = person;
+        
     }
 };
 
@@ -268,15 +314,15 @@ var theProcessCollection = new ProcessCollection();
         
         
         // random variables
-        let r = document.getElementById('dr').value;
-        let cv = document.getElementById('dcv').value; 
+        let r = Number(document.getElementById('dr').value);
+        let cv = Number(document.getElementById('dcv').value); 
         theSimulation.demandRV = new UniformRV(r,cv);
 //        let t = document.getElementById('sr').value;
 //        cv = document.getElementById('scv').value;
         theSimulation.serviceRV = new UniformRV(0,0);
-        theSimulation.Co = document.getElementById('Co').value;
-            theSimulation.Cu = document.getElementById('Cu').value;
-            theSimulation.quantityOrdered = document.getElementById('quan').value;;
+        theSimulation.Co = Number(document.getElementById('Co').value);
+            theSimulation.Cu = Number(document.getElementById('Cu').value);
+            theSimulation.quantityOrdered = Number(document.getElementById('quan').value);
         
 //        
         //queues
@@ -364,20 +410,35 @@ const peopleSpacing = 60;
 class DemandCreator {
     constructor (cycleLength, demandRV ){
         this.cycleLength = cycleLength;
+        this.timeToNV = ((theStage.pathRight-theStage.pathLeft) +
+            (theStage.pathBot-theStage.pathTop))/theStage.normalSpeed;
         this.demandRV = demandRV;
         this.totCost =null;
         this.nRounds = null;
         this.curDemand = null;
-        
+        this.enough = null;
+        this.overageForDay = null;
+        this.underageForDay = null;
+        this.store = new RetailStore();
         };
 
     reset() {
         this.totCost = 0
         this.nRounds = 0;
+        this.enough = 0;
     };
     
     cycle() {
         this.curDemand = Math.floor(theSimulation.demandRV.observe());
+        this.store.addBox(this.curDemand);
+        this.nRounds ++;
+        let excess = theSimulation.quantityOrdered - this.curDemand; 
+        this.overageForDay = theSimulation.Co * Math.max(0,excess);
+        this.underageForDay = theSimulation.Cu * Math.max(0, - excess);
+        this.totCost += this.overageForDay + this.underageForDay;
+        if (this.curDemand <= theSimulation.quantityOrdered)
+            this.enough++;
+        
         let t = simu.now ;
         let deltaT = peopleSpacing/theStage.normalSpeed;
 
@@ -389,7 +450,7 @@ class DemandCreator {
                             item: person});
         }
         simu.heap.push( 
-            {time: t + this.cycleLength - 2000,
+            {time: t + this.timeToNV,
              type: 'plot', 
              proc: this.graph.bind(theSimulation.demand),
              item: null } )
@@ -398,18 +459,78 @@ class DemandCreator {
              type: 'new cycle',
              proc: this.cycle.bind(this),
              item: null} );
-
     };
     graph(){
-        this.nRounds ++;
-        let excess = theSimulation.quantityOrdered - this.curDemand; 
-        let overageForDay = theSimulation.Co * Math.max(0,excess);
-        let underageForDay = theSimulation.Cu * Math.max(0, - excess);
-        this.totCost += overageForDay + underageForDay;
-        theChart.push(this.nRounds, underageForDay, overageForDay, this.totCost/this.nRounds);
+        theChart.push(this.nRounds, this.underageForDay, this.overageForDay, this.totCost/this.nRounds);       
+        setActual(this.enough,this.nRounds);
         
+        // mark inventory as grey *******
     }
-}
+};
+
+
+class RetailStore {
+    constructor(){
+        this.packages = [];
+        this.store = theStage.store;
+        this.box = {w: 19, h:19 };
+        this.box.nPerRow = Math.floor( this.store.width / this.box.w);
+        
+    };
+    inventory(){
+        return this.packages.length;    
+    };
+    addBox(n) {
+        for (let i = 0; i < n; i++ ){
+            this.packages.push(
+                {color: Math.floor( Math.random()*tioxColors.length) } );   
+        }
+        this.drawAll();
+    };
+    removeBox(){
+        const background = document.getElementById('theBackground');
+        const c = background.getContext('2d');
+        const k = this.packages.length;
+        this.clearBox(c,k);
+        return this.packages.pop()   
+    };
+
+    drawAllGrey(){
+        const background = document.getElementById('theBackground');
+        const c = background.getContext('2d');
+        c.fillStyle = 'grey';
+        for ( let i = 0; i <this.packages.length; i++ ){
+            c.rect(this.xPos(i), this.yPos(i),
+                   this.box.w, this.box.h);    
+        }
+        c.fill();
+    };
+    drawAll(){
+        const background = document.getElementById('theBackground');
+        const c = background.getContext('2d');
+        const s = this.store;
+        c.resetTransform();
+        c.clearRect(s.left,s.top,s.width,s.height)
+        for ( let i = 0; i<this.packages.length; i++ ){
+            c.fillStyle = tioxColors[this.packages[i].color];
+            c.fillRect(this.xPos(i), this.yPos(i),
+                   this.box.w, this.box.h );
+        };
+        
+    };
+    clearBox(c,i){
+        c.clearRect(this.xPos(i), this.yPos(i),
+                    this.box.w, this.box.h );
+    };            
+    xPos(i) {
+        return this.store.left + this.box.w * (i % this.box.nPerRow);
+    };
+    yPos(i) {
+        return this.store.top + this.store.height - this.box.h * 
+            Math.floor( i / this.box.nPerRow );
+    };
+};
+
 
 var gSF ;
 export class Person extends SPerson {
