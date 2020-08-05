@@ -532,6 +532,7 @@ const pi2 = Math.PI*2;
         this.deltaMaxX = size*(4/9);
         this.fontSize = Math.floor(2/5*size);
         simu.context.font = Math.floor(2/5*size)+'px Arial';
+        this.package = {x:-25 , y:0.25*size , w:18, h:18 };
     }
 };
         
@@ -551,6 +552,8 @@ export class NStickFigure {
         this.ratio = this.maxArmAngle / this.maxLegAngle ;
         this.x = Math.floor(x);
         this.y = Math.floor(y);
+        this.packageVisible = false;
+        this.packageColor = null;
     };
     
     initialPosition(x,y){
@@ -585,14 +588,26 @@ export class NStickFigure {
         c.strokeStyle = this.bdaryColor;
         c.fillStyle = this.color;
         c.translate(this.x,this.y);
+        
+         //package
+        if( this.packageVisible ) {
+            c.save();
+            c.fillStyle = this.packageColor;
+            c.fillRect(this.gSF.package.x,this.gSF.package.y,
+                      this.gSF.package.w,this.gSF.package.h);
+            c.restore();
+        }
+        
         c.beginPath();
         
         // arm1
-        c.save();
-        c.translate(this.gSF.arm.x, this.gSF.arm.y);
-        c.rotate(this.armAngleRadians);
-        c.rect(-this.gSF.arm.w/2,0,this.gSF.arm.w,this.gSF.arm.h);
-        c.restore();
+        if( !this.packageVisible ) {
+            c.save();
+            c.translate(this.gSF.arm.x, this.gSF.arm.y);
+            c.rotate(this.armAngleRadians);
+            c.rect(-this.gSF.arm.w/2,0,this.gSF.arm.w,this.gSF.arm.h);
+            c.restore();
+        }
 
         // leg2
         c.save();
@@ -618,9 +633,13 @@ export class NStickFigure {
          // arm2
         c.save();
         c.translate(this.gSF.arm.x, this.gSF.arm.y);
-        c.rotate(-this.armAngleRadians);
-        c.rect(-this.gSF.arm.w/2,0,this.gSF.arm.w,this.gSF.arm.h);
-        c.restore();
+        if( this.packageVisible ){
+            c.rotate(pi2/5);
+        } else {
+            c.rotate(-this.armAngleRadians);
+        }
+         c.rect(-this.gSF.arm.w/2,0,this.gSF.arm.w,this.gSF.arm.h);
+         c.restore();
        
         // head
         c.save();
@@ -638,8 +657,12 @@ export class NStickFigure {
             c.fillText( this.badgeText, this.gSF.badge.x,this.gSF.badge.y);
             c.restore();
         }
+        
+        
        
         c.restore();
+        
+       
     };
 
 };

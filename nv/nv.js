@@ -1,6 +1,6 @@
 "use strict";
 // declaration of Globals
-
+const darkGrey = 'rgb(52,52,52)';
 const tioxTimeConv = 1000;  //time are in milliseconds
 import {GammaRV, UniformRV, Heap} from '../modules/utility.js';
 import { Queue, WalkAndDestroy, MachineCenter, 
@@ -58,16 +58,21 @@ class ProcessCollection {
     const background = document.getElementById('theBackground');
     const c = background.getContext('2d');
      const s = theStage.store;
+     c.save();
      c.resetTransform();
      c.strokeStyle = 'black';
+     c.fillStyle = 'white'
      c.lineWidth= s.stroke;;
       c.strokeRect(s.left, s.top, s.width, s.height);
      c.beginPath();
      c.moveTo(s.left, s.top);
      c.lineTo(s.left+s.width/2,s.top-50);
      c.lineTo(s.left+s.width,s.top);
+     c.lineTo(s.left,s.top);
      c.closePath();
      c.stroke();
+     c.fill();
+     c.restore();
  };
 
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
@@ -272,11 +277,12 @@ const animForNV = {
         
 //        person.graphic.badgeDisplay(true);
         person.arrivalTime = simu.now;
-        if ( theSimulation.demand.store.inventory > 0) {
-            theSimulation.demand.store.remove(1);
-            person.graphic.package = tioxColors[ removeBox().color ];
+        if ( theSimulation.demand.store.inventory() > 0) {
+            let b = theSimulation.demand.store.removeBox(1);
+            person.graphic.packageColor = tioxColors[ b.color ];
+            person.graphic.packageVisible = true;
         }  else {
-            person.graphic.color = 'grey';
+            person.graphic.color = darkGrey; // dark grey
         };
             // test if inventory left and assign inventory to person
         // and remove inventory from store
@@ -429,8 +435,9 @@ class DemandCreator {
     };
     
     cycle() {
+        theSimulation.demand.store.emptyStore();
         this.curDemand = Math.floor(theSimulation.demandRV.observe());
-        this.store.addBox(this.curDemand);
+        this.store.addBox(theSimulation.quantityOrdered);
         this.nRounds ++;
         let excess = theSimulation.quantityOrdered - this.curDemand; 
         this.overageForDay = theSimulation.Co * Math.max(0,excess);
@@ -464,7 +471,7 @@ class DemandCreator {
         theChart.push(this.nRounds, this.underageForDay, this.overageForDay, this.totCost/this.nRounds);       
         setActual(this.enough,this.nRounds);
         
-        // mark inventory as grey *******
+        theSimulation.demand.store.drawAllGrey();
     }
 };
 
@@ -473,9 +480,12 @@ class RetailStore {
     constructor(){
         this.packages = [];
         this.store = theStage.store;
-        this.box = {w: 19, h:19 };
+        this.box = {w: 20, h:20, wInner:18, hInner:18 };
         this.box.nPerRow = Math.floor( this.store.width / this.box.w);
         
+    };
+    emptyStore(){
+        this.packages = [];
     };
     inventory(){
         return this.packages.length;    
@@ -490,20 +500,22 @@ class RetailStore {
     removeBox(){
         const background = document.getElementById('theBackground');
         const c = background.getContext('2d');
-        const k = this.packages.length;
+        const k = this.packages.length - 1;
         this.clearBox(c,k);
-        return this.packages.pop()   
+        let b = this.packages.pop() ;
+        return b;
     };
 
     drawAllGrey(){
         const background = document.getElementById('theBackground');
         const c = background.getContext('2d');
-        c.fillStyle = 'grey';
+        c.save()
+        c.fillStyle = darkGrey; // dark grey
         for ( let i = 0; i <this.packages.length; i++ ){
-            c.rect(this.xPos(i), this.yPos(i),
-                   this.box.w, this.box.h);    
+            c.fillRect(this.xPos(i)+1, this.yPos(i)-1,
+                   this.box.wInner, this.box.hInner);    
         }
-        c.fill();
+        c.restore();
     };
     drawAll(){
         const background = document.getElementById('theBackground');
@@ -513,21 +525,21 @@ class RetailStore {
         c.clearRect(s.left,s.top,s.width,s.height)
         for ( let i = 0; i<this.packages.length; i++ ){
             c.fillStyle = tioxColors[this.packages[i].color];
-            c.fillRect(this.xPos(i), this.yPos(i),
-                   this.box.w, this.box.h );
+            c.fillRect(this.xPos(i)+1, this.yPos(i)-1,
+                   this.box.wInner, this.box.hInner );
         };
         
     };
     clearBox(c,i){
-        c.clearRect(this.xPos(i), this.yPos(i),
-                    this.box.w, this.box.h );
+        c.clearRect(this.xPos(i)+1, this.yPos(i)-1,
+                    this.box.wInner, this.box.hInner );
     };            
     xPos(i) {
         return this.store.left + this.box.w * (i % this.box.nPerRow);
     };
     yPos(i) {
-        return this.store.top + this.store.height - this.box.h * 
-            Math.floor( i / this.box.nPerRow );
+        return this.store.top + this.store.height - this.box.h * (1+ 
+            Math.floor( i / this.box.nPerRow ));
     };
 };
 
