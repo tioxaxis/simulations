@@ -3,6 +3,9 @@
     font-family: "Arial";
     font-size: 1vw;
 }
+.simulink {
+    font-size: 3vw;
+}
 
 .blueBox {
     border: blue solid 5px;
