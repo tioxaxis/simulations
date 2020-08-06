@@ -47,7 +47,7 @@ function play(){
         document.getElementById('playButton').style.display = 'none';
         document.getElementById('pauseButton').style.display = 'inline';  
         simu.lastFrame = performance.now();
-        console.log('at play', simu.lastFrame);
+        //console.log('at play', simu.lastFrame);
         simu.requestAFId = window.requestAnimationFrame(eachFrame);
         simu.isRunning = true;
         
