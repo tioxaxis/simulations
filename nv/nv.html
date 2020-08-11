@@ -67,7 +67,7 @@
  <div id="rightHandSideBox"> 
      
     <div id="sliderBigBox">
-
+      <div class="sliderRow">
         <div class="sliderbox"> 
             <p>Demand Rate = 
             <span id="drDisplay">20</span></p>
@@ -92,7 +92,8 @@
                 <span>1.0</span>
             </div>
         </div>
-
+     </div>
+     <div class="sliderRow">
         <div class="sliderbox"> 
             <p>Underage Cost = 
                 <span id="CuDisplay">8</span></p>
@@ -121,8 +122,9 @@
                 <span>8</span> 
                 <span>10</span>
             </div>
-        </div>
-        
+         </div>
+    </div>
+     <div class="sliderRow">    
          <div class="sliderbox"> 
             <p>Order Quantity = 
                 <span id="quanDisplay">20</span></p>
@@ -136,18 +138,15 @@
                 <span>50</span>
             </div>
         </div>
-        
         <div class="sliderbox"> 
-            <p>Speed = 
-                <span id="speedDisplay">1</span>x</p>
-            <input id="speed" 
-                   type="range" min="0" max="3" step="1" value="0" class="slider"  >
-            <div class='spreadValues'> 
-                <span>slow</span>
-                <span>fast</span>
-            </div>
+            <p > Expected <span id="expectedPerc"></span>%</p>
+            <p > Desired <span id="desiredPerc"></span>%</p>
+            <p > Actual <span id="actualPerc"></span>%</p>
         </div>
-
+    </div>
+        
+        
+     <div class="sliderRow">
         <div class="playButtons" id="playButtons">
             <p id='pauseButton' style="display:none"><button >Pause</button></p>
             <p id='playButton' style="display:inline"><button >Play</button></p>
@@ -182,10 +181,17 @@
     
         </div>
         <div class="sliderbox"> 
-            <p > Expected <span id="expectedPerc"></span>%</p>
-            <p > Desired <span id="desiredPerc"></span>%</p>
-            <p > Actual <span id="actualPerc"></span>%</p>
+            <p>Speed = 
+                <span id="speedDisplay">1</span>x</p>
+            <input id="speed" 
+                   type="range" min="0" max="3" step="1" value="0" class="slider"  >
+            <div class='spreadValues'> 
+                <span>slow</span>
+                <span>fast</span>
+            </div>
         </div>
+    </div>     
+        
      
         
     

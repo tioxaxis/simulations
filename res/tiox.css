@@ -1,11 +1,14 @@
+
+
 * {
     box-sizing: border-box;
     font-family: "Arial";
     font-size: 1vw;
 }
 .simulink {
-    font-size: 3vw;
+    font-size: 30px;
 }
+
 
 .blueBox {
     border: blue solid 5px;
@@ -140,25 +143,33 @@ input[type=range] {
 /* Now the formats for the right hand side box  */
 #sliderBigBox{
         width: 100%;
-        margin: .5vw 2vw .5vw .5vw;
         display: flex;
             flex-wrap: wrap;
-            flex-direction: row;
+            flex-direction: column;
             justify-content: space-around;
             align-content: flex-start;
-    
-        
-    }
+}
+.sliderRow {
+    width: 100%;
+    display: flex;
+            flex-direction: row;
+}
+#modelUpto {
+     display:flex;
+}
+#modelRop {
+     display:none;
+}
 .sliderbox, .actionBox,  .playButtons  {  
         width: 50%;
-        height: 6vw;
+        height: 5vw;
         border-width: 1px;
         border-color: slategray;
         border-style:solid; 
         
     }
 .sliderbox p {
-    height: 1vw;
+    height: .8vw;
     margin: .5vh
 }
 .slider {
@@ -170,10 +181,11 @@ input[type=range] {
 
 .sliderbox {
     display: flex;
-        flex-wrap: nowrap;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+    align-items: center;
+    flex-wrap: nowrap;
+    flex-direction: column;
+    justify-content: center;
+    align-content: flex-start;    
 }
 
 .actionBox {

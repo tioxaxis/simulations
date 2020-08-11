@@ -65,6 +65,15 @@ export class UniformRV {
         return x;
     }
 };
+
+export class DeterministicRV {
+    constructor (mean){
+        this.mean = mean;
+    }
+    observe (){
+      return this.mean;   
+    }
+}
  
 export class Heap {
     constructor(compare){

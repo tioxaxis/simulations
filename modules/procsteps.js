@@ -90,6 +90,7 @@ function eachFrame (currentTime) {
                 theTop.time <= simu.frametime ){
              const event = simu.heap.pull();
              simu.now = event.time;
+//            console.log('next event is ',event.type);
              event.proc(event.item);
          }
         simu.now =simu.frametime;
@@ -125,7 +126,7 @@ constructor (name, numSeats, walkingTime,
 setPreviousNext (previousMachine, nextMachine){
     this.previousMachine = previousMachine;
     this.nextMachine = nextMachine;
-    this.averageProcTime = nextMachine.getAverageProcTime();
+//    this.averageProcTime = nextMachine.getAverageProcTime();
     // get average time from machine next and store it here
 };
         
@@ -208,7 +209,7 @@ constructor (name, animForWalkAndDestroy, dontOverlap){
     this.name = name;
     this.animForWalkAndDestroy = animForWalkAndDestroy;
     
-    this.walkingTime =this.animForWalkAndDestroy.computeWalkingTime();
+    this.walkingTime =this.animForWalkAndDestroy.walkingTime;
     this.dontOverlap = dontOverlap;
     this.lastAdded = null;
 };
@@ -223,7 +224,7 @@ push (person) {
     this.lastAdded = person;
     this.animForWalkAndDestroy.start(person);
     
-    simu.heap.push( {time:simu.now+this.walkingTime, type: 'walkoff', 
+    simu.heap.push( {time:simu.now+this.walkingTime, type: 'walkoff/destroy', 
             proc: this.destroy.bind(this), item: person});
     return true;
 };
@@ -264,7 +265,7 @@ destroy (person) {
         for ( let k = 0; k < this.numMachines; k++){
              this.machs[k] = {status : 'idle', person : null, index: k};
          }
-        this.anim.reset(this.numMachines);
+        if( this.anim ) this.anim.reset(this.numMachines);
         this.numberBusy = 0
     };
     
@@ -300,11 +301,11 @@ destroy (person) {
          
          if ( person ) {             
              
-             this.anim.start(theProcTime, person, machine.index);
+             if( this.anim ){ 
+                 this.anim.start(theProcTime, person, machine.index);
+             }
              person.machine = machine;
-             
              machine.status = 'busy';
-             
              machine.person = person;
 
              simu.heap.push( {time:simu.now+theProcTime, type:'finish/'+this.name,
@@ -322,7 +323,7 @@ destroy (person) {
         let success = this.nextQ.push(machine.person);
         if ( success ) {
             if (this.recordFinish) this.recordFinish(machine.person);
-            this.anim.finish(machine.person);
+            if( this.anim ) this.anim.finish(machine.person);
              machine.status = 'idle';
              machine.person = null;
              this.start(machine);

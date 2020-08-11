@@ -21,11 +21,10 @@
      <!--  my JavaScript -->
     <script>
         var simu = {};
-        simu.nameOfSimulation = 'little' ;   //name for .json for preset file and key for local Storage
+        simu.nameOfSimulation = 'inv' ;   //name for .json for preset file and key for local Storage
     </script>
-    
     <script type = 'module' src = '../modules/rhs.js'></script>
-    <script type = 'module' src = './little.js'></script>
+    <script type = 'module' src = './inv.js'></script>
     
 </head>
   <body >
@@ -67,25 +66,26 @@
  <div id="rightHandSideBox"> 
      
     <div id="sliderBigBox">
-    <div class="sliderRow">
-        <div class="sliderbox"> 
+
+        <div class="sliderRow">
+            <div class="sliderbox"> 
             <p>Arrival Rate = 
-            <span id="arDisplay">1.0</span></p>
+            <span id="arDisplay">5</span></p>
                 <input id="ar" 
-                   type="range" min="1" max="6" step="1" value="1.0" class="slider"  >
+                   type="range" min="1" max="9" step="1" value="5" class="slider"  >
             <div class='spreadValues'> 
                 <span>1</span>
-                <span>2</span>
                 <span>3</span>
-                <span>4</span>
                 <span>5</span>
-                <span>6</span>
+                <span>7</span>
+                <span>9</span>
             </div>
-        </div>
+            </div>
+        
 
         <div class="sliderbox"> 
             <p>Arrival Variability = 
-                <span id="acvDisplay">1.0</span></p>
+                <span id="acvDisplay">0.0</span></p>
             <input id="acv" 
                    type="range" min="0" max="2" step="0.5" value="0.0" class="slider"  >
             <div class='spreadValues'> 
@@ -94,33 +94,87 @@
                 <span>2.0</span>
             </div>
         </div>
-    </div>
-    <div class="sliderRow">
-        <div class="sliderbox"> 
-            <p>Service Time = 
-                <span id="srDisplay">5</span></p>
-            <input id="sr" 
-                   type="range" min="5" max="25" step="1" value="5" class="slider"  >
+        </div>
+
+        <div class="sliderRow">
+            <div class="sliderbox"> 
+            <p>Lead Time = 
+                <span id="ltDisplay">2</span></p>
+            <input id="lt" 
+                   type="range" min="0" max="10" step="1" value="2" class="slider"  >
             <div class='spreadValues'> 
+                <span>0</span>
                 <span>5</span>
-                <span>15</span>
-                <span>25</span>
+                <span>10</span>
             </div>
         </div>
 
         <div class="sliderbox"> 
-            <p>Service Variability = 
-                <span id="scvDisplay">1.0</span></p>
-            <input id="scv" 
+            <p>Lead Time Variability = 
+                <span id="ltcvDisplay">0.0</span></p>
+            <input id="ltcv" 
                    type="range" min="0" max="2" step="0.5" value="0.0" class="slider"  >
             <div class='spreadValues'> 
                 <span>0.0</span>
                 <span>1.0</span>
                 <span>2.0</span>
             </div>
+        </div></div>
+        
+    
+         <div id="modelRop" class="sliderRow"> 
+             <div class="sliderbox"> 
+                <p>Order Quantity = 
+                    <span id="quanDisplay">24</span></p>
+                <input id="quan" 
+                       type="range" min="2" max="50" step="2" value="24" class="slider"  >
+                <div class='spreadValues'> 
+                    <span>0</span>
+                    <span>25</span>
+                    <span>50</span>
+                </div>
+            </div>
+
+            <div class="sliderbox"> 
+                <p>Reorder Point = 
+                    <span id="ropDisplay">10</span></p>
+                <input id="rop" 
+                       type="range" min="5" max="75" step="1" value="10" class="slider"  >
+                <div class='spreadValues'> 
+                    <span>5</span>
+                    <span></span>
+                    <span>75</span>
+                </div>
+            </div>
         </div>
-    </div>
-     <div class="sliderRow">
+        
+         <div id="modelUpto" class="sliderRow"> 
+             <div class="sliderbox"> 
+                <p>Period = 
+                    <span id="periodDisplay">10</span></p>
+                <input id="period" 
+                       type="range" min="0" max="50" step="1" value="10" class="slider"  >
+                <div class='spreadValues'> 
+                    <span>0</span>
+                    <span>25</span>
+                    <span>50</span>
+                </div>
+            </div>
+
+            <div class="sliderbox"> 
+                <p>Up to Quantity = 
+                    <span id="uptoDisplay">10</span></p>
+                <input id="upto" 
+                       type="range" min="0" max="50" step="1" value="10" class="slider"  >
+                <div class='spreadValues'> 
+                    <span>0</span>
+                    <span>25</span>
+                    <span>50</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sliderRow"> 
         <div class="playButtons" id="playButtons">
             <p id='pauseButton' style="display:none"><button >Pause</button></p>
             <p id='playButton' style="display:inline"><button >Play</button></p>
@@ -155,6 +209,7 @@
     
         </div>
      
+     
         <div class="sliderbox"> 
             <p>Speed = 
                 <span id="speedDisplay">1</span>x</p>
@@ -166,7 +221,6 @@
             </div>
         </div>
     </div>
-    
      </div>   <!-- end of SliderBigBox -->
     
      

@@ -181,12 +181,12 @@ const animForQueue = {
 
 const animForWalkOffStage = {
     loc: theStage.offStageRight,
-    walkingTime: null,
+    walkingTime: Math.abs(theStage.box.exitX - theStage.offStageRight.x)/theStage.normalSpeed,
 
-    computeWalkingTime: function (){
-         this.walkingTime = Math.abs(theStage.box.exitX - this.loc.x)/theStage.normalSpeed;
-        return this.walkingTime;
-    },
+//    computeWalkingTime: function (){
+//         this.walkingTime = Math.abs(theStage.box.exitX - this.loc.x)/theStage.normalSpeed;
+//        return this.walkingTime;
+//    },
 
     start: function (person){
         person.addPath( {t: simu.now + 
