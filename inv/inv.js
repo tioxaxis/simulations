@@ -97,6 +97,7 @@ function captureChangeInSliderS(event){
     switch(id) {
     case 'ar':  
         theSimulation.arrivalRV.setRate(Number(v) / tioxTimeConv);
+            updatePredInv();
 //            setExpected(theSimulation.quantityOrdered,
 //                        theSimulation.arrivalRV.rate,
 //                        theSimulation.arrivalRV.CV);
@@ -110,6 +111,7 @@ function captureChangeInSliderS(event){
         break; 
     case 'lt':  
         theSimulation.leadtimeRV.setTime(Number(v) * tioxTimeConv);
+            updatePredInv();
         break;
             
     case 'ltcv':  
@@ -128,15 +130,19 @@ function captureChangeInSliderS(event){
             
     case 'quan':
         theSimulation.quantityOrdered = Number(v);
+            updatePredInv();
         break;
     case 'rop':
         theSimulation.rop = Number(v);
+            updatePredInv();
         break;
     case 'period':
         theSimulation.period = Number(v);
+            updatePredInv();
         break;
     case 'upto':
         theSimulation.upto = Number(v);
+            updatePredInv();
         break;
 
     case 'speed':
@@ -156,6 +162,11 @@ function captureChangeInSliderS(event){
         break;                       
     }  
 //    console.log(theSimulation);
+}
+
+function updatePredInv(){
+    theSimulation.retailStore.predInv = theSimulation.quantityOrdered/2 +
+            theSimulation.rop - theSimulation.arrivalRV.rate * theSimulation.leadtimeRV.mean;
 }
 
 //function setDesired(under, over){
@@ -548,11 +559,14 @@ class RetailStore {
         this.box.nPerRow = Math.floor( this.store.width / this.box.w);
         this.personTravelTime = (theStage.pathBot - theStage.pathTop)/theStage.normalSpeed;
         this.truckTravelTime = (3000);
+        
     };
     reset (){
             // start with the store filled in the first round.
         this.inv = theSimulation.quantityOrdered;
         this.invPosition = this.inv;
+        updatePredInv();
+        
         this.addPkg(this.inv);
         this.drawAll();
         this.lostSales = 0;
@@ -574,6 +588,8 @@ class RetailStore {
     truckArrival(n) {
         this.addPkg(n);
         this.inv += n;
+        theChart.push(simu.now, this.inv,
+                     this.invPosition, this.predInv);
         // keep track of nRounds;
         this.nRounds++;
         this.roundsWithEnough++;   /// only if we did not run out.
@@ -617,6 +633,8 @@ class RetailStore {
         person.addPath({t: finishTime,
                         x: theStage.pathRight,
                         y: theStage.pathBot })
+        theChart.push(simu.now, this.inv,
+                     this.invPosition, this.predInv);
     };
 //    if ( theSimulation.demand.store.inventory() > 0) {
 //            let b = theSimulation.demand.store.removeBox(1);
@@ -774,12 +792,12 @@ export const theChart ={
        	    datasets: [
                 {  //*** Series #1
                 label: 'On Hand',
-                pointBackgroundColor: 'rgb(220, 0, 0)',
-                pointBorderColor: 'rgb(220, 0, 0)',
-                showLine: false,
+                pointBackgroundColor: 'rgb(26, 26, 185)',
+                pointBorderColor: 'rgb(26, 26, 185)',
+                showLine: true,
                 lineTension:0,
-                pointRadius: 5,
-                borderColor: 'rgb(220, 0, 0)',
+                pointRadius: 0,
+                borderColor: 'rgb(26, 26, 185)',
                     borderWidth: 3,
                 fill: false,
 
@@ -787,12 +805,12 @@ export const theChart ={
                 },
                 {   //*** Series #2
                 label: 'on Hand and On Order',
-                pointBackgroundColor: 'rgba(0,150,0,1)',
-                pointBorderColor: 'rgba(0,150,0,1)',
-                showLine: false,
+                pointBackgroundColor: 'rgb(0,150,0)',
+                pointBorderColor: 'rgb(0,150,0)',
+                showLine: true,
                 lineTension: 0,
-                pointRadius: 3,
-                borderColor: 'rgba(0,150,0,1)',
+                pointRadius: 0,
+                borderColor: 'rgb(0,150,0)',
                     borderWidth: 3,
                 fill: false,
 
@@ -800,13 +818,13 @@ export const theChart ={
                 },
                 {   //*** Series #3
                 label: 'Predicted On Hand',
-                pointBackgroundColor: 'rgb(26, 26, 185)',
-                pointBorderColor: 'rgb(26, 26, 185)',
+                pointBackgroundColor: 'rgb(220, 0, 0)',
+                pointBorderColor: 'rgb(220, 0, 0)',
                 showLine: true,
                     hidden: true,
                 lineTension: 0,
                 pointRadius: 0,
-                borderColor: 'rgb(26, 26, 185)',
+                borderColor: 'rgb(220, 0, 0)',
                     borderWidth: 3,
                 fill: false,
 
@@ -898,7 +916,7 @@ export const theChart ={
         this.continue();
     },
     continue: function(){
-        this.graphScale = Math.max(this.graphScale, simu.frameSpeed); 
+        this.graphScale = Math.max(this.graphScale,/* simu.frameSpeed*/); 
         this.graphTimeWidth = this.graphInitialTimeWidth*this.graphScale;
         this.graphTimeShift = this.graphInitialTimeShift*this.graphScale;
         this.graphMax = Math.max(this.graphMax,this.graphMin + this.graphTimeWidth);
@@ -913,25 +931,25 @@ export const theChart ={
         this.chart.data.datasets[2].borderWidth = points;
         this.chart.update();
     },
-    push: function (n,under,over,avg){
+    push: function (t,inv,invPos,predInv){
         
-        
-        if (n > this.graphMax) {
+        t /= tioxTimeConv;
+        if (t > this.graphMax) {
             this.graphMin += this.graphTimeShift;
             this.graphMax += this.graphTimeShift;
             this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
             this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
             }
         //        console.log( 'at chart ',t,inv,rt,pI);
-        let bigger = Math.max(over, under);
+        let bigger = Math.max(inv, invPos, predInv);
         if ( bigger > this.yAxisScale.max ){
             this.yAxisScale = this.aVAxis.update(bigger);
             this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
             this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
         }
-        this.chart.data.datasets[0].data.push({x:n,y:under});
-        this.chart.data.datasets[1].data.push({x:n,y:over});
-        this.chart.data.datasets[2].data.push({x:n,y:avg});
+        this.chart.data.datasets[0].data.push({x:t,y:inv});
+        this.chart.data.datasets[1].data.push({x:t,y:invPos});
+        this.chart.data.datasets[2].data.push({x:t,y:predInv});
         this.chart.update();
         // update graph with time, this.total/this.waits.length
     },
