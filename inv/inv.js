@@ -78,6 +78,13 @@ class ProcessCollection {
      c.stroke();
      c.fill();
      c.restore();
+     
+     
+     
+    let aTruck = new Truck(c,45, 20,10);
+    aTruck.draw(650,30);
+    let bTruck = new Truck(c,45, 15,8)
+    bTruck.draw(750,200);
  };
 
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
@@ -669,8 +676,7 @@ class RetailStore {
         let quantity = theSimulation.upto - this.invPosition;
         simu.heap.push( {time: simu.now + truckLT,
                          type: 'truck arrival',        
-                         proc: theSimulation.retailStore.truckArrival
-                         .bind(theSimulation.retailStore), 
+                         proc: this.truckArrival.bind(this), 
                          item: quantity});
         // seems like the item must provide the quantity being delivered.
         simu.heap.push( {time: simu.now + theSimulation.period,
@@ -721,6 +727,75 @@ class RetailStore {
     
 };
 
+const pi2 = 2 * Math.PI;
+class Truck {
+  constructor(ctx, nPackages, boxSize = 20, bedLength = 10){
+      this.ctx = ctx;
+      this.cur = {};
+      this.cur.x = 0;
+      this.cur.y = 0;
+      this.boxSize = boxSize;
+      this.bedLength = bedLength;
+      this.truckHeight = this.boxSize * 5;
+      this.truckCabWidth = this.truckHeight/2;
+      this.truckBedWidth = this.bedLength * this.boxSize ;
+      this.truckWidth =  this.truckBedWidth + this.truckCabWidth;
+      this.nPackages = nPackages;
+  };
+
+  draw(x, y){
+    this.ctx.save();
+    this.ctx.fillStyle = 'lightgrey';
+    this.ctx.strokeStyle = 'black';
+    this.ctx.lineWidth = 2;
+
+    //body
+    this.ctx.moveTo(x, y + this.truckHeight);
+    this.ctx.lineTo(x + this.truckWidth, y + this.truckHeight);
+    this.ctx.lineTo(x + this.truckWidth, y + this.truckHeight - 0.75 * this.boxSize);
+    this.ctx.lineTo(x + this.truckCabWidth, y + this.truckHeight - 0.75 * this.boxSize);
+    this.ctx.lineTo(x + this.truckCabWidth, y );
+    this.ctx.lineTo(x + this.truckCabWidth/2, y );
+    this.ctx.lineTo(x, y + this.truckHeight/2);
+    this.ctx.lineTo(x, y + this.truckHeight);
+    this.ctx.closePath();
+    this.ctx.stroke();
+    this.ctx.fill();
+
+    //wheels  
+    this.ctx.beginPath();
+    this.ctx.arc (x + this.truckCabWidth/2, y + this.truckHeight, this.boxSize/2, 
+                 0, pi2);
+    this.ctx.stroke();
+    this.ctx.fill();
+
+
+    this.ctx.beginPath();
+    this.ctx.arc(x + this.truckWidth - this.truckCabWidth/2,
+                 y + this.truckHeight, this.boxSize/2, 
+                 0, pi2);
+    this.ctx.stroke();
+    this.ctx.fill();
+
+    this.ctx.restore();
+    this.drawPackages(x + this.truckCabWidth, 
+                      y + this.truckHeight - 0.75 * this.boxSize);
+
+
+    };
+    drawPackages(x, y){
+      let nColors = tioxColors.length;
+      for ( let i = 0; i < this.nPackages; i++ ){
+        this.ctx.fillStyle = tioxColors[
+            Math.floor(Math.random() * nColors)];
+        this.ctx.fillRect(
+            x + this.boxSize * (i % this.bedLength) + 1,
+            y - this.boxSize * 
+            (1+ Math.floor( i / this.bedLength )) - 1,
+            this.boxSize - 2, this.boxSize - 2 );
+      }
+    };
+};
 
 var gSF ;
 export class Person extends SPerson {
