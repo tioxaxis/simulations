@@ -100,6 +100,21 @@ function eachFrame (currentTime) {
         simu.requestAFId = window.requestAnimationFrame(eachFrame);
 };
 
+ // this could in theory put Supplier in the generic side but... want access to 
+// details of how to call the particular objects that in play for this animation.
+//export class Supplier {
+//    constructor ( Item, x, y ){
+//        this.Item = Item;
+//        this.x = x;
+//        this.y = y;
+//        this.previous = null;
+//    };
+//    pull () {
+//        this.previous = new this.Item(this.previous, this.x, this.y,
+//                                  30, 60); //theStage.person.height); 
+//        return this.previous;
+//     }
+//};   //end class Supplier
 
 export class Queue {
 constructor (name, numSeats, walkingTime,
@@ -523,7 +538,7 @@ var tioxBorders = ['black', 'black', 'black', 'black',
 
 const pi2 = Math.PI*2;
  export class GStickFigure {
-    constructor (size) {
+    constructor (size, boxSize = 20) {
         let radius = size/8;
         this.head = {x:0,y:radius,r:radius,stroke:1};
         this.body = {x:0,y:0.22*size,w:size/10,h:size*0.4};
@@ -533,7 +548,7 @@ const pi2 = Math.PI*2;
         this.deltaMaxX = size*(4/9);
         this.fontSize = Math.floor(2/5*size);
         simu.context.font = Math.floor(2/5*size)+'px Arial';
-        this.package = {x:-25 , y:0.25*size , w:18, h:18 };
+        this.package = {x:-25 , y:0.25*size , w:boxSize-2, h:boxSize-2 };
     }
 };
         
