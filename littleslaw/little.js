@@ -5,7 +5,7 @@ const tioxTimeConv = 1000;  //time are in milliseconds
 import {GammaRV, Heap} from '../modules/utility.js';
 //    from './modules/utility.js';
 import { Queue, WalkAndDestroy, MachineCenter, 
-        InfiniteMachineCenter,SPerson,allSPerson, 
+        InfiniteMachineCenter, Item, ItemCollection,  
        GStickFigure, NStickFigure }
     from '../modules/procsteps.js' ;
 
@@ -123,7 +123,7 @@ function captureChangeInSliderS(event){
             speeds[v];
         simu.frameSpeed = speeds[v];
         theChart.continue();
-        Person.updateForSpeed();
+       personCollection.updateForSpeed();
         document.getElementById(id+'Display')
             .innerHTML = speeds[v];
         break;
@@ -137,11 +137,13 @@ function captureChangeInSliderS(event){
 
 var totInv, totTime, totPeople, lastArrDep, LBRFcount ;
 simu.reset2 = function(){
-    Person.reset();
+   personCollection.reset();
     theChart.reset();     
     theProcessCollection.reset();
     totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
-    gSF = new GStickFigure( theStage.person.height );
+    gSF = new GStickFigure( simu.context,
+                           theStage.person.height,
+                          theStage.boxSize );
     
     
         
@@ -350,7 +352,7 @@ class Supplier {
     };
 
     pull () {
-        this.previous = new Person(this.previous, this.x, this.y,
+        this.previous = new Person(personCollection,this.previous, this.x, this.y,
                                   30, theStage.person.height); 
         return this.previous;
      }
@@ -358,10 +360,11 @@ class Supplier {
 
 
 var gSF ;
-export class Person extends SPerson {
+var personCollection = new ItemCollection();
+export class Person extends Item {
     
-    constructor (ahead, x,y= 60,w = 30,h = 30) {
-        super(ahead, x, y);
+    constructor (collection, ahead, x,y= 60,w = 30,h = 30) {
+        super(collection, ahead, x, y);
         
         this.width = w;
         

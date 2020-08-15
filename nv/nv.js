@@ -4,8 +4,8 @@ const darkGrey = 'rgb(52,52,52)';
 const tioxTimeConv = 1000;  //time are in milliseconds
 import {GammaRV, UniformRV, DeterministicRV, Heap} from '../modules/utility.js';
 import {  Queue, WalkAndDestroy, MachineCenter, 
-        InfiniteMachineCenter,SPerson,allSPerson, 
-       GStickFigure, NStickFigure, tioxColors}
+        InfiniteMachineCenter, Item, ItemCollection,  
+       GStickFigure, NStickFigure, GStore, tioxColors}
     from '../modules/procsteps.js' ;
 
 const theStage = {
@@ -28,6 +28,8 @@ const theStage = {
    theStage.offStageEntry = {x: theStage.pathLeft, y: theStage.pathTop};
     theStage.offStageExit = {x: theStage.pathLeft, y: theStage.pathBot};
     theStage.headQueue = {x: theStage.pathRight, y: theStage.pathBot};
+    const background = document.getElementById('theBackground');
+    theStage.background = {context:background.getContext('2d') };
 };
 
 
@@ -55,26 +57,26 @@ class ProcessCollection {
 
 //var qLenDisplay= null;
 
- function setBackground(s){
-    const background = document.getElementById('theBackground');
-    const c = background.getContext('2d');
-//     const s = theStage.store;
-     c.save();
-     c.resetTransform();
-     c.strokeStyle = 'black';
-     c.fillStyle = 'white'
-     c.lineWidth= s.stroke;;
-      c.strokeRect(s.left, s.top, s.width, s.height);
-     c.beginPath();
-     c.moveTo(s.left, s.top);
-     c.lineTo(s.left+s.width/2,s.top/2);
-     c.lineTo(s.left+s.width,s.top);
-     c.lineTo(s.left,s.top);
-     c.closePath();
-     c.stroke();
-     c.fill();
-     c.restore();
- };
+// function setBackground(s){
+//    const background = document.getElementById('theBackground');
+//    const c = background.getContext('2d');
+////     const s = theStage.store;
+//     c.save();
+//     c.resetTransform();
+//     c.strokeStyle = 'black';
+//     c.fillStyle = 'white'
+//     c.lineWidth= s.stroke;;
+//      c.strokeRect(s.left, s.top, s.width, s.height);
+//     c.beginPath();
+//     c.moveTo(s.left, s.top);
+//     c.lineTo(s.left+s.width/2,s.top/2);
+//     c.lineTo(s.left+s.width,s.top);
+//     c.lineTo(s.left,s.top);
+//     c.closePath();
+//     c.stroke();
+//     c.fill();
+//     c.restore();
+// };
 
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
 const speeds = [1,3,10,30];
@@ -129,7 +131,7 @@ function captureChangeInSliderS(event){
             speeds[v];
         simu.frameSpeed = speeds[v];
         theChart.continue();
-        Person.updateForSpeed();
+       personCollection.updateForSpeed();
         document.getElementById(id+'Display')
             .innerHTML = speeds[v];
         break;
@@ -165,11 +167,12 @@ function setActual(enough,total){
 
 //var totInv, totTime, totPeople, lastArrDep, LBRFcount ;
 simu.reset2 = function(){
-    Person.reset();
+   personCollection.reset();
     theChart.reset();     
     theProcessCollection.reset();
 //    totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
-    gSF = new GStickFigure( theStage.person.height, theStage.boxSize );
+    gSF = new GStickFigure(simu.context,
+                           theStage.person.height, theStage.boxSize );
     setDesired(theSimulation.Cu,theSimulation.Co);
     setExpected(theSimulation.quantityOrdered,
                         theSimulation.demandRV.mean,
@@ -333,7 +336,8 @@ class Supplier {
     };
 
     pull () {
-        this.previous = new Person(this.previous, this.x, this.y,
+        this.previous = new Person(personCollection, 
+                                   this.previous, this.x, this.y,
                                   30, theStage.person.height); 
         return this.previous;
      }
@@ -352,7 +356,9 @@ class DemandCreator {
         this.enough = null;
         this.overageForDay = null;
         this.underageForDay = null;
-        this.store = new RetailStore(theStage.boxSize, theStage.boxesPerRow);
+        this.store = new RetailStore(theStage.background.context,
+            theStage.store.left, theStage.store.top,
+            theStage.boxSize, theStage.boxesPerRow);
         };
 
     reset() {
@@ -366,6 +372,7 @@ class DemandCreator {
         theSimulation.demand.store.emptyStore();
         this.curDemand = Math.floor(theSimulation.demandRV.observe());
         this.store.addBox(theSimulation.quantityOrdered);
+        this.store.drawAll();
         this.nRounds ++;
         let excess = theSimulation.quantityOrdered - this.curDemand; 
         this.overageForDay = theSimulation.Co * Math.max(0,excess);
@@ -404,90 +411,23 @@ class DemandCreator {
 };
 
 
-class RetailStore {
-    constructor(boxSize, boxesPerRow){
-        this.packages = [];
-        this.store = theStage.store;
-        this.box = {w: boxSize, h: boxSize, 
-                    wInner: boxSize - 2, hInner: boxSize - 2 };
-        this.store.width = boxSize * boxesPerRow ;
-        this.store.height = this.store.width;
-        this.box.nPerRow = boxesPerRow;
-        setBackground(this.store);
-        
-    };
-    reset(){
-        const background = document.getElementById('theBackground');
-        const c = background.getContext('2d');
-        const s = this.store;
-        c.resetTransform();
-        c.clearRect(s.left,s.top,s.width,s.height)   
-    }
-    emptyStore(){
-        this.packages = [];
-    };
-    inventory(){
-        return this.packages.length;    
-    };
-    addBox(n) {
-        for (let i = 0; i < n; i++ ){
-            this.packages.push(
-                {color: Math.floor( Math.random()*tioxColors.length) } );   
-        }
-        this.drawAll();
-    };
-    removeBox(){
-        const background = document.getElementById('theBackground');
-        const c = background.getContext('2d');
-        const k = this.packages.length - 1;
-        this.clearBox(c,k);
-        let b = this.packages.pop() ;
-        return b;
+class RetailStore  extends GStore {
+    constructor(context, left, top, boxSize, boxesPerRow){
+        super (context, left, top, boxSize, boxesPerRow);   
     };
 
     drawAllGrey(){
-        const background = document.getElementById('theBackground');
-        const c = background.getContext('2d');
-        c.save()
-        c.fillStyle = darkGrey; // dark grey
-        for ( let i = 0; i <this.packages.length; i++ ){
-            c.fillRect(this.xPos(i)+1, this.yPos(i)-1,
-                   this.box.wInner, this.box.hInner);    
-        }
-        c.restore();
-    };
-    drawAll(){
-        const background = document.getElementById('theBackground');
-        const c = background.getContext('2d');
-        const s = this.store;
-        c.resetTransform();
-        c.clearRect(s.left,s.top,s.width,s.height)
-        for ( let i = 0; i < this.packages.length; i++ ){
-            c.fillStyle = tioxColors[this.packages[i].color];
-            c.fillRect(this.xPos(i)+1, this.yPos(i)-1,
-                   this.box.wInner, this.box.hInner );
-        };
-        
-    };
-    clearBox(c,i){
-        c.clearRect(this.xPos(i)+1, this.yPos(i)-1,
-                    this.box.wInner, this.box.hInner );
-    };            
-    xPos(i) {
-        return this.store.left + this.box.w * (i % this.box.nPerRow);
-    };
-    yPos(i) {
-        return this.store.top + this.store.height - this.box.h * (1+ 
-            Math.floor( i / this.box.nPerRow ));
+        this.drawAll( darkGrey );
     };
 };
 
 
 var gSF ;
-export class Person extends SPerson {
+var personCollection = new ItemCollection();
+export class Person extends Item {
     
-    constructor (ahead, x,y= 60,w = 30,h = 30) {
-        super(ahead, x, y);
+    constructor (collection, ahead, x,y= 60,w = 30,h = 30) {
+        super(collection, ahead, x, y);
         
         this.width = w;
         

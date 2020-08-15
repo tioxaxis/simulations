@@ -18,6 +18,8 @@ simu.requestAFId = null;  // id for requestAnimationFrame
 simu.initialize = function(  ) {
         simu.theCanvas = document.getElementById('theCanvas');
         simu.context = simu.theCanvas.getContext('2d');
+        simu.theBackground = document.getElementById('theBackground');
+        simu.backcontext = theBackground.getContext('2d');
 //        window.addEventListener('resize', resizeCanvas);
     };
     
@@ -96,7 +98,8 @@ function eachFrame (currentTime) {
         simu.now =simu.frametime;
        // console.log('in eachFrame now=', simu.now);
         clearCanvas();
-        SPerson.moveDisplayAll(deltaSimT);
+        // for each collection of items move them.
+        allCollections.forEach( c => c.moveDisplayAll(deltaSimT) );
         simu.requestAFId = window.requestAnimationFrame(eachFrame);
 };
 
@@ -376,27 +379,41 @@ destroy (person) {
 
 // minimal Person with properties only for the simulation, the procsteps
 
-export var allSPerson = [];
-var counterSPerson = 0;
-export class SPerson {
 
-    static reset(){
-        allSPerson = [];
-        counterSPerson = 0;  
+ var allCollections = [];
+export class ItemCollection {
+  constructor (){
+      allCollections.push(this);
+      this.reset();
+  }  ;
+    reset (){
+        this.all = [];
+        this.counter = 0; 
     };
-    static moveDisplayAll (deltaSimT){
-        allSPerson.forEach(p=> p.moveDisplayWithPath(deltaSimT))
+    moveDisplayAll (deltaSimT){
+        this.all.forEach(p=> p.moveDisplayWithPath(deltaSimT))
     } 
     
-    static updateForSpeed(){
-        allSPerson.forEach(p => p.updateAllPaths());
+    updateForSpeed(){
+        this.all.forEach(p => p.updateAllPaths());
     };
+    remove(item){
+        let k = this.all.indexOf(item);
+        if (k < 0){alert('failed to find person in all');debugger}
+        this.all.splice(k,1);
+    };
+};
+export class Item {
 
-    constructor (ahead, x, y){
-        this.which = ++counterSPerson;
+
+    constructor (collection, ahead, x, y){
+        this.collection = collection;
+        this.which = ++collection.counter;
+        collection.all.push(this);
+        
         this.ahead = ahead;
         this.behind = null;
-        allSPerson.push(this);
+        
         this.cur = {t: simu.now, x: x, y: y};
         this.pathList = [];
         this.arrivalTime = null;
@@ -446,15 +463,7 @@ export class SPerson {
              };
              
         };
-//       console.log('AFTER  mDWP person ',this.which, 'now =', 'cur.x,path.x',this.cur.x);
-        //*******     *****
-//       if (this.cur.x > simu.theStage.box.exitX+5  &&
-//            this.cur.y > simu.theStage.box.exitY+10 ){
-//            alert(' found person in wrong place');
-//            debugger;
-//        };
-       // console.log( 'in mDWP person', this.which, 'this.cur.x', this.cur.x);
-                    
+                   
         this.graphic.moveTo(this.cur.x,this.cur.y); 
         this.graphic.draw();
        
@@ -518,14 +527,12 @@ export class SPerson {
     };  
 
     destroy(){
-        let k = allSPerson.indexOf(this);
-        if (k < 0){alert('failed to find person in all');debugger}
-        allSPerson.splice(k,1);
+        this.collection.remove(this);
         if ( this.behind ) {
             this.behind.ahead = null;
         };
     };
-} ;    // end of class SPerson
+} ;    // end of class Item
 
 export var tioxColors = ['rgb(28, 62, 203)', 'rgb(80, 212, 146)', 'rgb(151, 78, 224)',
                 'rgb(234, 27, 234)', 'rgb(164, 132, 252)', 'rgb(29, 157, 127)',
@@ -538,7 +545,7 @@ var tioxBorders = ['black', 'black', 'black', 'black',
 
 const pi2 = Math.PI*2;
  export class GStickFigure {
-    constructor (size, boxSize = 20) {
+    constructor (context, size, boxSize = 20) {
         let radius = size/8;
         this.head = {x:0,y:radius,r:radius,stroke:1};
         this.body = {x:0,y:0.22*size,w:size/10,h:size*0.4};
@@ -547,7 +554,8 @@ const pi2 = Math.PI*2;
         this.badge = {x: 1/6*size, y: 2/5*size };
         this.deltaMaxX = size*(4/9);
         this.fontSize = Math.floor(2/5*size);
-        simu.context.font = Math.floor(2/5*size)+'px Arial';
+        this.context = context;
+        this.context.font = Math.floor(2/5*size)+'px Arial';
         this.package = {x:-25 , y:0.25*size , w:boxSize-2, h:boxSize-2 };
     }
 };
@@ -599,7 +607,7 @@ export class NStickFigure {
         // use x,y as starting point and draw the rest of the
         // parts by translating and rotating from there
 
-        let c = simu.context;
+        let c = this.gSF.context;
         c.save();
         c.strokeStyle = this.bdaryColor;
         c.fillStyle = this.color;
@@ -682,3 +690,83 @@ export class NStickFigure {
     };
 
 };
+
+
+export class GStore {
+    constructor(context, left, top, boxSize, boxesPerRow){
+        this.packages = [];
+        this.context = context;
+        this.store = {left: left, top: top}
+        this.store.width = boxSize * boxesPerRow ;
+        this.store.height = this.store.width;
+        this.box = {w: boxSize, h: boxSize, 
+                    wInner: boxSize - 2, hInner: boxSize - 2,
+                   nPerRow : boxesPerRow};
+        this.drawStore(this.context,this.store);
+        
+    };
+    reset(){
+        const s = this.store;
+        this.context.resetTransform(); this.context.clearRect(s.left,s.top,s.width,s.height)   
+    };
+    drawStore(c,s){
+         c.save();
+         c.resetTransform();
+         c.strokeStyle = 'black';
+         c.fillStyle = 'white'
+         c.lineWidth= s.stroke;;
+         c.strokeRect(s.left, s.top, s.width, s.height);
+         c.beginPath();
+         c.moveTo(s.left, s.top);
+         c.lineTo(s.left+s.width/2,s.top/2);
+         c.lineTo(s.left+s.width,s.top);
+         c.lineTo(s.left,s.top);
+         c.closePath();
+         c.stroke();
+         c.fill();
+         c.restore();
+    };
+    emptyStore(){
+        this.packages = [];
+    };
+    inventory(){
+        return this.packages.length;    
+    };
+    addBox(n) {
+        for (let i = 0; i < n; i++ ){
+            this.packages.push(
+                {color: Math.floor( Math.random()*tioxColors.length) } );
+        }
+    };
+    removeBox(){
+        this.clearBox(this.packages.length - 1);
+        return this.packages.pop();
+    };
+
+    drawAll( fixedColor = null ){
+        const c = this.context;
+        const s = this.store;
+        c.resetTransform();
+        c.clearRect(s.left,s.top,s.width,s.height)
+        for ( let i = 0; i < this.packages.length; i++ ){
+            c.fillStyle = fixedColor ? fixedColor :
+                 tioxColors[this.packages[i].color];
+            c.fillRect(this.xPos(i)+1, this.yPos(i)-1,
+                   this.box.wInner, this.box.hInner );
+        };  
+    };
+    clearBox(i){
+        this.context.clearRect(this.xPos(i)+1, this.yPos(i)-1,
+                    this.box.wInner, this.box.hInner );
+    };            
+    xPos(i) {
+        return this.store.left + this.box.w * (i % this.box.nPerRow);
+    };
+    yPos(i) {
+        return this.store.top + this.store.height - this.box.h * (1+ 
+            Math.floor( i / this.box.nPerRow ));
+    };
+};
+
+
+

@@ -5,8 +5,8 @@ const tioxTimeConv = 10000;  //time are in milliseconds
 import {GammaRV, UniformRV, DeterministicRV, Heap}
         from '../modules/utility.js';
 import { Queue, WalkAndDestroy, MachineCenter, 
-        InfiniteMachineCenter,SPerson,allSPerson, 
-       GStickFigure, NStickFigure, tioxColors}
+        InfiniteMachineCenter, Item, ItemCollection,  
+       GStickFigure, NStickFigure, GStore, tioxColors}
     from '../modules/procsteps.js' ;
 
 const theStage = {
@@ -17,10 +17,10 @@ const theStage = {
     person: {width: 40, height: 60}   
 };
 
-{   theStage.store = {left: 400, top:80, width:200, height: 200,
-                     stroke:1};
+{   theStage.store = {left: 400, top:80, stroke:1};
     
-    
+    theStage.boxSize = 15,
+    theStage.boxesPerRow = 10;
     theStage.pathLeft = -100;
     theStage.pathRight = 380;
     theStage.pathTop = 50;
@@ -31,7 +31,7 @@ const theStage = {
 };
 
 
-simu.theStage = theStage;
+//simu.theStage = theStage;
 simu.framedelta = 200;
 simu.framedeltaFor1X = 200;
 simu.sliderTypes = {ar:'range', acv:'range',
@@ -60,31 +60,33 @@ class ProcessCollection {
 //var qLenDisplay= null;
 
  function setBackground(){
-    const background = document.getElementById('theBackground');
-    const c = background.getContext('2d');
-     const s = theStage.store;
-     c.save();
-     c.resetTransform();
-     c.strokeStyle = 'black';
-     c.fillStyle = 'white'
-     c.lineWidth= s.stroke;;
-      c.strokeRect(s.left, s.top, s.width, s.height);
-     c.beginPath();
-     c.moveTo(s.left, s.top);
-     c.lineTo(s.left+s.width/2,s.top-50);
-     c.lineTo(s.left+s.width,s.top);
-     c.lineTo(s.left,s.top);
-     c.closePath();
-     c.stroke();
-     c.fill();
-     c.restore();
+//    const background = document.getElementById('theBackground');
+//    const c = background.getContext('2d');
+//     const s = theStage.store;
+//     c.save();
+//     c.resetTransform();
+//     c.strokeStyle = 'black';
+//     c.fillStyle = 'white'
+//     c.lineWidth= s.stroke;;
+//      c.strokeRect(s.left, s.top, s.width, s.height);
+//     c.beginPath();
+//     c.moveTo(s.left, s.top);
+//     c.lineTo(s.left+s.width/2,s.top-50);
+//     c.lineTo(s.left+s.width,s.top);
+//     c.lineTo(s.left,s.top);
+//     c.closePath();
+//     c.stroke();
+//     c.fill();
+//     c.restore();
      
-     
-     
-    let aTruck = new Truck(c,45, 20,10);
-    aTruck.draw(650,30);
-    let bTruck = new Truck(c,45, 15,8)
-    bTruck.draw(750,200);
+     const c = simu.backcontext;
+     var ahead = null;
+    let aTruck = new Truck(truckCollection,  c, ahead, 45, 20,10);
+    aTruck.graphic.moveTo(650,30);
+     aTruck.graphic.draw();
+    let bTruck = new Truck(truckCollection, c, ahead, 45, 15,8)
+    bTruck.graphic.moveTo(750,200);
+     bTruck.graphic.draw();
  };
 
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
@@ -157,7 +159,7 @@ function captureChangeInSliderS(event){
             speeds[v];
         simu.frameSpeed = speeds[v];
         theChart.continue();
-        Person.updateForSpeed();
+       personCollection.updateForSpeed();
         document.getElementById(id+'Display')
             .innerHTML = speeds[v];
         break;
@@ -172,45 +174,19 @@ function captureChangeInSliderS(event){
 }
 
 function updatePredInv(){
-    theSimulation.retailStore.predInv = theSimulation.quantityOrdered/2 +
+    theSimulation.ropStore.predInv = theSimulation.quantityOrdered/2 +
             theSimulation.rop - theSimulation.arrivalRV.rate * theSimulation.leadtimeRV.mean;
 }
 
-//function setDesired(under, over){
-//    document.getElementById('desiredPerc').innerHTML =
-//        (100*under/(under+over)).toFixed(2);
-//}
-//
-//function setExpected(q,m,v){
-//    let perc ;
-//    // r.v has a range of [m(1-v)], m(1+v)] 
-//    // modQ finds the "q" in the range above.
-//    let modQ = Math.max(Math.min(q,m*(1+v)),m*(1-v));
-//    if ( v != 0 ) perc = 100*(modQ-m*(1-v))/(2*m*v);
-//    else if ( q < m ) perc = 0;
-//    else perc = 100;
-//        
-//    document.getElementById('expectedPerc').innerHTML =
-//        (perc).toFixed(2);
-//}
-//function setActual(enough,total){
-//     document.getElementById('actualPerc').innerHTML =
-//        (100*enough/total).toFixed(2);
-//}
-
-
 //var totInv, totTime, totPeople, lastArrDep, LBRFcount ;
 simu.reset2 = function(){
-    Person.reset();
+   personCollection.reset();
     theChart.reset();     
     theProcessCollection.reset();
 //    totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
-    gSF = new GStickFigure( theStage.person.height );
-//    setDesired(theSimulation.Cu,theSimulation.Co);
-//    setExpected(theSimulation.quantityOrdered,
-//                        theSimulation.arrivalRV.mean,
-//                        theSimulation.arrivalRV.variance);
-//        
+    gSF = new GStickFigure( simu.context, 
+                           theStage.person.height,
+                          theStage.boxSize );
     // schedule the initial Person to arrive and start the simulation/animation.
     theSimulation.supply.previous = null;
     theSimulation.creator.knockFromPrevious();
@@ -219,8 +195,6 @@ simu.reset2 = function(){
     //fudge to get animation started quickly
     let t = simu.heap.top().time-1;
     simu.now = simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
-//    simu.heap.push( {time: simu.now+500, type: 'new cycle', 
-//        proc: theSimulation.demand.cycle.bind(theSimulation.demand), item: null});
     
 };
 
@@ -271,73 +245,6 @@ const animForWalkOffStage = {
     }
 };
 
-// const animForCreator = {
-//    loc: theStage.offStageEntry,
-//    reset: function () {
-//    },
-//
-//    start: function (theProcTime,person,m)  {  
-//        // only 1 machine for creator m=1
-//       person.setDestWithProcTime(theProcTime,
-//            animForCreator.loc.x,animForCreator.loc.y);
-//    },
-//     
-//     finish: function () {},
-//};
-        
-//const animForNV = {
-//    lastFinPerson: null,
-//    
-//    reset:function (  ) {
-//    },
-//    
-//    start: function (theProcTime, person, m){
-////        let walkT = 5 * tioxTimeConv;
-////        if ( theProcTime < walkT+ 3 * tioxTimeConv ){
-////            person.addPath( {t: simu.now + theProcTime,
-////                    x: theStage.box.exitX, 
-////                    y: theStage.box.exitY} );
-////        } else { 
-////            walkT = Math.min( walkT, theProcTime);
-////            let rx = Math.random()  * 0.8 * theStage.box.width+
-////                theStage.box.width * 0.05;
-////            let ry = Math.random() * (theStage.box.height - 
-////                theStage.person.height) + theStage.box.top;
-////            let w = theStage.box.width;
-////            person.addPath( {t: simu.now + walkT * rx/w,
-////                    x: rx + theStage.box.entryX, 
-////                    y: ry} );
-////            person.addPath( 
-////                {t: simu.now +  walkT * rx/w + theProcTime - walkT,
-////                    x: rx + theStage.box.entryX, 
-////                    y: ry} );
-////            person.addPath( {t: simu.now + theProcTime,
-////                    x: theStage.box.exitX, 
-////                    y: theStage.box.exitY} );   
-////        }
-//        
-//        
-////        person.graphic.badgeDisplay(true);
-//        person.arrivalTime = simu.now;
-//        if ( theSimulation.demand.store.inventory() > 0) {
-//            let b = theSimulation.demand.store.removeBox(1);
-//            person.graphic.packageColor = tioxColors[ b.color ];
-//            person.graphic.packageVisible = true;
-//        }  else {
-//            person.graphic.color = darkGrey; // dark grey
-//        };
-//            // test if inventory left and assign inventory to person
-//        // and remove inventory from store
-//        // or make person grey (sad) 
-//    },
-//    
-//    finish: function(person){
-//        
-//        animForNV.lastFinPerson = person;
-//        
-//    }
-//};
-
 
 var theProcessCollection = new ProcessCollection();
 
@@ -349,7 +256,7 @@ var theProcessCollection = new ProcessCollection();
     supply : null,
     queue : null,
     walkOffStage :null,
-    retailStore : null,
+    ropStore : null,
     quantityOrdered : null,
      rop : null,
      period: null,
@@ -358,9 +265,6 @@ var theProcessCollection = new ProcessCollection();
      storeRV: null,
      whichRule: 'rop',
      
-     
-     
-    
     initialize: function (){
         setBackground();
          pickInvSimulation(theSimulation.whichRule);
@@ -400,50 +304,22 @@ var theProcessCollection = new ProcessCollection();
              this.supply, this.queue, 
              null);
             
-        this.retailStore = new RetailStore( this.queue, this.walkOffStage );
-        
-//        this.newsVendor = new MachineCenter("newsVendor",1,
-//              theSimulation.serviceRV,
-//              this.queue, this.walkOffStage,
-//              animForNV,null,null);
-        
-//        function LBRecordStart (person){
-//            
-//            person.arrivalTime = simu.now;
-//            totInv += (simu.now - lastArrDep) * 
-//                ( theSimulation.LittlesBox.getNumberBusy());
-//            lastArrDep = simu.now;
-////            console.log(' LB start', person);
-//            //console.log('LB record start',simu.now,person);
-//            
-//        };
-//        function LBRecordFinish (person){
-//            totInv += (simu.now - lastArrDep) * 
-//                ( theSimulation.LittlesBox.getNumberBusy());
-//            lastArrDep = simu.now;
-//            totPeople++;
-//            totTime += simu.now - person.arrivalTime;
-//            LBRFcount = (LBRFcount + 1) % (simu.frameSpeed*5);
-//            if (!LBRFcount){
-//                theChart.push(simu.now, totInv/simu.now, totTime/simu.now );
-//                console.log( 'in LBRF tot people ',totPeople)
-//            };
-//            
-            
-            
-            //console.log('LB record start',simu.now,person);
-        
-        
+        this.ropStore = new RopStore(
+            simu.context, simu.backcontext,
+            theStage.store.left, theStage.store.top,
+            theStage.boxSize, theStage.boxesPerRow,
+            this.queue, this.walkOffStage );
+                
          
         //link the queue to machine before and after
         this.queue.setPreviousNext(
-            this.creator,this.retailStore);
+            this.creator,this.ropStore);
 
         // put all the process steps with visible people in theProcessCollection
 //        theProcessCollection.push(this.creator);
         theProcessCollection.push(this.creator);
         theProcessCollection.push(this.queue);
-        theProcessCollection.push(this.retailStore);
+        theProcessCollection.push(this.ropStore);
         theProcessCollection.push(this.walkOffStage);
         
         
@@ -478,79 +354,18 @@ class Supplier {
     };
 
     pull () {
-        this.previous = new Person(this.previous,
+        this.previous = new Person(personCollection, this.previous,
             this.x, this.y, 30, theStage.person.height); 
         return this.previous;
      }
 };   //end class Supplier
 
-//const peopleSpacing = 60;
-//class DemandCreator {
-//    constructor (cycleLength, demandRV ){
-//        this.cycleLength = cycleLength;
-//        this.timeToNV = ((theStage.pathRight-theStage.pathLeft) +
-//            (theStage.pathBot-theStage.pathTop))/theStage.normalSpeed;
-//        this.demandRV = demandRV;
-//        this.totCost =null;
-//        this.nRounds = null;
-//        this.curDemand = null;
-//        this.enough = null;
-//        this.overageForDay = null;
-//        this.underageForDay = null;
-//        this.store = new RetailStore();
-//        };
-//
-//    reset() {
-//        this.totCost = 0
-//        this.nRounds = 0;
-//        this.enough = 0;
-//    };
-//    
-//    cycle() {
-//        theSimulation.demand.store.emptyStore();
-//        this.curDemand = Math.floor(theSimulation.demandRV.observe());
-//        this.store.addBox(theSimulation.quantityOrdered);
-//        this.nRounds ++;
-//        let excess = theSimulation.quantityOrdered - this.curDemand; 
-//        this.overageForDay = theSimulation.Co * Math.max(0,excess);
-//        this.underageForDay = theSimulation.Cu * Math.max(0, - excess);
-//        this.totCost += this.overageForDay + this.underageForDay;
-//        if (this.curDemand <= theSimulation.quantityOrdered)
-//            this.enough++;
-//        
-//        let t = simu.now ;
-//        let deltaT = peopleSpacing/theStage.normalSpeed;
-//
-//        for ( let i = 0; i < this.curDemand; i++ ){
-//            t += deltaT
-//            let person = theSimulation.supply.pull();
-//            simu.heap.push({time:t, type: 'create',
-//            proc: theSimulation.queue.push.bind(theSimulation.queue), 
-//                            item: person});
-//        }
-//        simu.heap.push( 
-//            {time: t + this.timeToNV,
-//             type: 'plot', 
-//             proc: this.graph.bind(theSimulation.demand),
-//             item: null } )
-//        simu.heap.push( 
-//            {time: t + this.cycleLength,
-//             type: 'new cycle',
-//             proc: this.cycle.bind(this),
-//             item: null} );
-//    };
-//    graph(){
-//        theChart.push(this.nRounds, this.underageForDay, this.overageForDay, this.totCost/this.nRounds);       
-//        setActual(this.enough,this.nRounds);
-//        
-//        theSimulation.demand.store.drawAllGrey();
-//    }
-//};
-//
 
-class RetailStore {
-    constructor(previousQ, nextQ){
-        this.name ='retail'
+class RopStore  extends GStore {
+    constructor(context, backcontext, left, top, boxSize, boxesPerRow,
+                 previousQ, nextQ){
+        super( backcontext, left, top, boxSize, boxesPerRow);
+        this.name ='ropRetail'
         this.previousQ = previousQ;
         this.nextQ = nextQ;
         
@@ -561,39 +376,26 @@ class RetailStore {
         this.roundsWithEnough = null;
         
         this.packages = [];
-        this.store = theStage.store;
-        this.box = {w: 20, h:20, wInner:18, hInner:18 };
-        this.box.nPerRow = Math.floor( this.store.width / this.box.w);
         this.personTravelTime = (theStage.pathBot - theStage.pathTop)/theStage.normalSpeed;
         this.truckTravelTime = (3000);
         
     };
     reset (){
-            // start with the store filled in the first round.
+        // start with the store filled in the first round.
+        super.reset();
         this.inv = theSimulation.quantityOrdered;
         this.invPosition = this.inv;
         updatePredInv();
         
-        this.addPkg(this.inv);
+        this.addBox(this.inv);
         this.drawAll();
         this.lostSales = 0;
         this.nRounds = 1;
         this.roundsWithEnough = 1;
         this.stockOut = false;
     };
-    emptyStore(){
-        this.packages = [];
-    };
-    inventory(){
-        return this.packages.length;    
-    };
-    addPkg(n) {;
-        for (let i = 0; i < n; i++ ){
-            this.packages.push({color: Math.floor( Math.random() * tioxColors.length) } );   
-        };
-    };
     truckArrival(n) {
-        this.addPkg(n);
+        this.addBox(n);
         this.inv += n;
         theChart.push(simu.now, this.inv,
                      this.invPosition, this.predInv);
@@ -623,8 +425,8 @@ class RetailStore {
                 this.orderQuan();
                 this.invPosition += theSimulation.quantityOrdered;
             } 
-            this.clearBox(c,inv-1);
-            b = this.packages.pop() ;
+            
+            b = this.removeBox() ;
             this.inv--;
             this.invPosition--;
         }
@@ -687,110 +489,91 @@ class RetailStore {
         
     };
     
-    
-
-//    drawAllGrey(){
-//        const background = document.getElementById('theBackground');
-//        const c = background.getContext('2d');
-//        c.save()
-//        c.fillStyle = darkGrey; // dark grey
-//        for ( let i = 0; i <this.packages.length; i++ ){
-//            c.fillRect(this.xPos(i)+1, this.yPos(i)-1,
-//                   this.box.wInner, this.box.hInner);    
-//        }
-//        c.restore();
-//    };
-    drawAll(){
-        const background = document.getElementById('theBackground');
-        const c = background.getContext('2d');
-        const s = this.store;
-        c.resetTransform();
-        c.clearRect(s.left,s.top,s.width,s.height)
-        for ( let i = 0; i<this.packages.length; i++ ){
-            c.fillStyle = tioxColors[this.packages[i].color];
-            c.fillRect(this.xPos(i)+1, this.yPos(i)-1,
-                   this.box.wInner, this.box.hInner );
-        };
-        
-    };
-    clearBox(c,i){
-        c.clearRect(this.xPos(i)+1, this.yPos(i)-1,
-                    this.box.wInner, this.box.hInner );
-    };            
-    xPos(i) {
-        return this.store.left + this.box.w * (i % this.box.nPerRow);
-    };
-    yPos(i) {
-        return this.store.top + this.store.height - this.box.h * (1+ 
-            Math.floor( i / this.box.nPerRow ));
-    };
-    
 };
 
 const pi2 = 2 * Math.PI;
-class Truck {
-  constructor(ctx, nPackages, boxSize = 20, bedLength = 10){
-      this.ctx = ctx;
-      this.cur = {};
-      this.cur.x = 0;
-      this.cur.y = 0;
+var truckCollection = new ItemCollection();
+class Truck  extends Item {
+  constructor(collection, ctx, ahead, nPackages, boxSize = 20, bedLength = 10){
+      super (collection, ahead, theStage.offStageRight, theStage.pathTop);
+//      this.ctx = ctx;
+//      this.cur = {};
+//      this.cur.x = 0;
+//      this.cur.y = 0;
       this.boxSize = boxSize;
       this.bedLength = bedLength;
       this.truckHeight = this.boxSize * 5;
       this.truckCabWidth = this.truckHeight/2;
       this.truckBedWidth = this.bedLength * this.boxSize ;
       this.truckWidth =  this.truckBedWidth + this.truckCabWidth;
-      this.nPackages = nPackages;
+      this.colors = [];
+      for (let i = 0; i < nPackages; i++){
+          this.colors[i] = tioxColors[
+              Math.random()*tioxColors.length ];
+      }
+      this.graphic = new FlatBed(ctx, this.cur.x, this.cur.y,
+                                this.colors );
   };
 
-  draw(x, y){
+};
+class FlatBed {
+    constructor(ctx, x, y, colors){
+        this.ctx = ctx;
+        this.x = Math.floor(x);
+        this.y = Math.floor(y);
+        this.colors = colors;
+    }   ; 
+  moveTo(x, y){
+      this.x = Math.floor(x);
+      this.y = Math.floor(y);
+  } ;
+    
+  draw(){
     this.ctx.save();
     this.ctx.fillStyle = 'lightgrey';
     this.ctx.strokeStyle = 'black';
     this.ctx.lineWidth = 2;
 
     //body
-    this.ctx.moveTo(x, y + this.truckHeight);
-    this.ctx.lineTo(x + this.truckWidth, y + this.truckHeight);
-    this.ctx.lineTo(x + this.truckWidth, y + this.truckHeight - 0.75 * this.boxSize);
-    this.ctx.lineTo(x + this.truckCabWidth, y + this.truckHeight - 0.75 * this.boxSize);
-    this.ctx.lineTo(x + this.truckCabWidth, y );
-    this.ctx.lineTo(x + this.truckCabWidth/2, y );
-    this.ctx.lineTo(x, y + this.truckHeight/2);
-    this.ctx.lineTo(x, y + this.truckHeight);
+    this.ctx.moveTo(this.x, this.y + this.truckHeight);
+    this.ctx.lineTo(this.x + this.truckWidth, this.y + this.truckHeight);
+    this.ctx.lineTo(this.x + this.truckWidth, this.y + this.truckHeight - 0.75 * this.boxSize);
+    this.ctx.lineTo(this.x + this.truckCabWidth, this.y + this.truckHeight - 0.75 * this.boxSize);
+    this.ctx.lineTo(this.x + this.truckCabWidth, this.y );
+    this.ctx.lineTo(this.x + this.truckCabWidth/2, this.y );
+    this.ctx.lineTo(this.x, this.y + this.truckHeight/2);
+    this.ctx.lineTo(this.x, this.y + this.truckHeight);
     this.ctx.closePath();
     this.ctx.stroke();
     this.ctx.fill();
 
     //wheels  
     this.ctx.beginPath();
-    this.ctx.arc (x + this.truckCabWidth/2, y + this.truckHeight, this.boxSize/2, 
+    this.ctx.arc (this.x + this.truckCabWidth/2, this.y + this.truckHeight, this.boxSize/2, 
                  0, pi2);
     this.ctx.stroke();
     this.ctx.fill();
 
 
     this.ctx.beginPath();
-    this.ctx.arc(x + this.truckWidth - this.truckCabWidth/2,
-                 y + this.truckHeight, this.boxSize/2, 
+    this.ctx.arc(this.x + this.truckWidth - this.truckCabWidth/2,
+                 this.y + this.truckHeight, this.boxSize/2, 
                  0, pi2);
     this.ctx.stroke();
     this.ctx.fill();
 
     this.ctx.restore();
-    this.drawPackages(x + this.truckCabWidth, 
-                      y + this.truckHeight - 0.75 * this.boxSize);
+    this.drawPackages(this.x + this.truckCabWidth, 
+                      this.y + this.truckHeight - 0.75 * this.boxSize);
 
 
     };
-    drawPackages(x, y){
-      let nColors = tioxColors.length;
-      for ( let i = 0; i < this.nPackages; i++ ){
-        this.ctx.fillStyle = tioxColors[
-            Math.floor(Math.random() * nColors)];
+    drawPackages(left,bot){
+      for ( let i = 0; i < this.colors.length; i++ ){
+        this.ctx.fillStyle = this.colors[i];
         this.ctx.fillRect(
-            x + this.boxSize * (i % this.bedLength) + 1,
-            y - this.boxSize * 
+            left + this.boxSize * (i % this.bedLength) + 1,
+            bot - this.boxSize * 
             (1+ Math.floor( i / this.bedLength )) - 1,
             this.boxSize - 2, this.boxSize - 2 );
       }
@@ -798,16 +581,16 @@ class Truck {
 };
 
 var gSF ;
-export class Person extends SPerson {
+var personCollection = new ItemCollection();
+export class Person extends Item {
     
-    constructor (ahead, x,y= 60,w = 30,h = 30) {
-        super(ahead, x, y);
+    constructor (collection, ahead, x,y= 60,w = 30,h = 30) {
+        super(collection, ahead, x, y);
         
         this.width = w;
         
         this.graphic = new NStickFigure( gSF, x, y);
         this.updateBadge = false;
-//        simu.theCanvas.add(this.graphic.figure);
      };
      
     
@@ -933,7 +716,7 @@ export const theChart ={
             title:{
                display: true,
                 position: 'top',
-                text: '$ of cost per day',
+                text: 'inventory',
                 //fontSize: 20,
             },   
             scales: {
@@ -956,8 +739,6 @@ export const theChart ={
             }
         
             },
-    total: null,
-    count: null,
     graphInitialTimeWidth: 20,
     graphInitialTimeShift: 15,
     graphTimeWidth: null,
@@ -978,8 +759,6 @@ export const theChart ={
         this.stuff.data.datasets[0].data=[];
         this.stuff.data.datasets[1].data=[];
         this.stuff.data.datasets[2].data=[];
-        this.total = 0;
-        this.count = 0;
         this.graphScale = 1;
         this.yAxisScale = {max: 100, stepSize: 20};
         this.aVAxis = new VerticalAxisValue();
@@ -999,9 +778,9 @@ export const theChart ={
         this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
         this.chart.options.scales.xAxes[0].ticks.stepSize = this.graphTimeWidth - this.graphTimeShift;
         var points = Math.max(1,Math.floor( (11-this.graphScale)/4));
-        this.chart.data.datasets[0].pointRadius = points;
+        this.chart.data.datasets[0].pointRadius = 0;
         this.chart.data.datasets[0].borderWidth = points;
-        this.chart.data.datasets[1].pointRadius = points;
+        this.chart.data.datasets[1].pointRadius = 0;
         this.chart.data.datasets[1].borderWidth = points;
         this.chart.data.datasets[2].borderWidth = points;
         this.chart.update();
@@ -1022,24 +801,19 @@ export const theChart ={
             this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
             this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
         }
+        if( this.lastinv != inv){
+            this.chart.data.datasets[0].data.push({x:t,y:this.lastinv});
+            this.lastinv = inv;
+        }
         this.chart.data.datasets[0].data.push({x:t,y:inv});
+         if( this.lastinvPos != invPos){
+            this.chart.data.datasets[1].data.push({x:t,y:this.lastinvPos});
+            this.lastinvPos = invPos;
+        }
         this.chart.data.datasets[1].data.push({x:t,y:invPos});
         this.chart.data.datasets[2].data.push({x:t,y:predInv});
         this.chart.update();
-        // update graph with time, this.total/this.waits.length
     },
-        
-//     updatePredictedInv: function(){
-//        this.chart.data.datasets[2].data.push(
-//            {x:(simu.now-1)/10000, y:theChart.predictedInvValue});
-//        theChart.predictedInvValue = theChart.predictedInv();
-//        this.chart.data.datasets[2].data.push(
-//            {x:(simu.now/10000), y:theChart.predictedInvValue});
-//        this.chart.update();
-//     },
-//     predictedInv: function (){
-////        return (theSimulation.serviceRV.mean)/(theSimulation.interarrivalRV.mean);
-//     }
 }
 
 
