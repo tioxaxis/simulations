@@ -343,7 +343,6 @@ var theProcessCollection = new ProcessCollection();
             this.creator,this.TSAagent);
 
         // put all the process steps with visible people in theProcessCollection
-        theProcessCollection.push(this.supply);
         theProcessCollection.push(this.creator);
         theProcessCollection.push(this.queue);
         theProcessCollection.push(this.TSAagent);
@@ -356,18 +355,11 @@ class Supplier {
     constructor ( x, y ){
         this.x = x;
         this.y = y;
-        this.previous = null;
     };
-    reset() {
-        this.previous = null;
-    }
-
     pull () {
-       
-        this.previous = new Person(personCollection,
-                                   this.previous, this.x, this.y,
-                                  30, theStage.person.height); 
-        return this.previous;
+        return new Person(personCollection,
+                        this.x, this.y,
+                        30, theStage.person.height); 
      }
 };   //end class Supplier
 
@@ -376,8 +368,8 @@ var personCollection = new ItemCollection();
  export class Person extends Item {
     
     
-    constructor (collection, ahead, x,y= 100,w = 30,h = 30) {
-        super(collection, ahead, x, y);
+    constructor (collection, x,y= 100,w = 30,h = 30) {
+        super(collection, x, y);
         this.width = w;
         
         this.graphic = new NStickFigure( gSF, x, y );
@@ -393,12 +385,12 @@ var personCollection = new ItemCollection();
         let pPath = p.pathList[0];
         let aPath = a.pathList[0];
         if ( !aPath ) return false;
-//       console.log ( 'persons ',p.which,a.which, ' time ', pPath.t,pPath.x, aPath.t + a.width/aPath.speedX, aPath.x);
+        //       console.log ( 'persons ',p.which,a.which, ' time ', pPath.t,pPath.x, aPath.t + a.width/aPath.speedX, aPath.x);
            return false;
         return ( pPath.t <aPath.t + a.width/aPath.speedX)
-//        if (  p.cur.x + p.width > a.cur.x ) return true;
-//        if ( pPath.deltaX <= aPath.deltaX ) return false;
-//        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
+        //        if (  p.cur.x + p.width > a.cur.x ) return true;
+        //        if ( pPath.deltaX <= aPath.deltaX ) return false;
+        //        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
     };
      
      setDestWithProcTime(procTime,x,y){

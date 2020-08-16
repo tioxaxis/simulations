@@ -332,15 +332,12 @@ class Supplier {
     constructor ( x, y ){
         this.x = x;
         this.y = y;
-        this.previous = null;
     };
-
     pull () {
-        this.previous = new Person(personCollection, 
-                                   this.previous, this.x, this.y,
+        return new Person(personCollection, 
+                                   this.x, this.y,
                                   30, theStage.person.height); 
-        return this.previous;
-     }
+    }
 };   //end class Supplier
 
 const peopleSpacing = 70;
@@ -426,8 +423,8 @@ var gSF ;
 var personCollection = new ItemCollection();
 export class Person extends Item {
     
-    constructor (collection, ahead, x,y= 60,w = 30,h = 30) {
-        super(collection, ahead, x, y);
+    constructor (collection, x,y= 60,w = 30,h = 30) {
+        super(collection, x, y);
         
         this.width = w;
         
@@ -444,18 +441,18 @@ export class Person extends Item {
          super.moveDisplayWithPath(deltaSimT);
      };
        
-    isThereOverlap() {
-        // is 'p' graph above the 'a' graph in [0, p.count] ?
-        let p = this;
-        let a = this.ahead;
-        if ( !a ) return false;
-        let pPath = p.pathList[0];
-        let aPath = a.pathList[0];
-        
-        if (  p.cur.x + p.width > a.cur.x ) return true;
-        if ( pPath.deltaX <= aPath.deltaX ) return false;
-        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
-    };
+//    isThereOverlap() {
+//        // is 'p' graph above the 'a' graph in [0, p.count] ?
+//        let p = this;
+//        let a = this.ahead;
+//        if ( !a ) return false;
+//        let pPath = p.pathList[0];
+//        let aPath = a.pathList[0];
+//        
+//        if (  p.cur.x + p.width > a.cur.x ) return true;
+//        if ( pPath.deltaX <= aPath.deltaX ) return false;
+//        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
+//    };
      
      setDestWithProcTime(procTime,x,y){
          let distance = Math.max(Math.abs(this.cur.x-x),

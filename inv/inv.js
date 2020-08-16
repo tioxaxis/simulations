@@ -22,6 +22,8 @@ const theStage = {
     theStage.boxSize = 15,
     theStage.boxesPerRow = 10;
     theStage.pathLeft = -100;
+    theStage.truckLeft = 600;
+    theStage.truckRight = 1000;
     theStage.pathRight = 380;
     theStage.pathTop = 50;
    theStage.pathBot = 200;
@@ -56,38 +58,6 @@ class ProcessCollection {
      this.processList.forEach( aProcess => aProcess.reset() );
  };
 }; // end class processCollection
-
-//var qLenDisplay= null;
-
- function setBackground(){
-//    const background = document.getElementById('theBackground');
-//    const c = background.getContext('2d');
-//     const s = theStage.store;
-//     c.save();
-//     c.resetTransform();
-//     c.strokeStyle = 'black';
-//     c.fillStyle = 'white'
-//     c.lineWidth= s.stroke;;
-//      c.strokeRect(s.left, s.top, s.width, s.height);
-//     c.beginPath();
-//     c.moveTo(s.left, s.top);
-//     c.lineTo(s.left+s.width/2,s.top-50);
-//     c.lineTo(s.left+s.width,s.top);
-//     c.lineTo(s.left,s.top);
-//     c.closePath();
-//     c.stroke();
-//     c.fill();
-//     c.restore();
-     
-     const c = simu.backcontext;
-     var ahead = null;
-    let aTruck = new Truck(truckCollection,  c, ahead, 45, 20,10);
-    aTruck.graphic.moveTo(650,30);
-     aTruck.graphic.draw();
-    let bTruck = new Truck(truckCollection, c, ahead, 45, 15,8)
-    bTruck.graphic.moveTo(750,200);
-     bTruck.graphic.draw();
- };
 
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
 const speeds = [1, 2, 5, 10, 15];
@@ -266,7 +236,7 @@ var theProcessCollection = new ProcessCollection();
      whichRule: 'rop',
      
     initialize: function (){
-        setBackground();
+//        setBackground();
          pickInvSimulation(theSimulation.whichRule);
         // random variables
         let ar = Number(document.getElementById('ar').value);
@@ -350,13 +320,10 @@ class Supplier {
     constructor ( x, y ){
         this.x = x;
         this.y = y;
-        this.previous = null;
     };
-
     pull () {
-        this.previous = new Person(personCollection, this.previous,
-            this.x, this.y, 30, theStage.person.height); 
-        return this.previous;
+        return new Person(personCollection, 
+                            this.x, this.y, 30, theStage.person.height); 
      }
 };   //end class Supplier
 
@@ -394,18 +361,22 @@ class RopStore  extends GStore {
         this.roundsWithEnough = 1;
         this.stockOut = false;
     };
-    truckArrival(n) {
+    truckArrival(truck) {
+        const n = truck.nPackages;
         this.addBox(n);
         this.inv += n;
+        truck.graphic.reverse = true;
+        truck.graphic.emptyTruck();
         theChart.push(simu.now, this.inv,
                      this.invPosition, this.predInv);
         // keep track of nRounds;
         this.nRounds++;
-        this.roundsWithEnough++;   /// only if we did not run out.
+        if( !this.stockOut ) this.roundsWithEnough++;
+        this.stockOut = false;
         this.drawAll();
     };
-    truckLeave() {
-        
+    truckDestroy(truck) {
+        truck.collection.remove(truck);
     };
     knockFromPrevious(){   //person arrived at queue
         
@@ -465,12 +436,29 @@ class RopStore  extends GStore {
     };
     
     orderQuan(){
-        let truckLT = theSimulation.leadtimeRV.observe();
+        const truck = new Truck(truckCollection, simu.context, 
+                             theSimulation.quantityOrdered,
+                             theStage.boxSize);
+        const truckLT = theSimulation.leadtimeRV.observe();
+        const arrivalTime = simu.now + truckLT;
         simu.heap.push( 
-            {time: simu.now+truckLT, 
+            {time: arrivalTime, 
              type: 'truck arrival', 
              proc: this.truckArrival.bind(this), 
-             item: theSimulation.quantityOrdered});
+             item: truck});
+        simu.heap.push(
+            {time: arrivalTime + 10000 + 30000,
+             type: 'truck return',
+             proc: this.truckDestroy.bind(this),
+             item: truck});
+        truck.addPath({t: arrivalTime, x:theStage.truckLeft,
+                       y: theStage.pathTop });
+        truck.addPath({t: arrivalTime+10000, x: theStage.truckLeft,
+                      y: theStage.pathBot});
+        truck.addPath({t: arrivalTime+ 10000 + 30000, 
+                      x: theStage.truckRight, y: theStage.pathBot});
+        
+        
         // seems like the item must provide the quantity being delivered.
     };
     orderUpto(){
@@ -494,34 +482,43 @@ class RopStore  extends GStore {
 const pi2 = 2 * Math.PI;
 var truckCollection = new ItemCollection();
 class Truck  extends Item {
-  constructor(collection, ctx, ahead, nPackages, boxSize = 20, bedLength = 10){
-      super (collection, ahead, theStage.offStageRight, theStage.pathTop);
-//      this.ctx = ctx;
-//      this.cur = {};
-//      this.cur.x = 0;
-//      this.cur.y = 0;
-      this.boxSize = boxSize;
-      this.bedLength = bedLength;
-      this.truckHeight = this.boxSize * 5;
-      this.truckCabWidth = this.truckHeight/2;
-      this.truckBedWidth = this.bedLength * this.boxSize ;
-      this.truckWidth =  this.truckBedWidth + this.truckCabWidth;
-      this.colors = [];
-      for (let i = 0; i < nPackages; i++){
-          this.colors[i] = tioxColors[
-              Math.random()*tioxColors.length ];
-      }
-      this.graphic = new FlatBed(ctx, this.cur.x, this.cur.y,
-                                this.colors );
+  constructor(collection, ctx, nPackages, boxSize = 20, bedLength = 10){
+      super (collection, theStage.truckRight, theStage.pathTop);
+      this.nPackages = nPackages;
+//      this.boxSize = boxSize;
+//      this.bedLength = bedLength;
+//      this.truckHeight = this.boxSize * 5;
+//      this.truckCabWidth = this.truckHeight/2;
+//      this.truckBedWidth = this.bedLength * this.boxSize ;
+//      this.truckWidth =  this.truckBedWidth + this.truckCabWidth;
+//      this.colors = [];
+//      for (let i = 0; i < this.nPackages; i++){
+//          this.colors[i] = tioxColors[
+//              Math.random()*tioxColors.length ];
+//      }
+      this.graphic = new FlatBed(ctx, theStage.offStageRight,
+                            theStage.pathTop, this.nPackages, 
+                                boxSize, bedLength);
   };
 
 };
 class FlatBed {
-    constructor(ctx, x, y, colors){
+    constructor(ctx, x, y, nPackages, boxSize, bedLength){
         this.ctx = ctx;
         this.x = Math.floor(x);
         this.y = Math.floor(y);
-        this.colors = colors;
+        this.boxSize = boxSize;
+        this.bedLength = bedLength;
+        this.truckHeight = this.boxSize * 5;
+        this.truckCabWidth = this.truckHeight/2;
+        this.truckBedWidth = this.bedLength * this.boxSize ;
+        this.truckWidth =  this.truckBedWidth + this.truckCabWidth;
+        this.colors = [];
+        for (let i = 0; i < nPackages; i++){
+          this.colors[i] = tioxColors[
+              Math.floor(Math.random()*tioxColors.length) ];
+      }
+        this.reverse = false;
     }   ; 
   moveTo(x, y){
       this.x = Math.floor(x);
@@ -578,14 +575,17 @@ class FlatBed {
             this.boxSize - 2, this.boxSize - 2 );
       }
     };
+    emptyTruck(){
+        this.colors=[];
+    }
 };
 
 var gSF ;
 var personCollection = new ItemCollection();
 export class Person extends Item {
     
-    constructor (collection, ahead, x,y= 60,w = 30,h = 30) {
-        super(collection, ahead, x, y);
+    constructor (collection, x,y= 60,w = 30,h = 30) {
+        super(collection, x, y);
         
         this.width = w;
         
@@ -601,18 +601,18 @@ export class Person extends Item {
          super.moveDisplayWithPath(deltaSimT);
      };
        
-    isThereOverlap() {
-        // is 'p' graph above the 'a' graph in [0, p.count] ?
-        let p = this;
-        let a = this.ahead;
-        if ( !a ) return false;
-        let pPath = p.pathList[0];
-        let aPath = a.pathList[0];
-        
-        if (  p.cur.x + p.width > a.cur.x ) return true;
-        if ( pPath.deltaX <= aPath.deltaX ) return false;
-        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
-    };
+//    isThereOverlap() {
+//        // is 'p' graph above the 'a' graph in [0, p.count] ?
+//        let p = this;
+//        let a = this.ahead;
+//        if ( !a ) return false;
+//        let pPath = p.pathList[0];
+//        let aPath = a.pathList[0];
+//        
+//        if (  p.cur.x + p.width > a.cur.x ) return true;
+//        if ( pPath.deltaX <= aPath.deltaX ) return false;
+//        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
+//    };
      
      setDestWithProcTime(procTime,x,y){
          let distance = Math.max(Math.abs(this.cur.x-x),

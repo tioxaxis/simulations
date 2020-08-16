@@ -248,10 +248,10 @@ push (person) {
 };
     
 destroy (person) {
-    let b = person.behind;
-    let a = person.ahead;
-    if (b) b.ahead = person;
-    if (a) a.behind = person;
+//    let b = person.behind;
+//    let a = person.ahead;
+//    if (b) b.ahead = person;
+//    if (a) a.behind = person;
     person.destroy();
 };
 };  //end export class WalkAndDestroy
@@ -385,10 +385,12 @@ export class ItemCollection {
   constructor (){
       allCollections.push(this);
       this.reset();
+      
   }  ;
     reset (){
         this.all = [];
-        this.counter = 0; 
+        this.counter = 0;
+        this.lastAdded = null;
     };
     moveDisplayAll (deltaSimT){
         this.all.forEach(p=> p.moveDisplayWithPath(deltaSimT))
@@ -406,20 +408,26 @@ export class ItemCollection {
 export class Item {
 
 
-    constructor (collection, ahead, x, y){
+    constructor (collection, x, y){
         this.collection = collection;
-        this.which = ++collection.counter;
-        collection.all.push(this);
+        this.which = ++this.collection.counter;
+        this.collection.all.push(this);
         
-        this.ahead = ahead;
+//        console.log(' in Item ', collection);
+//        debugger;
+        
+        this.ahead = this.collection.lastAdded;
+        this.collection.lastAdded = this;
+        if ( this.ahead ) this.ahead.behind = this;
         this.behind = null;
+        
         
         this.cur = {t: simu.now, x: x, y: y};
         this.pathList = [];
         this.arrivalTime = null;
         this.machine = null;
         this.graphic = null;
-        if ( ahead ) ahead.behind = this;
+        
     };
     
    setColor(bodyColor,borderColor){
@@ -528,10 +536,13 @@ export class Item {
 
     destroy(){
         this.collection.remove(this);
-        if ( this.behind ) {
-            this.behind.ahead = null;
+        if (this.collection.lastAdded == this)
+            this.collection.lastAdded = null;
+        let b = this.behind;
+        let a = this.ahead;
+        if (b) b.ahead = a;
+        if (a) a.behind = b;
         };
-    };
 } ;    // end of class Item
 
 export var tioxColors = ['rgb(28, 62, 203)', 'rgb(80, 212, 146)', 'rgb(151, 78, 224)',
