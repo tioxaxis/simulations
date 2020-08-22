@@ -8,7 +8,7 @@ import { Queue, WalkAndDestroy, MachineCenter,
         InfiniteMachineCenter, Item, ItemCollection,  
        GStickFigure, NStickFigure, GStore, tioxColors}
     from '../modules/procsteps.js' ;
-
+ 
 const theStage = {
     normalSpeed : .10,    //.25 pixels per millisecond
     width: 1000,
@@ -402,8 +402,6 @@ class RopStore  extends GStore {
             this.invPosition--;
         }
         let finishTime = simu.now + this.personTravelTime;
-        
-//        console.log('in arrive and pkg ',b.color);
         simu.heap.push( 
             {time:finishTime, 
              type:'finish/'+this.name,
@@ -416,14 +414,6 @@ class RopStore  extends GStore {
         theChart.push(simu.now, this.inv,
                      this.invPosition, this.predInv);
     };
-//    if ( theSimulation.demand.store.inventory() > 0) {
-//            let b = theSimulation.demand.store.removeBox(1);
-//            person.graphic.packageColor = tioxColors[ b.color ];
-//            person.graphic.packageVisible = true;
-//        }  else {
-//            person.graphic.color = darkGrey; // dark grey
-//        };
-//
 
     personLeave(item){
       if( item.pkg ){
@@ -479,50 +469,47 @@ class RopStore  extends GStore {
     
 };
 
+var packagesInStore = new ItemCollection();
+
+
+
+
 const pi2 = 2 * Math.PI;
 var truckCollection = new ItemCollection();
 class Truck  extends Item {
-  constructor(collection, ctx, nPackages, boxSize = 20, bedLength = 10){
+  constructor(collection, ctxTruck, ctxPack, nPackages, boxSize = 20, bedLength = 10){
       super (collection, theStage.truckRight, theStage.pathTop);
+      this.truckHeight = this.boxSize * 5;
+      this.truckCabWidth = this.truckHeight/2;
+      this.truckBedWidth = this.bedLength * this.boxSize ;
+      this.truckWidth =  this.truckBedWidth +
+                            this.truckCabWidth;
+      
+      
+      
       this.nPackages = nPackages;
-//      this.boxSize = boxSize;
-//      this.bedLength = bedLength;
-//      this.truckHeight = this.boxSize * 5;
-//      this.truckCabWidth = this.truckHeight/2;
-//      this.truckBedWidth = this.bedLength * this.boxSize ;
-//      this.truckWidth =  this.truckBedWidth + this.truckCabWidth;
-//      this.colors = [];
-//      for (let i = 0; i < this.nPackages; i++){
-//          this.colors[i] = tioxColors[
-//              Math.random()*tioxColors.length ];
-//      }
-      this.graphic = new FlatBed(ctx, theStage.offStageRight,
-                            theStage.pathTop, this.nPackages, 
-                                boxSize, bedLength);
-  };
-
-};
-class FlatBed {
-    constructor(ctx, x, y, nPackages, boxSize, bedLength){
-        this.ctx = ctx;
-        this.x = Math.floor(x);
-        this.y = Math.floor(y);
-        this.boxSize = boxSize;
-        this.bedLength = bedLength;
-        this.truckHeight = this.boxSize * 5;
-        this.truckCabWidth = this.truckHeight/2;
-        this.truckBedWidth = this.bedLength * this.boxSize ;
-        this.truckWidth =  this.truckBedWidth + this.truckCabWidth;
-        this.colors = [];
-        for (let i = 0; i < nPackages; i++){
-          this.colors[i] = tioxColors[
-              Math.floor(Math.random()*tioxColors.length) ];
+      let p = this.packages = new StackPackages
+            (ctxPack, boxSize, boxesPerRow);
+      for ( let k = 0; k < nPackages; k++ ){
+          // create each package with random color
+          // and add to this.packages.
+          let colorIndex = Math.floor( Math.random() 
+                                * tioxColors.length);
+          let package = new Package( this.packages,
+                this.ctxPack, tioxColors[colorIndex],
+                this.boxSize);
+                //this.x + p.rx(k),this.y + p.ry(k));
       }
-        this.reverse = false;
-    }   ; 
+          
+          
+          
+      }
+  };
   moveTo(x, y){
       this.x = Math.floor(x);
       this.y = Math.floor(y);
+      this.packages.update(this.x + this.truckCabWidth, 
+                      this.y + this.truckHeight - 0.75 * this.boxSize  )
   } ;
     
   draw(){
@@ -562,23 +549,42 @@ class FlatBed {
     this.ctx.restore();
     this.drawPackages(this.x + this.truckCabWidth, 
                       this.y + this.truckHeight - 0.75 * this.boxSize);
+    };
 
 
-    };
-    drawPackages(left,bot){
-      for ( let i = 0; i < this.colors.length; i++ ){
-        this.ctx.fillStyle = this.colors[i];
-        this.ctx.fillRect(
-            left + this.boxSize * (i % this.bedLength) + 1,
-            bot - this.boxSize * 
-            (1+ Math.floor( i / this.bedLength )) - 1,
-            this.boxSize - 2, this.boxSize - 2 );
-      }
-    };
-    emptyTruck(){
-        this.colors=[];
-    }
 };
+//class FlatBed {
+//    constructor(ctx, x, y, nPackages, boxSize, bedLength){
+//        this.ctx = ctx;
+//        this.x = Math.floor(x);
+//        this.y = Math.floor(y);
+//        this.boxSize = boxSize;
+//        this.bedLength = bedLength;
+//        this.truckHeight = this.boxSize * 5;
+//        this.truckCabWidth = this.truckHeight/2;
+//        this.truckBedWidth = this.bedLength * this.boxSize ;
+//        this.truckWidth =  this.truckBedWidth + this.truckCabWidth;
+//        this.colors = [];
+//        for (let i = 0; i < nPackages; i++){
+//          this.colors[i] = tioxColors[
+//              Math.floor(Math.random()*tioxColors.length) ];
+//      }
+//        this.reverse = false;
+//    }   ; 
+//    drawPackages(left,bot){
+//      for ( let i = 0; i < this.colors.length; i++ ){
+//        this.ctx.fillStyle = this.colors[i];
+//        this.ctx.fillRect(
+//            left + this.boxSize * (i % this.bedLength) + 1,
+//            bot - this.boxSize * 
+//            (1+ Math.floor( i / this.bedLength )) - 1,
+//            this.boxSize - 2, this.boxSize - 2 );
+//      }
+//    };
+//    emptyTruck(){
+//        this.colors=[];
+//    }
+//};
 
 var gSF ;
 var personCollection = new ItemCollection();
