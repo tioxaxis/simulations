@@ -924,7 +924,13 @@ class ColorBox {
     };
     draw() {
         this.ctx.fillStyle = this.color;
-        this.ctx.fillRect(this.x, this.y,
-            this.boxSize - 2, this.boxSize - 7)
+        this.ctx.beginPath();
+		this.ctx.arc(this.x+this.boxSize/2,
+					 this.y+this.boxSize/2,
+					 7, 0, pi2);
+		this.ctx.closePath();
+		this.ctx.fill();	
+//			fillRect(this.x, this.y,
+//            this.boxSize - 2, this.boxSize - 7)
     };
 };
