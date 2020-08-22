@@ -889,7 +889,7 @@ class StackPackages extends ItemCollection {
                 let p = this.all[k];
 				let point  = this.relCoord(k);
                 p.updatePath({
-                    t: simu.now + 400,
+                    t: simu.now + 800,
                     x: this.left + point.x,
                     y: this.bot + point.y
                 });
