@@ -925,6 +925,6 @@ class ColorBox {
     draw() {
         this.ctx.fillStyle = this.color;
         this.ctx.fillRect(this.x, this.y,
-            this.boxSize - 2, this.boxSize - 2)
+            this.boxSize - 2, this.boxSize - 7)
     };
 };
