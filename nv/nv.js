@@ -4,7 +4,7 @@ import {
 from '../modules/utility.js';
 import {
 	Queue, WalkAndDestroy, MachineCenter,
-	InfiniteMachineCenter, Item, ItemCollection,
+	InfiniteMachineCenter, Combine, Item, ItemCollection,
 	GStickFigure, NStickFigure, GStore, tioxColors
 }
 from '../modules/procsteps.js';
@@ -20,10 +20,11 @@ const theStage = {
 };
 
 {
-	theStage.boxSize = 20;
+	theStage.boxSpace = 20;
+	theStage.boxSize = 16;
 	theStage.person = {
 		width: 40,
-		height: 3 * theStage.boxSize
+		height: 3 * theStage.boxSpace
 	};
 	theStage.boxesPerRow = 10;
 	theStage.store = {
@@ -36,7 +37,8 @@ const theStage = {
 	theStage.pathLeft = -100;
 	theStage.pathRight = 700;
 	theStage.pathTop = theStage.store.top;
-	theStage.pathBot = theStage.store.top + theStage.boxSize * 7;
+	theStage.pathBot = theStage.store.top + theStage.boxSpace * 7;
+	theStage.pathMid = (theStage.pathTop + theStage.pathBot) / 2;
 	theStage.offStageEntry = {
 		x: theStage.pathLeft,
 		y: theStage.pathTop
@@ -92,29 +94,6 @@ class ProcessCollection {
 		this.processList.forEach(aProcess => aProcess.reset());
 	};
 }; // end class processCollection
-
-//var qLenDisplay= null;
-
-// function setBackground(s){
-//    const background = document.getElementById('theBackground');
-//    const c = background.getContext('2d');
-////     const s = theStage.store;
-//     c.save();
-//     c.resetTransform();
-//     c.strokeStyle = 'black';
-//     c.fillStyle = 'white'
-//     c.lineWidth= s.stroke;;
-//      c.strokeRect(s.left, s.top, s.width, s.height);
-//     c.beginPath();
-//     c.moveTo(s.left, s.top);
-//     c.lineTo(s.left+s.width/2,s.top/2);
-//     c.lineTo(s.left+s.width,s.top);
-//     c.lineTo(s.left,s.top);
-//     c.closePath();
-//     c.stroke();
-//     c.fill();
-//     c.restore();
-// };
 
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
 const speeds = [1, 3, 10, 30];
@@ -218,13 +197,7 @@ simu.reset2 = function () {
 		theSimulation.demandRV.mean,
 		theSimulation.demandRV.variance);
 
-	// schedule the initial Person to arrive and start the simulation/animation.
 	theSimulation.supply.previous = null;
-	//    theSimulation.creator.knockFromPrevious();
-
-	//fudge to get animation started quickly
-	//    let t = simu.heap.top().time-1;
-	//    simu.now = simu.frametime = Math.floor(t/simu.framedelta)*simu.framedelta;
 	simu.heap.push({
 		time: simu.now + 500,
 		type: 'new cycle',
@@ -240,9 +213,9 @@ simu.reset2 = function () {
 
 const animForQueue = {
 	walkingTime1: (theStage.pathRight - theStage.offStageEntry.x) / theStage.normalSpeed,
-	walkingTime2: (theStage.pathBot - theStage.pathTop) / theStage.normalSpeed,
+	walkingTime2: (theStage.pathMid - theStage.pathTop) / theStage.normalSpeed,
 	walkingTime: ((theStage.pathRight - theStage.offStageEntry.x) +
-		(theStage.pathBot - theStage.pathTop)) / theStage.normalSpeed,
+		(theStage.pathMid - theStage.pathTop)) / theStage.normalSpeed,
 
 	reset: function () {},
 
@@ -255,11 +228,13 @@ const animForQueue = {
 		person.addPath({
 			t: arrivalTime,
 			x: theStage.pathRight,
-			y: theStage.pathBot
+			y: theStage.pathMid
 		});
 	},
 
-	arrive: function (nSeatsUsed, person) {},
+	arrive: function (nSeatsUsed, person) {
+		
+	},
 
 	leave: function (procTime, nSeatsUsed) {}
 };
@@ -301,8 +276,8 @@ const animForNV = {
 
 	start: function (theProcTime, person, m) {
 		person.arrivalTime = simu.now;
-		if (theSimulation.demand.store.inventory() > 0) {
-			let pack = theSimulation.demand.store.remove();
+		if (theSimulation.store.inventory() > 0) {
+			let pack = theSimulation.store.remove();
 			person.graphic.packageColor = pack.graphic.color;
 			person.graphic.packageVisible = true;
 		} else {
@@ -312,6 +287,39 @@ const animForNV = {
 
 	finish: function (person) {
 		animForNV.lastFinPerson = person;
+	}
+};
+const animForNewsVendor = {
+//	walkingTime: animForQueue.walkingTime2;
+	start: function (person, pack, walkingTime){
+		person.addPath({  //walk to bot
+				t: simu.now + walkingTime,
+				x: theStage.pathRight,
+				y: theStage.pathBot
+		});
+		const leftTime = walkingTime / 2;
+		const upTime = walkingTime / 2;
+
+		if (pack) {
+			pack.addPath({
+				t: simu.now + leftTime,
+				x: theStage.pathRight + person.graphic.gSF.package.x,
+				y: pack.cur.y
+			});
+			pack.addPath({  // move up to arm height in other time
+				t: simu.now + walkingTime,
+				x: theStage.pathRight + person.graphic.gSF.package.x,
+				y: theStage.pathBot + person.graphic.gSF.package.y,
+			});
+		}
+	},
+	finish: function (person,pack){
+		if (pack) {
+			person.graphic.packageVisible = true;
+			person.graphic.packageColor = pack.graphic.color;
+		} else {
+			person.graphic.color = darkGrey;
+		}
 	}
 };
 
@@ -339,7 +347,8 @@ const theSimulation = {
 		let r = Number(document.getElementById('dr').value);
 		let cv = Number(document.getElementById('dcv').value);
 		theSimulation.demandRV = new UniformRV(r, cv);
-		theSimulation.serviceRV = new DeterministicRV(0);
+		theSimulation.serviceRV = 
+			new DeterministicRV(animForQueue.walkingTime2);
 		theSimulation.Co = Number(document.getElementById('Co').value);
 		theSimulation.Cu = Number(document.getElementById('Cu').value);
 		theSimulation.quantityOrdered = Number(document.getElementById('quan').value);
@@ -350,23 +359,37 @@ const theSimulation = {
 		this.queue = new Queue("theQueue", -1, animForQueue.walkingTime,   
 			animForQueue,
 			null, null);
-
-		this.walkOffStage = new WalkAndDestroy("walkOff", animForWalkOffStage, true);
+		
+		this.store = new RetailStore(
+			theStage.background.context, simu.context,
+			theStage.store.left, theStage.store.top,
+			theStage.boxSpace, theStage.boxSize, theStage.boxesPerRow);
+		
+		this.walkOffStage = new WalkAndDestroy("walkOff",personCollection, animForWalkOffStage, true);
 
 		this.demand = new DemandCreator(20000, theSimulation.demandRV);
-
-		this.newsVendor = new MachineCenter("newsVendor", 1,
-			theSimulation.serviceRV,
-			this.queue, this.walkOffStage,
-			animForNV, null, null);
+		
+		this.newsVendor = new Combine('newsVendor',
+				theSimulation.serviceRV,
+				this.queue, this.store, this.walkOffStage,
+				animForNewsVendor);
+		
+//		this.newsVendor = new MachineCenter("newsVendor", 1,
+//			theSimulation.serviceRV,
+//			this.queue, this.walkOffStage,
+//			animForNV, null, null);
 
 		//link the queue to machine before and after
 		this.queue.setPreviousNext(
 			this.creator, this.newsVendor);
+//       not sure I need this.		
+//		this.store.setPreviousNext(
+//			null, this.newsVendor);
 
 		// put all the process steps with visible people in theProcessCollection
 		theProcessCollection.push(this.demand);
 		theProcessCollection.push(this.queue);
+		theProcessCollection.push(this.store);
 		theProcessCollection.push(this.newsVendor);
 		theProcessCollection.push(this.walkOffStage);
 	},
@@ -398,24 +421,20 @@ class DemandCreator {
 		this.enough = null;
 		this.overageForDay = null;
 		this.underageForDay = null;
-		this.store = new RetailStore(theStage.background.context,
-			simu.context,
-			theStage.store.left, theStage.store.top,
-			theStage.boxSize, theStage.boxesPerRow);
+		
 	};
 
 	reset() {
 		this.totCost = 0
 		this.nRounds = 0;
 		this.enough = 0;
-		this.store.reset();
 	};
 
 	cycle() {
-		theSimulation.demand.store.emptyStore();
+		theSimulation.store.emptyStore();
 		this.curDemand = Math.floor(theSimulation.demandRV.observe());
-		this.store.addBox(theSimulation.quantityOrdered);
-		this.store.packages.drawAll();
+		theSimulation.store.addBox(theSimulation.quantityOrdered);
+//		this.store.packages.drawAll();
 		this.nRounds++;
 		let excess = theSimulation.quantityOrdered - this.curDemand;
 		this.overageForDay = theSimulation.Co * Math.max(0, excess);
@@ -454,30 +473,29 @@ class DemandCreator {
 		theChart.push(this.nRounds, this.underageForDay, this.overageForDay, this.totCost / this.nRounds);
 		setActual(this.enough, this.nRounds);
 
-		theSimulation.demand.store.drawAllGrey();
+		theSimulation.store.makeAllGrey();
 	}
 };
 
 
 class RetailStore extends GStore {
-	constructor(ctxStore, ctxPack, left, top, boxSize, boxesPerRow) {
-		super(ctxStore, ctxPack, left, top, boxSize, boxesPerRow);
+	constructor(ctxStore, ctxPack, left, top, boxSpace, boxSize, boxesPerRow) {
+		super(ctxStore, ctxPack, left, top, boxSpace, boxSize, boxesPerRow);
 	};
 
-	drawAllGrey() {
-		this.packages.makeAllGrey();
-		this.packages.drawAll();
-	};
+//	drawAllGrey() {
+//		this.makeAllGrey();
+////		this.packages.drawAll();
+//	};
 	addBox(n) {
 		for (let i = 0; i < n; i++) {
-			this.packages.addNew()
+			this.addNew()
 		};
 	};
 };
 
-
 var gSF;
-var personCollection = new ItemCollection();
+var personCollection = new ItemCollection('persons');
 export class Person extends Item {
 
 	constructor(collection, x, y = 60, w = 30, h = 30) {

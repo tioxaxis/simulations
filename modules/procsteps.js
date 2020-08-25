@@ -215,10 +215,11 @@ export class Queue {
 
 //  WALK AND DESTROY
 export class WalkAndDestroy {
-    constructor(name, animForWalkAndDestroy, dontOverlap) {
+    constructor(name,collection, animForWalkAndDestroy, dontOverlap) {
         this.name = name;
+		this.collection = collection;
         this.animForWalkAndDestroy = animForWalkAndDestroy;
-
+		this.collection = collection;
         this.walkingTime = this.animForWalkAndDestroy.walkingTime;
         this.dontOverlap = dontOverlap;
         this.lastAdded = null;
@@ -243,7 +244,8 @@ export class WalkAndDestroy {
     };
 
     destroy(person) {
-        //    let b = person.behind;
+        this.collection.remove(person);
+		//    let b = person.behind;
         //    let a = person.ahead;
         //    if (b) b.ahead = person;
         //    if (a) a.behind = person;
@@ -387,22 +389,68 @@ export class InfiniteMachineCenter extends MachineCenter {
     };
 }; //end class InfiniteMachineCenter
 
+export class Combine {
+	constructor (name, procTime, 
+				 personQ, packageQ, afterQ,
+				 anim){
+		this.name = name;
+		this.procTime = procTime;
+		this.personQ = personQ;
+		this.packageQ = packageQ;
+		this.afterQ = afterQ;
+		this.anim = anim;
+	};
+	reset(){	
+	};
+	knockFromPrevious(){
+		this.start();
+	};
+	start(){
+		const theProcTime = this.procTime.observe();
+		const person = this.personQ.pull();
+		const pack = this.packageQ.pull();
+		if( this.anim ) {
+			this.anim.start(person,pack,theProcTime);
+		}
+		simu.heap.push({
+			time: simu.now + theProcTime,
+			type: 'finish'+ this.name,
+			proc: this.finish.bind(this),
+			item: {person: person, package: pack}
+		});
+		
+	};
+	finish (item){
+		this.anim.finish(item.person,item.package);
+		if (item.package) {
+			packageCollection.remove(item.package);
+			item.package.destroy();
+		}
+		this.afterQ.push(item.person);
+	};
+};
+
+
 // minimal Person with properties only for the simulation, the procsteps
 
 
+var count = 0;
 var allCollections = [];
 export class ItemCollection {
-    constructor() {
+    constructor(kind) {
         allCollections.push(this);
         this.reset();
+		this.kind = kind;
     };
     reset() {
         this.all = [];
         this.counter = 0;
         this.lastAdded = null;
     };
-    moveDisplayAll(deltaSimT) {
-        this.all.forEach(p => p.moveDisplayWithPath(deltaSimT))
+    
+	moveDisplayAll(deltaSimT) {
+        if ((++count%100)==0) console.log(this.kind, this.all.length );
+		this.all.forEach(p => p.moveDisplayWithPath(deltaSimT))
     }
     updateForSpeed() {
         this.all.forEach(p => p.updateAllPaths());
@@ -410,12 +458,15 @@ export class ItemCollection {
     remove(item) {
         let k = this.all.indexOf(item);
         if (k < 0) {
-            alert('failed to find person in all');
+            alert('failed to find person or package in all');
             debugger
         }
         this.all.splice(k, 1);
+		if (this.lastAdded == this)
+            this.lastAdded = null;
     };
-    removeFirst() {
+   //  do I still need this??
+	removeFirst() {
         let item = this.all[0];
         this.all.splice(0, 1);
         return item;
@@ -423,12 +474,11 @@ export class ItemCollection {
 };
 export class Item {
     constructor(collection, x, y) {
-        this.collection = collection;
-        this.which = ++this.collection.counter;
-        this.collection.all.push(this);
+        this.which = ++collection.counter;
+        collection.all.push(this);
 
-        this.ahead = this.collection.lastAdded;
-        this.collection.lastAdded = this;
+        this.ahead = collection.lastAdded;
+        collection.lastAdded = this;
         if (this.ahead) this.ahead.behind = this;
         this.behind = null;
 
@@ -556,9 +606,9 @@ export class Item {
     };
 
     destroy() {
-        this.collection.remove(this);
-        if (this.collection.lastAdded == this)
-            this.collection.lastAdded = null;
+//        this.collection.remove(this);
+//        if (this.collection.lastAdded == this)
+//            this.collection.lastAdded = null;
         let b = this.behind;
         let a = this.ahead;
         if (b) b.ahead = a;
@@ -617,8 +667,8 @@ export class GStickFigure {
         this.package = {
             x: -25,
             y: 0.25 * size,
-            w: boxSize - 2,
-            h: boxSize - 2
+            w: boxSize,
+            h: boxSize
         };
     }
 };
@@ -756,25 +806,41 @@ export class NStickFigure {
 
 
 export class GStore {
-    constructor(ctxStore, ctxPack, left, top, boxSize, boxesPerRow) {
+    constructor(ctxStore, ctxPack, left, top, boxSpace, boxSize, boxesPerRow) {
 
         this.ctxStore = ctxStore;
+		this.ctxPack = ctxPack;
         this.store = {
             left: left,
             top: top
         }
-        this.store.width = boxSize * boxesPerRow;
+		this.store.boxSpace = boxSpace;
+		this.store.boxSize = boxSize;
+        this.store.width = boxSpace * boxesPerRow;
         this.store.height = this.store.width;
         this.store.bot = this.store.top + this.store.height;
         this.drawStore(this.ctxStore, this.store);
 
-        this.packages = new StackPackages(ctxPack,             boxSize, boxesPerRow);
-        this.packages.updateLeftBot(this.store.left, this.store.bot)
+        this.packages = [];
+		this.updateLeftBot(this.store.left, this.store.bot)
+		
+		this.ctxPack = ctxPack;
+        //        this.updateLeftBot(left, bot) ;
+        this.boxSpace = boxSpace;
+		this.boxSize = boxSize;
+        this.boxesPerRow = boxesPerRow;
+        this.snake = true;
+        this.box = {
+            w: boxSpace,
+            h: boxSpace,
+            nPerRow: boxesPerRow
+        };
     };
     reset() {
         const s = this.store;
-        this.ctxStore.resetTransform();
-        this.ctxStore.clearRect(s.left, s.top, s.width, s.height)
+        this.ctxPack.resetTransform();
+        this.ctxPack.clearRect(s.left, s.top, s.width, s.height);
+		this.packages = [];
     };
     drawStore(c, s) {
         c.save();
@@ -788,79 +854,88 @@ export class GStore {
         c.lineTo(s.left + s.width / 2, s.top / 2);
         c.lineTo(s.left + s.width, s.top);
         c.lineTo(s.left, s.top);
-        c.closePath();
+		c.closePath();
         c.stroke();
         c.fill();
+		this.drawShelves(c,s);
         c.restore();
     };
-    emptyStore() {
-        const c = this.ctxStore;
-        const s = this.store;
-        c.clearRect(s.left, s.top, s.width, s.height)
-        this.packages.emptyStore();
-    }
-    drawAll() {
-        this.packages.drawAll();
-    }
-    inventory() {
-        return this.packages.inventory();
-    }
-    remove() {
-        return this.packages.remove();
-    }
-};
-class StackPackages extends ItemCollection {
-    constructor(ctxPack, boxSize, boxesPerRow, snake = true) {
-        super();
-        this.ctxPack = ctxPack;
-        //        this.updateLeftBot(left, bot) ;
-        this.boxSize = boxSize;
-        this.boxesPerRow = boxesPerRow;
-        this.snake = snake;
-        this.box = {
-            w: boxSize,
-            h: boxSize,
-            wInner: boxSize - 2,
-            hInner: boxSize - 2,
-            nPerRow: boxesPerRow
-        };
-    }
+	drawShelves(c,s){
+		let left, right, y;
+		for ( let k = 0; k < 9; k++){
+			left = s.left + ((k%2)==0?0:20);
+			right = s.left + s.width - ((k%2)==0?20:0);
+			y = s.bot - (k+1) * s.boxSpace;
+			c.beginPath();
+			c.moveTo(left,y);
+			c.lineTo(right,y);
+			c.closePath();
+			c.stroke();	
+		}
+	};
+//    emptyStore() {
+////        const c = this.ctxStore;
+////        const s = this.store;
+////        c.clearRect(s.left, s.top, s.width, s.height)
+//        this.packages.emptyStore();
+//    }
+//    drawAll() {
+//        this.packages.drawAll();
+//    }
+//    inventory() {
+//        return this.packages.inventory();
+//    }
+//    remove() {
+//        return this.packages.remove();
+//    }
+
+// ********merge back into GStore
+//class StackPackages extends ItemCollection {
+//    constructor(ctxPack, boxSpace, boxSize, boxesPerRow, snake = true) {
+//        super();
+//        this.ctxPack = ctxPack;
+//        //        this.updateLeftBot(left, bot) ;
+//        this.boxSpace = boxSpace;
+//		this.boxSize = boxSize;
+//        this.boxesPerRow = boxesPerRow;
+//        this.snake = snake;
+//        this.box = {
+//            w: boxSpace,
+//            h: boxSpace,
+//            nPerRow: boxesPerRow
+//        };
+//    }
     emptyStore() {
         this.reset();
     };
     inventory() {
-        return this.all.length;
+        return this.packages.length;
     };
     updateLeftBot(left, bot) {
         this.left = left;
         this.bot = bot;
     }
 
-    drawAll() {
-        const c = this.ctxPack;
-        for (let i = 0; i < this.all.length; i++) {
-            this.all[i].draw();
-        };
-    };
+//    drawAll() {
+//        const c = this.ctxPack;
+//        for (let i = 0; i < this.all.length; i++) {
+//            this.all[i].draw();
+//        };
+//    };
 	relCoord(k) {
 		let row = Math.floor( k / this.box.nPerRow);
 		let c = k % this.box.nPerRow;
 		let col = (row % 2 == 0) ?
 			c : this.box.nPerRow - 1 - c;
-		return {x:this.box.w * col,
-				y: - this.box.w * (1+row)};
+		let delta = this.boxSpace - this.boxSize;
+		return {x:this.boxSpace * col + Math.floor(delta/2),
+				y: - (this.boxSpace) * (1+row) + delta - 1};
 	};
-//    rx(k) {
-//        return this.box.w * (k % this.box.nPerRow);
-//    };
-//    ry(k) {
-//        return -this.box.h * (1 +
-//            Math.floor(k / this.box.nPerRow));
-//    };
-    addExisting(item) {
+   //******
+	addExisting(item) {
         let point  = this.relCoord(this.all.length);
-        let pack = new Package(this, this.ctxPack,
-            item.color, this.boxSize,
+        let pack = new Package(packageCollection,
+			this.ctxPack, item.color, this.boxSize,
             item.x, item.y);
         pack.addPath({
             t: simu.now + 200,
@@ -869,27 +944,32 @@ class StackPackages extends ItemCollection {
         });
     };
     addNew() {
-        let point  = this.relCoord(this.all.length);
+        let point  = this.relCoord(this.packages.length);
         let color = tioxColors[Math.floor(Math.random() *
             tioxColors.length)];
 //        let tx = this.left + this.rx(k);
 //		let ty = this.bot + this.ry(k);
 //		console.log(' adding box', k, 'with coord',tx,ty);
-		let pack = new Package(this, this.ctxPack,
-            color, this.boxSize,
-            this.left + point.x,
-            this.bot + point.y);
+		let pack = new Package(packageCollection,
+			this.ctxPack, color, this.boxSize,
+            this.left + point.x, this.bot + point.y);
+		this.packages.push(pack);
  
     };
-    remove() {
-        let pack = this.removeFirst();
+    pull (){
+		return this.remove()
+	};
+	remove() {
+        if (this.packages.length == 0) return null;
+		let pack = this.packages.shift();
+		
         if (this.snake) {
-            let n = this.all.length;
+            let n = this.packages.length;
             for (let k = 0; k < n; k++) {
-                let p = this.all[k];
+                let p = this.packages[k];
 				let point  = this.relCoord(k);
                 p.updatePath({
-                    t: simu.now + 800,
+                    t: simu.now + 300,
                     x: this.left + point.x,
                     y: this.bot + point.y
                 });
@@ -898,14 +978,14 @@ class StackPackages extends ItemCollection {
         return pack;
     };
 	makeAllGrey(){
-		for( let pack of this.all ){
+		for( let pack of this.packages ){
 			pack.graphic.color = darkGrey;
 		}
 	};
 };
+var packageCollection = new ItemCollection('packages');
 class Package extends Item {
-    constructor(collection, ctx,
-        color, boxSize, x, y) {
+    constructor(collection, ctx, color, boxSize, x, y) {
         super(collection, x, y);
         this.graphic = new ColorBox(ctx, color, boxSize);
 		this.graphic.moveTo(x,y);
@@ -924,13 +1004,13 @@ class ColorBox {
     };
     draw() {
         this.ctx.fillStyle = this.color;
-        this.ctx.beginPath();
-		this.ctx.arc(this.x+this.boxSize/2,
-					 this.y+this.boxSize/2,
-					 7, 0, pi2);
-		this.ctx.closePath();
-		this.ctx.fill();	
-//			fillRect(this.x, this.y,
-//            this.boxSize - 2, this.boxSize - 7)
+//        this.ctx.beginPath();
+//		this.ctx.arc(this.x+this.boxSize/2,
+//					 this.y+this.boxSize/2,
+//					 7, 0, pi2);
+//		this.ctx.closePath();
+//		this.ctx.fill();	
+		this.ctx.fillRect(this.x, this.y,
+            this.boxSize, this.boxSize)
     };
 };
