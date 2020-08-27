@@ -1,12 +1,13 @@
 "use strict";
 // declaration of Globals
-const darkGrey = 'rgb(52,52,52)';
+const disappointed = {color: 'rgb(235, 230, 230)', 
+					  border: 'rgb(31, 105, 245)'};
 const tioxTimeConv = 10000;  //time are in milliseconds
 import {GammaRV, UniformRV, DeterministicRV, Heap}
         from '../modules/utility.js';
 import { Queue, WalkAndDestroy, MachineCenter, 
-        InfiniteMachineCenter, Item, ItemCollection,  
-       GStickFigure, NStickFigure, GStore, tioxColors}
+        InfiniteMachineCenter, Combine, Item, itemCollection, ItemCollection,  BoxStack,
+       GStickFigure, NStickFigure, GStore, Package, tioxColors}
     from '../modules/procsteps.js' ;
  
 const theStage = {
@@ -19,16 +20,24 @@ const theStage = {
 
 {   theStage.store = {left: 400, top:80, stroke:1};
     
-    theStage.boxSize = 15,
+    theStage.boxSpace = 20;
+ 	theStage.boxSize = 16,
     theStage.boxesPerRow = 10;
     theStage.pathLeft = -100;
     theStage.truckLeft = 600;
     theStage.truckRight = 1000;
     theStage.pathRight = 380;
-    theStage.pathTop = 50;
-   theStage.pathBot = 200;
-   theStage.offStageEntry = {x: theStage.pathLeft, y: theStage.pathTop};
-    theStage.offStageExit = {x: theStage.pathLeft, y: theStage.pathBot};
+    theStage.pathTop = theStage.store.top;
+	theStage.pathBot = theStage.store.top + theStage.boxSpace * 7;
+	theStage.pathMid = (theStage.pathTop + theStage.pathBot) / 2;
+	theStage.offStageEntry = {
+		x: theStage.pathLeft,
+		y: theStage.pathTop
+	};
+	theStage.offStageExit = {
+		x: theStage.pathLeft,
+		y: theStage.pathBot
+	};
     theStage.headQueue = {x: theStage.pathRight, y: theStage.pathBot};
 };
 
@@ -129,7 +138,7 @@ function captureChangeInSliderS(event){
             speeds[v];
         simu.frameSpeed = speeds[v];
         theChart.continue();
-       personCollection.updateForSpeed();
+       itemCollection.updateForSpeed();
         document.getElementById(id+'Display')
             .innerHTML = speeds[v];
         break;
@@ -144,15 +153,16 @@ function captureChangeInSliderS(event){
 }
 
 function updatePredInv(){
-    theSimulation.ropStore.predInv = theSimulation.quantityOrdered/2 +
+    theSimulation.predInv = theSimulation.quantityOrdered/2 +
             theSimulation.rop - theSimulation.arrivalRV.rate * theSimulation.leadtimeRV.mean;
 }
 
 //var totInv, totTime, totPeople, lastArrDep, LBRFcount ;
 simu.reset2 = function(){
-   personCollection.reset();
+   itemCollection.reset();
     theChart.reset();     
     theProcessCollection.reset();
+	itemCollection.moveDisplayAll(0);
 //    totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
     gSF = new GStickFigure( simu.context, 
                            theStage.person.height,
@@ -173,17 +183,25 @@ simu.reset2 = function(){
 //  animation for that process step
 
 const animForQueue = {
-    walkingTime: (theStage.pathRight - theStage.offStageEntry.x)/theStage.normalSpeed,
-    
-    reset : function (){ 
-    },
+   walkingTime1: (theStage.pathRight - theStage.offStageEntry.x) / theStage.normalSpeed,
+	walkingTime2: (theStage.pathMid - theStage.pathTop) / theStage.normalSpeed,
+	walkingTime: ((theStage.pathRight - theStage.offStageEntry.x) +
+		(theStage.pathMid - theStage.pathTop)) / theStage.normalSpeed,
+	
+    reset : function (){ },
 
-    join: function ( qLength, arrivalTime, person ) {
-         person.addPath( {t: arrivalTime, 
-                         x: theStage.pathRight,
-                         y: theStage.pathTop } );
-    },
-
+    join: function (qLength, arrivalTime, person) {
+		person.addPath({
+			t: arrivalTime - this.walkingTime2,
+			x: theStage.pathRight,
+			y: theStage.pathTop
+		});
+		person.addPath({
+			t: arrivalTime,
+			x: theStage.pathRight,
+			y: theStage.pathMid
+		});
+	},
     arrive: function (nSeatsUsed, person) {
     },
 
@@ -203,6 +221,42 @@ const animForStore = {
                          y: theStage.pathBot } );
     }
 }
+
+
+const animForSeller = {
+	start: function (person, pack, walkingTime){
+		person.addPath({  //walk to bot
+				t: simu.now + walkingTime,
+				x: theStage.pathRight,
+				y: theStage.pathBot
+		});
+		const leftTime = walkingTime / 2;
+		const upTime = walkingTime / 2;
+
+		if (pack) {
+			pack.addPath({
+				t: simu.now + leftTime,
+				x: theStage.pathRight + person.graphic.gSF.package.x,
+				y: pack.cur.y
+			});
+			pack.addPath({  // move up to arm height in other time
+				t: simu.now + walkingTime,
+				x: theStage.pathRight + person.graphic.gSF.package.x,
+				y: theStage.pathBot + person.graphic.gSF.package.y,
+			});
+		}
+	},
+	finish: function (person,pack){
+		if (pack) {
+			person.graphic.packageVisible = true;
+			person.graphic.packageColor = pack.graphic.color;
+		} else {
+			person.graphic.color = disappointed.color;
+			person.graphic.bdaryColor = disappointed.border;
+		}
+	}
+};
+
 
 const animForWalkOffStage = {
     walkingTime: (theStage.pathRight - theStage.pathLeft)/theStage.normalSpeed,
@@ -226,7 +280,7 @@ var theProcessCollection = new ProcessCollection();
     supply : null,
     queue : null,
     walkOffStage :null,
-    ropStore : null,
+    store : null,
     quantityOrdered : null,
      rop : null,
      period: null,
@@ -236,12 +290,13 @@ var theProcessCollection = new ProcessCollection();
      whichRule: 'rop',
      
     initialize: function (){
-//        setBackground();
          pickInvSimulation(theSimulation.whichRule);
         // random variables
         let ar = Number(document.getElementById('ar').value);
         let acv = Number(document.getElementById('acv').value); 
         theSimulation.arrivalRV = new GammaRV( ar / tioxTimeConv, acv);
+		theSimulation.serviceRV = 
+			new DeterministicRV(animForQueue.walkingTime2);
         let lt = Number(document.getElementById('lt').value);
         let ltcv = Number(document.getElementById('ltcv').value); 
         theSimulation.leadtimeRV = new GammaRV(1 / (lt * tioxTimeConv), ltcv);
@@ -264,7 +319,8 @@ var theProcessCollection = new ProcessCollection();
                 animForQueue.walkingTime,     
                 animForQueue,
                 null, null );
-              
+        
+		
         this.walkOffStage = new WalkAndDestroy("walkOff",  animForWalkOffStage, true);
     
     
@@ -274,22 +330,27 @@ var theProcessCollection = new ProcessCollection();
              this.supply, this.queue, 
              null);
             
-        this.ropStore = new RopStore(
-            simu.context, simu.backcontext,
-            theStage.store.left, theStage.store.top,
-            theStage.boxSize, theStage.boxesPerRow,
-            this.queue, this.walkOffStage );
+        this.store = new RopStore(
+			 simu.backcontext, simu.context, 
+			theStage.store.left, theStage.store.top,
+			theStage.boxSpace, theStage.boxSize, theStage.boxesPerRow);
+		
+		this.seller = new Combine('seller',
+				theSimulation.serviceRV,
+				this.queue, this.store, this.walkOffStage,
+				animForSeller);
                 
          
         //link the queue to machine before and after
         this.queue.setPreviousNext(
-            this.creator,this.ropStore);
+            this.creator,this.seller);
 
         // put all the process steps with visible people in theProcessCollection
 //        theProcessCollection.push(this.creator);
         theProcessCollection.push(this.creator);
         theProcessCollection.push(this.queue);
-        theProcessCollection.push(this.ropStore);
+		theProcessCollection.push(this.seller);
+		theProcessCollection.push(this.store);
         theProcessCollection.push(this.walkOffStage);
         
         
@@ -322,19 +383,17 @@ class Supplier {
         this.y = y;
     };
     pull () {
-        return new Person(personCollection, 
-                            this.x, this.y, 30, theStage.person.height); 
+        return new Person(this.x, this.y, 30, theStage.person.height); 
      }
 };   //end class Supplier
 
 
 class RopStore  extends GStore {
-    constructor(context, backcontext, left, top, boxSize, boxesPerRow,
-                 previousQ, nextQ){
-        super( backcontext, left, top, boxSize, boxesPerRow);
+    constructor( backcontext, context, left, top,
+				 boxSpace, boxSize, boxesPerRow){
+        super(  backcontext, context, left, top,
+			  boxSpace, boxSize, boxesPerRow);
         this.name ='ropRetail'
-        this.previousQ = previousQ;
-        this.nextQ = nextQ;
         
         this.inv = null;
         this.invPosition = null;
@@ -354,8 +413,8 @@ class RopStore  extends GStore {
         this.invPosition = this.inv;
         updatePredInv();
         
-        this.addBox(this.inv);
-        this.drawAll();
+        for( let k = 0; k< this.inv; k++)
+			this.addNew();
         this.lostSales = 0;
         this.nRounds = 1;
         this.roundsWithEnough = 1;
@@ -363,79 +422,59 @@ class RopStore  extends GStore {
     };
     truckArrival(truck) {
         const n = truck.nPackages;
-        this.addBox(n);
-        this.inv += n;
+		for( let k = 0; k < n; k++) {
+			let point = this.boxStack.relCoord(this.inv+k);
+			truck.packages[k].cur.x = this.left + point.x;
+			truck.packages[k].cur.y = this.bot + point.y;
+			truck.packages[k].graphic.moveTo(this.left + point.x, this.bot + point.y);
+		}
+		truck.packages.forEach(p => {p.inBatch = false});
+		this.packages.push(...truck.packages);
+        truck.packages = [];
+		truck.graphic.packages=[];
+		this.inv += n;
         truck.graphic.reverse = true;
-        truck.graphic.emptyTruck();
         theChart.push(simu.now, this.inv,
-                     this.invPosition, this.predInv);
+                     this.invPosition, theSimulation.predInv);
         // keep track of nRounds;
         this.nRounds++;
         if( !this.stockOut ) this.roundsWithEnough++;
         this.stockOut = false;
-        this.drawAll();
     };
     truckDestroy(truck) {
-        truck.collection.remove(truck);
+        truck.destroy();
     };
-    knockFromPrevious(){   //person arrived at queue
-        
-        const person = this.previousQ.pull(0);
-        
-        
-        
-        const background = document.getElementById('theBackground');
-        const c = background.getContext('2d');
-        const inv = this.packages.length;
+    pull(){   //person arrived at queue
+        let pack = super.pull()
         
         let b = null;
-        if (inv == 0) {
+        if (pack == null) {
             this.stockout = true;
         } else {
+			this.invPosition--;
             if (this.invPosition <= theSimulation.rop  && theSimulation.whichRule == 'rop') {
                 this.orderQuan();
                 this.invPosition += theSimulation.quantityOrdered;
             } 
             
-            b = this.removeBox() ;
             this.inv--;
-            this.invPosition--;
         }
-        let finishTime = simu.now + this.personTravelTime;
-        simu.heap.push( 
-            {time:finishTime, 
-             type:'finish/'+this.name,
-             proc: this.personLeave.bind(this), 
-             item: {pers:person, pkg: b}  
-            });
-        person.addPath({t: finishTime,
-                        x: theStage.pathRight,
-                        y: theStage.pathBot })
         theChart.push(simu.now, this.inv,
-                     this.invPosition, this.predInv);
-    };
-
-    personLeave(item){
-      if( item.pkg ){
-        item.pers.graphic.packageColor = tioxColors[ item.pkg.color ];
-        item.pers.graphic.packageVisible = true;
-      } else {
-          item.pers.graphic.color = darkGrey;
-      }
-      this.nextQ.push(item.pers);
+                     this.invPosition, theSimulation.predInv);
+		return pack;
     };
     
     orderQuan(){
-        const truck = new Truck(truckCollection, simu.context, 
+        const truck = new Truck(simu.context, 
                              theSimulation.quantityOrdered,
-                             theStage.boxSize);
+                             theStage.boxSpace, theStage.boxSize, 10);
         const truckLT = theSimulation.leadtimeRV.observe();
         const arrivalTime = simu.now + truckLT;
         simu.heap.push( 
             {time: arrivalTime, 
              type: 'truck arrival', 
              proc: this.truckArrival.bind(this), 
-             item: truck});
+             item: truck});   // add quantity here?
         simu.heap.push(
             {time: arrivalTime + 10000 + 30000,
              type: 'truck return',
@@ -469,47 +508,51 @@ class RopStore  extends GStore {
     
 };
 
-var packagesInStore = new ItemCollection();
-
-
-
 
 const pi2 = 2 * Math.PI;
-var truckCollection = new ItemCollection();
 class Truck  extends Item {
-  constructor(collection, ctxTruck, ctxPack, nPackages, boxSize = 20, bedLength = 10){
-      super (collection, theStage.truckRight, theStage.pathTop);
-      this.truckHeight = this.boxSize * 5;
-      this.truckCabWidth = this.truckHeight/2;
-      this.truckBedWidth = this.bedLength * this.boxSize ;
-      this.truckWidth =  this.truckBedWidth +
-                            this.truckCabWidth;
+  constructor(ctxTruck, nPackages, boxSpace, boxSize = 20, bedLength = 10){
+      super (theStage.truckRight, theStage.pathTop);
       
+      this.ctxTruck = ctxTruck;
       
       
       this.nPackages = nPackages;
-      let p = this.packages = new StackPackages
-            (ctxPack, boxSize, boxesPerRow);
-      for ( let k = 0; k < nPackages; k++ ){
+      this.packages = [];
+      this.graphic = new FlatBed(ctxTruck, 
+					boxSpace, boxSize, bedLength, this.packages);
+	  for ( let k = 0; k < nPackages; k++ ){
           // create each package with random color
           // and add to this.packages.
-          let colorIndex = Math.floor( Math.random() 
-                                * tioxColors.length);
-          let package = new Package( this.packages,
-                this.ctxPack, tioxColors[colorIndex],
-                this.boxSize);
-                //this.x + p.rx(k),this.y + p.ry(k));
+          let colorIndex = Math.floor( Math.random() * tioxColors.length);
+          let pack = new Package(this.ctxTruck,
+					tioxColors[colorIndex], boxSize,0,0);
+		  this.packages.push(pack);
+		  pack.inBatch = true;
+		  
       }
           
           
           
-      }
   };
+};
+	class FlatBed {
+	constructor( context, boxSpace, boxSize, bedLength, packages){
+		this.ctx  = context;
+		this.packages = packages;
+		this.boxSpace = boxSpace;
+		this.boxSize = boxSize;
+		this.truckHeight = this.boxSize * 5;
+		this.truckCabWidth = this.truckHeight/2;
+		this.truckBedWidth = bedLength * this.boxSpace ;
+      	this.truckWidth =  this.truckBedWidth +
+                            this.truckCabWidth;
+		this.boxStack = new BoxStack(boxSpace, boxSize, bedLength, false);
+		}
+	
   moveTo(x, y){
       this.x = Math.floor(x);
       this.y = Math.floor(y);
-      this.packages.update(this.x + this.truckCabWidth, 
-                      this.y + this.truckHeight - 0.75 * this.boxSize  )
   } ;
     
   draw(){
@@ -521,8 +564,8 @@ class Truck  extends Item {
     //body
     this.ctx.moveTo(this.x, this.y + this.truckHeight);
     this.ctx.lineTo(this.x + this.truckWidth, this.y + this.truckHeight);
-    this.ctx.lineTo(this.x + this.truckWidth, this.y + this.truckHeight - 0.75 * this.boxSize);
-    this.ctx.lineTo(this.x + this.truckCabWidth, this.y + this.truckHeight - 0.75 * this.boxSize);
+    this.ctx.lineTo(this.x + this.truckWidth, this.y + this.truckHeight - 0.75 * this.boxSpace);
+    this.ctx.lineTo(this.x + this.truckCabWidth, this.y + this.truckHeight - 0.75 * this.boxSpace);
     this.ctx.lineTo(this.x + this.truckCabWidth, this.y );
     this.ctx.lineTo(this.x + this.truckCabWidth/2, this.y );
     this.ctx.lineTo(this.x, this.y + this.truckHeight/2);
@@ -533,7 +576,7 @@ class Truck  extends Item {
 
     //wheels  
     this.ctx.beginPath();
-    this.ctx.arc (this.x + this.truckCabWidth/2, this.y + this.truckHeight, this.boxSize/2, 
+    this.ctx.arc (this.x + this.truckCabWidth/2, this.y + this.truckHeight, this.boxSpace/2, 
                  0, pi2);
     this.ctx.stroke();
     this.ctx.fill();
@@ -541,15 +584,24 @@ class Truck  extends Item {
 
     this.ctx.beginPath();
     this.ctx.arc(this.x + this.truckWidth - this.truckCabWidth/2,
-                 this.y + this.truckHeight, this.boxSize/2, 
+                 this.y + this.truckHeight, this.boxSpace/2, 
                  0, pi2);
     this.ctx.stroke();
     this.ctx.fill();
 
     this.ctx.restore();
     this.drawPackages(this.x + this.truckCabWidth, 
-                      this.y + this.truckHeight - 0.75 * this.boxSize);
+                      this.y + this.truckHeight - 0.75 * this.boxSpace);
     };
+	drawPackages(left,bot){
+      for ( let i = 0; i < this.packages.length; i++ ){
+        this.ctx.fillStyle = this.packages[i].graphic.color;
+		let point = this.boxStack.relCoord(i);
+        this.ctx.fillRect(
+            left + point.x, bot + point.y,
+			this.boxSize , this.boxSize );
+      }
+    };	
 
 
 };
@@ -571,27 +623,17 @@ class Truck  extends Item {
 //      }
 //        this.reverse = false;
 //    }   ; 
-//    drawPackages(left,bot){
-//      for ( let i = 0; i < this.colors.length; i++ ){
-//        this.ctx.fillStyle = this.colors[i];
-//        this.ctx.fillRect(
-//            left + this.boxSize * (i % this.bedLength) + 1,
-//            bot - this.boxSize * 
-//            (1+ Math.floor( i / this.bedLength )) - 1,
-//            this.boxSize - 2, this.boxSize - 2 );
-//      }
-//    };
+//    
 //    emptyTruck(){
 //        this.colors=[];
 //    }
 //};
 
 var gSF ;
-var personCollection = new ItemCollection();
 export class Person extends Item {
     
-    constructor (collection, x,y= 60,w = 30,h = 30) {
-        super(collection, x, y);
+    constructor (x, y= 60,w = 30,h = 30) {
+        super(x, y);
         
         this.width = w;
         

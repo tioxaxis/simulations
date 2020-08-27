@@ -101,8 +101,7 @@ function eachFrame(currentTime) {
     simu.now = simu.frametime;
     // console.log('in eachFrame now=', simu.now);
     clearCanvas();
-    // for each collection of items move them.
-    allCollections.forEach(c => c.moveDisplayAll(deltaSimT));
+    itemCollection.moveDisplayAll(deltaSimT);
     simu.requestAFId = window.requestAnimationFrame(eachFrame);
 };
 
@@ -215,11 +214,9 @@ export class Queue {
 
 //  WALK AND DESTROY
 export class WalkAndDestroy {
-    constructor(name,collection, animForWalkAndDestroy, dontOverlap) {
+    constructor(name, animForWalkAndDestroy, dontOverlap) {
         this.name = name;
-		this.collection = collection;
         this.animForWalkAndDestroy = animForWalkAndDestroy;
-		this.collection = collection;
         this.walkingTime = this.animForWalkAndDestroy.walkingTime;
         this.dontOverlap = dontOverlap;
         this.lastAdded = null;
@@ -244,7 +241,6 @@ export class WalkAndDestroy {
     };
 
     destroy(person) {
-        this.collection.remove(person);
 		//    let b = person.behind;
         //    let a = person.ahead;
         //    if (b) b.ahead = person;
@@ -423,7 +419,6 @@ export class Combine {
 	finish (item){
 		this.anim.finish(item.person,item.package);
 		if (item.package) {
-			packageCollection.remove(item.package);
 			item.package.destroy();
 		}
 		this.afterQ.push(item.person);
@@ -434,22 +429,25 @@ export class Combine {
 // minimal Person with properties only for the simulation, the procsteps
 
 
-var count = 0;
-var allCollections = [];
+
+
 export class ItemCollection {
-    constructor(kind) {
-        allCollections.push(this);
+    constructor() {
         this.reset();
-		this.kind = kind;
     };
-    reset() {
+    push(item){
+		this.all.push(item);
+		return ++this.counter;
+		item.ahead = this.lastAdded;
+        this.lastAdded = item;
+	};
+	reset() {
         this.all = [];
         this.counter = 0;
         this.lastAdded = null;
     };
     
 	moveDisplayAll(deltaSimT) {
-        if ((++count%100)==0) console.log(this.kind, this.all.length );
 		this.all.forEach(p => p.moveDisplayWithPath(deltaSimT))
     }
     updateForSpeed() {
@@ -466,23 +464,19 @@ export class ItemCollection {
             this.lastAdded = null;
     };
    //  do I still need this??
-	removeFirst() {
-        let item = this.all[0];
-        this.all.splice(0, 1);
-        return item;
-    };
+//	removeFirst() {
+//        let item = this.all[0];
+//        this.all.splice(0, 1);
+//        return item;
+//    };
 };
-export class Item {
-    constructor(collection, x, y) {
-        this.which = ++collection.counter;
-        collection.all.push(this);
+export var itemCollection = new ItemCollection();
 
-        this.ahead = collection.lastAdded;
-        collection.lastAdded = this;
+export class Item {
+    constructor( x, y) {
+        this.which = itemCollection.push(this);
         if (this.ahead) this.ahead.behind = this;
         this.behind = null;
-
-
         this.cur = {
             t: simu.now,
             x: x,
@@ -492,7 +486,7 @@ export class Item {
         this.arrivalTime = null;
         this.machine = null;
         this.graphic = null;
-
+		this.inBatch = false;
     };
 
     setColor(bodyColor, borderColor) {
@@ -500,7 +494,7 @@ export class Item {
     }
 
     moveDisplayWithPath(deltaSimT) {
-
+		if( this.inBatch ) return;
         while (this.pathList.length > 0) {
             //           if (this.which <= 2 ){
             //        console.log(this.which, 'path ',this.pathList[0].t, this.pathList[0].x, 'cur x', this.cur.x, deltaSimT, simu.now)
@@ -606,9 +600,7 @@ export class Item {
     };
 
     destroy() {
-//        this.collection.remove(this);
-//        if (this.collection.lastAdded == this)
-//            this.collection.lastAdded = null;
+      	itemCollection.remove(this);
         let b = this.behind;
         let a = this.ahead;
         if (b) b.ahead = a;
@@ -794,47 +786,55 @@ export class NStickFigure {
             c.fillText(this.badgeText, this.gSF.badge.x, this.gSF.badge.y);
             c.restore();
         }
-
-
-
         c.restore();
-
-
     };
-
 };
 
+export class BoxStack {
+	constructor (boxSpace, boxSize, nPerRow, snake = true){
+		this.boxSpace = boxSpace;
+		this.boxSize = boxSize;
+		this.nPerRow = nPerRow;
+		this.snake = snake;
+	}
+	relCoord(k) {
+		let row = Math.floor( k / this.nPerRow);
+		let c = k % this.nPerRow;
+		let col = (this.snake && row % 2 == 1) ?
+			 this.nPerRow - 1 - c : c;
+		let delta = this.boxSpace - this.boxSize;
+		return {x: this.boxSpace * col + Math.floor(delta/2),
+				y: - (this.boxSpace) * (1+row) + delta - 1};
+	};
+}
 
 export class GStore {
     constructor(ctxStore, ctxPack, left, top, boxSpace, boxSize, boxesPerRow) {
 
         this.ctxStore = ctxStore;
 		this.ctxPack = ctxPack;
-        this.store = {
-            left: left,
-            top: top
-        }
-		this.store.boxSpace = boxSpace;
-		this.store.boxSize = boxSize;
-        this.store.width = boxSpace * boxesPerRow;
+		
+        this.store = {left: left, top: top,
+					 boxSpace: boxSpace, boxSize: boxSize,
+					 width: boxSpace * boxesPerRow};
         this.store.height = this.store.width;
         this.store.bot = this.store.top + this.store.height;
+		this.boxStack = new BoxStack(boxSpace, boxSize, boxesPerRow, true);
+		
+		this.updateLeftBot(this.store.left, this.store.bot);
         this.drawStore(this.ctxStore, this.store);
 
         this.packages = [];
-		this.updateLeftBot(this.store.left, this.store.bot)
-		
-		this.ctxPack = ctxPack;
-        //        this.updateLeftBot(left, bot) ;
-        this.boxSpace = boxSpace;
-		this.boxSize = boxSize;
-        this.boxesPerRow = boxesPerRow;
+				
+//        this.boxSpace = boxSpace;
+//		this.boxSize = boxSize;
+//        this.boxesPerRow = boxesPerRow;
         this.snake = true;
-        this.box = {
-            w: boxSpace,
-            h: boxSpace,
-            nPerRow: boxesPerRow
-        };
+//        this.box = {
+//            w: boxSpace,
+//            h: boxSpace,
+//            nPerRow: boxesPerRow
+//        };
     };
     reset() {
         const s = this.store;
@@ -863,8 +863,8 @@ export class GStore {
 	drawShelves(c,s){
 		let left, right, y;
 		for ( let k = 0; k < 9; k++){
-			left = s.left + ((k%2)==0?0:20);
-			right = s.left + s.width - ((k%2)==0?20:0);
+			left = s.left + ((k%2)==0?0:s.boxSpace);
+			right = s.left + s.width - ((k%2)==0?s.boxSpace:0);
 			y = s.bot - (k+1) * s.boxSpace;
 			c.beginPath();
 			c.moveTo(left,y);
@@ -873,38 +873,6 @@ export class GStore {
 			c.stroke();	
 		}
 	};
-//    emptyStore() {
-////        const c = this.ctxStore;
-////        const s = this.store;
-////        c.clearRect(s.left, s.top, s.width, s.height)
-//        this.packages.emptyStore();
-//    }
-//    drawAll() {
-//        this.packages.drawAll();
-//    }
-//    inventory() {
-//        return this.packages.inventory();
-//    }
-//    remove() {
-//        return this.packages.remove();
-//    }
-
-// ********merge back into GStore
-//class StackPackages extends ItemCollection {
-//    constructor(ctxPack, boxSpace, boxSize, boxesPerRow, snake = true) {
-//        super();
-//        this.ctxPack = ctxPack;
-//        //        this.updateLeftBot(left, bot) ;
-//        this.boxSpace = boxSpace;
-//		this.boxSize = boxSize;
-//        this.boxesPerRow = boxesPerRow;
-//        this.snake = snake;
-//        this.box = {
-//            w: boxSpace,
-//            h: boxSpace,
-//            nPerRow: boxesPerRow
-//        };
-//    }
     emptyStore() {
         this.reset();
     };
@@ -922,20 +890,20 @@ export class GStore {
 //            this.all[i].draw();
 //        };
 //    };
-	relCoord(k) {
-		let row = Math.floor( k / this.box.nPerRow);
-		let c = k % this.box.nPerRow;
-		let col = (row % 2 == 0) ?
-			c : this.box.nPerRow - 1 - c;
-		let delta = this.boxSpace - this.boxSize;
-		return {x:this.boxSpace * col + Math.floor(delta/2),
-				y: - (this.boxSpace) * (1+row) + delta - 1};
-	};
+//	relCoord(k) {
+//		let row = Math.floor( k / this.box.nPerRow);
+//		let c = k % this.box.nPerRow;
+//		let col = (row % 2 == 0) ?
+//			c : this.box.nPerRow - 1 - c;
+//		let delta = this.boxSpace - this.boxSize;
+//		return {x:this.boxSpace * col + Math.floor(delta/2),
+//				y: - (this.boxSpace) * (1+row) + delta - 1};
+//	};
    //******
 	addExisting(item) {
-        let point  = this.relCoord(this.all.length);
-        let pack = new Package(packageCollection,
-			this.ctxPack, item.color, this.boxSize,
+        let point  = this.boxStack.relCoord(this.all.length);
+        let pack = new Package(
+			this.ctxPack, item.color, this.store.boxSize,
             item.x, item.y);
         pack.addPath({
             t: simu.now + 200,
@@ -944,14 +912,14 @@ export class GStore {
         });
     };
     addNew() {
-        let point  = this.relCoord(this.packages.length);
+        let point  = this.boxStack.relCoord(this.packages.length);
         let color = tioxColors[Math.floor(Math.random() *
             tioxColors.length)];
 //        let tx = this.left + this.rx(k);
 //		let ty = this.bot + this.ry(k);
 //		console.log(' adding box', k, 'with coord',tx,ty);
-		let pack = new Package(packageCollection,
-			this.ctxPack, color, this.boxSize,
+		let pack = new Package(
+			this.ctxPack, color, this.store.boxSize,
             this.left + point.x, this.bot + point.y);
 		this.packages.push(pack);
  
@@ -967,7 +935,7 @@ export class GStore {
             let n = this.packages.length;
             for (let k = 0; k < n; k++) {
                 let p = this.packages[k];
-				let point  = this.relCoord(k);
+				let point  = this.boxStack.relCoord(k);
                 p.updatePath({
                     t: simu.now + 300,
                     x: this.left + point.x,
@@ -983,14 +951,12 @@ export class GStore {
 		}
 	};
 };
-var packageCollection = new ItemCollection('packages');
-class Package extends Item {
-    constructor(collection, ctx, color, boxSize, x, y) {
-        super(collection, x, y);
+export class Package extends Item {
+    constructor(ctx, color, boxSize, x, y) {
+        super(x, y);
         this.graphic = new ColorBox(ctx, color, boxSize);
 		this.graphic.moveTo(x,y);
     };
-
 };
 class ColorBox {
     constructor(ctx, color, boxSize) {

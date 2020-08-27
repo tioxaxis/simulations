@@ -4,7 +4,7 @@
 import {GammaRV, Heap} from "../modules/utility.js";
 //    from './modules/utility.js';
 import { Queue, WalkAndDestroy, MachineCenter,
-    InfiniteMachineCenter, Item, ItemCollection,  
+    InfiniteMachineCenter, Item, itemCollection, ItemCollection,  
        GStickFigure, NStickFigure }
 from "../modules/procsteps.js" ;
 const tioxTimeConv = 10000;  //rates in tiox are k/10 seconds
@@ -111,7 +111,7 @@ function captureChangeInSliderS(event){
             speeds[v];
         simu.frameSpeed = speeds[v];
         theChart.continue();
-        personCollection.updateForSpeed();
+        itemCollection.updateForSpeed();
         document.getElementById(id+'Display')
             .innerHTML = speeds[v];
         break;
@@ -124,7 +124,7 @@ function captureChangeInSliderS(event){
 
 simu.reset2 = function(){
     resetBackground();
-    personCollection.reset();
+    itemCollection.reset();
     theChart.reset();     
     theProcessCollection.reset();
     gSF = new GStickFigure(simu.context, 
@@ -357,19 +357,15 @@ class Supplier {
         this.y = y;
     };
     pull () {
-        return new Person(personCollection,
-                        this.x, this.y,
+        return new Person(this.x, this.y,
                         30, theStage.person.height); 
      }
 };   //end class Supplier
 
 var gSF ;
-var personCollection = new ItemCollection();
  export class Person extends Item {
-    
-    
-    constructor (collection, x,y= 100,w = 30,h = 30) {
-        super(collection, x, y);
+    constructor (x, y= 100,w = 30,h = 30) {
+        super(x, y);
         this.width = w;
         
         this.graphic = new NStickFigure( gSF, x, y );

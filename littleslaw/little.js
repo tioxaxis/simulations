@@ -5,7 +5,7 @@ const tioxTimeConv = 1000;  //time are in milliseconds
 import {GammaRV, Heap} from '../modules/utility.js';
 //    from './modules/utility.js';
 import { Queue, WalkAndDestroy, MachineCenter, 
-        InfiniteMachineCenter, Item, ItemCollection,  
+        InfiniteMachineCenter, Item, itemCollection, ItemCollection,  
        GStickFigure, NStickFigure }
     from '../modules/procsteps.js' ;
 
@@ -123,7 +123,7 @@ function captureChangeInSliderS(event){
             speeds[v];
         simu.frameSpeed = speeds[v];
         theChart.continue();
-       personCollection.updateForSpeed();
+       itemCollection.updateForSpeed();
         document.getElementById(id+'Display')
             .innerHTML = speeds[v];
         break;
@@ -137,7 +137,7 @@ function captureChangeInSliderS(event){
 
 var totInv, totTime, totPeople, lastArrDep, LBRFcount ;
 simu.reset2 = function(){
-   personCollection.reset();
+   itemCollection.reset();
     theChart.reset();     
     theProcessCollection.reset();
     totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
@@ -350,18 +350,16 @@ class Supplier {
         this.y = y;
     };
     pull () {
-        return new Person(personCollection, this.x, this.y,
-                                  30, theStage.person.height); 
+        return new Person(this.x, this.y, 30, theStage.person.height); 
      }
 };   //end class Supplier
 
 
 var gSF ;
-var personCollection = new ItemCollection();
 export class Person extends Item {
     
-    constructor (collection, x,y= 60,w = 30,h = 30) {
-        super(collection, x, y);
+    constructor (x, y= 60,w = 30,h = 30) {
+        super(x, y);
         
         this.width = w;
         

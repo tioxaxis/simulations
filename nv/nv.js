@@ -4,13 +4,14 @@ import {
 from '../modules/utility.js';
 import {
 	Queue, WalkAndDestroy, MachineCenter,
-	InfiniteMachineCenter, Combine, Item, ItemCollection,
+	InfiniteMachineCenter, Combine, Item, itemCollection, ItemCollection,
 	GStickFigure, NStickFigure, GStore, tioxColors
 }
 from '../modules/procsteps.js';
 
 
-const darkGrey = 'rgb(52,52,52)';
+const disappointed = {color: 'rgb(235, 230, 230)', 
+					  border: 'rgb(31, 105, 245)'};
 const tioxTimeConv = 1000; //time are in milliseconds
 const theStage = {
 	normalSpeed: .10, //.25 pixels per millisecond
@@ -149,7 +150,7 @@ function captureChangeInSliderS(event) {
 				speeds[v];
 			simu.frameSpeed = speeds[v];
 			theChart.continue();
-			personCollection.updateForSpeed();
+			itemCollection.updateForSpeed();
 			document.getElementById(id + 'Display')
 				.innerHTML = speeds[v];
 			break;
@@ -186,7 +187,7 @@ function setActual(enough, total) {
 
 //var totInv, totTime, totPeople, lastArrDep, LBRFcount ;
 simu.reset2 = function () {
-	personCollection.reset();
+	itemCollection.reset();
 	theChart.reset();
 	theProcessCollection.reset();
 	//    totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
@@ -269,26 +270,26 @@ const animForCreator = {
 	finish: function () {},
 };
 
-const animForNV = {
-	lastFinPerson: null,
-
-	reset: function () {},
-
-	start: function (theProcTime, person, m) {
-		person.arrivalTime = simu.now;
-		if (theSimulation.store.inventory() > 0) {
-			let pack = theSimulation.store.remove();
-			person.graphic.packageColor = pack.graphic.color;
-			person.graphic.packageVisible = true;
-		} else {
-			person.graphic.color = darkGrey; // dark grey
-		};
-	},
-
-	finish: function (person) {
-		animForNV.lastFinPerson = person;
-	}
-};
+//const animForNV = {
+//	lastFinPerson: null,
+//
+//	reset: function () {},
+//
+//	start: function (theProcTime, person, m) {
+//		person.arrivalTime = simu.now;
+//		if (theSimulation.store.inventory() > 0) {
+//			let pack = theSimulation.store.remove();
+//			person.graphic.packageColor = pack.graphic.color;
+//			person.graphic.packageVisible = true;
+//		} else {
+//			person.graphic.color = darkGrey; // dark grey
+//		};
+//	},
+//
+//	finish: function (person) {
+//		animForNV.lastFinPerson = person;
+//	}
+//};
 const animForNewsVendor = {
 //	walkingTime: animForQueue.walkingTime2;
 	start: function (person, pack, walkingTime){
@@ -318,7 +319,8 @@ const animForNewsVendor = {
 			person.graphic.packageVisible = true;
 			person.graphic.packageColor = pack.graphic.color;
 		} else {
-			person.graphic.color = darkGrey;
+			person.graphic.color = disappointed.color;
+			person.graphic.bdaryColor = disappointed.border;
 		}
 	}
 };
@@ -341,8 +343,6 @@ const theSimulation = {
 	quantityOrdered: null,
 
 	initialize: function () {
-		//        setBackground();    
-
 		// random variables
 		let r = Number(document.getElementById('dr').value);
 		let cv = Number(document.getElementById('dcv').value);
@@ -365,7 +365,7 @@ const theSimulation = {
 			theStage.store.left, theStage.store.top,
 			theStage.boxSpace, theStage.boxSize, theStage.boxesPerRow);
 		
-		this.walkOffStage = new WalkAndDestroy("walkOff",personCollection, animForWalkOffStage, true);
+		this.walkOffStage = new WalkAndDestroy("walkOff", animForWalkOffStage, true);
 
 		this.demand = new DemandCreator(20000, theSimulation.demandRV);
 		
@@ -402,7 +402,7 @@ class Supplier {
 		this.y = y;
 	};
 	pull() {
-		return new Person(personCollection,
+		return new Person(
 			this.x, this.y,
 			30, theStage.person.height);
 	}
@@ -495,11 +495,10 @@ class RetailStore extends GStore {
 };
 
 var gSF;
-var personCollection = new ItemCollection('persons');
 export class Person extends Item {
 
-	constructor(collection, x, y = 60, w = 30, h = 30) {
-		super(collection, x, y);
+	constructor( x, y = 60, w = 30, h = 30) {
+		super( x, y);
 
 		this.width = w;
 
