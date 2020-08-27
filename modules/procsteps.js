@@ -501,8 +501,8 @@ export class Item {
             //    }   ;
             var path = this.pathList[0];
             //            console.log('BEFORE mDWP person ', this.which, 'now=',simu.now,'cur.x,path.x',this.cur.x, path.x,' deltaT=',deltaSimT)
-            let deltaX = path.speedX * deltaSimT;
-            if (deltaX > 0 && this.cur.x > path.x + 10) debugger;
+//            let deltaX = path.speedX * deltaSimT;
+//            if (deltaX > 0 && this.cur.x > path.x + 10) debugger;
             if (path.t < simu.now) {
                 this.cur.t = path.t;
                 this.cur.x = path.x;
@@ -816,6 +816,7 @@ export class GStore {
 		
         this.store = {left: left, top: top,
 					 boxSpace: boxSpace, boxSize: boxSize,
+					  boxesPerRow: boxesPerRow,
 					 width: boxSpace * boxesPerRow};
         this.store.height = this.store.width;
         this.store.bot = this.store.top + this.store.height;

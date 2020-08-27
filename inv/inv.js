@@ -420,20 +420,23 @@ class RopStore  extends GStore {
         this.roundsWithEnough = 1;
         this.stockOut = false;
     };
-    truckArrival(truck) {
-        const n = truck.nPackages;
+    truckArrival(item) {
+		let load = item.load;
+		let truck = item.truck;
+        const n = load.graphic.packages.length;
 		for( let k = 0; k < n; k++) {
 			let point = this.boxStack.relCoord(this.inv+k);
-			truck.packages[k].cur.x = this.left + point.x;
-			truck.packages[k].cur.y = this.bot + point.y;
-			truck.packages[k].graphic.moveTo(this.left + point.x, this.bot + point.y);
+			load.graphic.packages[k].cur.x = this.left + point.x;
+			load.graphic.packages[k].cur.y = this.bot + point.y;
+			load.graphic.packages[k].graphic
+				.moveTo(this.left + point.x, this.bot + point.y);
 		}
-		truck.packages.forEach(p => {p.inBatch = false});
-		this.packages.push(...truck.packages);
-        truck.packages = [];
-		truck.graphic.packages=[];
+		load.graphic.packages.forEach(p => {p.inBatch = false});
+		this.packages.push(...load.graphic.packages);
+        load.graphic.packages = [];
+//		truck.graphic.packages=[];
 		this.inv += n;
-        truck.graphic.reverse = true;
+        item.truck.graphic.reverse = true;
         theChart.push(simu.now, this.inv,
                      this.invPosition, theSimulation.predInv);
         // keep track of nRounds;
@@ -465,27 +468,58 @@ class RopStore  extends GStore {
     };
     
     orderQuan(){
-        const truck = new Truck(simu.context, 
-                             theSimulation.quantityOrdered,
-                             theStage.boxSpace, theStage.boxSize, 10);
+//        const truck = new Truck(simu.context, 
+//                             theSimulation.quantityOrdered,
+//                             theStage.boxSpace, theStage.boxSize, 10);
+       const truck = new Truck(simu.context, 
+                             theStage.boxSpace, 10);
         const truckLT = theSimulation.leadtimeRV.observe();
-        const arrivalTime = simu.now + truckLT;
-        simu.heap.push( 
+		const delta = truck.deltaPointFlatBed() ;
+		const load = new LoadOfBoxes(simu.context,
+					truck.cur.x + delta.dx, truck.cur.y+ delta.dy, theSimulation.quantityOrdered, theStage.boxSpace, theStage.boxSize, 10);
+	
+        const timeMoveLeft = 2000;
+		const timeMoveDown = 2000;
+		const timeIdle = 2000;
+		const timeTravel = truckLT - timeMoveLeft - timeMoveDown - timeIdle;
+		const arrivalTime = simu.now + truckLT;
+		const splitTime = simu.now + timeTravel;
+		
+        
+		
+		simu.heap.push( 
             {time: arrivalTime, 
              type: 'truck arrival', 
              proc: this.truckArrival.bind(this), 
-             item: truck});   // add quantity here?
+             item: {truck: truck, load: load}});   // add quantity here?
         simu.heap.push(
-            {time: arrivalTime + 10000 + 30000,
+            {time: splitTime + timeMoveDown + timeTravel,
              type: 'truck return',
              proc: this.truckDestroy.bind(this),
              item: truck});
-        truck.addPath({t: arrivalTime, x:theStage.truckLeft,
+        truck.addPath({t: splitTime, 
+					   x: theStage.truckLeft,
                        y: theStage.pathTop });
-        truck.addPath({t: arrivalTime+10000, x: theStage.truckLeft,
-                      y: theStage.pathBot});
-        truck.addPath({t: arrivalTime+ 10000 + 30000, 
-                      x: theStage.truckRight, y: theStage.pathBot});
+        truck.addPath({t: splitTime + timeMoveDown,
+					   x: theStage.truckLeft,
+                      y: theStage.pathBot - truck.graphic.truckHeight/2});
+        truck.addPath({t: splitTime + timeMoveDown + timeTravel, 
+                      x: theStage.truckRight,
+					   y: theStage.pathBot - truck.graphic.truckHeight/2});
+		load.addPath({t: splitTime,
+					  x: theStage.truckLeft + delta.dx,
+					  y: theStage.pathTop + delta.dy });
+		let topOfInventory = this.store.bot - this.store.boxSpace * 
+			Math.ceil(theSimulation.rop/this.store.boxesPerRow);
+		load.addPath({t: splitTime + timeIdle,
+					  x:  theStage.truckLeft + delta.dx,
+					  y:   theStage.pathTop + delta.dy});
+		load.addPath({t: splitTime + timeIdle + timeMoveLeft,
+					  x:   theStage.store.left,
+					  y:   theStage.pathTop + delta.dy});
+		load.addPath({t: arrivalTime,
+					  x:   theStage.store.left,
+					  y:   topOfInventory});
         
         
         // seems like the item must provide the quantity being delivered.
@@ -511,44 +545,50 @@ class RopStore  extends GStore {
 
 const pi2 = 2 * Math.PI;
 class Truck  extends Item {
-  constructor(ctxTruck, nPackages, boxSpace, boxSize = 20, bedLength = 10){
+  constructor(ctxTruck, boxSpace,  bedLength = 10){
       super (theStage.truckRight, theStage.pathTop);
+      this.graphic = new FlatBed(ctxTruck,boxSpace, bedLength,);
+//      this.ctxTruck = ctxTruck;
       
-      this.ctxTruck = ctxTruck;
       
-      
-      this.nPackages = nPackages;
-      this.packages = [];
-      this.graphic = new FlatBed(ctxTruck, 
-					boxSpace, boxSize, bedLength, this.packages);
-	  for ( let k = 0; k < nPackages; k++ ){
-          // create each package with random color
-          // and add to this.packages.
-          let colorIndex = Math.floor( Math.random() * tioxColors.length);
-          let pack = new Package(this.ctxTruck,
-					tioxColors[colorIndex], boxSize,0,0);
-		  this.packages.push(pack);
-		  pack.inBatch = true;
-		  
-      }
+//      this.nPackages = nPackages;
+//      this.packages = [];
+//      this.graphic = new FlatBed(ctxTruck, 
+//					boxSpace, boxSize, bedLength, this.packages);
+//	  for ( let k = 0; k < nPackages; k++ ){
+//          // create each package with random color
+//          // and add to this.packages.
+//          let colorIndex = Math.floor( Math.random() * tioxColors.length);
+//          let pack = new Package(this.ctxTruck,
+//					tioxColors[colorIndex], boxSize,0,0);
+//		  this.packages.push(pack);
+//		  pack.inBatch = true;
+////		  
+//      }
           
           
           
   };
+deltaPointFlatBed(){
+	return {dx: this.graphic.truckCabWidth,
+			dy:  this.graphic.truckHeight - 
+		   0.75* this.graphic.boxSpace}
+		}
 };
 	class FlatBed {
-	constructor( context, boxSpace, boxSize, bedLength, packages){
+	constructor( context, boxSpace,  bedLength){
 		this.ctx  = context;
-		this.packages = packages;
+//		this.packages = packages;
 		this.boxSpace = boxSpace;
-		this.boxSize = boxSize;
-		this.truckHeight = this.boxSize * 5;
+//		this.boxSize = boxSize;
+		this.truckHeight = this.boxSpace * 5;
 		this.truckCabWidth = this.truckHeight/2;
 		this.truckBedWidth = bedLength * this.boxSpace ;
       	this.truckWidth =  this.truckBedWidth +
                             this.truckCabWidth;
-		this.boxStack = new BoxStack(boxSpace, boxSize, bedLength, false);
-		}
+//		this.boxStack = new BoxStack(boxSpace, boxSize, bedLength, false);
+		};
+		
 	
   moveTo(x, y){
       this.x = Math.floor(x);
@@ -590,8 +630,8 @@ class Truck  extends Item {
     this.ctx.fill();
 
     this.ctx.restore();
-    this.drawPackages(this.x + this.truckCabWidth, 
-                      this.y + this.truckHeight - 0.75 * this.boxSpace);
+//    this.drawPackages(this.x + this.truckCabWidth, 
+//                      this.y + this.truckHeight - 0.75 * this.boxSpace);
     };
 	drawPackages(left,bot){
       for ( let i = 0; i < this.packages.length; i++ ){
@@ -628,6 +668,48 @@ class Truck  extends Item {
 //        this.colors=[];
 //    }
 //};
+
+class LoadOfBoxes extends Item{
+	constructor (context, left, bot, quantity,boxSpace, boxSize, bedlength){
+		super(left, bot);
+		this.graphic = new DisplayBoxes(context, left, bot, quantity, boxSpace, boxSize, bedlength);
+	};
+	
+};
+
+class DisplayBoxes {
+	constructor (ctxDB, left, bot, quantity,boxSpace, boxSize, bedlength ){
+		this.ctxDB = ctxDB;
+		this.packages = [];
+		this.boxSpace = boxSpace;
+		this.boxSize = boxSize;
+		this.bedlength = bedlength;
+		this.left = left;
+		this.bot = bot;
+		for (let k = 0; k < quantity; k++ ){
+			 let colorIndex = Math.floor( Math.random() * tioxColors.length);
+          	let pack = new Package(this.ctxDB,
+					tioxColors[colorIndex], boxSize,0,0);
+		  	this.packages.push(pack);
+		  	pack.inBatch = true;
+		}
+		this.boxStack = new BoxStack(boxSpace, boxSize,
+									 bedlength, false);
+	};
+	moveTo(left,bot){
+	    this.left = Math.floor(left);
+        this.bot = Math.floor(bot);
+	};
+	draw(){
+	  for ( let i = 0; i < this.packages.length; i++ ){
+        this.ctxDB.fillStyle = this.packages[i].graphic.color;
+		let point = this.boxStack.relCoord(i);
+        this.ctxDB.fillRect(
+            this.left + point.x, this.bot + point.y,
+			this.boxSize , this.boxSize );
+      }
+	};
+};
 
 var gSF ;
 export class Person extends Item {
