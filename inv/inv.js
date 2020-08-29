@@ -39,9 +39,12 @@ const theStage = {
 		theStage.boxesPerRow = 10;
 	theStage.store.width = theStage.boxSpace * theStage.boxesPerRow;
 	theStage.store.right = theStage.store.left + theStage.store.width;
+	theStage.store.bot = theStage.store.top + theStage.store.width;
 	theStage.pathLeft = -100;
-	theStage.truckLeft = theStage.store.right + 20;;
+	theStage.truckLeft = theStage.store.right;
 	theStage.truckRight = 1000;
+	theStage.truckTop = theStage.store.top - 2 * theStage.boxSpace;
+	theStage.truckBot = theStage.store.bot - 5 * theStage.boxSpace
 	theStage.pathRight = theStage.store.left - 20;
 	theStage.pathTop = theStage.store.top;
 	theStage.pathBot = theStage.store.top + theStage.boxSpace * 7;
@@ -430,6 +433,12 @@ class RopStore extends GStore {
 		this.roundsWithEnough = 1;
 		this.stockOut = false;
 	};
+	truckAtDoor(item) {
+		item.truck.graphic.setReverse();
+		item.load.graphic.setReverse();
+		item.load.cur.x -=
+			item.truck.graphic.truckCabWidth;
+	};
 	truckArrival(item) {
 		// final steps after inventory almost in store.
 		let load = item.load;
@@ -447,8 +456,9 @@ class RopStore extends GStore {
 		});
 		this.packages.push(...load.graphic.packages);
 		load.graphic.packages = [];
+		load.destroy();
 		this.inv += n;
-		item.truck.graphic.reverse = true;
+
 		theChart.push(simu.now, this.inv,
 			this.invPosition, theSimulation.predInv);
 		// keep track stockouts by round
@@ -498,13 +508,25 @@ class RopStore extends GStore {
 		const load = new LoadOfBoxes(simu.context,
 			truck.cur.x + delta.dx, truck.cur.y + delta.dy, quantity, theStage.boxSpace, theStage.boxSize, 10);
 
-		const timeMoveLeft = 2000;
-		const timeMoveDown = 2000;
-		const timeIdle = 2000;
-		const timeTravel = truckLT - timeMoveLeft - timeMoveDown - timeIdle;
+		//		const timeMoveLeft = 2000;
+		const timeMoveDown1 = 2000;
+		const timeMoveDown2 = 4000;
+		const frac = timeMoveDown1 / (timeMoveDown1 + timeMoveDown2);
+		//		const timeIdle = 2000;
+		const timeTravel = truckLT - timeMoveDown1 - timeMoveDown2;
+		const atDoorTime = simu.now + timeTravel;
+		const splitTime = simu.now + timeTravel + timeMoveDown1;
 		const arrivalTime = simu.now + truckLT;
-		const splitTime = simu.now + timeTravel;
 
+		simu.heap.push({
+			time: atDoorTime,
+			type: 'truck AtDoor',
+			proc: this.truckAtDoor.bind(this),
+			item: {
+				truck: truck,
+				load: load
+			}
+		});
 		simu.heap.push({
 			time: arrivalTime,
 			type: 'truck arrival',
@@ -513,45 +535,47 @@ class RopStore extends GStore {
 				truck: truck,
 				load: load
 			}
-		}); // add quantity here?
+		});
 		simu.heap.push({
-			time: splitTime + timeMoveDown + timeTravel,
+			time: arrivalTime + timeTravel,
 			type: 'truck return',
 			proc: this.truckDestroy.bind(this),
 			item: truck
 		});
 		truck.addPath({
-			t: splitTime,
+			t: atDoorTime - 20,
 			x: theStage.truckLeft,
-			y: theStage.pathTop
+			y: theStage.truckTop
 		});
 		truck.addPath({
-			t: splitTime + timeMoveDown,
+			t: arrivalTime,
 			x: theStage.truckLeft,
-			y: theStage.pathBot - truck.graphic.truckHeight / 2
+			y: theStage.truckBot
 		});
 		truck.addPath({
-			t: splitTime + timeMoveDown + timeTravel,
+			t: arrivalTime + timeTravel,
 			x: theStage.truckRight,
-			y: theStage.pathBot - truck.graphic.truckHeight / 2
+			y: theStage.truckBot
 		});
+
+		let point = truck.deltaPointFlatBed();
 		load.addPath({
-			t: splitTime,
-			x: theStage.truckLeft + delta.dx,
-			y: theStage.pathTop + delta.dy
+			t: atDoorTime - 20,
+			x: theStage.truckLeft + point.dx,
+			y: theStage.truckTop + point.dy
 		});
 		let topOfInventory = this.store.bot - this.store.boxSpace *
 			Math.ceil(theSimulation.rop / this.store.boxesPerRow);
+
 		load.addPath({
-			t: splitTime + timeIdle,
-			x: theStage.truckLeft + delta.dx,
-			y: theStage.pathTop + delta.dy
+			t: splitTime,
+			x: theStage.truckLeft,
+			y: Math.min(theStage.truckTop + point.dy +
+				frac * (theStage.truckBot - theStage.truckTop),
+				topOfInventory)
 		});
-		load.addPath({
-			t: splitTime + timeIdle + timeMoveLeft,
-			x: theStage.store.left,
-			y: theStage.pathTop + delta.dy
-		});
+
+
 		load.addPath({
 			t: arrivalTime,
 			x: theStage.store.left,
@@ -564,7 +588,7 @@ class RopStore extends GStore {
 const pi2 = 2 * Math.PI;
 class Truck extends Item {
 	constructor(ctxTruck, boxSpace, bedLength = 10) {
-		super(theStage.truckRight, theStage.pathTop);
+		super(theStage.truckRight, theStage.truckTop);
 		this.graphic = new FlatBed(ctxTruck, boxSpace, bedLength, );
 	};
 	deltaPointFlatBed() {
@@ -583,15 +607,24 @@ class FlatBed {
 		this.truckCabWidth = this.truckHeight / 2;
 		this.truckBedWidth = bedLength * this.boxSpace;
 		this.truckWidth = this.truckBedWidth + this.truckCabWidth;
+		this.reverse = 0;
 	};
 
 	moveTo(x, y) {
 		this.x = Math.floor(x);
 		this.y = Math.floor(y);
 	};
+	setReverse() {
+		this.reverse = this.truckCabWidth + this.truckBedWidth;
+	}
+
 
 	draw() {
 		this.ctx.save();
+		if (this.reverse) {
+			this.ctx.translate(2 * (this.x) + this.reverse, 0);
+			this.ctx.scale(-1, 1);
+		};
 		this.ctx.fillStyle = 'lightgrey';
 		this.ctx.strokeStyle = 'black';
 		this.ctx.lineWidth = 2;
@@ -626,22 +659,23 @@ class FlatBed {
 
 		this.ctx.restore();
 	};
-	drawPackages(left, bot) {
-		for (let i = 0; i < this.packages.length; i++) {
-			this.ctx.fillStyle = this.packages[i].graphic.color;
-			let point = this.boxStack.relCoord(i);
-			this.ctx.fillRect(
-				left + point.x, bot + point.y,
-				this.boxSize, this.boxSize);
-		}
-	};
+	//	drawPackages(left, bot) {
+	//		for (let i = 0; i < this.packages.length; i++) {
+	//			this.ctx.fillStyle = this.packages[i].graphic.color;
+	//			let point = this.boxStack.relCoord(i);
+	//			this.ctx.fillRect(
+	//				left + point.x, bot + point.y,
+	//				this.boxSize, this.boxSize);
+	//		}
+	//	};
 };
 
 class LoadOfBoxes extends Item {
 	constructor(context, left, bot, quantity,
 		boxSpace, boxSize, bedlength) {
 		super(left, bot);
-		this.graphic = new DisplayBoxes(context, left, bot, quantity, boxSpace, boxSize, bedlength);
+		this.graphic = new DisplayBoxes(context, left, bot,
+			quantity, boxSpace, boxSize, bedlength);
 	};
 };
 
@@ -655,6 +689,7 @@ class DisplayBoxes {
 		this.boxSize = boxSize;
 		this.bedlength = bedlength;
 		this.packages = [];
+		this.reverse = 0;
 
 		for (let k = 0; k < quantity; k++) {
 			let colorIndex = Math.floor(Math.random() * tioxColors.length);
@@ -670,14 +705,24 @@ class DisplayBoxes {
 		this.left = Math.floor(left);
 		this.bot = Math.floor(bot);
 	};
+	setReverse() {
+		this.reverse = this.boxSpace * this.bedlength;
+	}
 	draw() {
+		this.ctxDB.save();
+		if (this.reverse) {
+			this.ctxDB.translate(2 * (this.left) + this.reverse, 0);
+			this.ctxDB.scale(-1, 1);
+		};
 		for (let i = 0; i < this.packages.length; i++) {
 			this.ctxDB.fillStyle = this.packages[i].graphic.color;
 			let point = this.boxStack.relCoord(i);
 			this.ctxDB.fillRect(
-				this.left + point.x, this.bot + point.y,
+				this.left + point.x,
+				this.bot + point.y,
 				this.boxSize, this.boxSize);
-		}
+		};
+		this.ctxDB.restore();
 	};
 };
 var gSF;
