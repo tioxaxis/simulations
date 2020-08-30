@@ -439,6 +439,7 @@ export class ItemCollection {
 			debugger
 		}
 		this.all.splice(k, 1);
+		this.counter--;
 		if (this.lastAdded == this)
 			this.lastAdded = null;
 	};
@@ -812,6 +813,7 @@ export class GStore {
 		const s = this.store;
 		this.ctxPack.resetTransform();
 		this.ctxPack.clearRect(s.left, s.top, s.width, s.height);
+		this.packages.forEach(p => p.destroy());
 		this.packages = [];
 	};
 	drawStore(c, s) {

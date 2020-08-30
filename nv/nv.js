@@ -52,10 +52,10 @@ const theStage = {
 		x: theStage.pathRight,
 		y: theStage.pathBot
 	};
-	const background = document.getElementById('theBackground');
-	theStage.background = {
-		context: background.getContext('2d')
-	};
+//	const background = document.getElementById('theBackground');
+//	theStage.background = {
+//		context: background.getContext('2d')
+//	};
 };
 
 
@@ -361,7 +361,7 @@ const theSimulation = {
 			null, null);
 		
 		this.store = new RetailStore(
-			theStage.background.context, simu.context,
+			simu.backcontext, simu.context,
 			theStage.store.left, theStage.store.top,
 			theStage.boxSpace, theStage.boxSize, theStage.boxesPerRow);
 		
@@ -482,11 +482,6 @@ class RetailStore extends GStore {
 	constructor(ctxStore, ctxPack, left, top, boxSpace, boxSize, boxesPerRow) {
 		super(ctxStore, ctxPack, left, top, boxSpace, boxSize, boxesPerRow);
 	};
-
-//	drawAllGrey() {
-//		this.makeAllGrey();
-////		this.packages.drawAll();
-//	};
 	addBox(n) {
 		for (let i = 0; i < n; i++) {
 			this.addNew()

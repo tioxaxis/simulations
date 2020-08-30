@@ -438,6 +438,15 @@ class RopStore extends GStore {
 		item.load.graphic.setReverse();
 		item.load.cur.x -=
 			item.truck.graphic.truckCabWidth;
+
+		let topOfInventory = this.store.bot - this.store.boxSpace *
+			Math.ceil(this.inv / this.store.boxesPerRow);
+
+		item.load.addPath({
+			t: item.load.arrivalTime,
+			x: theStage.store.left,
+			y: topOfInventory
+		});
 	};
 	truckArrival(item) {
 		// final steps after inventory almost in store.
@@ -504,19 +513,19 @@ class RopStore extends GStore {
 		const truck = new Truck(simu.context,
 			theStage.boxSpace, 10);
 		const truckLT = theSimulation.leadtimeRV.observe();
+		const timeMoveDown1 = Math.min(2000, truckLT / 6);
+		const timeMoveDown2 = Math.min(4000, truckLT / 3);
+		const frac = timeMoveDown1 / (timeMoveDown1 + timeMoveDown2);
+
+
 		const delta = truck.deltaPointFlatBed();
 		const load = new LoadOfBoxes(simu.context,
 			truck.cur.x + delta.dx, truck.cur.y + delta.dy, quantity, theStage.boxSpace, theStage.boxSize, 10);
 
-		//		const timeMoveLeft = 2000;
-		const timeMoveDown1 = 2000;
-		const timeMoveDown2 = 4000;
-		const frac = timeMoveDown1 / (timeMoveDown1 + timeMoveDown2);
-		//		const timeIdle = 2000;
 		const timeTravel = truckLT - timeMoveDown1 - timeMoveDown2;
 		const atDoorTime = simu.now + timeTravel;
 		const splitTime = simu.now + timeTravel + timeMoveDown1;
-		const arrivalTime = simu.now + truckLT;
+		load.arrivalTime = simu.now + truckLT;
 
 		simu.heap.push({
 			time: atDoorTime,
@@ -528,7 +537,7 @@ class RopStore extends GStore {
 			}
 		});
 		simu.heap.push({
-			time: arrivalTime,
+			time: load.arrivalTime,
 			type: 'truck arrival',
 			proc: this.truckArrival.bind(this),
 			item: {
@@ -537,7 +546,7 @@ class RopStore extends GStore {
 			}
 		});
 		simu.heap.push({
-			time: arrivalTime + timeTravel,
+			time: load.arrivalTime + timeTravel,
 			type: 'truck return',
 			proc: this.truckDestroy.bind(this),
 			item: truck
@@ -548,12 +557,12 @@ class RopStore extends GStore {
 			y: theStage.truckTop
 		});
 		truck.addPath({
-			t: arrivalTime,
+			t: load.arrivalTime,
 			x: theStage.truckLeft,
 			y: theStage.truckBot
 		});
 		truck.addPath({
-			t: arrivalTime + timeTravel,
+			t: load.arrivalTime + timeTravel,
 			x: theStage.truckRight,
 			y: theStage.truckBot
 		});
@@ -573,13 +582,6 @@ class RopStore extends GStore {
 			y: Math.min(theStage.truckTop + point.dy +
 				frac * (theStage.truckBot - theStage.truckTop),
 				topOfInventory)
-		});
-
-
-		load.addPath({
-			t: arrivalTime,
-			x: theStage.store.left,
-			y: topOfInventory
 		});
 	};
 
