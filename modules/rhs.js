@@ -8,8 +8,8 @@ const sliders = {
 	initialize: function () {
 		document.getElementById('sliderBigBox')
 			.addEventListener('input', captureChangeInSliderG);
-		document.getElementById('ropupto')
-			.addEventListener('input', captureChangeInSliderG);
+		//		document.getElementById('ropupto')
+		//			.addEventListener('input', captureChangeInSliderG);
 
 		function captureChangeInSliderG(event) {
 			let inputElem = event.target.closest('input');
@@ -68,9 +68,9 @@ const sliders = {
 				}
 				theNodeList[j].checked = true;
 			}
-			console.log('in setSliders inputBox ',
-				inputBox.type, inputBox.id, inputBox.value);
-			inputBox.dispatchEvent(sliders.inputEvent);
+			////			console.log('in setSliders inputBox ',
+			//				inputBox.type, inputBox.id, inputBox.value);
+			//			inputBox.dispatchEvent(sliders.inputEvent);
 		}
 		// not in edit mode then may cause a reset, a play, or a pause.
 		if (!simu.editMode) {
@@ -326,7 +326,7 @@ const presets = {
 	},
 
 	printCurrentLi() {
-		console.log(presets.currentLi);
+		//		console.log(presets.currentLi);
 	},
 
 

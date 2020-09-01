@@ -161,7 +161,7 @@ function captureChangeInSliderS(event) {
 		document.getElementById(id + 'Display')
 			.innerHTML = v;
 	}
-	console.log('in Inv, change Slider ', id);
+//	console.log('in Inv, change Slider ', id);
 	switch (id) {
 
 		case 'ar':
@@ -202,7 +202,7 @@ function captureChangeInSliderS(event) {
 		case 'methUpto':
 			let temp = simu.whichRule;
 			simu.whichRule = id;
-			console.log('the rule switched from ', temp, ' to ', id);
+//			console.log('the rule switched from ', temp, ' to ', id);
 
 			if (temp != simu.whichRule) {
 				pickInvSimulation(simu.whichRule);
