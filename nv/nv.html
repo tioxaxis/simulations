@@ -3,241 +3,259 @@
 <html>
 
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="../res/tiox3.png">
-        
-    <!-- my CSS  -->
-        <link rel="stylesheet" type="text/css" href="../res/tiox.css">
-    
-    <!-- software to do the charting  -->
-        <script src="../res/chart.js"></script> 
-    
-    <!--software for random number generation-->
-       <script src='../res/jstat.min.js'></script>  
-    
-    <!-- converts Math.random() to be seeded    -->
-        <script src='../res/seedrandom.min.js'></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="shortcut icon" href="../res/tiox3.png">
 
-     <!--  my JavaScript -->
-    <script>
-        var simu = {};
-        simu.nameOfSimulation = 'nv' ;   //name for .json for preset file and key for local Storage
-    </script>
-    
-    <script type = 'module' src = '../modules/rhs.js'></script>
-    <script type = 'module' src = './nv.js'></script>
-    
+	<!-- my CSS  -->
+	<link rel="stylesheet" type="text/css" href="../res/tiox.css">
+
+	<!-- software to do the charting  -->
+	<script src="../res/chart.js"></script>
+
+	<!--software for random number generation-->
+	<script src='../res/jstat.min.js'></script>
+
+	<!-- converts Math.random() to be seeded    -->
+	<script src='../res/seedrandom.min.js'></script>
+
+	<!--  my JavaScript -->
+	<script>
+		var simu = {};
+		simu.nameOfSimulation = 'nv'; //name for .json for preset file and key for local Storage
+
+	</script>
+
+	<script type='module' src='../modules/rhs.js'></script>
+	<script type='module' src='./nv.js'></script>
+
 </head>
-  <body >
-      
-      
+
+<body>
 
 
-<div  id="containerOuter">
 
-    <div id='exportBoxOuter' style='display:none'>
-    <div id="exportPresetsBox" style = "display:block">
-          <h2 style='margin:20px'>Export Options</h2>
-        <p> 1) Copy and save the text below into the 'presets.json' file and place it on the server, or  </p>
-        <p class="blueBox" id="jsonDisplay"></p>
-        <br>
-        <p> 2) Copy and save the URL below and use it to access the animation</p>
-        <p class="blueBox" id="urlDisplay"></p>
-        <br>
-        <button onclick= " document.getElementById('exportBoxOuter').style='display:none'; "
-                > X </button>
-    </div>
-    </div>
-    <div  id="containerInner">
-      <div id="leftHandSideBox">
-        <div id="canvasWrapper">  <!--start ANIMATION Stage -->
-            <canvas class="theStage" id="theCanvas"  width=1000 height=303> 
-            </canvas>
-            <canvas class="theStage" id="theBackground" width=1000 height=303>
-            </canvas>
-        </div>                      <!--end ANIMATION Stage -->
-        <div id="chartWrapper" class="chart-container" 
-             >
-            <canvas id="chart"></canvas>
-        </div>
-      </div>   <!-- end of leftHandSide--> 
-       
-          <!--  6 sliders.  Each stores the final value when user mouseup in 'nameMouseUP' <span></span> -->
-        
- <div id="rightHandSideBox"> 
-     
-    <div id="sliderBigBox">
-      <div class="sliderRow">
-        <div class="sliderbox"> 
-            <p>Demand Rate = 
-            <span id="drDisplay">20</span></p>
-                <input id="dr" 
-                   type="range" min="10" max="50" step="1" value="20" class="slider"  >
-            <div class='spreadValues'> 
-                <span>10</span>
-                <span>20</span>
-                <span>30</span>
-                <span>40</span>
-                <span>50</span>
-            </div>
-        </div>
 
-        <div class="sliderbox"> 
-            <p>Demand Variability = 
-                <span id="dcvDisplay">0.0</span></p>
-            <input id="dcv" 
-                   type="range" min="0" max="1" step="0.2" value="0.0" class="slider"  >
-            <div class='spreadValues'> 
-                <span>0.0</span>
-                <span>1.0</span>
-            </div>
-        </div>
-     </div>
-     <div class="sliderRow">
-        <div class="sliderbox"> 
-            <p>Underage Cost = 
-                <span id="CuDisplay">8</span></p>
-            <input id="Cu" 
-                   type="range" min="0" max="10" step="1" value="8" class="slider"  >
-            <div class='spreadValues'> 
-                <span>0</span>
-                <span>2</span>
-                <span>4</span> 
-                <span>6</span>
-                <span>8</span> 
-                <span>10</span>
-            </div>
-        </div>
+	<div id="containerOuter">
 
-        <div class="sliderbox"> 
-            <p>Overage Cost = 
-                <span id="CoDisplay">1</span></p>
-            <input id="Co" 
-                   type="range" min="0" max="10" step="1" value="1" class="slider"  >
-            <div class='spreadValues'> 
-                 <span>0</span>
-                <span>2</span>
-                <span>4</span> 
-                <span>6</span>
-                <span>8</span> 
-                <span>10</span>
-            </div>
-         </div>
-    </div>
-     <div class="sliderRow">    
-         <div class="sliderbox"> 
-            <p>Order Quantity = 
-                <span id="quanDisplay">20</span></p>
-            <input id="quan" 
-                   type="range" min="10" max="50" step="1" value="20" class="slider"  >
-            <div class='spreadValues'> 
-                <span>10</span>
-                <span>20</span>
-                <span>30</span>
-                <span>40</span>
-                <span>50</span>
-            </div>
-        </div>
-        <div class="sliderbox"> 
-            <p > Expected <span id="expectedPerc"></span>%</p>
-            <p > Desired <span id="desiredPerc"></span>%</p>
-            <p > Actual <span id="actualPerc"></span>%</p>
-        </div>
-    </div>
-        
-        
-     <div class="sliderRow">
-        <div class="playButtons" id="playButtons">
-            <p id='pauseButton' style="display:none"><button >Pause</button></p>
-            <p id='playButton' style="display:inline"><button >Play</button></p>
-            <p id='resetButton'><button >Reset</button> </p>    
-        </div>
-     
-        <div class="actionBox" id="actionOptions"> 
-            <div>Action:</div>
-            <div>
-                <div class="radiopair">
-                    <input type="radio" name="action" id="none" value="none" checked >
-                   <label for="none">  None</label>
-                </div>
+		<div id='exportBoxOuter' style='display:none'>
+			<div id="exportPresetsBox" style="display:block">
+				<h2 style='margin:20px'>Export Options</h2>
+				<p> 1) Copy and save the text below into the 'presets.json' file and place it on the server, or </p>
+				<p class="blueBox" id="jsonDisplay"></p>
+				<br>
+				<p> 2) Copy and save the URL below and use it to access the animation</p>
+				<p class="blueBox" id="urlDisplay"></p>
+				<br>
+				<button onclick=" document.getElementById('exportBoxOuter').style='display:none'; "> X </button>
+			</div>
+		</div>
+		<div id="containerInner">
+			<div id="leftHandSideBox">
+				<div id="canvasWrapper">
+					<!--start ANIMATION Stage -->
+					<canvas class="theStage" id="theCanvas" width=1000 height=303>
+					</canvas>
 
-                <div class="radiopair">    
-                    <input type="radio" name="action" id="pause" value="pause">
-                     <label for="pause">Pause</label>
-                </div> 
+					<canvas class="theStage" id="theBackground" width=1000 height=303>
+					</canvas>
+				</div>
+				<!--end ANIMATION Stage -->
+				<div id='statsWrapper'>
+					<div id='statsRow'>
+						<div class='statDisplay'>
+							<p>Expected <span id="expectedPerc"></span>%</p>
+						</div>
+						<div class='statDisplay'>
+							Desired <span id="desiredPerc"></span>%
+						</div>
+						<div class='statDisplay'>
+							Actual <span id="actualPerc"></span>%
+						</div>
 
-                <div class="radiopair">          
-                    <input type="radio" name="action" id="play" value="play">
-                    <label for="play">Play</label>
-                </div>
-            </div>
-                
-    
-            <div class="radiopair">
-                <label for="reset">
-                    <input type="checkbox" id="reset" value="reset">
-                    Reset </label>
-            </div>
-    
-        </div>
-        <div class="sliderbox"> 
-            <p>Speed = 
-                <span id="speedDisplay">1</span>x</p>
-            <input id="speed" 
-                   type="range" min="0" max="3" step="1" value="0" class="slider"  >
-            <div class='spreadValues'> 
-                <span>slow</span>
-                <span>fast</span>
-            </div>
-        </div>
-    </div>     
-        
-     
-        
-    
-     </div>   <!-- end of SliderBigBox -->
-    
-     
-    <div id="scenarios">
-    <div id="scenariosTop">Scenarios</div>
-     <div id="scenariosMid">
-         <ul id="ULPresetList"> </ul>
-        </div>   
-        <div style="display:none" id="scenariosBot">
-        <button id="addButton"> &plus;</button>
-        <button id="deleteButton"> &minus;</button>
-        </div>
-    </div>
-     
+					</div>
+				</div>
+				<div id="chartWrapper" class="chart-container">
+					<canvas id="chart"></canvas>
+				</div>
+			</div>
+			<!-- end of leftHandSide-->
 
-    
-    
-  
-     <div id="editBox">
-        <button id='editButton'>Edit</button>  
-     </div> 
-      <div id="menuBox" style='display:none'>
-          <button id='cancelButton'>Cancel  </button>
-          <button id='saveButton'>Save    </button>
-          <button id='exportButton'>Export    </button>
-     </div>
-       <div style='position:absolute; right:0; bottom:0;'>
-           <button id='clear' 
-            onclick='localStorage.clear(); location.reload();'>
-               Clear/Reload</button>
-     </div>
-     
-</div>   <!-- end of righthandSideBox -->                  
-    
-       
-       
-       
-       
-      
-</div>  <!-- end of containerInner-->
-    
-</div>         <!-- end of containerOuter -->    
+			<!--  6 sliders.  Each stores the final value when user mouseup in 'nameMouseUP' <span></span> -->
+
+			<div id="rightHandSideBox">
+
+				<div id="sliderBigBox">
+					<div class="sliderRow">
+						<div class="sliderbox">
+							<p>Demand Rate =
+								<span id="drDisplay">20</span></p>
+							<input id="dr" type="range" min="10" max="50" step="1" value="20" class="slider">
+							<div class='spreadValues'>
+								<span>10</span>
+								<span>20</span>
+								<span>30</span>
+								<span>40</span>
+								<span>50</span>
+							</div>
+						</div>
+
+						<div class="sliderbox">
+							<p>Demand Variability =
+								<span id="dcvDisplay">0.0</span></p>
+							<input id="dcv" type="range" min="0" max="1" step="0.2" value="0.0" class="slider">
+							<div class='spreadValues'>
+								<span>0.0</span>
+								<span>1.0</span>
+							</div>
+						</div>
+					</div>
+					<div class="sliderRow">
+						<div class="sliderbox">
+							<p>Underage Cost =
+								<span id="CuDisplay">8</span></p>
+							<input id="Cu" type="range" min="0" max="10" step="1" value="8" class="slider">
+							<div class='spreadValues'>
+								<span>0</span>
+								<span>2</span>
+								<span>4</span>
+								<span>6</span>
+								<span>8</span>
+								<span>10</span>
+							</div>
+						</div>
+
+						<div class="sliderbox">
+							<p>Overage Cost =
+								<span id="CoDisplay">1</span></p>
+							<input id="Co" type="range" min="0" max="10" step="1" value="1" class="slider">
+							<div class='spreadValues'>
+								<span>0</span>
+								<span>2</span>
+								<span>4</span>
+								<span>6</span>
+								<span>8</span>
+								<span>10</span>
+							</div>
+						</div>
+					</div>
+					<div class="sliderRow">
+						<div class="sliderbox">
+							<p>Order Quantity =
+								<span id="quanDisplay">20</span></p>
+							<input id="quan" type="range" min="10" max="50" step="1" value="20" class="slider">
+							<div class='spreadValues'>
+								<span>10</span>
+								<span>20</span>
+								<span>30</span>
+								<span>40</span>
+								<span>50</span>
+							</div>
+						</div>
+						<div class="sliderbox">
+
+						</div>
+					</div>
+
+
+					<div class="sliderRow">
+						<div class="playButtons" id="playButtons">
+							<p id='pauseButton' style="display:none">
+								<button>Pause</button>
+							</p>
+							<p id='playButton' style="display:inline">
+								<button>Play</button>
+							</p>
+							<p id='resetButton'>
+								<button>Reset</button>
+							</p>
+						</div>
+
+						<div class="actionBox" id="actionOptions">
+							<div>Action:</div>
+							<div>
+								<div class="radiopair">
+									<input type="radio" name="action" id="none" value="none" checked>
+									<label for="none"> None</label>
+								</div>
+
+								<div class="radiopair">
+									<input type="radio" name="action" id="pause" value="pause">
+									<label for="pause">Pause</label>
+								</div>
+
+								<div class="radiopair">
+									<input type="radio" name="action" id="play" value="play">
+									<label for="play">Play</label>
+								</div>
+							</div>
+
+
+							<div class="radiopair">
+								<label for="reset">
+									<input type="checkbox" id="reset" value="reset"> Reset </label>
+							</div>
+
+						</div>
+						<div class="sliderbox">
+							<p>Speed =
+								<span id="speedDisplay">1</span>x</p>
+							<input id="speed" type="range" min="0" max="3" step="1" value="0" class="slider">
+							<div class='spreadValues'>
+								<span>slow</span>
+								<span>fast</span>
+							</div>
+						</div>
+					</div>
+
+
+
+
+				</div>
+				<!-- end of SliderBigBox -->
+
+
+				<div id="scenarios">
+					<div id="scenariosTop">Scenarios</div>
+					<div id="scenariosMid">
+						<ul id="ULPresetList"> </ul>
+					</div>
+					<div style="display:none" id="scenariosBot">
+						<button id="addButton"> &plus;</button>
+						<button id="deleteButton"> &minus;</button>
+					</div>
+				</div>
+
+
+
+
+
+				<div id="editBox">
+					<button id='editButton'>Edit</button>
+				</div>
+				<div id="menuBox" style='display:none'>
+					<button id='cancelButton'>Cancel </button>
+					<button id='saveButton'>Save </button>
+					<button id='exportButton'>Export </button>
+				</div>
+				<div style='position:absolute; right:0; bottom:0;'>
+					<button id='clear' onclick='localStorage.clear(); location.reload();'>
+						Clear/Reload</button>
+				</div>
+
+			</div>
+			<!-- end of righthandSideBox -->
+
+
+
+
+
+
+		</div>
+		<!-- end of containerInner-->
+
+	</div>
+	<!-- end of containerOuter -->
 
 </body>
-  
+
 </html>

@@ -66,6 +66,7 @@ const theStage = {
 
 simu.framedelta = 200;
 simu.framedeltaFor1X = 200;
+simu.whichRule = 'methRop';
 
 
 simu.sliderTypes = {
@@ -79,6 +80,7 @@ simu.sliderTypes = {
 	upto: 'range',
 	speed: 'range',
 	action: 'radio',
+	which: 'radio',
 	reset: 'checkbox'
 };
 
@@ -108,6 +110,41 @@ class ProcessCollection {
 		this.processList.forEach(aProcess => aProcess.reset());
 	};
 }; // end class processCollection
+document.getElementById('ropupto').addEventListener('input', captureChangeInSliderS);
+
+function switchOrderMethod(event) {
+	let inputElem = event.target.closest('input');
+	console.log('*** in INV Switch Order Method');
+	if (!inputElem) return;
+	if (event.isTrusted) {
+		let id = event.target.id;
+		let v = inputElem.value;
+		let t = inputElem.type;
+		// t should be "radio"
+		simu.whichRule = v;
+		pickInvSimulation(simu.whichRule)
+		simu.reset();
+	}
+};
+
+function pickInvSimulation(which) {
+	let modelUpto = document.getElementById('modelUpto');
+	let modelRop = document.getElementById('modelRop');
+
+	switch (which) {
+		case 'methRop':
+			modelRop.style = 'display:flex';
+			modelUpto.style = 'display:none';
+			break;
+		case 'methUpto':
+			modelRop.style = 'display:none';
+			modelUpto.style = 'display:flex';
+			break;
+		default:
+			alert('picked inv simulation with ', which);
+			debugger;
+	}
+};
 
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
 const speeds = [1, 2, 5, 10, 15];
@@ -124,7 +161,9 @@ function captureChangeInSliderS(event) {
 		document.getElementById(id + 'Display')
 			.innerHTML = v;
 	}
+	console.log('in Inv, change Slider ', id);
 	switch (id) {
+
 		case 'ar':
 			theSimulation.arrivalRV.setRate(Number(v) / tioxTimeConv);
 			updatePredInv();
@@ -152,14 +191,24 @@ function captureChangeInSliderS(event) {
 			updatePredInv();
 			break;
 		case 'period':
-			theSimulation.period = Number(v);
+			theSimulation.period = Number(v) * tioxTimeConv;
 			updatePredInv();
 			break;
 		case 'upto':
 			theSimulation.upto = Number(v);
 			updatePredInv();
 			break;
+		case 'methRop':
+		case 'methUpto':
+			let temp = simu.whichRule;
+			simu.whichRule = id;
+			console.log('the rule switched from ', temp, ' to ', id);
 
+			if (temp != simu.whichRule) {
+				pickInvSimulation(simu.whichRule);
+				simu.reset();
+			}
+			break;
 		case 'speed':
 			simu.framedelta = simu.framedeltaFor1X *
 				speeds[v];
@@ -168,6 +217,11 @@ function captureChangeInSliderS(event) {
 			itemCollection.updateForSpeed();
 			document.getElementById(id + 'Display')
 				.innerHTML = speeds[v];
+			break;
+		case 'none':
+		case 'pause':
+		case 'play':
+		case 'reset':
 			break;
 
 		default:
@@ -184,9 +238,11 @@ function updatePredInv() {
 }
 
 simu.reset2 = function () {
+
 	itemCollection.reset();
 	theChart.reset();
 	theProcessCollection.reset();
+
 	itemCollection.moveDisplayAll(0); //display all at start.
 	gSF = new GStickFigure(simu.context,
 		theStage.person.height,
@@ -197,7 +253,15 @@ simu.reset2 = function () {
 	//fudge to get animation started quickly
 	let t = simu.heap.top().time - 1;
 	simu.now = simu.frametime = Math.floor(t / simu.framedelta) * simu.framedelta;
-
+	if (simu.whichRule == 'methUpto') {
+		simu.heap.push({
+			time: 0 + theSimulation.period,
+			type: 'next order',
+			proc: theSimulation.store.orderUpto
+				.bind(theSimulation.store),
+			item: null
+		});
+	}
 };
 
 //  One variable for each process step or queue
@@ -298,7 +362,6 @@ const theSimulation = {
 	store: null,
 	seller: null,
 
-	whichRule: 'rop', // either rop or upto.
 
 	// Q,R Model quantities
 	quantityOrdered: null,
@@ -309,7 +372,7 @@ const theSimulation = {
 	upto: null,
 
 	initialize: function () {
-		pickInvSimulation(theSimulation.whichRule);
+		pickInvSimulation(simu.whichRule);
 
 		// random variables
 		let ar = Number(document.getElementById('ar').value);
@@ -326,7 +389,7 @@ const theSimulation = {
 		theSimulation.rop = Number(
 			document.getElementById('rop').value);
 		theSimulation.period = Number(
-			document.getElementById('period').value);
+			document.getElementById('period').value) * tioxTimeConv;
 		theSimulation.upto = Number(
 			document.getElementById('upto').value);
 
@@ -372,24 +435,7 @@ const theSimulation = {
 	}, //end of initialize
 };
 
-function pickInvSimulation(which) {
-	let modelUpto = document.getElementById('modelUpto');
-	let modelRop = document.getElementById('modelRop');
 
-	switch (which) {
-		case 'rop':
-			modelRop.style = 'display:flex';
-			modelUpto.style = 'display:none';
-			break;
-		case 'upto':
-			modelRop.style = 'display:none';
-			modelUpto.style = 'display:flex';
-			break;
-		default:
-			alert('picked inv simulation with ', which);
-			debugger;
-	}
-};
 
 // SUPPLIER
 class Supplier {
@@ -422,7 +468,11 @@ class RopStore extends GStore {
 	reset() {
 		// start with the store filled in the first round.
 		super.reset();
-		this.inv = theSimulation.quantityOrdered;
+		if (simu.whichRule == 'methRop')
+			this.inv = theSimulation.quantityOrdered;
+		else
+			this.inv = theSimulation.upto;
+
 		this.invPosition = this.inv;
 		updatePredInv();
 
@@ -485,9 +535,8 @@ class RopStore extends GStore {
 		} else {
 			this.invPosition--;
 			if (this.invPosition <= theSimulation.rop &&
-				theSimulation.whichRule == 'rop') {
+				simu.whichRule == 'methRop') {
 				this.orderQuan();
-				this.invPosition += theSimulation.quantityOrdered;
 			}
 			this.inv--;
 		}
@@ -506,10 +555,12 @@ class RopStore extends GStore {
 			proc: this.orderUpto.bind(this),
 			item: null
 		});
-		this.createDelivery(theSimulation.upto - this.invPosition);
+		let quantity = Math.max(0, theSimulation.upto - this.invPosition);
+		if (quantity > 0) this.createDelivery(quantity);
 	};
 
 	createDelivery(quantity) {
+		this.invPosition += quantity;
 		const truck = new Truck(simu.context,
 			theStage.boxSpace, 10);
 		const truckLT = theSimulation.leadtimeRV.observe();
@@ -568,13 +619,16 @@ class RopStore extends GStore {
 		});
 
 		let point = truck.deltaPointFlatBed();
+		let topOfInventory = this.store.bot - this.store.boxSpace *
+			Math.ceil(this.inv / this.store.boxesPerRow);
+
 		load.addPath({
 			t: atDoorTime - 20,
 			x: theStage.truckLeft + point.dx,
-			y: theStage.truckTop + point.dy
+			y: Math.min(theStage.truckTop + point.dy,
+				topOfInventory)
 		});
-		let topOfInventory = this.store.bot - this.store.boxSpace *
-			Math.ceil(theSimulation.rop / this.store.boxesPerRow);
+
 
 		load.addPath({
 			t: splitTime,

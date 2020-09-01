@@ -69,6 +69,7 @@ function pause() {
 document.getElementById('playButton').addEventListener('click', play);
 document.getElementById('pauseButton').addEventListener('click', pause);
 document.getElementById('resetButton').addEventListener('click', simu.reset);
+
 document.addEventListener('keydown', keyDownFunction);
 
 function keyDownFunction(evt) {
@@ -813,7 +814,7 @@ export class GStore {
 		const s = this.store;
 		this.ctxPack.resetTransform();
 		this.ctxPack.clearRect(s.left, s.top, s.width, s.height);
-		this.packages.forEach(p => p.destroy());
+		//		this.packages.forEach(p => p.destroy());
 		this.packages = [];
 	};
 	drawStore(c, s) {
