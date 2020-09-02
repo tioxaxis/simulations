@@ -110,22 +110,7 @@ class ProcessCollection {
 		this.processList.forEach(aProcess => aProcess.reset());
 	};
 }; // end class processCollection
-document.getElementById('ropupto').addEventListener('input', captureChangeInSliderS);
 
-function switchOrderMethod(event) {
-	let inputElem = event.target.closest('input');
-	console.log('*** in INV Switch Order Method');
-	if (!inputElem) return;
-	if (event.isTrusted) {
-		let id = event.target.id;
-		let v = inputElem.value;
-		let t = inputElem.type;
-		// t should be "radio"
-		simu.whichRule = v;
-		pickInvSimulation(simu.whichRule)
-		simu.reset();
-	}
-};
 
 function pickInvSimulation(which) {
 	let modelUpto = document.getElementById('modelUpto');
@@ -146,7 +131,8 @@ function pickInvSimulation(which) {
 	}
 };
 
-document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
+document.getElementById('sliderBigBox')
+	.addEventListener('input', captureChangeInSliderS);
 const speeds = [1, 2, 5, 10, 15];
 
 function captureChangeInSliderS(event) {
@@ -166,10 +152,6 @@ function captureChangeInSliderS(event) {
 
 		case 'ar':
 			theSimulation.arrivalRV.setRate(Number(v) / tioxTimeConv);
-			updatePredInv();
-			//            setExpected(theSimulation.quantityOrdered,
-			//                        theSimulation.arrivalRV.rate,
-			//                        theSimulation.arrivalRV.CV);
 			break;
 
 		case 'acv':
@@ -177,26 +159,21 @@ function captureChangeInSliderS(event) {
 			break;
 		case 'lt':
 			theSimulation.leadtimeRV.setTime(Number(v) * tioxTimeConv);
-			updatePredInv();
 			break;
 		case 'ltcv':
 			theSimulation.leadtimeRV.setCV(Number(v));
 			break;
 		case 'quan':
 			theSimulation.quantityOrdered = Number(v);
-			updatePredInv();
 			break;
 		case 'rop':
 			theSimulation.rop = Number(v);
-			updatePredInv();
 			break;
 		case 'period':
 			theSimulation.period = Number(v) * tioxTimeConv;
-			updatePredInv();
 			break;
 		case 'upto':
 			theSimulation.upto = Number(v);
-			updatePredInv();
 			break;
 		case 'methRop':
 		case 'methUpto':
@@ -230,10 +207,7 @@ function captureChangeInSliderS(event) {
 	}
 }
 
-function updatePredInv() {
-	theSimulation.predInv = theSimulation.quantityOrdered / 2 +
-		theSimulation.rop - theSimulation.arrivalRV.rate * theSimulation.leadtimeRV.mean;
-}
+
 
 simu.reset2 = function () {
 	itemCollection.reset();
@@ -474,7 +448,6 @@ class RopStore extends GStore {
 			this.inv = theSimulation.upto;
 
 		this.invPosition = this.inv;
-		updatePredInv();
 
 		for (let k = 0; k < this.inv; k++)
 			this.addNew();
@@ -519,7 +492,7 @@ class RopStore extends GStore {
 		this.inv += n;
 
 		theChart.push(simu.now, this.inv,
-			this.invPosition, theSimulation.predInv);
+			this.invPosition);
 		// keep track stockouts by round
 		this.nRounds++;
 		if (!this.stockOut) this.roundsWithEnough++;
@@ -541,7 +514,7 @@ class RopStore extends GStore {
 			this.inv--;
 		}
 		theChart.push(simu.now, this.inv,
-			this.invPosition, theSimulation.predInv);
+			this.invPosition);
 		return pack;
 	};
 
@@ -825,7 +798,9 @@ document.addEventListener("DOMContentLoaded", initializeAll);
 //   the charts using Chart.js
 
 export const theChart = {
-	predictedInvValue: null,
+	lastpredInv: null,
+	lastinv: null,
+	lastinvPos: null,
 	canvas: null,
 	ctx: null,
 	chart: null,
@@ -946,9 +921,11 @@ export const theChart = {
 		this.chart = new Chart(this.ctx, this.stuff);
 		resizeChart();
 		this.reset();
-		//        this.predictedInvValue = this.predictedInv();
 	},
 	reset: function () {
+		this.lastpredInv = this.computePredInv();
+		this.lastinv = 0;
+		this.lastinvPos = 0;
 		this.stuff.data.datasets[0].data = [];
 		this.stuff.data.datasets[1].data = [];
 		this.stuff.data.datasets[2].data = [];
@@ -966,7 +943,7 @@ export const theChart = {
 		this.continue();
 	},
 	continue: function () {
-		this.graphScale = Math.max(this.graphScale, /* simu.frameSpeed*/ );
+//		this.graphScale = Math.max(this.graphScale /* simu.frameSpeed*/ );
 		this.graphTimeWidth = this.graphInitialTimeWidth * this.graphScale;
 		this.graphTimeShift = this.graphInitialTimeShift * this.graphScale;
 		this.graphMax = Math.max(this.graphMax, this.graphMin + this.graphTimeWidth);
@@ -981,8 +958,8 @@ export const theChart = {
 		this.chart.data.datasets[2].borderWidth = points;
 		this.chart.update();
 	},
-	push: function (t, inv, invPos, predInv) {
-
+	push: function (t, inv, invPos) {
+		let predInv = this.computePredInv();
 		t /= tioxTimeConv;
 		if (t > this.graphMax) {
 			this.graphMin += this.graphTimeShift;
@@ -1019,12 +996,32 @@ export const theChart = {
 			x: t,
 			y: invPos
 		});
+		if (this.lastpredInv != predInv) {
+			console.log('not equal', t, predInv, this.lastpredInv);
+			this.chart.data.datasets[2].data.push({
+				x: t,
+				y: this.lastpredInv
+			});
+			this.lastpredInv = predInv;
+		}
+		console.log('either way', t, predInv, this.lastpredInv);
 		this.chart.data.datasets[2].data.push({
 			x: t,
 			y: predInv
 		});
 		this.chart.update();
 	},
+	computePredInv: function () {
+		let avgInv;
+		if (simu.whichRule == 'methUpto') {
+			avgInv = theSimulation.upto - theSimulation.arrivalRV.rate *
+				(theSimulation.leadtimeRV.mean + theSimulation.period / 2);
+		} else {
+			avgInv = theSimulation.quantityOrdered / 2 +
+				theSimulation.rop - theSimulation.arrivalRV.rate * theSimulation.leadtimeRV.mean;
+		}
+		return avgInv;
+	}
 }
 
 

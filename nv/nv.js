@@ -670,8 +670,8 @@ export const theChart = {
 	},
 	total: null,
 	count: null,
-	graphInitialTimeWidth: 20,
-	graphInitialTimeShift: 15,
+	graphInitialTimeWidth: 12,
+	graphInitialTimeShift: 9,
 	graphTimeWidth: null,
 	graphTimeShift: null,
 	graphMin: null,
@@ -706,7 +706,7 @@ export const theChart = {
 		this.continue();
 	},
 	continue: function () {
-		this.graphScale = Math.max(this.graphScale, simu.frameSpeed);
+		//		this.graphScale = Math.max(this.graphScale, simu.frameSpeed);
 		this.graphTimeWidth = this.graphInitialTimeWidth * this.graphScale;
 		this.graphTimeShift = this.graphInitialTimeShift * this.graphScale;
 		this.graphMax = Math.max(this.graphMax, this.graphMin + this.graphTimeWidth);
