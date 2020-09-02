@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html>
 
 <head>
@@ -21,7 +20,8 @@
 	<!--  my JavaScript -->
 	<script>
 		var simu = {};
-		simu.nameOfSimulation = 'inv'; //name for .json for preset file and key for local Storage
+		simu.nameOfSimulation = 'inv';
+		//name for .json for preset file and key for local Storage
 
 	</script>
 
@@ -31,12 +31,10 @@
 </head>
 
 <body>
-
-
-
-
 	<div id="containerOuter">
 
+		<!-- two modes either Export when next div is showing above the rest
+			 or regular mode when everything else is showing					-->
 		<div id='exportBoxOuter' style='display:none'>
 			<div id="exportPresetsBox" style="display:block">
 				<h2 style='margin:20px'>Export Options</h2>
@@ -187,6 +185,9 @@
 						</div>
 					</div>
 
+					<!-- two states either non-edit mode or edit mode
+						 in the first the play/pause and reset buttons show
+ 						 in the second the Action buttons are displayed     -->
 					<div class="sliderRow">
 						<div class="playButtons" id="playButtons">
 							<p id='pauseButton' style="display:none">
@@ -219,12 +220,10 @@
 								</div>
 							</div>
 
-
 							<div class="radiopair">
 								<label for="reset">
 									<input type="checkbox" id="reset" value="reset"> Reset </label>
 							</div>
-
 						</div>
 
 
@@ -241,11 +240,11 @@
 				</div>
 				<!-- end of SliderBigBox -->
 
-
+				<!-- scenario boxes: Top, Mid of various sizes, Bot for +/- buttons-->
 				<div id="scenarios">
 					<div id="scenariosTop">Scenarios</div>
 					<div id="scenariosMid12">
-						<ul id="ULPresetList"> </ul>
+						<ul id="ULPresetList"></ul>
 					</div>
 					<div style="display:none" id="scenariosBot">
 						<button id="addButton"> &plus;</button>
@@ -253,10 +252,7 @@
 					</div>
 				</div>
 
-
-
-
-
+				<!-- edit buttons at bottom of RHS-->
 				<div id="editBox">
 					<button id='editButton'>Edit</button>
 				</div>
@@ -272,18 +268,10 @@
 
 			</div>
 			<!-- end of righthandSideBox -->
-
-
-
-
-
-
 		</div>
 		<!-- end of containerInner-->
-
 	</div>
 	<!-- end of containerOuter -->
-
 </body>
 
 </html>

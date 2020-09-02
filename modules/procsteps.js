@@ -189,7 +189,7 @@ export class Queue {
 	};
 
 	printQueue() {
-		//        this.q.forEach(p => console.log('which',p.which,p.pathList, p));
+		//this.q.forEach(p => console.log('which',p.which,p.pathList, p));
 	};
 }; //end class Queue
 
@@ -811,10 +811,9 @@ export class GStore {
 		//        };
 	};
 	reset() {
-		const s = this.store;
-		this.ctxPack.resetTransform();
-		this.ctxPack.clearRect(s.left, s.top, s.width, s.height);
-		//		this.packages.forEach(p => p.destroy());
+		//		const s = this.store;
+		//		this.ctxPack.resetTransform();
+		//		this.ctxPack.clearRect(s.left, s.top, s.width, s.height);
 		this.packages = [];
 	};
 	drawStore(c, s) {
@@ -849,7 +848,8 @@ export class GStore {
 		}
 	};
 	emptyStore() {
-		this.reset();
+		this.packages.forEach(p => p.destroy());
+		this.packages = [];
 	};
 	inventory() {
 		return this.packages.length;

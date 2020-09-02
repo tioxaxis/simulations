@@ -69,8 +69,8 @@ const sliders = {
 				theNodeList[j].checked = true;
 			}
 			////			console.log('in setSliders inputBox ',
-			//				inputBox.type, inputBox.id, inputBox.value);
-			//			inputBox.dispatchEvent(sliders.inputEvent);
+			//							inputBox.type, inputBox.id, inputBox.value);
+			inputBox.dispatchEvent(sliders.inputEvent);
 		}
 		// not in edit mode then may cause a reset, a play, or a pause.
 		if (!simu.editMode) {
@@ -193,7 +193,7 @@ const presets = {
 		}
 		createList(presetsRows);
 		presets.printPresets();
-		presets.changeCurrentLiTo(nextLi());
+//		presets.changeCurrentLiTo(nextLi());
 
 		// defaults to nothing selected in list
 		//presets.currentLi = null;

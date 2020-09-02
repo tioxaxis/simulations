@@ -1,11 +1,19 @@
+/*   Generic formats   */
+
 * {
 	box-sizing: border-box;
 	font-family: "Arial";
 	font-size: 1vw;
 }
+
+/*   for the first page    */
+
 .simulink {
 	font-size: 30px;
 }
+
+/* For the exports overlay  */
+
 .blueBox {
 	border: blue solid 5px;
 	margin: 0% 5%;
@@ -44,6 +52,9 @@
 	top: 11%;
 	right: 6%;
 }
+
+/* for the main 4 boxes:  outer, inner, left, and right   */
+
 #containerOuter {
 	position: relative;
 	margin: auto;
@@ -62,7 +73,6 @@
 	bottom: 0;
 }
 #leftHandSideBox {
-	/* left box in container upper-left  */
 	position: absolute;
 	top: 0;
 	left: 2%;
@@ -70,7 +80,6 @@
 	height: 100%;
 }
 #rightHandSideBox {
-	/* right box in container upper-right   */
 	position: absolute;
 	top: 0;
 	right: 0;
@@ -79,6 +88,9 @@
 	border: solid .5vw #7a8dd0;
 	background-color: rgb(234, 235, 244);
 }
+
+/* Now the formats for the left hand side box  */
+
 #canvasWrapper {
 	position: absolute;
 	top: 0;

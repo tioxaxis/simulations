@@ -161,7 +161,7 @@ function captureChangeInSliderS(event) {
 		document.getElementById(id + 'Display')
 			.innerHTML = v;
 	}
-//	console.log('in Inv, change Slider ', id);
+	//	console.log('in Inv, change Slider ', id);
 	switch (id) {
 
 		case 'ar':
@@ -202,7 +202,7 @@ function captureChangeInSliderS(event) {
 		case 'methUpto':
 			let temp = simu.whichRule;
 			simu.whichRule = id;
-//			console.log('the rule switched from ', temp, ' to ', id);
+			//			console.log('the rule switched from ', temp, ' to ', id);
 
 			if (temp != simu.whichRule) {
 				pickInvSimulation(simu.whichRule);
@@ -223,11 +223,9 @@ function captureChangeInSliderS(event) {
 		case 'play':
 		case 'reset':
 			break;
-
 		default:
 			alert(' captureChangeInSliderS reached part for default');
 			debugger;
-
 			break;
 	}
 }
@@ -238,9 +236,14 @@ function updatePredInv() {
 }
 
 simu.reset2 = function () {
-
 	itemCollection.reset();
 	theChart.reset();
+	// if there are a set of scenarios loaded then pick the first.
+	let firstLi = document.getElementById('ULPresetList').firstChild;
+	if (firstLi) firstLi.dispatchEvent(
+		new Event('click', {
+			bubbles: true
+		}));
 	theProcessCollection.reset();
 
 	itemCollection.moveDisplayAll(0); //display all at start.
@@ -294,7 +297,6 @@ const animForQueue = {
 };
 const animForStore = {
 	walkingTime: (theStage.pathBot - theStage.pathTop) / theStage.normalSpeed,
-
 	reset: function () {},
 	start: function () {
 		person.addPath({
@@ -461,9 +463,7 @@ class RopStore extends GStore {
 		this.lostSales = null;
 		this.nRounds = null;
 		this.roundsWithEnough = null;
-
 		this.packages = []; //the packages in the store.
-
 	};
 	reset() {
 		// start with the store filled in the first round.
@@ -638,7 +638,6 @@ class RopStore extends GStore {
 				topOfInventory)
 		});
 	};
-
 };
 
 const pi2 = 2 * Math.PI;
@@ -673,7 +672,6 @@ class FlatBed {
 	setReverse() {
 		this.reverse = this.truckCabWidth + this.truckBedWidth;
 	}
-
 
 	draw() {
 		this.ctx.save();
@@ -715,15 +713,6 @@ class FlatBed {
 
 		this.ctx.restore();
 	};
-	//	drawPackages(left, bot) {
-	//		for (let i = 0; i < this.packages.length; i++) {
-	//			this.ctx.fillStyle = this.packages[i].graphic.color;
-	//			let point = this.boxStack.relCoord(i);
-	//			this.ctx.fillRect(
-	//				left + point.x, bot + point.y,
-	//				this.boxSize, this.boxSize);
-	//		}
-	//	};
 };
 
 class LoadOfBoxes extends Item {
@@ -1096,7 +1085,6 @@ function resizeChart() {
 	theChart.chart.options.title.padding = 5;
 	theChart.chart.options.legend.labels.fontSize = newFontSize;
 	theChart.chart.options.legend.labels.padding = 10;
-
 	theChart.chart.update();
 };
 window.addEventListener('resize', resizeChart);

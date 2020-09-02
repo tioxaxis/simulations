@@ -10,8 +10,10 @@ import {
 from '../modules/procsteps.js';
 
 
-const disappointed = {color: 'rgb(235, 230, 230)', 
-					  border: 'rgb(31, 105, 245)'};
+const disappointed = {
+	color: 'rgb(235, 230, 230)',
+	border: 'rgb(31, 105, 245)'
+};
 const tioxTimeConv = 1000; //time are in milliseconds
 const theStage = {
 	normalSpeed: .10, //.25 pixels per millisecond
@@ -52,10 +54,10 @@ const theStage = {
 		x: theStage.pathRight,
 		y: theStage.pathBot
 	};
-//	const background = document.getElementById('theBackground');
-//	theStage.background = {
-//		context: background.getContext('2d')
-//	};
+	//	const background = document.getElementById('theBackground');
+	//	theStage.background = {
+	//		context: background.getContext('2d')
+	//	};
 };
 
 
@@ -189,6 +191,13 @@ function setActual(enough, total) {
 simu.reset2 = function () {
 	itemCollection.reset();
 	theChart.reset();
+	// if there are a set of scenarios loaded then pick the first.
+	let firstLi = document.getElementById('ULPresetList').firstChild;
+	if (firstLi) firstLi.dispatchEvent(
+		new Event('click', {
+			bubbles: true
+		}));
+
 	theProcessCollection.reset();
 	//    totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
 	gSF = new GStickFigure(simu.context,
@@ -234,7 +243,7 @@ const animForQueue = {
 	},
 
 	arrive: function (nSeatsUsed, person) {
-		
+
 	},
 
 	leave: function (procTime, nSeatsUsed) {}
@@ -291,12 +300,12 @@ const animForCreator = {
 //	}
 //};
 const animForNewsVendor = {
-//	walkingTime: animForQueue.walkingTime2;
-	start: function (person, pack, walkingTime){
-		person.addPath({  //walk to bot
-				t: simu.now + walkingTime,
-				x: theStage.pathRight,
-				y: theStage.pathBot
+	//	walkingTime: animForQueue.walkingTime2;
+	start: function (person, pack, walkingTime) {
+		person.addPath({ //walk to bot
+			t: simu.now + walkingTime,
+			x: theStage.pathRight,
+			y: theStage.pathBot
 		});
 		const leftTime = walkingTime / 2;
 		const upTime = walkingTime / 2;
@@ -307,14 +316,14 @@ const animForNewsVendor = {
 				x: theStage.pathRight + person.graphic.gSF.package.x,
 				y: pack.cur.y
 			});
-			pack.addPath({  // move up to arm height in other time
+			pack.addPath({ // move up to arm height in other time
 				t: simu.now + walkingTime,
 				x: theStage.pathRight + person.graphic.gSF.package.x,
 				y: theStage.pathBot + person.graphic.gSF.package.y,
 			});
 		}
 	},
-	finish: function (person,pack){
+	finish: function (person, pack) {
 		if (pack) {
 			person.graphic.packageVisible = true;
 			person.graphic.packageColor = pack.graphic.color;
@@ -347,7 +356,7 @@ const theSimulation = {
 		let r = Number(document.getElementById('dr').value);
 		let cv = Number(document.getElementById('dcv').value);
 		theSimulation.demandRV = new UniformRV(r, cv);
-		theSimulation.serviceRV = 
+		theSimulation.serviceRV =
 			new DeterministicRV(animForQueue.walkingTime2);
 		theSimulation.Co = Number(document.getElementById('Co').value);
 		theSimulation.Cu = Number(document.getElementById('Cu').value);
@@ -359,32 +368,32 @@ const theSimulation = {
 		this.queue = new Queue("theQueue", -1, animForQueue.walkingTime,   
 			animForQueue,
 			null, null);
-		
+
 		this.store = new RetailStore(
 			simu.backcontext, simu.context,
 			theStage.store.left, theStage.store.top,
 			theStage.boxSpace, theStage.boxSize, theStage.boxesPerRow);
-		
+
 		this.walkOffStage = new WalkAndDestroy("walkOff", animForWalkOffStage, true);
 
 		this.demand = new DemandCreator(20000, theSimulation.demandRV);
-		
+
 		this.newsVendor = new Combine('newsVendor',
-				theSimulation.serviceRV,
-				this.queue, this.store, this.walkOffStage,
-				animForNewsVendor);
-		
-//		this.newsVendor = new MachineCenter("newsVendor", 1,
-//			theSimulation.serviceRV,
-//			this.queue, this.walkOffStage,
-//			animForNV, null, null);
+			theSimulation.serviceRV,
+			this.queue, this.store, this.walkOffStage,
+			animForNewsVendor);
+
+		//		this.newsVendor = new MachineCenter("newsVendor", 1,
+		//			theSimulation.serviceRV,
+		//			this.queue, this.walkOffStage,
+		//			animForNV, null, null);
 
 		//link the queue to machine before and after
 		this.queue.setPreviousNext(
 			this.creator, this.newsVendor);
-//       not sure I need this.		
-//		this.store.setPreviousNext(
-//			null, this.newsVendor);
+		//       not sure I need this.		
+		//		this.store.setPreviousNext(
+		//			null, this.newsVendor);
 
 		// put all the process steps with visible people in theProcessCollection
 		theProcessCollection.push(this.demand);
@@ -421,7 +430,7 @@ class DemandCreator {
 		this.enough = null;
 		this.overageForDay = null;
 		this.underageForDay = null;
-		
+
 	};
 
 	reset() {
@@ -434,7 +443,7 @@ class DemandCreator {
 		theSimulation.store.emptyStore();
 		this.curDemand = Math.floor(theSimulation.demandRV.observe());
 		theSimulation.store.addBox(theSimulation.quantityOrdered);
-//		this.store.packages.drawAll();
+		//		this.store.packages.drawAll();
 		this.nRounds++;
 		let excess = theSimulation.quantityOrdered - this.curDemand;
 		this.overageForDay = theSimulation.Co * Math.max(0, excess);
@@ -492,8 +501,8 @@ class RetailStore extends GStore {
 var gSF;
 export class Person extends Item {
 
-	constructor( x, y = 60, w = 30, h = 30) {
-		super( x, y);
+	constructor(x, y = 60, w = 30, h = 30) {
+		super(x, y);
 
 		this.width = w;
 
