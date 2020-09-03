@@ -1,0 +1,93 @@
+<html>
+
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+	<p> File loaded.</p>
+	<script type='module' defer>
+		import {
+			UniformRV, Heap
+		}
+		from "../modules/utility.js";
+		var simu = {now:0};
+		var rv = new UniformRV(50, 25);
+		var big = new UniformRV(100, 100);
+		var small = new UniformRV(15,10);
+		var heap = new Heap((x, y) => x.time < y.time);
+
+		function add(k, tp = 'A') {
+			for (let i = 0; i < k; i++) {
+				heap.push({
+					type: tp,
+					time: rv.observe()
+				});
+			}
+		};
+
+		function removeCheck(k) {
+			let last = -Infinity;
+			for (let i = 0; i < k; i++) {
+				let y = heap.top();
+				let x = heap.pull();
+				if (x != y) {
+					console.log('top does not match last pull', x, y);
+					alert('problem found');
+					debugger;
+				}
+				if (x < last) {
+					console.log('heap not in correct order', last, x);
+					alert('problem found');
+					debugger;
+				}
+				last = x;
+			}
+		}
+
+		function checkHeapOrder() {
+			let n = heap.h.length;
+			let lastp = Math.floor[n / 2];
+			for (let i = 0; i < lastp; i++) {
+				//check left child
+				if (heap.h[i].time > heap.h[2 * i + 1]) {
+					console.log('heap not in correct order at position', i,
+						heap.h[i].time, 'left child', heap.h[2 * i + 1]);
+					alert('problem found');
+					debugger;
+				}
+				if (2 * i + 2 < n) {
+					if (heap.h[i].time > heap.h[2 * i + 2]) {
+						console.log('heap not in correct order at position', i,
+							heap.h[i].time, 'right child', heap.h[2 * i + 1]);
+						alert('problem found');
+						debugger;
+					}
+				}
+			}
+
+		}
+
+		for (let j = 0; j < 50; j++){
+			add(500, 'A');
+			add(500, 'B');
+			checkHeapOrder();
+			removeCheck(200);
+			heap.modify('A',0, big);
+			checkHeapOrder();
+			heap.modify('B', 0, small);
+			checkHeapOrder();
+			removeCheck(800);
+			if (heap.top() != null) {
+				console.log('heap should be empty but is not');
+				alert('problem found');
+				debugger;
+			}
+			console.log('did round ',j,' of tests')
+		}
+		console.log('end of tests.')
+
+	</script>
+</body>
+
+</html>

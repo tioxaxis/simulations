@@ -21,7 +21,13 @@ simu.context = null; //context for drawing on theCanvas
 simu.requestAFId = null; // id for requestAnimationFrame
 
 simu.initialize = function () {
-	simu.theCanvas = document.getElementById('theCanvas');
+	// if there are a set of scenarios loaded then pick the first.
+	let firstLi = document.getElementById('ULPresetList').firstChild;
+	if (firstLi) firstLi.dispatchEvent(
+		new Event('click', {
+			bubbles: true
+		}));
+simu.theCanvas = document.getElementById('theCanvas');
 	simu.context = simu.theCanvas.getContext('2d');
 	simu.theBackground = document.getElementById('theBackground');
 	simu.backcontext = theBackground.getContext('2d');

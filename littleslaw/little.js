@@ -181,12 +181,6 @@ var totInv, totTime, totPeople, lastArrDep, LBRFcount;
 simu.reset2 = function () {
 	itemCollection.reset();
 	theChart.reset();
-	// if there are a set of scenarios loaded then pick the first.
-	let firstLi = document.getElementById('ULPresetList').firstChild;
-	if (firstLi) firstLi.dispatchEvent(
-		new Event('click', {
-			bubbles: true
-		}));
 	theProcessCollection.reset();
 	totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
 	gSF = new GStickFigure(simu.context,

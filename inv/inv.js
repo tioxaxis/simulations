@@ -212,14 +212,7 @@ function captureChangeInSliderS(event) {
 simu.reset2 = function () {
 	itemCollection.reset();
 	theChart.reset();
-	// if there are a set of scenarios loaded then pick the first.
-	let firstLi = document.getElementById('ULPresetList').firstChild;
-	if (firstLi) firstLi.dispatchEvent(
-		new Event('click', {
-			bubbles: true
-		}));
 	theProcessCollection.reset();
-
 	itemCollection.moveDisplayAll(0); //display all at start.
 	gSF = new GStickFigure(simu.context,
 		theStage.person.height,
@@ -943,7 +936,7 @@ export const theChart = {
 		this.continue();
 	},
 	continue: function () {
-//		this.graphScale = Math.max(this.graphScale /* simu.frameSpeed*/ );
+		//		this.graphScale = Math.max(this.graphScale /* simu.frameSpeed*/ );
 		this.graphTimeWidth = this.graphInitialTimeWidth * this.graphScale;
 		this.graphTimeShift = this.graphInitialTimeShift * this.graphScale;
 		this.graphMax = Math.max(this.graphMax, this.graphMin + this.graphTimeWidth);

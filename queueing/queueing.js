@@ -166,12 +166,6 @@ function captureChangeInSliderS(event) {
 simu.reset2 = function () {
 	resetBackground();
 	itemCollection.reset();
-	// if there are a set of scenarios loaded then pick the first.
-	let firstLi = document.getElementById('ULPresetList').firstChild;
-	if (firstLi) firstLi.dispatchEvent(
-		new Event('click', {
-			bubbles: true
-		}));
 	theChart.reset();
 	theProcessCollection.reset();
 	gSF = new GStickFigure(simu.context,
