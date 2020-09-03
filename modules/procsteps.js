@@ -21,17 +21,16 @@ simu.context = null; //context for drawing on theCanvas
 simu.requestAFId = null; // id for requestAnimationFrame
 
 simu.initialize = function () {
-	// if there are a set of scenarios loaded then pick the first.
-	let firstLi = document.getElementById('ULPresetList').firstChild;
-	if (firstLi) firstLi.dispatchEvent(
-		new Event('click', {
-			bubbles: true
-		}));
-simu.theCanvas = document.getElementById('theCanvas');
+//	// if there are a set of scenarios loaded then pick the first.
+//	let firstLi = document.getElementById('ULPresetList').firstChild;
+//	if (firstLi) firstLi.dispatchEvent(
+//		new Event('click', {
+//			bubbles: true
+//		}));
+	simu.theCanvas = document.getElementById('theCanvas');
 	simu.context = simu.theCanvas.getContext('2d');
 	simu.theBackground = document.getElementById('theBackground');
 	simu.backcontext = theBackground.getContext('2d');
-	//        window.addEventListener('resize', resizeCanvas);
 };
 
 simu.reset = function () {
@@ -75,7 +74,6 @@ function pause() {
 document.getElementById('playButton').addEventListener('click', play);
 document.getElementById('pauseButton').addEventListener('click', pause);
 document.getElementById('resetButton').addEventListener('click', simu.reset);
-
 document.addEventListener('keydown', keyDownFunction);
 
 function keyDownFunction(evt) {
@@ -417,38 +415,36 @@ export class Combine {
 // ItemCollection keeps track of all those things that move
 // with properties only for the simulation, the procsteps
 
-export class ItemCollection {
+export class ItemCollection extends Array {
 	constructor() {
-		this.reset();
-	};
-	push(item) {
-		this.all.push(item);
-		item.ahead = this.lastAdded;
-		this.lastAdded = item;
-		return ++this.counter;
-	};
+		super();
+		};
 	reset() {
-		this.all = [];
-		this.counter = 0;
-		this.lastAdded = null;
+		this.splice(0, this.length)
 	};
-
+//	push(item) {
+//		this.push(item);
+////		item.ahead = this.lastAdded;
+////		this.lastAdded = item;
+//		return this.length;
+//	};
+	
 	moveDisplayAll(deltaSimT) {
-		this.all.forEach(p => p.moveDisplayWithPath(deltaSimT))
+		this.forEach(p => p.moveDisplayWithPath(deltaSimT))
 	}
 	updateForSpeed() {
-		this.all.forEach(p => p.updateAllPaths());
+		this.forEach(p => p.updateAllPaths());
 	};
 	remove(item) {
-		let k = this.all.indexOf(item);
+		let k = this.indexOf(item);
 		if (k < 0) {
 			alert('failed to find person or package in all');
 			debugger
 		}
-		this.all.splice(k, 1);
-		this.counter--;
-		if (this.lastAdded == this)
-			this.lastAdded = null;
+		this.splice(k, 1);
+//		this.counter--;
+//		if (this.lastAdded == this)
+//			this.lastAdded = null;
 	};
 };
 
@@ -458,7 +454,8 @@ export var itemCollection = new ItemCollection();
 // but its graphic is what gets drawn
 export class Item {
 	constructor(x, y) {
-		this.which = itemCollection.push(this);
+		itemCollection.push(this);
+		this.which = itemCollection.length;
 		if (this.ahead) this.ahead.behind = this;
 		this.behind = null;
 		this.cur = {
@@ -866,17 +863,17 @@ export class GStore {
 	}
 
 	//******   used?   I think not anymore.
-	addExisting(item) {
-		let point = this.boxStack.relCoord(this.all.length);
-		let pack = new Package(
-			this.ctxPack, item.color, this.store.boxSize,
-			item.x, item.y);
-		pack.addPath({
-			t: simu.now + 200,
-			x: this.left + point.x,
-			y: this.bot + point.y
-		});
-	};
+//	addExisting(item) {
+//		let point = this.boxStack.relCoord(this.all.length);
+//		let pack = new Package(
+//			this.ctxPack, item.color, this.store.boxSize,
+//			item.x, item.y);
+//		pack.addPath({
+//			t: simu.now + 200,
+//			x: this.left + point.x,
+//			y: this.bot + point.y
+//		});
+//	};
 	addNew() {
 		let point = this.boxStack.relCoord(this.packages.length);
 		let color = tioxColors[Math.floor(Math.random() *

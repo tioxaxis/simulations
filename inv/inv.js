@@ -426,6 +426,7 @@ class RopStore extends GStore {
 
 		//stats for performance of store
 		this.inv = null;
+		this.invInDoor = null;
 		this.invPosition = null;
 		this.lostSales = null;
 		this.nRounds = null;
@@ -440,6 +441,7 @@ class RopStore extends GStore {
 		else
 			this.inv = theSimulation.upto;
 
+		this.invInDoor = this.inv;
 		this.invPosition = this.inv;
 
 		for (let k = 0; k < this.inv; k++)
@@ -454,10 +456,11 @@ class RopStore extends GStore {
 		item.load.graphic.setReverse();
 		item.load.cur.x -=
 			item.truck.graphic.truckCabWidth;
-
+		const n = item.load.graphic.packages.length;
+		
 		let topOfInventory = this.store.bot - this.store.boxSpace *
-			Math.ceil(this.inv / this.store.boxesPerRow);
-
+			Math.ceil(this.invInDoor / this.store.boxesPerRow);
+		this.invInDoor += n;
 		item.load.addPath({
 			t: item.load.arrivalTime,
 			x: theStage.store.left,
@@ -504,6 +507,7 @@ class RopStore extends GStore {
 				simu.whichRule == 'methRop') {
 				this.orderQuan();
 			}
+			this.invInDoor--;
 			this.inv--;
 		}
 		theChart.push(simu.now, this.inv,
@@ -586,7 +590,7 @@ class RopStore extends GStore {
 
 		let point = truck.deltaPointFlatBed();
 		let topOfInventory = this.store.bot - this.store.boxSpace *
-			Math.ceil(this.inv / this.store.boxesPerRow);
+			Math.ceil(this.invInDoor / this.store.boxesPerRow);
 
 		load.addPath({
 			t: atDoorTime - 20,
@@ -990,14 +994,14 @@ export const theChart = {
 			y: invPos
 		});
 		if (this.lastpredInv != predInv) {
-			console.log('not equal', t, predInv, this.lastpredInv);
+//			console.log('not equal', t, predInv, this.lastpredInv);
 			this.chart.data.datasets[2].data.push({
 				x: t,
 				y: this.lastpredInv
 			});
 			this.lastpredInv = predInv;
 		}
-		console.log('either way', t, predInv, this.lastpredInv);
+//		console.log('either way', t, predInv, this.lastpredInv);
 		this.chart.data.datasets[2].data.push({
 			x: t,
 			y: predInv

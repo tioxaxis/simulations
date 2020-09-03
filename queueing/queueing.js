@@ -123,13 +123,15 @@ function captureChangeInSliderS(event) {
 		case 'ar':
 			theSimulation.interarrivalRV
 				.setRate(v / tioxTimeConv);
-			simu.heap.modify('finish/creator', theSimulation.interarrivalRV);
+			simu.heap.modify('finish/creator', simu.now, 
+							 theSimulation.interarrivalRV);
 			theChart.updatePredictedWait();
 			break;
 
 		case 'acv':
 			theSimulation.interarrivalRV.setCV(v);
-			simu.heap.modify('finish/creator', theSimulation.interarrivalRV);
+			simu.heap.modify('finish/creator', simu.now,
+							 theSimulation.interarrivalRV);
 			theChart.updatePredictedWait();
 
 			break;
@@ -137,13 +139,15 @@ function captureChangeInSliderS(event) {
 		case 'sr':
 			theSimulation.serviceRV
 				.setRate(v / tioxTimeConv);
-			simu.heap.modify('finish/TSAagent', theSimulation.serviceRV);
+			simu.heap.modify('finish/TSAagent', simu.now, 
+							 theSimulation.serviceRV);
 			theChart.updatePredictedWait();
 			break;
 
 		case 'scv':
 			theSimulation.serviceRV.setCV(v);
-			simu.heap.modify('finish/TSAagent', theSimulation.serviceRV);
+			simu.heap.modify('finish/TSAagent', simu.now, 
+							 theSimulation.serviceRV);
 			theChart.updatePredictedWait();
 			break;
 
