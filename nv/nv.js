@@ -62,8 +62,6 @@ const theStage = {
 
 
 simu.theStage = theStage;
-simu.framedelta = 200;
-simu.framedeltaFor1X = 200;
 simu.sliderTypes = {
 		dr: 'range',
 		dcv: 'range',
@@ -84,21 +82,17 @@ simu.sliderTypes = {
 	};
 simu.editMode = false;
 
-class ProcessCollection {
+class ProcessCollection extends Array {
 	constructor() {
-		this.processList = [];
+		super();
 	};
-
-	push(aProcess) {
-		this.processList.push(aProcess);
-	};
-
 	reset() {
-		this.processList.forEach(aProcess => aProcess.reset());
+		this.forEach(aProcess => aProcess.reset());
 	};
 }; // end class processCollection
 
-document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
+document.getElementById('sliderBigBox')
+	.addEventListener('input', captureChangeInSliderS);
 const speeds = [1, 3, 10, 30];
 
 function captureChangeInSliderS(event) {
@@ -148,8 +142,6 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			simu.framedelta = simu.framedeltaFor1X *
-				speeds[v];
 			simu.frameSpeed = speeds[v];
 			theChart.continue();
 			itemCollection.updateForSpeed();
@@ -512,18 +504,6 @@ export class Person extends Item {
 		super.moveDisplayWithPath(deltaSimT);
 	};
 
-	//    isThereOverlap() {
-	//        // is 'p' graph above the 'a' graph in [0, p.count] ?
-	//        let p = this;
-	//        let a = this.ahead;
-	//        if ( !a ) return false;
-	//        let pPath = p.pathList[0];
-	//        let aPath = a.pathList[0];
-	//        
-	//        if (  p.cur.x + p.width > a.cur.x ) return true;
-	//        if ( pPath.deltaX <= aPath.deltaX ) return false;
-	//        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
-	//    };
 
 	setDestWithProcTime(procTime, x, y) {
 		let distance = Math.max(Math.abs(this.cur.x - x),

@@ -1,0 +1,22 @@
+Documentation of Tiox Code
+
+There are two main variables in each code
+simu:  Keeps track of various aspects of the simulation
+anim:  Keeps track of various aspects of the display of the animation.
+
+simu components:
+A function called eachFrame is called on each request for an animation frame.   
+There are two time scales, realtime obtained from the browser via performance.now and simulated time which may progress faster when the speed is faster than 1X and may progress not at all when the simulation is paused.
+
+On each call to eachFrame, the real time since the last call is computed (deltaRealTime) and converted to simulated time (deltaSimuTime) based on the current speed of the animation (frameSpeed).   The simulation is run for this much simulated time (allowing simu.now to catch up to simu.frameNow).  Then the stage is cleared the items in itemCollection are moved (based on deltaSimuTime), and redrawn on the stage.  Finally an Animation Frame is requested.  If the browser takes longer than 100 milliseconds to call eachFrame, the simulated time only progresses 100*frameSpeed.
+
+tioxTimConv:
+
+In all the simulation routines simu.now represents the current simulated time.
+The relationship between the parameters displayed and simulated time is controlled by tioxTimeConv usually 1000 or 10000.   Thus if the arrival rate is 5 then think of 5 people coming per second if tioxTimeConv = 1000,  and 5 people coming every 10 seconds if tioxTimeConv is 10000.   An arrival rate of 5 means 5/tioxTimConv arrivals every millisecond, or 5*1000/tioxTimeConv arrivals per second.
+
+For each animation there two pieces of code unique to it, and three shared pieces.  The three shared pieces are 1) procsteps.js which contain all the simulation routines that generally know nothing of the animation,   2) rhs.js which controls the input parameters of each simulation and the scenarios (collections of parameter settings) in the table, 3) utility.js which is more basic utility code.  The unique code for queueing, for example, is in queueing.html and queueing.js.
+
+
+	
+	

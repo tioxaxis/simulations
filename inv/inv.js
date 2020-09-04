@@ -10,64 +10,18 @@ import {
 }
 from '../modules/utility.js';
 import {
+	animSetup
+}
+from '../modules/setup.js';
+import {
 	Queue, WalkAndDestroy, MachineCenter,
 	InfiniteMachineCenter, Combine, Item, itemCollection, ItemCollection, BoxStack,
 	GStickFigure, NStickFigure, GStore, Package, tioxColors
 }
 from '../modules/procsteps.js';
 
-const theStage = {
-	normalSpeed: .10, //.10 pixels per millisecond
-	width: 1000,
-	height: 300,
-
-	person: {
-		width: 40,
-		height: 60
-	}
-};
-
-{
-	theStage.store = {
-		left: 400,
-		top: 80,
-		stroke: 1
-	};
-
-	theStage.boxSpace = 20;
-	theStage.boxSize = 16,
-		theStage.boxesPerRow = 10;
-	theStage.store.width = theStage.boxSpace * theStage.boxesPerRow;
-	theStage.store.right = theStage.store.left + theStage.store.width;
-	theStage.store.bot = theStage.store.top + theStage.store.width;
-	theStage.pathLeft = -100;
-	theStage.truckLeft = theStage.store.right;
-	theStage.truckRight = 1000;
-	theStage.truckTop = theStage.store.top - 2 * theStage.boxSpace;
-	theStage.truckBot = theStage.store.bot - 5 * theStage.boxSpace
-	theStage.pathRight = theStage.store.left - 20;
-	theStage.pathTop = theStage.store.top;
-	theStage.pathBot = theStage.store.top + theStage.boxSpace * 7;
-	theStage.pathMid = (theStage.pathTop + theStage.pathBot) / 2;
-	theStage.offStageEntry = {
-		x: theStage.pathLeft,
-		y: theStage.pathTop
-	};
-	theStage.offStageExit = {
-		x: theStage.pathLeft,
-		y: theStage.pathBot
-	};
-	theStage.headQueue = {
-		x: theStage.pathRight,
-		y: theStage.pathBot
-	};
-};
-
-
-simu.framedelta = 200;
-simu.framedeltaFor1X = 200;
 simu.whichRule = 'methRop';
-
+animSetup();
 
 simu.sliderTypes = {
 	ar: 'range',
@@ -97,17 +51,12 @@ simu.precision = {
 };
 simu.editMode = false;
 
-class ProcessCollection {
+class ProcessCollection extends Array {
 	constructor() {
-		this.processList = [];
+		super();
 	};
-
-	push(aProcess) {
-		this.processList.push(aProcess);
-	};
-
 	reset() {
-		this.processList.forEach(aProcess => aProcess.reset());
+		this.forEach(aProcess => aProcess.reset());
 	};
 }; // end class processCollection
 
@@ -187,8 +136,6 @@ function captureChangeInSliderS(event) {
 			}
 			break;
 		case 'speed':
-			simu.framedelta = simu.framedeltaFor1X *
-				speeds[v];
 			simu.frameSpeed = speeds[v];
 			theChart.continue();
 			itemCollection.updateForSpeed();
@@ -214,15 +161,15 @@ simu.reset2 = function () {
 	theChart.reset();
 	theProcessCollection.reset();
 	itemCollection.moveDisplayAll(0); //display all at start.
-	gSF = new GStickFigure(simu.context,
-		theStage.person.height,
-		theStage.boxSize);
+	gSF = new GStickFigure(anim.stage.foreContext,
+		anim.person.height,
+		anim.box.size);
 	// schedule the initial Person to arrive and start the simulation/animation.
 	theSimulation.supply.previous = null;
 	theSimulation.creator.knockFromPrevious();
 	//fudge to get animation started quickly
 	let t = simu.heap.top().time - 1;
-	simu.now = simu.frametime = Math.floor(t / simu.framedelta) * simu.framedelta;
+	simu.now = simu.frameNow = t;
 	if (simu.whichRule == 'methUpto') {
 		simu.heap.push({
 			time: 0 + theSimulation.period,
@@ -239,23 +186,23 @@ simu.reset2 = function () {
 //  animation for that process step
 
 const animForQueue = {
-	walkingTime1: (theStage.pathRight - theStage.offStageEntry.x) / theStage.normalSpeed,
-	walkingTime2: (theStage.pathMid - theStage.pathTop) / theStage.normalSpeed,
-	walkingTime: ((theStage.pathRight - theStage.offStageEntry.x) +
-		(theStage.pathMid - theStage.pathTop)) / theStage.normalSpeed,
+	walkingTime1: (anim.person.path.right - anim.person.path.left) / anim.stage.normalSpeed,
+	walkingTime2: (anim.person.path.mid - anim.person.path.top) / anim.stage.normalSpeed,
+	walkingTime: ((anim.person.path.right - anim.person.path.left) +
+		(anim.person.path.mid - anim.person.path.top)) / anim.stage.normalSpeed,
 
 	reset: function () {},
 
 	join: function (qLength, arrivalTime, person) {
 		person.addPath({
 			t: arrivalTime - this.walkingTime2,
-			x: theStage.pathRight,
-			y: theStage.pathTop
+			x: anim.person.path.right,
+			y: anim.person.path.top
 		});
 		person.addPath({
 			t: arrivalTime,
-			x: theStage.pathRight,
-			y: theStage.pathMid
+			x: anim.person.path.right,
+			y: anim.person.path.mid
 		});
 	},
 	arrive: function (nSeatsUsed, person) {},
@@ -263,13 +210,13 @@ const animForQueue = {
 	leave: function (procTime, nSeatsUsed) {}
 };
 const animForStore = {
-	walkingTime: (theStage.pathBot - theStage.pathTop) / theStage.normalSpeed,
+	walkingTime: (anim.person.path.bot - anim.person.path.top) / anim.stage.normalSpeed,
 	reset: function () {},
 	start: function () {
 		person.addPath({
 			t: arrivalTime - this.walkingTime,
-			x: theStage.pathRight,
-			y: theStage.pathBot
+			x: anim.person.path.right,
+			y: anim.person.path.bot
 		});
 	}
 }
@@ -278,20 +225,20 @@ const animForSeller = {
 	start: function (person, pack, walkingTime) {
 		person.addPath({ //walk to bot
 			t: simu.now + walkingTime,
-			x: theStage.pathRight,
-			y: theStage.pathBot
+			x: anim.person.path.right,
+			y: anim.person.path.bot
 		});
 		const leftTime = walkingTime / 2;
 		if (pack) {
 			pack.addPath({
 				t: simu.now + leftTime,
-				x: theStage.pathRight + person.graphic.gSF.package.x,
+				x: anim.person.path.right + person.graphic.gSF.package.x,
 				y: pack.cur.y
 			});
 			pack.addPath({ // move up to arm height in other time
 				t: simu.now + walkingTime,
-				x: theStage.pathRight + person.graphic.gSF.package.x,
-				y: theStage.pathBot + person.graphic.gSF.package.y,
+				x: anim.person.path.right + person.graphic.gSF.package.x,
+				y: anim.person.path.bot + person.graphic.gSF.package.y,
 			});
 		}
 	},
@@ -307,13 +254,13 @@ const animForSeller = {
 };
 
 const animForWalkOffStage = {
-	walkingTime: (theStage.pathRight - theStage.pathLeft) / theStage.normalSpeed,
+	walkingTime: (anim.person.path.right - anim.person.path.left) / anim.stage.normalSpeed,
 
 	start: function (person) {
 		person.addPath({
 			t: simu.now + this.walkingTime,
-			x: theStage.pathLeft,
-			y: theStage.pathBot
+			x: anim.person.path.left,
+			y: anim.person.path.bot
 		});
 	}
 };
@@ -363,8 +310,8 @@ const theSimulation = {
 			document.getElementById('upto').value);
 
 		//queues
-		this.supply = new Supplier(theStage.offStageEntry.x,
-			theStage.offStageEntry.y);
+		this.supply = new Supplier(anim.person.path.left,
+			anim.person.path.top);
 
 		this.queue = new Queue("theQueue", -1,
 			animForQueue.walkingTime,   
@@ -373,10 +320,7 @@ const theSimulation = {
 
 		this.walkOffStage = new WalkAndDestroy("walkOff", animForWalkOffStage, true);
 
-		this.store = new RopStore(
-			simu.backcontext, simu.context,
-			theStage.store.left, theStage.store.top,
-			theStage.boxSpace, theStage.boxSize, theStage.boxesPerRow);
+		this.store = new RopStore(anim);
 
 		//machine centers 
 		this.creator = new MachineCenter("creator",
@@ -413,15 +357,13 @@ class Supplier {
 		this.y = y;
 	};
 	pull() {
-		return new Person(this.x, this.y, 30, theStage.person.height);
+		return new Person(this.x, this.y, 30, anim.person.height);
 	}
 }; //end class Supplier
 
 class RopStore extends GStore {
-	constructor(backcontext, context, left, top,
-		boxSpace, boxSize, boxesPerRow) {
-		super(backcontext, context, left, top,
-			boxSpace, boxSize, boxesPerRow);
+	constructor(anim) {
+		super(anim);
 		this.name = 'ropRetail'
 
 		//stats for performance of store
@@ -455,15 +397,15 @@ class RopStore extends GStore {
 		item.truck.graphic.setReverse();
 		item.load.graphic.setReverse();
 		item.load.cur.x -=
-			item.truck.graphic.truckCabWidth;
+			anim.truck.cabWidth;
 		const n = item.load.graphic.packages.length;
 		
-		let topOfInventory = this.store.bot - this.store.boxSpace *
-			Math.ceil(this.invInDoor / this.store.boxesPerRow);
+		let topOfInventory = anim.store.bot - anim.box.space *
+			Math.ceil(this.invInDoor / anim.box.perRow);
 		this.invInDoor += n;
 		item.load.addPath({
 			t: item.load.arrivalTime,
-			x: theStage.store.left,
+			x: anim.store.left,
 			y: topOfInventory
 		});
 	};
@@ -474,10 +416,10 @@ class RopStore extends GStore {
 		const n = load.graphic.packages.length;
 		for (let k = 0; k < n; k++) {
 			let point = this.boxStack.relCoord(this.inv + k);
-			load.graphic.packages[k].cur.x = this.left + point.x;
-			load.graphic.packages[k].cur.y = this.bot + point.y;
+			load.graphic.packages[k].cur.x = anim.store.left + point.x;
+			load.graphic.packages[k].cur.y = anim.store.bot + point.y;
 			load.graphic.packages[k].graphic
-				.moveTo(this.left + point.x, this.bot + point.y);
+				.moveTo(this.left + point.x, anim.store.bot + point.y);
 		}
 		load.graphic.packages.forEach(p => {
 			p.inBatch = false
@@ -531,8 +473,7 @@ class RopStore extends GStore {
 
 	createDelivery(quantity) {
 		this.invPosition += quantity;
-		const truck = new Truck(simu.context,
-			theStage.boxSpace, 10);
+		const truck = new Truck(anim);
 		const truckLT = theSimulation.leadtimeRV.observe();
 		const timeMoveDown1 = Math.min(2000, truckLT / 6);
 		const timeMoveDown2 = Math.min(4000, truckLT / 3);
@@ -540,8 +481,8 @@ class RopStore extends GStore {
 
 
 		const delta = truck.deltaPointFlatBed();
-		const load = new LoadOfBoxes(simu.context,
-			truck.cur.x + delta.dx, truck.cur.y + delta.dy, quantity, theStage.boxSpace, theStage.boxSize, 10);
+		const load = new LoadOfBoxes(anim.stage.foreContext,
+			truck.cur.x + delta.dx, truck.cur.y + delta.dy, quantity, anim.box);
 
 		const timeTravel = truckLT - timeMoveDown1 - timeMoveDown2;
 		const atDoorTime = simu.now + timeTravel;
@@ -574,37 +515,37 @@ class RopStore extends GStore {
 		});
 		truck.addPath({
 			t: atDoorTime - 20,
-			x: theStage.truckLeft,
-			y: theStage.truckTop
+			x: anim.truck.path.left,
+			y: anim.truck.path.top
 		});
 		truck.addPath({
 			t: load.arrivalTime,
-			x: theStage.truckLeft,
-			y: theStage.truckBot
+			x: anim.truck.path.left,
+			y: anim.truck.path.bot
 		});
 		truck.addPath({
 			t: load.arrivalTime + timeTravel,
-			x: theStage.truckRight,
-			y: theStage.truckBot
+			x: anim.truck.path.right,
+			y: anim.truck.path.bot
 		});
 
 		let point = truck.deltaPointFlatBed();
-		let topOfInventory = this.store.bot - this.store.boxSpace *
-			Math.ceil(this.invInDoor / this.store.boxesPerRow);
+		let topOfInventory = anim.store.bot - anim.box.space *
+			Math.ceil(this.invInDoor / anim.box.perRow);
 
 		load.addPath({
 			t: atDoorTime - 20,
-			x: theStage.truckLeft + point.dx,
-			y: Math.min(theStage.truckTop + point.dy,
+			x: anim.truck.path.left + point.dx,
+			y: Math.min(anim.truck.path.top + point.dy,
 				topOfInventory)
 		});
 
 
 		load.addPath({
 			t: splitTime,
-			x: theStage.truckLeft,
-			y: Math.min(theStage.truckTop + point.dy +
-				frac * (theStage.truckBot - theStage.truckTop),
+			x: anim.truck.path.left,
+			y: Math.min(anim.truck.path.top + point.dy +
+				frac * (anim.truck.path.bot - anim.truck.path.top),
 				topOfInventory)
 		});
 	};
@@ -612,27 +553,25 @@ class RopStore extends GStore {
 
 const pi2 = 2 * Math.PI;
 class Truck extends Item {
-	constructor(ctxTruck, boxSpace, bedLength = 10) {
-		super(theStage.truckRight, theStage.truckTop);
-		this.graphic = new FlatBed(ctxTruck, boxSpace, bedLength, );
+	constructor(anim) {
+		
+		super(anim.truck.path.right, anim.truck.path.top);
+		this.anim = anim;
+		this.graphic = new FlatBed(anim);
 	};
 	deltaPointFlatBed() {
 		return {
-			dx: this.graphic.truckCabWidth,
-			dy: this.graphic.truckHeight -
-				0.75 * this.graphic.boxSpace
+			dx: this.anim.truck.cabWidth,
+			dy: this.anim.truck.height -
+				0.75 * this.anim.box.space
 		}
 	}
 };
 class FlatBed {
-	constructor(context, boxSpace, bedLength) {
-		this.ctx = context;
-		this.boxSpace = boxSpace;
-		this.truckHeight = this.boxSpace * 5;
-		this.truckCabWidth = this.truckHeight / 2;
-		this.truckBedWidth = bedLength * this.boxSpace;
-		this.truckWidth = this.truckBedWidth + this.truckCabWidth;
+	constructor(anim) {
+		this.anim = anim;
 		this.reverse = 0;
+		
 	};
 
 	moveTo(x, y) {
@@ -640,88 +579,84 @@ class FlatBed {
 		this.y = Math.floor(y);
 	};
 	setReverse() {
-		this.reverse = this.truckCabWidth + this.truckBedWidth;
+		this.reverse = this.anim.truck.cabWidth + this.anim.truck.bedWidth;
 	}
 
 	draw() {
-		this.ctx.save();
+		let c = this.anim.stage.foreContext;
+		c.save();
 		if (this.reverse) {
-			this.ctx.translate(2 * (this.x) + this.reverse, 0);
-			this.ctx.scale(-1, 1);
+			c.translate(2 * (this.x) + this.reverse, 0);
+			c.scale(-1, 1);
 		};
-		this.ctx.fillStyle = 'lightgrey';
-		this.ctx.strokeStyle = 'black';
-		this.ctx.lineWidth = 2;
+		c.fillStyle = 'lightgrey';
+		c.strokeStyle = 'black';
+		c.lineWidth = 2;
 
 		//body
-		this.ctx.moveTo(this.x, this.y + this.truckHeight);
-		this.ctx.lineTo(this.x + this.truckWidth, this.y + this.truckHeight);
-		this.ctx.lineTo(this.x + this.truckWidth, this.y + this.truckHeight - 0.75 * this.boxSpace);
-		this.ctx.lineTo(this.x + this.truckCabWidth, this.y + this.truckHeight - 0.75 * this.boxSpace);
-		this.ctx.lineTo(this.x + this.truckCabWidth, this.y);
-		this.ctx.lineTo(this.x + this.truckCabWidth / 2, this.y);
-		this.ctx.lineTo(this.x, this.y + this.truckHeight / 2);
-		this.ctx.lineTo(this.x, this.y + this.truckHeight);
-		this.ctx.closePath();
-		this.ctx.stroke();
-		this.ctx.fill();
+		c.moveTo(this.x, this.y + this.anim.truck.height);
+		c.lineTo(this.x + this.anim.truck.width, this.y + this.anim.truck.height);
+		c.lineTo(this.x + this.anim.truck.width, this.y + this.anim.truck.height - 0.75 * this.anim.box.space);
+		c.lineTo(this.x + this.anim.truck.cabWidth, this.y + this.anim.truck.height - 0.75 * this.anim.box.space);
+		c.lineTo(this.x + this.anim.truck.cabWidth, this.y);
+		c.lineTo(this.x + this.anim.truck.cabWidth / 2, this.y);
+		c.lineTo(this.x, this.y + this.anim.truck.height / 2);
+		c.lineTo(this.x, this.y + this.anim.truck.height);
+		c.closePath();
+		c.stroke();
+		c.fill();
 
 		//wheels  
-		this.ctx.beginPath();
-		this.ctx.arc(this.x + this.truckCabWidth / 2,
-			this.y + this.truckHeight,
-			this.boxSpace / 2, 0, pi2);
-		this.ctx.stroke();
-		this.ctx.fill();
+		c.beginPath();
+		c.arc(this.x + this.anim.truck.cabWidth / 2,
+			this.y + this.anim.truck.height,
+			this.anim.box.space / 2, 0, pi2);
+		c.stroke();
+		c.fill();
 
-		this.ctx.beginPath();
-		this.ctx.arc(this.x + this.truckWidth - this.truckCabWidth / 2,
-			this.y + this.truckHeight,
-			this.boxSpace / 2, 0, pi2);
-		this.ctx.stroke();
-		this.ctx.fill();
+		c.beginPath();
+		c.arc(this.x + this.anim.truck.width - this.anim.truck.cabWidth / 2,
+			this.y + this.anim.truck.height,
+			this.anim.box.space / 2, 0, pi2);
+		c.stroke();
+		c.fill();
 
-		this.ctx.restore();
+		c.restore();
 	};
 };
 
 class LoadOfBoxes extends Item {
-	constructor(context, left, bot, quantity,
-		boxSpace, boxSize, bedlength) {
+	constructor(context, left, bot, quantity, box) {
 		super(left, bot);
 		this.graphic = new DisplayBoxes(context, left, bot,
-			quantity, boxSpace, boxSize, bedlength);
+			quantity, box);
 	};
 };
 
 class DisplayBoxes {
-	constructor(ctxDB, left, bot, quantity,
-		boxSpace, boxSize, bedlength) {
+	constructor(ctxDB, left, bot, quantity, box) {
 		this.ctxDB = ctxDB;
 		this.left = left;
 		this.bot = bot;
-		this.boxSpace = boxSpace;
-		this.boxSize = boxSize;
-		this.bedlength = bedlength;
+		this.box = box;
 		this.packages = [];
 		this.reverse = 0;
 
 		for (let k = 0; k < quantity; k++) {
 			let colorIndex = Math.floor(Math.random() * tioxColors.length);
 			let pack = new Package(this.ctxDB,
-				tioxColors[colorIndex], boxSize, 0, 0);
+				tioxColors[colorIndex], box.size, 0, 0);
 			this.packages.push(pack);
 			pack.inBatch = true;
 		}
-		this.boxStack = new BoxStack(boxSpace, boxSize,
-			bedlength, false);
+		this.boxStack = new BoxStack(box, false);
 	};
 	moveTo(left, bot) {
 		this.left = Math.floor(left);
 		this.bot = Math.floor(bot);
 	};
 	setReverse() {
-		this.reverse = this.boxSpace * this.bedlength;
+		this.reverse = this.box.space * this.box.perRow;
 	}
 	draw() {
 		this.ctxDB.save();
@@ -735,7 +670,7 @@ class DisplayBoxes {
 			this.ctxDB.fillRect(
 				this.left + point.x,
 				this.bot + point.y,
-				this.boxSize, this.boxSize);
+				this.box.size, this.box.size);
 		};
 		this.ctxDB.restore();
 	};
@@ -755,23 +690,11 @@ export class Person extends Item {
 		super.moveDisplayWithPath(deltaSimT);
 	};
 
-	//    isThereOverlap() {
-	//        // is 'p' graph above the 'a' graph in [0, p.count] ?
-	//        let p = this;
-	//        let a = this.ahead;
-	//        if ( !a ) return false;
-	//        let pPath = p.pathList[0];
-	//        let aPath = a.pathList[0];
-	//        
-	//        if (  p.cur.x + p.width > a.cur.x ) return true;
-	//        if ( pPath.deltaX <= aPath.deltaX ) return false;
-	//        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
-	//    };
 
 	setDestWithProcTime(procTime, x, y) {
 		let distance = Math.max(Math.abs(this.cur.x - x),
 			Math.abs(this.cur.y - y));
-		let deltaTime = Math.min(distance / theStage.normalSpeed, procTime);
+		let deltaTime = Math.min(distance / anim.stage.normalSpeed, procTime);
 		this.addPath({
 			t: simu.now + deltaTime,
 			x: x,

@@ -1,11 +1,12 @@
 'use strict';
-
-// declaration of Globals
 import {
 	GammaRV, Heap
 }
 from "../modules/utility.js";
-//    from './modules/utility.js';
+import {
+	animSetup
+}
+from '../modules/setup.js';
 import {
 	Queue, WalkAndDestroy, MachineCenter,
 	InfiniteMachineCenter, Item, itemCollection, ItemCollection,
@@ -13,46 +14,36 @@ import {
 }
 from "../modules/procsteps.js";
 const tioxTimeConv = 10000; //rates in tiox are k/10 seconds
-const theStage = {
-	normalSpeed: .10, //.25 pixels per millisecond
+anim.stage = {
+	normalSpeed: .10, 
 	width: 1000,
-	height: 300,
-	pathY: 100,
-	person: {
-		dx: 40,
-		dy: 60
-	}
-}; {
-	theStage.offStageLeft = {
-		x: -100,
-		y: theStage.pathY
-	};
-	theStage.offStageRight = {
-		x: theStage.width * 1.1,
-		y: theStage.pathY
-	};
+	height: 300
+}
+anim.stage.foreContext = document
+		.getElementById('foreground')
+		.getContext('2d');
+	anim.stage.backContext = document
+		.getElementById('background')
+		.getContext('2d');
 
-	theStage.headQueue = {
-		x: theStage.width * 0.70,
-		y: theStage.pathY
-	};
-	theStage.queueDelta = {
-		dx: theStage.person.dx,
-		dy: 0
-	};
-	theStage.scanner = {
-		x: theStage.width * 0.75,
-		y: theStage.pathY
-	};
-	theStage.pastScanner = {
-		x: theStage.width * 0.75 + theStage.person.dx,
-		y: theStage.pathY
-	};
-	theStage.scannerDelta = {
-		dx: 0,
-		dy: theStage.person.dy * 1.8
-	};
+anim.person = {
+	width: 40,
+	height: 60,
+	path: {
+		left: -100,
+		right: anim.stage.width * 1.1,
+		headQueue: anim.stage.width * 0.7,
+		scanner: anim.stage.width * 0.75,
+		pastScanner: anim.stage.width * .75,
+		top: 100,
+	}
 };
+anim.scannerDelta = {
+  	dx: 0,
+	dy: anim.person.height * 1.8
+};
+
+
 
 
 // specific info for queueing needed by general routines
@@ -66,36 +57,18 @@ simu.sliderTypes = {
 	action: 'radio',
 	reset: 'checkbox'
 };
-simu.framedelta = 5;
-simu.framedeltaFor1X = 5;
 simu.editMode = false;
 
-class ProcessCollection {
+class ProcessCollection extends Array {
 	constructor() {
-		this.processList = [];
+		super();
 	};
-
-	push(aProcess) {
-		this.processList.push(aProcess);
-	};
-
 	reset() {
-		this.processList.forEach(aProcess => aProcess.reset());
+		this.forEach(aProcess => aProcess.reset());
 	};
 }; // end class processCollection
 
 var qLenDisplay = null;
-
-function resetBackground() {
-	//        let theFabricCanvas = simu.theCanvas;
-	//        theFabricCanvas.clear();
-	//        qLenDisplay = new fabric.Text( 'Queue Length = 0', 
-	//            { fontSize: 20, visible: false, 
-	//             left: 100, top: 250 });
-	//        theFabricCanvas.add(qLenDisplay); 
-
-	// put other things that are fixed and not people on stage.
-};
 
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
 const precision = {
@@ -152,8 +125,6 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			simu.framedelta = simu.framedeltaFor1X *
-				speeds[v];
 			simu.frameSpeed = speeds[v];
 			theChart.continue();
 			itemCollection.updateForSpeed();
@@ -168,12 +139,11 @@ function captureChangeInSliderS(event) {
 }
 
 simu.reset2 = function () {
-	resetBackground();
 	itemCollection.reset();
 	theChart.reset();
 	theProcessCollection.reset();
-	gSF = new GStickFigure(simu.context,
-		theStage.person.dy);
+	gSF = new GStickFigure(anim.stage.foreContext,
+		anim.person.height);
 
 	// schedule the initial Person to arrive and start the simulation/animation.
 	theSimulation.supply.previous = null;
@@ -181,7 +151,7 @@ simu.reset2 = function () {
 
 	//fudge to get animation started quickly
 	let t = simu.heap.top().time - 1;
-	simu.now = simu.frametime = Math.floor(t / simu.framedelta) * simu.framedelta;
+	simu.now = simu.frameNow = t;
 
 };
 
@@ -190,18 +160,16 @@ simu.reset2 = function () {
 //  animation for that process step
 
 const animForQueue = {
-	loc: theStage.headQueue,
-	delta: theStage.queueDelta,
+	delta: {dx: anim.person.width,
+			dy: 0},
 	dontOverlap: true,
-	walkingTime: (theStage.headQueue.x - theStage.offStageLeft.x) / theStage.normalSpeed,
+	walkingTime: (anim.person.path.headQueue - anim.person.path.left) / anim.stage.normalSpeed,
 
-	reset: function () {
-		this.loc = theStage.headQueue;
-	},
+	reset: function () {},
 
 	join: function (nInQueue, arrivalTime, person) {
 		let dist = nInQueue * animForQueue.delta.dx;
-		let time = simu.now + dist / theStage.normalSpeed;
+		let time = simu.now + dist / anim.stage.normalSpeed;
 		person.addPath({
 			t: time,
 			x: person.cur.x,
@@ -209,8 +177,8 @@ const animForQueue = {
 		});
 		person.addPath({
 			t: arrivalTime,
-			x: animForQueue.loc.x - dist,
-			y: animForQueue.loc.y
+			x: anim.person.path.headQueue - dist,
+			y: anim.person.path.top
 		});
 		if (person.isThereOverlap()) {
 			person.cur.y = person.ahead.cur.y - 10;
@@ -224,7 +192,7 @@ const animForQueue = {
 
 		for (let k = 0; k < theSimulation.queue.q.length; k++) {
 			let p = theSimulation.queue.q[k];
-			let time = simu.now + Math.min(animForQueue.delta.dx / theStage.normalSpeed, procTime);
+			let time = simu.now + Math.min(animForQueue.delta.dx / anim.stage.normalSpeed, procTime);
 			if (p.pathList.length == 0) {
 				p.addPath({
 					t: time,
@@ -252,24 +220,20 @@ const animForQueue = {
 //};
 
 const animForWalkOffStage = {
-	loc: theStage.offStageRight,
-	walkingTime: Math.abs(theStage.scanner.x - theStage.offStageRight.x) / theStage.normalSpeed,
+	walkingTime: Math.abs(anim.person.path.scanner - anim.person.path.right) / anim.stage.normalSpeed,
 
-	//    computeWalkingTime: function (){
-	//         this.walkingTime =  Math.abs(theStage.scanner.x - this.loc.x)/theStage.normalSpeed;
-	//        return this.walkingTime
-	//    },
+	
 
 	start: function (person) {
 		person.addPath({
-			t: simu.now + 50 / theStage.normalSpeed,
+			t: simu.now + 50 / anim.stage.normalSpeed,
 			x: 800,
 			y: 100
 		});
 		person.addPath({
-			t: simu.now + this.walkingTime - 50 / theStage.normalSpeed,
-			x: this.loc.x,
-			y: this.loc.y
+			t: simu.now + this.walkingTime - 50 / anim.stage.normalSpeed,
+			x: anim.person.path.right,
+			y: anim.person.path.top
 		});
 
 		if (person.isThereOverlap()) {
@@ -280,8 +244,6 @@ const animForWalkOffStage = {
 };
 
 const animForCreator = {
-	loc: theStage.offStageLeft,
-	dontOverlap: false,
 
 	reset: function () {},
 
@@ -296,8 +258,6 @@ const animForCreator = {
 
 
 const animForTSA = {
-	firstLoc: theStage.scanner,
-	delta: theStage.scannerDelta,
 	dontOverlap: true,
 
 	machLoc: null,
@@ -306,10 +266,10 @@ const animForTSA = {
 	reset: function (numMachines) {
 		animForTSA.machLoc = [];
 		animForTSA.lastFinPerson = null;
-		let locX = animForTSA.firstLoc.x;
-		let locY = animForTSA.firstLoc.y;
-		const background = document.getElementById('theBackground');
-		const c = background.getContext('2d');
+		let locX = anim.person.path.scanner;
+		let locY = anim.person.path.top;
+		let c = anim.stage.backContext;
+	
 		c.resetTransform();
 		c.strokeStyle = 'blue';
 		c.lineWidth = 5;
@@ -320,8 +280,8 @@ const animForTSA = {
 				x: locX,
 				y: locY
 			};
-			locX += animForTSA.delta.dx;
-			locY += animForTSA.delta.dy;
+			locX += anim.scannerDelta.dx;
+			locY += anim.scannerDelta.dy;
 		}
 		c.closePath();
 	},
@@ -367,7 +327,7 @@ const theSimulation = {
 		theSimulation.serviceRV = new GammaRV(r / tioxTimeConv, cv);
 
 		//queues
-		this.supply = new Supplier(theStage.offStageLeft.x, theStage.offStageLeft.y);
+		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 
 
 		this.queue = new Queue("theQueue", -1, animForQueue.walkingTime,   
@@ -418,7 +378,7 @@ class Supplier {
 	};
 	pull() {
 		return new Person(this.x, this.y,
-			30, theStage.person.height);
+			30, anim.person.height);
 	}
 }; //end class Supplier
 
@@ -452,7 +412,7 @@ export class Person extends Item {
 	setDestWithProcTime(procTime, x, y) {
 		let distance = Math.max(Math.abs(this.cur.x - x),
 			Math.abs(this.cur.y - y));
-		let deltaTime = Math.min(distance / theStage.normalSpeed, procTime);
+		let deltaTime = Math.min(distance / anim.stage.normalSpeed, procTime);
 		this.addPath({
 			t: simu.now + deltaTime,
 			x: x,
@@ -554,7 +514,7 @@ export const theChart = {
 				labels: {
 					boxWidth: 20,
 					//fontSize: 14,
-					padding: 20
+					padding: 5,
 				}
 			},
 			title: {
@@ -708,16 +668,6 @@ export const theChart = {
 	},
 
 }
-
-//function predictedWait() {
-//	if (theSimulation.serviceRV.rate == 0) return -1;
-//	let rho = theSimulation.interarrivalRV.rate / theSimulation.serviceRV.rate;
-//	if (rho >= 1) return -1;
-//	let p = (rho / (1 - rho) / theSimulation.serviceRV.rate / tioxTimeConv) *
-//		(theSimulation.interarrivalRV.CV * * 2 + theSimulation.serviceRV.CV * * 2) / 2;
-//	//    console.log(' predicted wait / tioxTimeConv ', p/tioxTimeConv);
-//	return p;
-//}
 
 class VerticalAxisValue {
 	constructor() {

@@ -14,67 +14,51 @@ import {
 }
 from '../modules/procsteps.js';
 
-const theStage = {
-	normalSpeed: .10, //.25 pixels per millisecond
+anim.stage = {
+	normalSpeed: .10, 
 	width: 1000,
-	height: 300,
+	height: 300
+}
 
-	person: {
-		width: 40,
-		height: 60
+anim.person = {
+	width: 40,
+	height: 60,
+	path: {
+		left: -100,
+		right: anim.stage.width * 1.1,
 	}
-};
-
-{
-	theStage.headQueue = {
-		x: 150,
-		y: theStage.pathY
-	};
-	theStage.box = {
+}
+anim.stage.foreContext = document
+		.getElementById('foreground')
+		.getContext('2d');
+	anim.stage.backContext = document
+		.getElementById('background')
+		.getContext('2d');
+	
+anim.room = {
+		left: 150,
+		top: 25,
 		width: 700,
 		height: 250,
 		fill: 'white',
 		stroke: 'blue',
-		strokeWidth: 3,
-		selectable: false
-	};
-	theStage.box.top = (theStage.height - theStage.box.height) / 2;
-	theStage.box.left = (theStage.width - theStage.box.width) / 2;
-	theStage.box.entryX = theStage.box.left;
-	theStage.box.entryY =
-		(theStage.box.height - theStage.person.height) / 2 + theStage.box.top;
-	theStage.box.exitX = theStage.box.entryX + theStage.box.width;
-	theStage.box.exitY = theStage.box.entryY;
-	theStage.pathY = theStage.box.entryY;
-	theStage.headQueue = {
-		x: theStage.box.entryX,
-		y: theStage.box.entryY
-	};
-	theStage.pathway = {
-		left: 0,
-		top: theStage.box.entryY,
-		fill: 'white',
-		stroke: 'green',
-		strokeWidth: 0,
-		selectable: false,
-		width: theStage.width,
-		height: theStage.person.height
-	};
+		strokeWidth: 3,		
+}
+anim.person.path.entry = anim.room.left;
+anim.person.path.exit = anim.room.left+ anim.room.width;
+anim.person.path.top = (anim.room.height - anim.person.height)/ 
+						2 + anim.room.top;
 
-	theStage.offStageLeft = {
-		x: -100,
-		y: theStage.pathY
-	};
-	theStage.offStageRight = {
-		x: theStage.width + 100,
-		y: theStage.pathY
-	};
-};
+anim.pathway = {
+	left: 0,
+	top: anim.person.path.top - 2,
+	fill: 'white',
+	width: anim.stage.width,
+	height: anim.person.height + 4
+}
 
 
-simu.theStage = theStage;
-simu.framedelta = 200;
-simu.framedeltaFor1X = 200;
+
 simu.sliderTypes = {
 		ar: 'range',
 		acv: 'range',
@@ -93,26 +77,20 @@ simu.sliderTypes = {
 	};
 simu.editMode = false;
 
-class ProcessCollection {
+class ProcessCollection extends Array {
 	constructor() {
-		this.processList = [];
+		super();
 	};
-
-	push(aProcess) {
-		this.processList.push(aProcess);
-	};
-
 	reset() {
-		this.processList.forEach(aProcess => aProcess.reset());
+		this.forEach(aProcess => aProcess.reset());
 	};
 }; // end class processCollection
 
 //var qLenDisplay= null;
 
 function setBackground() {
-	const background = document.getElementById('theBackground');
-	const c = background.getContext('2d');
-	const b = theStage.box;
+	const c = anim.stage.backContext;
+	const b = anim.room;
 	c.resetTransform();
 	c.strokeStyle = b.stroke;
 	c.lineWidth = b.strokeWidth;
@@ -121,7 +99,8 @@ function setBackground() {
 	c.closePath();
 	c.fillStyle = 'white';
 	c.beginPath();
-	c.fillRect(0, b.entryY - 2, 1000, theStage.person.height + 4);
+	c.fillRect(anim.pathway.left, anim.pathway.top, 
+			   anim.pathway.width, anim.pathway.height);
 	c.closePath();
 };
 
@@ -161,8 +140,6 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			simu.framedelta = simu.framedeltaFor1X *
-				speeds[v];
 			simu.frameSpeed = speeds[v];
 			theChart.continue();
 			itemCollection.updateForSpeed();
@@ -183,9 +160,9 @@ simu.reset2 = function () {
 	theChart.reset();
 	theProcessCollection.reset();
 	totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
-	gSF = new GStickFigure(simu.context,
-		theStage.person.height,
-		theStage.boxSize);
+	gSF = new GStickFigure(anim.stage.foreContext,
+		anim.person.height,
+		0);
 
 
 
@@ -195,7 +172,7 @@ simu.reset2 = function () {
 
 	//fudge to get animation started quickly
 	let t = simu.heap.top().time - 1;
-	simu.now = simu.frametime = Math.floor(t / simu.framedelta) * simu.framedelta;
+	simu.now = simu.frameNow = t;
 
 };
 
@@ -204,8 +181,8 @@ simu.reset2 = function () {
 //  animation for that process step
 
 const animForQueue = {
-	loc: theStage.headQueue,
-	walkingTime: (theStage.headQueue.x - theStage.offStageLeft.x) / theStage.normalSpeed,
+	loc: {x: anim.person.path.entry, y: anim.person.path.top},
+	walkingTime: (anim.person.path.entry - anim.person.path.left) / anim.stage.normalSpeed,
 
 	reset: function () {},
 
@@ -223,13 +200,9 @@ const animForQueue = {
 };
 
 const animForWalkOffStage = {
-	loc: theStage.offStageRight,
-	walkingTime: Math.abs(theStage.box.exitX - theStage.offStageRight.x) / theStage.normalSpeed,
+	loc: {x: anim.person.path.right, y: anim.person.path.top},
+	walkingTime: Math.abs(anim.person.path.exit - anim.person.path.right) / anim.stage.normalSpeed,
 
-	//    computeWalkingTime: function (){
-	//         this.walkingTime = Math.abs(theStage.box.exitX - this.loc.x)/theStage.normalSpeed;
-	//        return this.walkingTime;
-	//    },
 
 	start: function (person) {
 		person.addPath({
@@ -242,14 +215,13 @@ const animForWalkOffStage = {
 };
 
 const animForCreator = {
-	loc: theStage.offStageLeft,
 	dontOverlap: false,
 
 	reset: function () {},
 
 	start: function (theProcTime, person, m) { // only 1 machine for creator m=1
 		person.setDestWithProcTime(theProcTime,
-			animForCreator.loc.x, animForCreator.loc.y);
+			anim.person.path.left, anim.person.path.top);
 	},
 
 	finish: function () {},
@@ -266,30 +238,30 @@ const animForLittlesBox = {
 		if (theProcTime < walkT + 3 * tioxTimeConv) {
 			person.addPath({
 				t: simu.now + theProcTime,
-				x: theStage.box.exitX,
-				y: theStage.box.exitY
+				x: anim.person.path.exit,
+				y: anim.person.path.top
 			});
 		} else {
 			walkT = Math.min(walkT, theProcTime);
-			let rx = Math.random() * 0.8 * theStage.box.width +
-				theStage.box.width * 0.05;
-			let ry = Math.random() * (theStage.box.height -
-				theStage.person.height) + theStage.box.top;
-			let w = theStage.box.width;
+			let rx = Math.random() * 0.8 * anim.room.width +
+				anim.room.width * 0.05;
+			let ry = Math.random() * (anim.room.height -
+				anim.person.height) + anim.room.top;
+			let w = anim.room.width;
 			person.addPath({
 				t: simu.now + walkT * rx / w,
-				x: rx + theStage.box.entryX,
+				x: rx + anim.person.path.entry,
 				y: ry
 			});
 			person.addPath({
 				t: simu.now + walkT * rx / w + theProcTime - walkT,
-				x: rx + theStage.box.entryX,
+				x: rx + anim.person.path.entry,
 				y: ry
 			});
 			person.addPath({
 				t: simu.now + theProcTime,
-				x: theStage.box.exitX,
-				y: theStage.box.exitY
+				x: anim.person.path.exit,
+				y: anim.person.path.top
 			});
 		}
 		person.graphic.badgeDisplay(true);
@@ -330,7 +302,7 @@ const theSimulation = {
 		theSimulation.serviceRV = new GammaRV(1 / t / tioxTimeConv, cv);
 
 		//queues
-		this.supply = new Supplier(theStage.offStageLeft.x, theStage.offStageLeft.y);
+		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 
 
 		this.queue = new Queue("theQueue", -1, animForQueue.walkingTime,   
@@ -399,7 +371,7 @@ class Supplier {
 		this.y = y;
 	};
 	pull() {
-		return new Person(this.x, this.y, 30, theStage.person.height);
+		return new Person(this.x, this.y, 30, anim.person.height);
 	}
 }; //end class Supplier
 
@@ -425,23 +397,11 @@ export class Person extends Item {
 		super.moveDisplayWithPath(deltaSimT);
 	};
 
-	//    isThereOverlap() {
-	//        // is 'p' graph above the 'a' graph in [0, p.count] ?
-	//        let p = this;
-	//        let a = this.ahead;
-	//        if ( !a ) return false;
-	//        let pPath = p.pathList[0];
-	//        let aPath = a.pathList[0];
-	//        
-	//        if (  p.cur.x + p.width > a.cur.x ) return true;
-	//        if ( pPath.deltaX <= aPath.deltaX ) return false;
-	//        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
-	//    };
 
 	setDestWithProcTime(procTime, x, y) {
 		let distance = Math.max(Math.abs(this.cur.x - x),
 			Math.abs(this.cur.y - y));
-		let deltaTime = Math.min(distance / theStage.normalSpeed, procTime);
+		let deltaTime = Math.min(distance / anim.stage.normalSpeed, procTime);
 		this.addPath({
 			t: simu.now + deltaTime,
 			x: x,

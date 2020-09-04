@@ -6,13 +6,10 @@ from './utility.js';
 const darkGrey = 'rgb(52,52,52)';
 
 simu.now = 0;
-simu.frametime = 0;
+simu.frameNow = 0;
 simu.heap = new Heap((x, y) => x.time < y.time);
 
-simu.framedelta = 5; //simulated time increment per frame
-simu.framedeltaFor1X = 5;
-simu.frameInterval = 20; //not used??? between frames
-simu.frameSpeed = 1.0; //framedelta/framedeltaFor1X
+simu.frameSpeed = 1.0; 
 
 simu.isRunning = false;
 simu.nameOfSimulation = null;
@@ -21,28 +18,18 @@ simu.context = null; //context for drawing on theCanvas
 simu.requestAFId = null; // id for requestAnimationFrame
 
 simu.initialize = function () {
-//	// if there are a set of scenarios loaded then pick the first.
-//	let firstLi = document.getElementById('ULPresetList').firstChild;
-//	if (firstLi) firstLi.dispatchEvent(
-//		new Event('click', {
-//			bubbles: true
-//		}));
-	simu.theCanvas = document.getElementById('theCanvas');
-	simu.context = simu.theCanvas.getContext('2d');
-	simu.theBackground = document.getElementById('theBackground');
-	simu.backcontext = theBackground.getContext('2d');
 };
 
 simu.reset = function () {
 	clearCanvas();
 	simu.now = 0;
-	simu.frametime = 0;
+	simu.frameNow = 0;
 	simu.heap.reset();
 	simu.reset2();
 };
 
 function clearCanvas() {
-	simu.context.clearRect(0, 0, simu.theCanvas.width, simu.theCanvas.height);
+	anim.stage.foreContext.clearRect(0, 0, anim.stage.width, anim.stage.height);
 }
 
 // play pause toggle and listeners that run them.
@@ -57,8 +44,7 @@ function play() {
 		.style.display == 'none') return
 	document.getElementById('playButton').style.display = 'none';
 	document.getElementById('pauseButton').style.display = 'inline';
-	simu.lastFrame = performance.now();
-	//console.log('at play', simu.lastFrame);
+	simu.lastPerfNow = performance.now();
 	simu.requestAFId = window.requestAnimationFrame(eachFrame);
 	simu.isRunning = true;
 };
@@ -78,7 +64,6 @@ document.addEventListener('keydown', keyDownFunction);
 
 function keyDownFunction(evt) {
 	if (simu.editMode) return;
-	const key = evt.key;
 	if (evt.code == "Space") {
 		evt.preventDefault();
 		togglePlayPause();
@@ -86,34 +71,34 @@ function keyDownFunction(evt) {
 };
 
 function eachFrame() {
-	let alternateTime = performance.now();
-	let deltaT = Math.min(100, alternateTime - simu.lastFrame);
-	simu.lastFrame = alternateTime;
-	let deltaSimT = deltaT * simu.frameSpeed;
-	simu.frametime += deltaSimT;
+	let perfNow = performance.now();
+	let deltaRealTime = Math.min(100, perfNow - simu.lastPerfNow);
+	simu.lastPerfNow = perfNow;
+	let deltaSimuTime = deltaRealTime * simu.frameSpeed;
+	simu.frameNow += deltaSimuTime;
 
 	let theTop;
 	while ((theTop = simu.heap.top()) &&
-		theTop.time <= simu.frametime) {
+		theTop.time <= simu.frameNow) {
 		const event = simu.heap.pull();
 		simu.now = event.time;
 		event.proc(event.item);
 	}
-	simu.now = simu.frametime;
+	simu.now = simu.frameNow;
 	clearCanvas();
-	itemCollection.moveDisplayAll(deltaSimT);
+	itemCollection.moveDisplayAll(deltaSimuTime);
 	simu.requestAFId = window.requestAnimationFrame(eachFrame);
 };
 
 export class Queue {
 	constructor(name, numSeats, walkingTime,
-		anim,
+		animFunc,
 		recordArrive = null, recordLeave = null) {
 		this.name = name;
 		this.maxSeats = numSeats;
 		this.walkingTime = walkingTime;
 
-		this.anim = anim;
+		this.animFunc = animFunc;
 		this.recordArrive = recordArrive;
 		this.recordLeave = recordLeave;
 
@@ -135,7 +120,7 @@ export class Queue {
 		this.q = [];
 		this.lastAdded = null;
 		this.numSeatsUsed = 0;
-		this.anim.reset();
+		this.animFunc.reset();
 	};
 
 	empty() {
@@ -153,7 +138,7 @@ export class Queue {
 	push(person) {
 		if (this.q.length == this.maxSeats) return false;
 		const arrivalTime = simu.now + this.walkingTime;
-		this.anim.join(this.q.length, arrivalTime, person);
+		this.animFunc.join(this.q.length, arrivalTime, person);
 		this.q.push(person);
 
 		// insert into end of doubly linked list
@@ -173,7 +158,7 @@ export class Queue {
 
 	arrive(person) {
 		this.numSeatsUsed++;
-		this.anim.arrive(this.numSeatsUsed, person);
+		this.animFunc.arrive(this.numSeatsUsed, person);
 		if (this.recordArrive) this.recordArrive(person);
 		if (this.numSeatsUsed == 1) this.nextMachine.knockFromPrevious();
 		this.printQueue();
@@ -183,7 +168,7 @@ export class Queue {
 		if (this.numSeatsUsed == 0) return null;
 		this.numSeatsUsed--;
 		const person = this.q.shift();
-		this.anim.leave(procTime, this.numSeatsUsed); /// this is the right thing but 
+		this.animFunc.leave(procTime, this.numSeatsUsed); /// this is the right thing but 
 		if (this.q.length < this.maxSeats) {
 			this.previous.knock();
 		}
@@ -199,10 +184,10 @@ export class Queue {
 
 //  WALK AND DESTROY
 export class WalkAndDestroy {
-	constructor(name, animForWalkAndDestroy, dontOverlap) {
+	constructor(name, animFunc, dontOverlap) {
 		this.name = name;
-		this.animForWalkAndDestroy = animForWalkAndDestroy;
-		this.walkingTime = this.animForWalkAndDestroy.walkingTime;
+		this.animFunc = animFunc;
+		this.walkingTime = this.animFunc.walkingTime;
 		this.dontOverlap = dontOverlap;
 		this.lastAdded = null;
 	};
@@ -215,7 +200,7 @@ export class WalkAndDestroy {
 		if (this.lastAdded) this.lastAdded.behind = person;
 		this.lastAdded = person;
 
-		this.animForWalkAndDestroy.start(person);
+		this.animFunc.start(person);
 
 		simu.heap.push({
 			time: simu.now + this.walkingTime,
@@ -227,10 +212,6 @@ export class WalkAndDestroy {
 	};
 
 	destroy(person) {
-		//    let b = person.behind;
-		//    let a = person.ahead;
-		//    if (b) b.ahead = person;
-		//    if (a) a.behind = person;
 		person.destroy();
 	};
 }; //end export class WalkAndDestroy
@@ -239,7 +220,7 @@ export class WalkAndDestroy {
 export class MachineCenter {
 	constructor(name, numMachines, procTime,
 		previousQ, nextQ,
-		anim,
+		animFunc,
 		recordStart = null, recordFinish = null) {
 		this.name = name;
 		this.numMachines = numMachines;
@@ -248,7 +229,7 @@ export class MachineCenter {
 
 		this.previousQ = previousQ;
 		this.nextQ = nextQ;
-		this.anim = anim;
+		this.animFunc = animFunc;
 		this.recordStart = recordStart;
 		this.recordFinish = recordFinish;
 
@@ -266,7 +247,7 @@ export class MachineCenter {
 				index: k
 			};
 		}
-		if (this.anim) this.anim.reset(this.numMachines);
+		if (this.animFunc) this.animFunc.reset(this.numMachines);
 		this.numberBusy = 0
 	};
 
@@ -301,8 +282,8 @@ export class MachineCenter {
 		const person = this.previousQ.pull(theProcTime);
 
 		if (person) {
-			if (this.anim) {
-				this.anim.start(theProcTime, person, machine.index);
+			if (this.animFunc) {
+				this.animFunc.start(theProcTime, person, machine.index);
 			}
 			person.machine = machine;
 			machine.status = 'busy';
@@ -327,7 +308,7 @@ export class MachineCenter {
 		let success = this.nextQ.push(machine.person);
 		if (success) {
 			if (this.recordFinish) this.recordFinish(machine.person);
-			if (this.anim) this.anim.finish(machine.person);
+			if (this.animFunc) this.animFunc.finish(machine.person);
 			machine.status = 'idle';
 			machine.person = null;
 			this.start(machine);
@@ -341,11 +322,11 @@ export class MachineCenter {
 
 // INFINITE MACHINE CENTER
 export class InfiniteMachineCenter extends MachineCenter {
-	constructor(name, procTime, input, output, anim,
+	constructor(name, procTime, input, output, animFunc,
 		recordStart, recordFinish) {
 		super(name, -1, procTime,
 			input, output,
-			anim, recordStart, recordFinish);
+			animFunc, recordStart, recordFinish);
 		//create a first machine to avoid a nasty edge case, make the machine idle with noone.
 		this.machs.push({
 			status: 'idle',
@@ -371,13 +352,13 @@ export class InfiniteMachineCenter extends MachineCenter {
 export class Combine {
 	constructor(name, procTime,
 		personQ, packageQ, afterQ,
-		anim) {
+		animFunc) {
 		this.name = name;
 		this.procTime = procTime;
 		this.personQ = personQ;
 		this.packageQ = packageQ;
 		this.afterQ = afterQ;
-		this.anim = anim;
+		this.animFunc = animFunc;
 	};
 	reset() {};
 	knockFromPrevious() {
@@ -387,8 +368,8 @@ export class Combine {
 		const theProcTime = this.procTime.observe();
 		const person = this.personQ.pull();
 		const pack = this.packageQ.pull();
-		if (this.anim) {
-			this.anim.start(person, pack, theProcTime);
+		if (this.animFunc) {
+			this.animFunc.start(person, pack, theProcTime);
 		}
 		simu.heap.push({
 			time: simu.now + theProcTime,
@@ -402,7 +383,7 @@ export class Combine {
 
 	};
 	finish(item) {
-		this.anim.finish(item.person, item.package);
+		this.animFunc.finish(item.person, item.package);
 		if (item.package) {
 			item.package.destroy();
 		}
@@ -422,15 +403,8 @@ export class ItemCollection extends Array {
 	reset() {
 		this.splice(0, this.length)
 	};
-//	push(item) {
-//		this.push(item);
-////		item.ahead = this.lastAdded;
-////		this.lastAdded = item;
-//		return this.length;
-//	};
-	
-	moveDisplayAll(deltaSimT) {
-		this.forEach(p => p.moveDisplayWithPath(deltaSimT))
+	moveDisplayAll(deltaSimuTime) {
+		this.forEach(p => p.moveDisplayWithPath(deltaSimuTime))
 	}
 	updateForSpeed() {
 		this.forEach(p => p.updateAllPaths());
@@ -442,9 +416,6 @@ export class ItemCollection extends Array {
 			debugger
 		}
 		this.splice(k, 1);
-//		this.counter--;
-//		if (this.lastAdded == this)
-//			this.lastAdded = null;
 	};
 };
 
@@ -474,7 +445,7 @@ export class Item {
 		this.graphic.setColor(bodyColor, borderColor);
 	}
 
-	moveDisplayWithPath(deltaSimT) {
+	moveDisplayWithPath(deltaSimuT) {
 		if (this.inBatch) return;
 		while (this.pathList.length > 0) {
 			var path = this.pathList[0];
@@ -483,15 +454,15 @@ export class Item {
 				this.cur.x = path.x;
 				this.cur.y = path.y;
 				this.pathList.splice(0, 1);
-				deltaSimT = Math.max(0, simu.now - path.t);
+				deltaSimuT = Math.max(0, simu.now - path.t);
 			} else {
 				this.cur.t = simu.now;
-				this.cur.x += path.speedX * deltaSimT;
+				this.cur.x += path.speedX * deltaSimuT;
 				if (path.speedX > 0)
 					this.cur.x = Math.min(this.cur.x, path.x);
 				else
 					this.cur.x = Math.max(this.cur.x, path.x);
-				this.cur.y += path.speedY * deltaSimT;
+				this.cur.y += path.speedY * deltaSimuT;
 				if (path.speedY > 0)
 					this.cur.y = Math.min(this.cur.y, path.y);
 				else
@@ -502,17 +473,6 @@ export class Item {
 
 		this.graphic.moveTo(this.cur.x, this.cur.y);
 		this.graphic.draw();
-
-		// not used???
-		//		function crossTarget(x, delta, target) {
-		//            if (delta > 0) {
-		//                return (x <= target) && (target <= x + delta)
-		//            } else if (delta < 0) {
-		//                return (x + delta <= target) && (target <= x)
-		//            } else {
-		//                return false;
-		//            }
-		//        };
 	};
 
 	updatePathDelta(t, dx, dy) {
@@ -549,7 +509,7 @@ export class Item {
 		let last = {};
 		if (n == 1) {
 			last = {
-				t: simu.frametime,
+				t: simu.frameNow,
 				x: this.cur.x,
 				y: this.cur.y
 			};
@@ -761,65 +721,53 @@ export class NStickFigure {
 };
 
 export class BoxStack {
-	constructor(boxSpace, boxSize, nPerRow, snake = true) {
-		this.boxSpace = boxSpace;
-		this.boxSize = boxSize;
-		this.nPerRow = nPerRow;
+	constructor(box, snake = true) {
+		this.box = box;
+//		this.boxSpace = boxSpace;
+//		this.boxSize = boxSize;
+//		this.nPerRow = nPerRow;
 		this.snake = snake;
 	}
 	relCoord(k) {
-		let row = Math.floor(k / this.nPerRow);
-		let c = k % this.nPerRow;
+		let row = Math.floor(k / this.box.perRow);
+		let c = k % this.box.perRow;
 		let col = (this.snake && row % 2 == 1) ?
-			this.nPerRow - 1 - c : c;
-		let delta = this.boxSpace - this.boxSize;
+			this.box.perRow - 1 - c : c;
+		let delta = this.box.space - this.box.size;
 		return {
-			x: this.boxSpace * col + Math.floor(delta / 2),
-			y: -(this.boxSpace) * (1 + row) + delta - 1
+			x: this.box.space * col + Math.floor(delta / 2),
+			y: -(this.box.space) * (1 + row) + delta - 1
 		};
 	};
 }
 
 export class GStore {
-	constructor(ctxStore, ctxPack, left, top, boxSpace, boxSize, boxesPerRow) {
+	constructor(anim) {
+		this.anim = anim;
+		
+//		= {
+//			left: left,
+//			top: top,
+////			boxSpace: boxSpace,
+////			boxSize: boxSize,
+////			boxesPerRow: boxesPerRow,
+//			width: box.space * box.perRow
+//		};
+//		this.store.height = this.store.width;
+//		this.store.bot = this.store.top + this.store.height;
+		this.boxStack = new BoxStack(anim.box, true);
 
-		this.ctxStore = ctxStore;
-		this.ctxPack = ctxPack;
-
-		this.store = {
-			left: left,
-			top: top,
-			boxSpace: boxSpace,
-			boxSize: boxSize,
-			boxesPerRow: boxesPerRow,
-			width: boxSpace * boxesPerRow
-		};
-		this.store.height = this.store.width;
-		this.store.bot = this.store.top + this.store.height;
-		this.boxStack = new BoxStack(boxSpace, boxSize, boxesPerRow, true);
-
-		this.updateLeftBot(this.store.left, this.store.bot);
-		this.drawStore(this.ctxStore, this.store);
+//		this.updateLeftBot(this.store.left, this.store.bot);
+		this.drawStore(this.anim.stage.backContext,
+					   this.anim.store, this.anim.box);
 
 		this.packages = [];
-
-		//        this.boxSpace = boxSpace;
-		//		this.boxSize = boxSize;
-		//        this.boxesPerRow = boxesPerRow;
 		this.snake = true;
-		//        this.box = {
-		//            w: boxSpace,
-		//            h: boxSpace,
-		//            nPerRow: boxesPerRow
-		//        };
 	};
 	reset() {
-		//		const s = this.store;
-		//		this.ctxPack.resetTransform();
-		//		this.ctxPack.clearRect(s.left, s.top, s.width, s.height);
 		this.packages = [];
 	};
-	drawStore(c, s) {
+	drawStore(c, s, b) {
 		c.save();
 		c.resetTransform();
 		c.strokeStyle = 'black';
@@ -834,15 +782,15 @@ export class GStore {
 		c.closePath();
 		c.stroke();
 		c.fill();
-		this.drawShelves(c, s);
+		this.drawShelves(c, s, b);
 		c.restore();
 	};
-	drawShelves(c, s) {
+	drawShelves(c, s, b) {
 		let left, right, y;
 		for (let k = 0; k < 9; k++) {
-			left = s.left + ((k % 2) == 0 ? 0 : s.boxSpace);
-			right = s.left + s.width - ((k % 2) == 0 ? s.boxSpace : 0);
-			y = s.bot - (k + 1) * s.boxSpace;
+			left = s.left + ((k % 2) == 0 ? 0 : b.space);
+			right = s.left + s.width - ((k % 2) == 0 ? b.space : 0);
+			y = s.bot - (k + 1) * b.space;
 			c.beginPath();
 			c.moveTo(left, y);
 			c.lineTo(right, y);
@@ -857,23 +805,11 @@ export class GStore {
 	inventory() {
 		return this.packages.length;
 	};
-	updateLeftBot(left, bot) {
-		this.left = left;
-		this.bot = bot;
-	}
+//	updateLeftBot(left, bot) {
+//		this.left = left;
+//		this.bot = bot;
+//	}
 
-	//******   used?   I think not anymore.
-//	addExisting(item) {
-//		let point = this.boxStack.relCoord(this.all.length);
-//		let pack = new Package(
-//			this.ctxPack, item.color, this.store.boxSize,
-//			item.x, item.y);
-//		pack.addPath({
-//			t: simu.now + 200,
-//			x: this.left + point.x,
-//			y: this.bot + point.y
-//		});
-//	};
 	addNew() {
 		let point = this.boxStack.relCoord(this.packages.length);
 		let color = tioxColors[Math.floor(Math.random() *
@@ -882,8 +818,8 @@ export class GStore {
 		//		let ty = this.bot + this.ry(k);
 		//		console.log(' adding box', k, 'with coord',tx,ty);
 		let pack = new Package(
-			this.ctxPack, color, this.store.boxSize,
-			this.left + point.x, this.bot + point.y);
+			this.anim.stage.foreContext, color, this.anim.box.size,
+			this.anim.store.left + point.x, this.anim.store.bot + point.y);
 		this.packages.push(pack);
 
 	};
@@ -901,8 +837,8 @@ export class GStore {
 				let point = this.boxStack.relCoord(k);
 				p.updatePath({
 					t: simu.now + 300,
-					x: this.left + point.x,
-					y: this.bot + point.y
+					x: this.anim.store.left + point.x,
+					y: this.anim.store.bot + point.y
 				});
 			};
 		}
