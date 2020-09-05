@@ -98,14 +98,14 @@ function captureChangeInSliderS(event) {
 				.setRate(v / tioxTimeConv);
 			simu.heap.modify('finish/creator', simu.now, 
 							 theSimulation.interarrivalRV);
-			theChart.updatePredictedWait();
+			queueGraph.updatePredictedWait();
 			break;
 
 		case 'acv':
 			theSimulation.interarrivalRV.setCV(v);
 			simu.heap.modify('finish/creator', simu.now,
 							 theSimulation.interarrivalRV);
-			theChart.updatePredictedWait();
+			queueGraph.updatePredictedWait();
 
 			break;
 
@@ -114,19 +114,19 @@ function captureChangeInSliderS(event) {
 				.setRate(v / tioxTimeConv);
 			simu.heap.modify('finish/TSAagent', simu.now, 
 							 theSimulation.serviceRV);
-			theChart.updatePredictedWait();
+			queueGraph.updatePredictedWait();
 			break;
 
 		case 'scv':
 			theSimulation.serviceRV.setCV(v);
 			simu.heap.modify('finish/TSAagent', simu.now, 
 							 theSimulation.serviceRV);
-			theChart.updatePredictedWait();
+			queueGraph.updatePredictedWait();
 			break;
 
 		case 'speed':
 			simu.frameSpeed = speeds[v];
-			theChart.continue();
+			queueGraph.updateForSpeed();
 			itemCollection.updateForSpeed();
 			document.getElementById(id + 'Display')
 				.innerHTML = speeds[v];
@@ -140,7 +140,7 @@ function captureChangeInSliderS(event) {
 
 simu.reset2 = function () {
 	itemCollection.reset();
-	theChart.reset();
+	queueGraph.reset();
 	theProcessCollection.reset();
 	gSF = new GStickFigure(anim.stage.foreContext,
 		anim.person.height);
@@ -205,7 +205,6 @@ const animForQueue = {
 					animForQueue.delta.dx, animForQueue.delta.dy)
 			}
 		}
-
 	}
 };
 
@@ -244,13 +243,9 @@ const animForWalkOffStage = {
 };
 
 const animForCreator = {
-
 	reset: function () {},
-
 	start: function (theProcTime, person, m) {},
-
 	finish: function () {},
-
 };
 
 
@@ -340,7 +335,7 @@ const theSimulation = {
 		};
 
 		function recordQueueLeave(person) {
-			theChart.push(simu.now, simu.now - person.arrivalTime);
+			queueGraph.push(simu.now, simu.now - person.arrivalTime);
 		};
 
 
@@ -422,312 +417,380 @@ export class Person extends Item {
 
 }; // end class Person
 
-
-
 function initializeAll() {
 	Math.seedrandom('this is the Queueing Simulation');
 	simu.initialize(); // the generic
 	theSimulation.initialize(); // the specific to queueing
-	theChart.initialize();
+	queueGraph.setupGraph();
 	//reset first time to make sure it is ready to play.
 	document.getElementById('resetButton').click();
 };
 document.addEventListener("DOMContentLoaded", initializeAll);
 
-
 //   TheChart variable is the interface to create the charts using Chart.js
 
-export const theChart = {
-	predictedWaitValue: null,
-	canvas: null,
-	ctx: null,
-	chart: null,
-	stuff: {
-		type: 'scatter',
-		data: {
-			datasets: [
-				{ //*** Series #1
-					label: 'individual wait',
-					pointBackgroundColor: 'rgba(0,0,220,1)',
-					pointBorderColor: 'rgba(0,0,220,1)',
-					showLine: true,
-					lineTension: 0,
-					pointRadius: 5,
-					borderColor: 'rgba(0,0,220,1)',
-					borderWidth: 3,
-					fill: false,
-
-					data: []
-                },
-				{ //*** Series #2
-					label: 'average wait',
-					pointBackgroundColor: 'rgba(0,150,0,1)',
-					pointBorderColor: 'rgba(0,150,0,1)',
-					showLine: true,
-					lineTension: 0,
-					pointRadius: 3,
-					borderColor: 'rgba(0,150,0,1)',
-					borderWidth: 3,
-					fill: false,
-
-					data: [],
-                },
-				{ //*** Series #3
-					label: 'predicted wait',
-					pointBackgroundColor: 'rgb(185, 26, 26)',
-					pointBorderColor: 'rgba(185, 26, 26)',
-					showLine: true,
-					hidden: true,
-					lineTension: 0,
-					pointRadius: 0,
-					borderColor: 'rgba(185, 26, 26)',
-					borderWidth: 3,
-					fill: false,
-
-					data: [],
-                }
-            ]
+//export const theChart = {
+//	predictedWaitValue: null,
+//	canvas: null,
+//	ctx: null,
+//	chart: null,
+//	stuff: {
+//		type: 'scatter',
+//		data: {
+//			datasets: [
+//				{ //*** Series #1
+//					label: 'individual wait',
+//					pointBackgroundColor: 'rgba(0,0,220,1)',
+//					pointBorderColor: 'rgba(0,0,220,1)',
+//					showLine: true,
+//					lineTension: 0,
+//					pointRadius: 5,
+//					borderColor: 'rgba(0,0,220,1)',
+//					borderWidth: 3,
+//					fill: false,
+//
+//					data: []
+//                },
+//				{ //*** Series #2
+//					label: 'average wait',
+//					pointBackgroundColor: 'rgba(0,150,0,1)',
+//					pointBorderColor: 'rgba(0,150,0,1)',
+//					showLine: true,
+//					lineTension: 0,
+//					pointRadius: 3,
+//					borderColor: 'rgba(0,150,0,1)',
+//					borderWidth: 3,
+//					fill: false,
+//
+//					data: [],
+//                },
+//				{ //*** Series #3
+//					label: 'predicted wait',
+//					pointBackgroundColor: 'rgb(185, 26, 26)',
+//					pointBorderColor: 'rgba(185, 26, 26)',
+//					showLine: true,
+//					hidden: true,
+//					lineTension: 0,
+//					pointRadius: 0,
+//					borderColor: 'rgba(185, 26, 26)',
+//					borderWidth: 3,
+//					fill: false,
+//
+//					data: [],
+//                }
+//            ]
+//		},
+//		options: {
+//			animation: {
+//				duration: 0
+//			}, // general animation time
+//			hover: {
+//				animationDuration: 0
+//			}, // duration of animations when hovering an item
+//			responsiveAnimationDuration: 0, // animation duration after a resize
+//			maintainAspectRatio: false,
+//			responsive: true,
+//			pointBackgroundColor: 'rgba(255,0,0,1)',
+//			//showLiness: true,
+//			layout: {
+//				padding: {
+//					left: 20,
+//					right: 60,
+//					top: 20,
+//					bottom: 20
+//				}
+//			},
+//			legend: {
+//				display: true,
+//				position: 'bottom',
+//				labels: {
+//					boxWidth: 20,
+//					//fontSize: 14,
+//					padding: 5,
+//				}
+//			},
+//			title: {
+//				display: true,
+//				position: 'top',
+//				text: 'Waiting Time',
+//				//fontSize: 20,
+//			},
+//			scales: {
+//				xAxes: [{
+//					type: 'linear',
+//					position: 'bottom',
+//					gridLines: {
+//						color: 'rgba(0,0,0,.3)'
+//					},
+//					zeroLineColor: 'rgba(0,0,0,.3)',
+//					//ticks:{ fontSize: 14,}
+//                }],
+//				yAxes: [{
+//					type: 'linear',
+//					gridLines: {
+//						color: 'rgba(0,0,0,.3)'
+//					},
+//					zeroLineColor: 'rgba(0,0,0,.3)',
+//					//ticks:{ fontSize: 14,}
+//                }]
+//			}
+//		}
+//
+//	},
+//	total: null,
+//	count: null,
+//	graphInitialTimeWidth: 5,
+//	graphInitialTimeShift: 4,
+//	graphTimeWidth: null,
+//	graphTimeShift: null,
+//	graphMin: null,
+//	graphMax: null,
+//	graphScale: null,
+//	yAxisScale: null,
+//	initialize: function () {
+//		this.canvas = document.getElementById('chart')
+//		this.ctx = this.canvas.getContext('2d');
+//		this.chart = new Chart(this.ctx, this.stuff);
+//		resizeChart();
+//		this.reset();
+//		this.predictedWaitValue = this.predictedWait();
+//	},
+//	reset: function () {
+//		this.stuff.data.datasets[0].data = [];
+//		this.stuff.data.datasets[1].data = [];
+//		this.stuff.data.datasets[2].data = [];
+//		this.total = 0;
+//		this.count = 0;
+//		this.graphScale = 1;
+//		this.yAxisScale = {
+//			max: 1,
+//			stepSize: .2
+//		};
+//		this.aVAxis = new VerticalAxisValue();
+//		this.graphMin = 0;
+//		this.graphMax = this.graphInitialTimeWidth;
+//		this.chart.options.scales.yAxes[0].ticks.min = 0;
+//		this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
+//		this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
+//		this.continue();
+//	},
+//	continue: function () {
+//		this.graphScale = Math.max(this.graphScale, simu.frameSpeed);
+//		this.graphTimeWidth = this.graphInitialTimeWidth * this.graphScale;
+//		this.graphTimeShift = this.graphInitialTimeShift * this.graphScale;
+//		this.graphMax = Math.max(this.graphMax, this.graphMin + this.graphTimeWidth);
+//		this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
+//		this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
+//		this.chart.options.scales.xAxes[0].ticks.stepSize = this.graphTimeWidth - this.graphTimeShift;
+//		var points = Math.max(1, Math.floor((11 - this.graphScale) / 2));
+//		this.chart.data.datasets[0].pointRadius = points;
+//		this.chart.data.datasets[0].borderWidth = points;
+//		this.chart.data.datasets[1].pointRadius = points;
+//		this.chart.data.datasets[1].borderWidth = points;
+//		this.chart.data.datasets[2].borderWidth = points;
+//		this.chart.update();
+//	},
+//	push: function (t, w) {
+//		t /= tioxTimeConv;
+//		w /= tioxTimeConv;
+//		this.total += w;
+//		this.count++;
+//		if (t > this.graphMax) {
+//			this.graphMin += this.graphTimeShift;
+//			this.graphMax += this.graphTimeShift;
+//			this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
+//			this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
+//		}
+//		const pW = theChart.predictedWaitValue;
+//		if (w > this.yAxisScale.max ||
+//			(pW > this.yAxisScale.max && pW < Infinity)) {
+//			this.yAxisScale = this.aVAxis.update(w);
+//			if (pW >= 0 && pW < Infinity)
+//				this.yAxisScale = this.aVAxis.update(pW);
+//			this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
+//			this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
+//		}
+//		this.chart.data.datasets[0].data.push({
+//			x: t,
+//			y: w
+//		});
+//		this.chart.data.datasets[1].data.push({
+//			x: t,
+//			y: this.total / this.count
+//		});
+//		if (pW >= 0 && pW < Infinity) {
+//			this.chart.data.datasets[2].data.push({
+//				x: t,
+//				y: pW
+//			})
+//		}
+//		this.chart.update();
+//		// update graph with time, this.total/this.waits.length
+//	},
+//	updatePredictedWait: function () {
+//		let pW = theChart.predictedWaitValue;
+//		let pDS = this.chart.data.datasets[2];
+//
+//		pDS.data.push({
+//			x: (simu.now - 1) / tioxTimeConv,
+//			y: pW
+//		});
+//		pW = theChart.predictedWait();
+//		pDS.data.push({
+//			x: (simu.now / tioxTimeConv),
+//			y: pW
+//		});
+//		pDS.label = 'predicted wait' + ((pW == Infinity) ? ' = ∞' : '');
+//
+//		theChart.predictedWaitValue = pW;
+//		this.chart.generateLegend();
+//		this.chart.update();
+//	},
+//
+//	
+//
+//}
+//
+//class VerticalAxisValue {
+//	constructor() {
+//		this.table = [
+//			{
+//				max: 1.0,
+//				stepSize: 0.2
+//			},
+//			{
+//				max: 1.5,
+//				stepSize: 0.5
+//			},
+//			{
+//				max: 2,
+//				stepSize: 0.5
+//			},
+//			{
+//				max: 3,
+//				stepSize: 1.0
+//			},
+//			{
+//				max: 4,
+//				stepSize: 1
+//			},
+//			{
+//				max: 5,
+//				stepSize: 1
+//			},
+//			{
+//				max: 6,
+//				stepSize: 2
+//			},
+//			{
+//				max: 8,
+//				stepSize: 2
+//			},
+//        ];
+//	};
+//	update(y) {
+//		while (y > this.table[0].max) {
+//			this.table.push({
+//				max: this.table[0].max * 10,
+//				stepSize: this.table[0].stepSize * 10
+//			});
+//			this.table.shift();
+//		}
+//		return this.table[0];
+//	}
+//};
+//
+//function resizeChart() {
+//	const w = document.getElementById('canvasWrapper');
+//	const wW = w.clientWidth;
+//	const newFontSize = wW / 750 * 14;
+//	theChart.chart.options.title.fontSize = newFontSize;
+//	theChart.chart.options.title.padding = 5;
+//	theChart.chart.options.legend.labels.fontSize = newFontSize;
+//	theChart.chart.options.legend.labels.padding = 10;
+//
+//	theChart.chart.update();
+//	//alert(' in resize and w,h = '+wW+'  new font size');
+//};
+//window.addEventListener('resize', resizeChart);
+import {tioxGraph} from "../modules/graph.js";
+const queueGraph ={
+	predictedWait: function () {
+			const sr = theSimulation.serviceRV.rate;
+			const ir = theSimulation.interarrivalRV.rate;
+			if (sr == 0) return Infinity;
+			let rho = ir / sr;
+			if (rho >= 1) return Infinity;
+			const iCV = theSimulation.interarrivalRV.CV;
+			const sCV = theSimulation.serviceRV.CV;
+			let p = (rho / (1 - rho) / sr / tioxTimeConv) * (iCV * iCV + sCV * sCV) / 2;
+			return p;
 		},
-		options: {
-			animation: {
-				duration: 0
-			}, // general animation time
-			hover: {
-				animationDuration: 0
-			}, // duration of animations when hovering an item
-			responsiveAnimationDuration: 0, // animation duration after a resize
-			maintainAspectRatio: false,
-			responsive: true,
-			pointBackgroundColor: 'rgba(255,0,0,1)',
-			//showLiness: true,
-			layout: {
-				padding: {
-					left: 20,
-					right: 60,
-					top: 20,
-					bottom: 20
-				}
-			},
-			legend: {
-				display: true,
-				position: 'bottom',
-				labels: {
-					boxWidth: 20,
-					//fontSize: 14,
-					padding: 5,
-				}
-			},
-			title: {
-				display: true,
-				position: 'top',
-				text: 'Waiting Time',
-				//fontSize: 20,
-			},
-			scales: {
-				xAxes: [{
-					type: 'linear',
-					position: 'bottom',
-					gridLines: {
-						color: 'rgba(0,0,0,.3)'
-					},
-					zeroLineColor: 'rgba(0,0,0,.3)',
-					//ticks:{ fontSize: 14,}
-                }],
-				yAxes: [{
-					type: 'linear',
-					gridLines: {
-						color: 'rgba(0,0,0,.3)'
-					},
-					zeroLineColor: 'rgba(0,0,0,.3)',
-					//ticks:{ fontSize: 14,}
-                }]
-			}
-		}
-
-	},
-	total: null,
-	count: null,
-	graphInitialTimeWidth: 5,
-	graphInitialTimeShift: 4,
-	graphTimeWidth: null,
-	graphTimeShift: null,
-	graphMin: null,
-	graphMax: null,
-	graphScale: null,
-	yAxisScale: null,
-	initialize: function () {
-		this.canvas = document.getElementById('chart')
-		this.ctx = this.canvas.getContext('2d');
-		this.chart = new Chart(this.ctx, this.stuff);
-		resizeChart();
-		this.reset();
-		this.predictedWaitValue = this.predictedWait();
-	},
-	reset: function () {
-		this.stuff.data.datasets[0].data = [];
-		this.stuff.data.datasets[1].data = [];
-		this.stuff.data.datasets[2].data = [];
-		this.total = 0;
-		this.count = 0;
-		this.graphScale = 1;
-		this.yAxisScale = {
-			max: 1,
-			stepSize: .2
-		};
-		this.aVAxis = new VerticalAxisValue();
-		this.graphMin = 0;
-		this.graphMax = this.graphInitialTimeWidth;
-		this.chart.options.scales.yAxes[0].ticks.min = 0;
-		this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
-		this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
-		this.continue();
-	},
-	continue: function () {
-		this.graphScale = Math.max(this.graphScale, simu.frameSpeed);
-		this.graphTimeWidth = this.graphInitialTimeWidth * this.graphScale;
-		this.graphTimeShift = this.graphInitialTimeShift * this.graphScale;
-		this.graphMax = Math.max(this.graphMax, this.graphMin + this.graphTimeWidth);
-		this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
-		this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
-		this.chart.options.scales.xAxes[0].ticks.stepSize = this.graphTimeWidth - this.graphTimeShift;
-		var points = Math.max(1, Math.floor((11 - this.graphScale) / 2));
-		this.chart.data.datasets[0].pointRadius = points;
-		this.chart.data.datasets[0].borderWidth = points;
-		this.chart.data.datasets[1].pointRadius = points;
-		this.chart.data.datasets[1].borderWidth = points;
-		this.chart.data.datasets[2].borderWidth = points;
-		this.chart.update();
-	},
 	push: function (t, w) {
-		t /= tioxTimeConv;
-		w /= tioxTimeConv;
-		this.total += w;
-		this.count++;
-		if (t > this.graphMax) {
-			this.graphMin += this.graphTimeShift;
-			this.graphMax += this.graphTimeShift;
-			this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
-			this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
-		}
-		const pW = theChart.predictedWaitValue;
-		if (w > this.yAxisScale.max ||
-			(pW > this.yAxisScale.max && pW < Infinity)) {
-			this.yAxisScale = this.aVAxis.update(w);
-			if (pW >= 0 && pW < Infinity)
-				this.yAxisScale = this.aVAxis.update(pW);
-			this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
-			this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
-		}
-		this.chart.data.datasets[0].data.push({
-			x: t,
-			y: w
-		});
-		this.chart.data.datasets[1].data.push({
-			x: t,
-			y: this.total / this.count
-		});
-		if (pW >= 0 && pW < Infinity) {
-			this.chart.data.datasets[2].data.push({
+			t /= tioxTimeConv;
+			w /= tioxTimeConv;
+			this.total += w;
+			this.count++;
+			tioxGraph.updateXaxis(t);
+
+			const pW = this.predictedWaitValue;
+			if (w > tioxGraph.yaxis.current().max ) tioxGraph.updateYaxis(w);
+			if (pW >= 0 && pW < Infinity) tioxGraph.updateYaxis(pW);
+			let ds = tioxGraph.chart.data.datasets;
+			ds[0].data.push({
 				x: t,
-				y: pW
-			})
-		}
-		this.chart.update();
-		// update graph with time, this.total/this.waits.length
-	},
+				y: w
+			});
+			ds[1].data.push({
+				x: t,
+				y: this.total / this.count
+			});
+			if (pW >= 0 && pW < Infinity) {
+				ds[2].data.push({
+					x: t,
+					y: pW
+				})
+			}
+			tioxGraph.chart.update();
+		},
 	updatePredictedWait: function () {
-		let pW = theChart.predictedWaitValue;
-		let pDS = this.chart.data.datasets[2];
+		let pW = this.predictedWaitValue;
+		let pDS = tioxGraph.chart.data.datasets[2];
 
 		pDS.data.push({
 			x: (simu.now - 1) / tioxTimeConv,
 			y: pW
 		});
-		pW = theChart.predictedWait();
+		pW = this.predictedWait();
 		pDS.data.push({
 			x: (simu.now / tioxTimeConv),
 			y: pW
 		});
 		pDS.label = 'predicted wait' + ((pW == Infinity) ? ' = ∞' : '');
 
-		theChart.predictedWaitValue = pW;
-		this.chart.generateLegend();
-		this.chart.update();
+		this.predictedWaitValue = pW;
+		tioxGraph.chart.generateLegend();
+		tioxGraph.chart.update();
 	},
-
-	predictedWait: function () {
-		const sr = theSimulation.serviceRV.rate;
-		const ir = theSimulation.interarrivalRV.rate;
-		if (sr == 0) return Infinity;
-		let rho = ir / sr;
-		if (rho >= 1) return Infinity;
-		const iCV = theSimulation.interarrivalRV.CV;
-		const sCV = theSimulation.serviceRV.CV;
-		let p = (rho / (1 - rho) / sr / tioxTimeConv) * (iCV * iCV + sCV * sCV) / 2;
-		return p;
+	setupGraph: function(){
+		tioxGraph.setLabelColorVisible(0,'individual wait','rgba(0,0,220,1)',true);
+		tioxGraph.setLabelColorVisible(1,'average wait','rgba(0,150,0,1)',true);
+		tioxGraph.setLabelColorVisible(2,'predicted wait','rgb(185, 26, 26)',false);
+		tioxGraph.struc.options.title.text = 'Waiting Time'
+		tioxGraph.chart = new Chart(tioxGraph.context, tioxGraph.struc);
+		this.predictedWaitValue = this.predictedWait();
+		tioxGraph.xaxis.initTimeWidth = 5;
+		tioxGraph.xaxis.initTimeShift = 4;
+		this.reset();
+		tioxGraph.continue();
 	},
-
-}
-
-class VerticalAxisValue {
-	constructor() {
-		this.table = [
-			{
-				max: 1.0,
-				stepSize: 0.2
-			},
-			{
-				max: 1.5,
-				stepSize: 0.5
-			},
-			{
-				max: 2,
-				stepSize: 0.5
-			},
-			{
-				max: 3,
-				stepSize: 1.0
-			},
-			{
-				max: 4,
-				stepSize: 1
-			},
-			{
-				max: 5,
-				stepSize: 1
-			},
-			{
-				max: 6,
-				stepSize: 2
-			},
-			{
-				max: 8,
-				stepSize: 2
-			},
-        ];
-	};
-	update(y) {
-		while (y > this.table[0].max) {
-			this.table.push({
-				max: this.table[0].max * 10,
-				stepSize: this.table[0].stepSize * 10
-			});
-			this.table.shift();
-		}
-		return this.table[0];
+	reset: function(){
+		tioxGraph.reset();
+		this.total = 0;
+		this.count = 0;
+	},
+	updateForSpeed: function(){
+		tioxGraph.updateXaxisScale(simu.frameSpeed);
+		tioxGraph.continue();
 	}
-};
-
-function resizeChart() {
-	const w = document.getElementById('canvasWrapper');
-	const wW = w.clientWidth;
-	const newFontSize = wW / 750 * 14;
-	theChart.chart.options.title.fontSize = newFontSize;
-	theChart.chart.options.title.padding = 5;
-	theChart.chart.options.legend.labels.fontSize = newFontSize;
-	theChart.chart.options.legend.labels.padding = 10;
-
-	theChart.chart.update();
-	//alert(' in resize and w,h = '+wW+'  new font size');
-};
-window.addEventListener('resize', resizeChart);
+}

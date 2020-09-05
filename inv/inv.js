@@ -742,7 +742,7 @@ export const theChart = {
 					data: []
                 },
 				{ //*** Series #2
-					label: 'on Hand and On Order',
+					label: 'On Hand and On Order',
 					pointBackgroundColor: 'rgb(0,150,0)',
 					pointBorderColor: 'rgb(0,150,0)',
 					showLine: true,
@@ -802,7 +802,7 @@ export const theChart = {
 			title: {
 				display: true,
 				position: 'top',
-				text: 'inventory',
+				text: 'Inventory',
 				//fontSize: 20,
 			},
 			scales: {

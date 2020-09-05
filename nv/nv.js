@@ -15,53 +15,62 @@ const disappointed = {
 	border: 'rgb(31, 105, 245)'
 };
 const tioxTimeConv = 1000; //time are in milliseconds
-const theStage = {
-	normalSpeed: .10, //.25 pixels per millisecond
+
+anim.stage = {
+	normalSpeed: 0.10, //.25 pixels per millisecond
 	width: 1000,
 	height: 300,
-
+	foreContext: document
+		.getElementById('foreground')
+		.getContext('2d'),
+	backContext: document
+		.getElementById('background')
+		.getContext('2d')
 };
-
-{
-	theStage.boxSpace = 20;
-	theStage.boxSize = 16;
-	theStage.person = {
+anim.box = {
+	space: 20,
+	size: 16,
+	perRow: 10
+}
+anim.person = {
 		width: 40,
-		height: 3 * theStage.boxSpace
-	};
-	theStage.boxesPerRow = 10;
-	theStage.store = {
+		height: 3 * anim.box.space
+};
+anim.store = {
 		left: 720,
 		top: 80,
-		stroke: 1
+		stroke: 1,
 	};
+anim.store.height = anim.store.width = 
+	anim.box.space * anim.box.perRow;
+anim.store.right = anim.store.left + anim.store.width;
+anim.store.bot = anim.store.top + anim.store.height;
 
 
-	theStage.pathLeft = -100;
-	theStage.pathRight = 700;
-	theStage.pathTop = theStage.store.top;
-	theStage.pathBot = theStage.store.top + theStage.boxSpace * 7;
-	theStage.pathMid = (theStage.pathTop + theStage.pathBot) / 2;
-	theStage.offStageEntry = {
-		x: theStage.pathLeft,
-		y: theStage.pathTop
-	};
-	theStage.offStageExit = {
-		x: theStage.pathLeft,
-		y: theStage.pathBot
-	};
-	theStage.headQueue = {
-		x: theStage.pathRight,
-		y: theStage.pathBot
-	};
-	//	const background = document.getElementById('theBackground');
-	//	theStage.background = {
-	//		context: background.getContext('2d')
-	//	};
-};
+anim.person.path = {
+	left: -100,
+	right: 700,
+	top: anim.store.top,
+	bot: anim.store.top + anim.box.space*7,
+}
+anim.person.path.mid = (anim.person.path.top + anim.person.path.bot) / 2;
+
+//	theStage.offStageEntry = {
+//		x: theStage.pathLeft,
+//		y: theStage.pathTop
+//	};
+//	theStage.offStageExit = {
+//		x: theStage.pathLeft,
+//		y: theStage.pathBot
+//	};
+//	theStage.headQueue = {
+//		x: theStage.pathRight,
+//		y: theStage.pathBot
+//	};
+//
 
 
-simu.theStage = theStage;
+
 simu.sliderTypes = {
 		dr: 'range',
 		dcv: 'range',
@@ -185,8 +194,8 @@ simu.reset2 = function () {
 	theChart.reset();
 	theProcessCollection.reset();
 	//    totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
-	gSF = new GStickFigure(simu.context,
-		theStage.person.height, theStage.boxSize);
+	gSF = new GStickFigure(anim.stage.foreContext,
+		anim.person.height, anim.box.size);
 	setDesired(theSimulation.Cu, theSimulation.Co);
 	setExpected(theSimulation.quantityOrdered,
 		theSimulation.demandRV.mean,
@@ -207,23 +216,23 @@ simu.reset2 = function () {
 //  animation for that process step
 
 const animForQueue = {
-	walkingTime1: (theStage.pathRight - theStage.offStageEntry.x) / theStage.normalSpeed,
-	walkingTime2: (theStage.pathMid - theStage.pathTop) / theStage.normalSpeed,
-	walkingTime: ((theStage.pathRight - theStage.offStageEntry.x) +
-		(theStage.pathMid - theStage.pathTop)) / theStage.normalSpeed,
+	walkingTime1: (anim.person.path.right - anim.person.path.left) / anim.stage.normalSpeed,
+	walkingTime2: (anim.person.path.mid - anim.person.path.top) / anim.stage.normalSpeed,
+	walkingTime: ((anim.person.path.right - anim.person.path.left) +
+		(anim.person.path.mid - anim.person.path.top)) / anim.stage.normalSpeed,
 
 	reset: function () {},
 
 	join: function (qLength, arrivalTime, person) {
 		person.addPath({
 			t: arrivalTime - this.walkingTime2,
-			x: theStage.pathRight,
-			y: theStage.pathTop
+			x: anim.person.path.right,
+			y: anim.person.path.top
 		});
 		person.addPath({
 			t: arrivalTime,
-			x: theStage.pathRight,
-			y: theStage.pathMid
+			x: anim.person.path.right,
+			y: anim.person.path.mid
 		});
 	},
 
@@ -235,10 +244,10 @@ const animForQueue = {
 };
 
 const animForWalkOffStage = {
-	walkingTime: (theStage.pathRight - theStage.pathLeft) / theStage.normalSpeed,
+	walkingTime: (anim.person.path.right - anim.person.path.left) / anim.stage.normalSpeed,
 
 	//    computeWalkingTime: function (){
-	//         this.walkingTime = (theStage.pathRight - theStage.pathLeft) / theStage.normalSpeed;
+	//         this.walkingTime = (anim.person.path.right - anim.person.path.left) / anim.stage.normalSpeed;
 	//        return this.walkingTime;
 	//    },
 
@@ -246,51 +255,30 @@ const animForWalkOffStage = {
 		person.addPath({
 			t: simu.now +
 				this.walkingTime,
-			x: theStage.pathLeft,
-			y: theStage.pathBot
+			x: anim.person.path.left,
+			y: anim.person.path.bot
 		});
 	}
 };
 
 const animForCreator = {
-	loc: theStage.offStageEntry,
 	reset: function () {},
 
 	start: function (theProcTime, person, m) { // only 1 machine for creator m=1
 		person.setDestWithProcTime(theProcTime,
-			animForCreator.loc.x, animForCreator.loc.y);
+			anim.person.path.left, anim.person.path.top);
 	},
 
 	finish: function () {},
 };
 
-//const animForNV = {
-//	lastFinPerson: null,
-//
-//	reset: function () {},
-//
-//	start: function (theProcTime, person, m) {
-//		person.arrivalTime = simu.now;
-//		if (theSimulation.store.inventory() > 0) {
-//			let pack = theSimulation.store.remove();
-//			person.graphic.packageColor = pack.graphic.color;
-//			person.graphic.packageVisible = true;
-//		} else {
-//			person.graphic.color = darkGrey; // dark grey
-//		};
-//	},
-//
-//	finish: function (person) {
-//		animForNV.lastFinPerson = person;
-//	}
-//};
 const animForNewsVendor = {
 	//	walkingTime: animForQueue.walkingTime2;
 	start: function (person, pack, walkingTime) {
 		person.addPath({ //walk to bot
 			t: simu.now + walkingTime,
-			x: theStage.pathRight,
-			y: theStage.pathBot
+			x: anim.person.path.right,
+			y: anim.person.path.bot
 		});
 		const leftTime = walkingTime / 2;
 		const upTime = walkingTime / 2;
@@ -298,13 +286,13 @@ const animForNewsVendor = {
 		if (pack) {
 			pack.addPath({
 				t: simu.now + leftTime,
-				x: theStage.pathRight + person.graphic.gSF.package.x,
+				x: anim.person.path.right + person.graphic.gSF.package.x,
 				y: pack.cur.y
 			});
 			pack.addPath({ // move up to arm height in other time
 				t: simu.now + walkingTime,
-				x: theStage.pathRight + person.graphic.gSF.package.x,
-				y: theStage.pathBot + person.graphic.gSF.package.y,
+				x: anim.person.path.right + person.graphic.gSF.package.x,
+				y: anim.person.path.bot + person.graphic.gSF.package.y,
 			});
 		}
 	},
@@ -348,16 +336,13 @@ const theSimulation = {
 		theSimulation.quantityOrdered = Number(document.getElementById('quan').value);
 
 		//queues
-		this.supply = new Supplier(theStage.offStageEntry.x, theStage.offStageEntry.y);
+		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 
 		this.queue = new Queue("theQueue", -1, animForQueue.walkingTime,   
 			animForQueue,
 			null, null);
 
-		this.store = new RetailStore(
-			simu.backcontext, simu.context,
-			theStage.store.left, theStage.store.top,
-			theStage.boxSpace, theStage.boxSize, theStage.boxesPerRow);
+		this.store = new RetailStore(anim);
 
 		this.walkOffStage = new WalkAndDestroy("walkOff", animForWalkOffStage, true);
 
@@ -398,7 +383,7 @@ class Supplier {
 	pull() {
 		return new Person(
 			this.x, this.y,
-			30, theStage.person.height);
+			30, anim.person.height);
 	}
 }; //end class Supplier
 
@@ -406,8 +391,8 @@ const peopleSpacing = 70;
 class DemandCreator {
 	constructor(cycleLength, demandRV) {
 		this.cycleLength = cycleLength;
-		this.timeToNV = ((theStage.pathRight - theStage.pathLeft) +
-			(theStage.pathBot - theStage.pathTop)) / theStage.normalSpeed;
+		this.timeToNV = ((anim.person.path.right - anim.person.path.left) +
+			(anim.person.path.bot - anim.person.path.top)) / anim.stage.normalSpeed;
 		this.demandRV = demandRV;
 		this.totCost = null;
 		this.nRounds = null;
@@ -438,7 +423,7 @@ class DemandCreator {
 			this.enough++;
 
 		let t = simu.now;
-		let deltaT = peopleSpacing / theStage.normalSpeed;
+		let deltaT = peopleSpacing / anim.stage.normalSpeed;
 
 		for (let i = 0; i < this.curDemand; i++) {
 			t += deltaT
@@ -473,8 +458,9 @@ class DemandCreator {
 
 
 class RetailStore extends GStore {
-	constructor(ctxStore, ctxPack, left, top, boxSpace, boxSize, boxesPerRow) {
-		super(ctxStore, ctxPack, left, top, boxSpace, boxSize, boxesPerRow);
+	constructor(anim) {
+		super(anim);
+		this.anim = anim;
 	};
 	addBox(n) {
 		for (let i = 0; i < n; i++) {
@@ -508,7 +494,7 @@ export class Person extends Item {
 	setDestWithProcTime(procTime, x, y) {
 		let distance = Math.max(Math.abs(this.cur.x - x),
 			Math.abs(this.cur.y - y));
-		let deltaTime = Math.min(distance / theStage.normalSpeed, procTime);
+		let deltaTime = Math.min(distance / anim.stage.normalSpeed, procTime);
 		this.addPath({
 			t: simu.now + deltaTime,
 			x: x,
