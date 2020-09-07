@@ -42,6 +42,7 @@ export const tioxGraph = {
 			]
 		},
 		options: {
+			events: [],
 			animation: {
 				duration: 0
 			}, // general animation time
@@ -56,14 +57,14 @@ export const tioxGraph = {
 					left: 20,
 					right: 40,
 					top: 10,
-					bottom: 0
+					padding: 20,
 				}
 			},
 			legend: {
 				display: true,
 				position: 'bottom',
 				labels: {
-					boxWidth: 15,
+					boxWidth: 25,
 					padding: 20,
 					
 					
@@ -79,7 +80,7 @@ export const tioxGraph = {
 			scales: {
 				xAxes: [{
 					ticks: {
-						fontSize: 20,
+						fontSize: 10,
 					},
 					type: 'linear',
 					position: 'bottom',
@@ -90,7 +91,7 @@ export const tioxGraph = {
 				}],
 				yAxes: [{
 					ticks:{
-						fontSize: 20
+						fontSize: 10
 					},
 					type: 'linear',
 					gridLines: {
@@ -187,13 +188,23 @@ reset: function (timeWidth, timeShift){
 resizeChart: function() {
 	const w = document.getElementById('canvasWrapper');
 	const wW = w.clientWidth;
-	const newFontSize = wW / 750 * 14;
+	const newFontSize = Math.floor(wW / 750 * 14);
+	console.log(' New Font Size for Chart', newFontSize);
 	let g = tioxGraph.struc.options;
+	g.layout.padding = { 
+		left: Math.floor(newFontSize),
+		right: Math.floor(newFontSize*3),
+		top: Math.floor(newFontSize),
+		bottom: 40};
 	g.title.fontSize = newFontSize;
-	g.title.padding = 5;
+	g.title.padding = newFontSize;
+	g.title.lineHeight = newFontSize/28;
 	g.legend.labels.fontSize = newFontSize;
 	g.legend.labels.padding = 10;
-
+	g.scales.xAxes[0].ticks.fontSize = newFontSize;
+	g.scales.yAxes[0].ticks.fontSize = newFontSize;
+	g.scales.xAxes[0].ticks.minor.fontSize = newFontSize;
+   	g.scales.yAxes[0].ticks.minor.fontSize = newFontSize;
 	tioxGraph.chart.update();
 	//alert(' in resize and w,h = '+wW+'  new font size');
 },

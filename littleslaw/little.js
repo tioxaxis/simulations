@@ -465,7 +465,7 @@ const littleGraph ={
 		tioxGraph.setLabelColorVisible(1,'avg. time * avg. rate',
 									   'rgba(0,150,0,1)', true);
 		tioxGraph.setLabelColorVisible(2,'predicted inventory', 
-									   'rgb(185, 26, 26)',false);
+									   'rgb(185, 26, 26)',true);
 		tioxGraph.struc.options.title.text = 'Inventory'
 		this.predictedInvValue = this.predictedInv();
 		this.reset();	

@@ -489,7 +489,7 @@ const queueGraph ={
 	setupGraph: function(){
 		tioxGraph.setLabelColorVisible(0,'individual wait', 'rgba(0,0,220,1)', true);
 		tioxGraph.setLabelColorVisible(1,'average wait', 'rgba(0,150,0,1)', true);
-		tioxGraph.setLabelColorVisible(2,'predicted wait', 'rgb(185, 26, 26)', false);
+		tioxGraph.setLabelColorVisible(2,'predicted wait', 'rgb(185, 26, 26)', true);
 		tioxGraph.struc.options.title.text = 'Waiting Time'
 		this.predictedWaitValue = this.predictedWait();
 		this.reset();
