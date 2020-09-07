@@ -55,22 +55,6 @@ anim.person.path = {
 }
 anim.person.path.mid = (anim.person.path.top + anim.person.path.bot) / 2;
 
-//	theStage.offStageEntry = {
-//		x: theStage.pathLeft,
-//		y: theStage.pathTop
-//	};
-//	theStage.offStageExit = {
-//		x: theStage.pathLeft,
-//		y: theStage.pathBot
-//	};
-//	theStage.headQueue = {
-//		x: theStage.pathRight,
-//		y: theStage.pathBot
-//	};
-//
-
-
-
 simu.sliderTypes = {
 		dr: 'range',
 		dcv: 'range',
@@ -81,7 +65,7 @@ simu.sliderTypes = {
 		action: 'radio',
 		reset: 'checkbox'
 	},
-	simu.precision = {
+simu.precision = {
 		dr: 0,
 		dcv: 1,
 		Cu: 0,
@@ -120,7 +104,6 @@ function captureChangeInSliderS(event) {
 		case 'dr':
 			theSimulation.demandRV
 				.setMean(Number(v));
-			//        theChart.updatePredictedInv(); 
 			setExpected(theSimulation.quantityOrdered,
 				theSimulation.demandRV.mean,
 				theSimulation.demandRV.variance);
@@ -152,7 +135,7 @@ function captureChangeInSliderS(event) {
 
 		case 'speed':
 			simu.frameSpeed = speeds[v];
-			theChart.continue();
+			nvGraph.updateForSpeed();
 			itemCollection.updateForSpeed();
 			document.getElementById(id + 'Display')
 				.innerHTML = speeds[v];
@@ -191,7 +174,7 @@ function setActual(enough, total) {
 //var totInv, totTime, totPeople, lastArrDep, LBRFcount ;
 simu.reset2 = function () {
 	itemCollection.reset();
-	theChart.reset();
+	nvGraph.reset();
 	theProcessCollection.reset();
 	//    totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
 	gSF = new GStickFigure(anim.stage.foreContext,
@@ -449,7 +432,7 @@ class DemandCreator {
 		});
 	};
 	graph() {
-		theChart.push(this.nRounds, this.underageForDay, this.overageForDay, this.totCost / this.nRounds);
+		nvGraph.push(this.nRounds, this.underageForDay, this.overageForDay, this.totCost / this.nRounds);
 		setActual(this.enough, this.nRounds);
 
 		theSimulation.store.makeAllGrey();
@@ -510,7 +493,7 @@ function initializeAll() {
 	simu.initialize(); // the generic
 	theSimulation.initialize(); // the specific to queueing
 	//reset first time to make sure it is ready to play.
-	theChart.initialize();
+	nvGraph.setupGraph();
 	document.getElementById('resetButton').click();
 };
 
@@ -518,273 +501,41 @@ function initializeAll() {
 document.addEventListener("DOMContentLoaded", initializeAll);
 
 
-//   TheChart variable is the interface to create the charts using Chart.js
-
-export const theChart = {
-	predictedInvValue: null,
-	canvas: null,
-	ctx: null,
-	chart: null,
-	stuff: {
-		type: 'scatter',
-		data: {
-			datasets: [
-				{ //*** Series #1
-					label: 'underage',
-					pointBackgroundColor: 'rgb(220, 0, 0)',
-					pointBorderColor: 'rgb(220, 0, 0)',
-					showLine: false,
-					lineTension: 0,
-					pointRadius: 5,
-					borderColor: 'rgb(220, 0, 0)',
-					borderWidth: 3,
-					fill: false,
-
-					data: []
-                },
-				{ //*** Series #2
-					label: 'overage',
-					pointBackgroundColor: 'rgba(0,150,0,1)',
-					pointBorderColor: 'rgba(0,150,0,1)',
-					showLine: false,
-					lineTension: 0,
-					pointRadius: 3,
-					borderColor: 'rgba(0,150,0,1)',
-					borderWidth: 3,
-					fill: false,
-
-					data: [],
-                },
-				{ //*** Series #3
-					label: 'average cost',
-					pointBackgroundColor: 'rgb(26, 26, 185)',
-					pointBorderColor: 'rgb(26, 26, 185)',
-					showLine: true,
-					lineTension: 0,
-					pointRadius: 0,
-					borderColor: 'rgb(26, 26, 185)',
-					borderWidth: 3,
-					fill: false,
-
-					data: [],
-                }
-            ]
-		},
-		options: {
-			animation: {
-				duration: 0
-			}, // general animation time
-			hover: {
-				animationDuration: 0
-			}, // duration of animations when hovering an item
-			responsiveAnimationDuration: 0, // animation duration after a resize
-			maintainAspectRatio: false,
-			responsive: true,
-			pointBackgroundColor: 'rgba(255,0,0,1)',
-			//showLiness: true,
-			layout: {
-				padding: {
-					left: 20,
-					right: 60,
-					top: 20,
-					bottom: 20
-				}
-			},
-			legend: {
-				display: true,
-				position: 'bottom',
-				labels: {
-					boxWidth: 20,
-					//fontSize: 14,
-					padding: 20
-				}
-			},
-			title: {
-				display: true,
-				position: 'top',
-				text: '$ of cost per day',
-				//fontSize: 20,
-			},
-			scales: {
-				xAxes: [{
-					type: 'linear',
-					position: 'bottom',
-					gridLines: {
-						color: 'rgba(0,0,0,.3)'
-					},
-					zeroLineColor: 'rgba(0,0,0,.3)',
-					//ticks:{ fontSize: 14,}
-                }],
-				yAxes: [{
-					type: 'linear',
-					gridLines: {
-						color: 'rgba(0,0,0,.3)'
-					},
-					zeroLineColor: 'rgba(0,0,0,.3)',
-					//ticks:{ fontSize: 14,}
-                }]
-			}
-		}
-
-	},
-	total: null,
-	count: null,
-	graphInitialTimeWidth: 12,
-	graphInitialTimeShift: 9,
-	graphTimeWidth: null,
-	graphTimeShift: null,
-	graphMin: null,
-	graphMax: null,
-	graphScale: null,
-	yAxisScale: null,
-	initialize: function () {
-		this.canvas = document.getElementById('chart')
-		this.ctx = this.canvas.getContext('2d');
-		this.chart = new Chart(this.ctx, this.stuff);
-		resizeChart();
-		this.reset();
-		//        this.predictedInvValue = this.predictedInv();
-	},
-	reset: function () {
-		this.stuff.data.datasets[0].data = [];
-		this.stuff.data.datasets[1].data = [];
-		this.stuff.data.datasets[2].data = [];
-		this.total = 0;
-		this.count = 0;
-		this.graphScale = 1;
-		this.yAxisScale = {
-			max: 100,
-			stepSize: 20
-		};
-		this.aVAxis = new VerticalAxisValue();
-		this.graphMin = 0;
-		this.graphMax = this.graphInitialTimeWidth;
-		this.chart.options.scales.yAxes[0].ticks.min = 0;
-		this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
-		this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
-		this.continue();
-	},
-	continue: function () {
-		//		this.graphScale = Math.max(this.graphScale, simu.frameSpeed);
-		this.graphTimeWidth = this.graphInitialTimeWidth * this.graphScale;
-		this.graphTimeShift = this.graphInitialTimeShift * this.graphScale;
-		this.graphMax = Math.max(this.graphMax, this.graphMin + this.graphTimeWidth);
-		this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
-		this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
-		this.chart.options.scales.xAxes[0].ticks.stepSize = this.graphTimeWidth - this.graphTimeShift;
-		var points = Math.max(1, Math.floor((11 - this.graphScale) / 4));
-		this.chart.data.datasets[0].pointRadius = points;
-		this.chart.data.datasets[0].borderWidth = points;
-		this.chart.data.datasets[1].pointRadius = points;
-		this.chart.data.datasets[1].borderWidth = points;
-		this.chart.data.datasets[2].borderWidth = points;
-		this.chart.update();
-	},
+import {tioxGraph} from "../modules/graph.js";
+const nvGraph ={
 	push: function (n, under, over, avg) {
-
-
-		if (n > this.graphMax) {
-			this.graphMin += this.graphTimeShift;
-			this.graphMax += this.graphTimeShift;
-			this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
-			this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
-		}
-		//        console.log( 'at chart ',t,inv,rt,pI);
-		let bigger = Math.max(over, under);
-		if (bigger > this.yAxisScale.max) {
-			this.yAxisScale = this.aVAxis.update(bigger);
-			this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
-			this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
-		}
-		this.chart.data.datasets[0].data.push({
-			x: n,
-			y: under
-		});
-		this.chart.data.datasets[1].data.push({
-			x: n,
-			y: over
-		});
-		this.chart.data.datasets[2].data.push({
-			x: n,
-			y: avg
-		});
-		this.chart.update();
-		// update graph with time, this.total/this.waits.length
+			tioxGraph.updateXaxis(n);
+			let bigger = Math.max(over, under);
+			tioxGraph.updateYaxis(bigger);
+			let ds = tioxGraph.chart.data.datasets;
+			ds[0].data.push({
+				x: n,
+				y: under
+			});
+			ds[1].data.push({
+				x: n,
+				y: over
+			});
+			ds[2].data.push({
+				x: n,
+				y: avg
+			});
+			tioxGraph.chart.update();
+		},
+	setupGraph: function(){
+		tioxGraph.setLabelColorVisible(0,'underage', 'rgb(185, 26, 26)', true);
+		tioxGraph.setLabelColorVisible(1,'overage',
+									   'rgba(0,150,0,1)', true);
+		tioxGraph.setLabelColorVisible(2,'average cost', 
+									   'rgba(0,0,220,1)',true);
+		tioxGraph.struc.options.title.text = '$ of cost per day'
+		this.reset();	
 	},
-
-	//     updatePredictedInv: function(){
-	//        this.chart.data.datasets[2].data.push(
-	//            {x:(simu.now-1)/10000, y:theChart.predictedInvValue});
-	//        theChart.predictedInvValue = theChart.predictedInv();
-	//        this.chart.data.datasets[2].data.push(
-	//            {x:(simu.now/10000), y:theChart.predictedInvValue});
-	//        this.chart.update();
-	//     },
-	//     predictedInv: function (){
-	////        return (theSimulation.serviceRV.mean)/(theSimulation.interarrivalRV.mean);
-	//     }
+	reset: function(){
+		tioxGraph.reset(12, 9);
+		this.updateForSpeed();
+	},
+	updateForSpeed: function(){
+	}
 }
 
-
-class VerticalAxisValue {
-	constructor() {
-		this.table = [
-			{
-				max: 1.0,
-				stepSize: 0.2
-                },
-			{
-				max: 1.5,
-				stepSize: 0.5
-                },
-			{
-				max: 2,
-				stepSize: 0.5
-                },
-			{
-				max: 3,
-				stepSize: 1.0
-                },
-			{
-				max: 4,
-				stepSize: 1
-                },
-			{
-				max: 5,
-				stepSize: 1
-                },
-			{
-				max: 6,
-				stepSize: 2
-                },
-			{
-				max: 8,
-				stepSize: 2
-                },
-        ];
-	};
-	update(y) {
-		while (y > this.table[0].max) {
-			this.table.push({
-				max: this.table[0].max * 10,
-				stepSize: this.table[0].stepSize * 10
-			});
-			this.table.shift();
-		}
-		return this.table[0];
-	}
-};
-
-function resizeChart() {
-	const w = document.getElementById('canvasWrapper');
-	const wW = w.clientWidth;
-	const newFontSize = wW / 750 * 14;
-	theChart.chart.options.title.fontSize = newFontSize;
-	theChart.chart.options.title.padding = 5;
-	theChart.chart.options.legend.labels.fontSize = newFontSize;
-	theChart.chart.options.legend.labels.padding = 10;
-
-	theChart.chart.update();
-	//alert(' in resize and w,h = '+wW+'  new font size');
-};
-window.addEventListener('resize', resizeChart);

@@ -12,9 +12,6 @@ simu.heap = new Heap((x, y) => x.time < y.time);
 simu.frameSpeed = 1.0; 
 
 simu.isRunning = false;
-simu.nameOfSimulation = null;
-simu.theCanvas = null;
-simu.context = null; //context for drawing on theCanvas
 simu.requestAFId = null; // id for requestAnimationFrame
 
 simu.initialize = function () {
@@ -554,6 +551,7 @@ var tioxBorders = ['black', 'black', 'black', 'black',
 const pi2 = Math.PI * 2;
 export class GStickFigure {
 	constructor(context, size, boxSize = 20) {
+		this.context = context;
 		let radius = size / 8;
 		this.head = {
 			x: 0,
@@ -585,7 +583,6 @@ export class GStickFigure {
 		};
 		this.deltaMaxX = size * (4 / 9);
 		this.fontSize = Math.floor(2 / 5 * size);
-		this.context = context;
 		this.context.font = Math.floor(2 / 5 * size) + 'px Arial';
 		this.package = {
 			x: -25,
@@ -642,6 +639,7 @@ export class NStickFigure {
 		// use x,y as starting point and draw the rest of the
 		// parts by translating and rotating from there
 
+		if ( this.x < -50 || this.x > 1050 ) return;
 		let c = this.gSF.context;
 		c.save();
 		c.strokeStyle = this.bdaryColor;
@@ -744,23 +742,9 @@ export class BoxStack {
 export class GStore {
 	constructor(anim) {
 		this.anim = anim;
-		
-//		= {
-//			left: left,
-//			top: top,
-////			boxSpace: boxSpace,
-////			boxSize: boxSize,
-////			boxesPerRow: boxesPerRow,
-//			width: box.space * box.perRow
-//		};
-//		this.store.height = this.store.width;
-//		this.store.bot = this.store.top + this.store.height;
 		this.boxStack = new BoxStack(anim.box, true);
-
-//		this.updateLeftBot(this.store.left, this.store.bot);
 		this.drawStore(this.anim.stage.backContext,
 					   this.anim.store, this.anim.box);
-
 		this.packages = [];
 		this.snake = true;
 	};
@@ -805,23 +789,15 @@ export class GStore {
 	inventory() {
 		return this.packages.length;
 	};
-//	updateLeftBot(left, bot) {
-//		this.left = left;
-//		this.bot = bot;
-//	}
 
 	addNew() {
 		let point = this.boxStack.relCoord(this.packages.length);
-		let color = tioxColors[Math.floor(Math.random() *
-			tioxColors.length)];
-		//        let tx = this.left + this.rx(k);
-		//		let ty = this.bot + this.ry(k);
-		//		console.log(' adding box', k, 'with coord',tx,ty);
+		let color = tioxColors[Math.floor(
+			Math.random() *	tioxColors.length)];
 		let pack = new Package(
 			this.anim.stage.foreContext, color, this.anim.box.size,
 			this.anim.store.left + point.x, this.anim.store.bot + point.y);
 		this.packages.push(pack);
-
 	};
 	pull() {
 		return this.remove()

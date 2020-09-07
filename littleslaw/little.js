@@ -123,7 +123,7 @@ function captureChangeInSliderS(event) {
 		case 'ar':
 			theSimulation.interarrivalRV
 				.setRate(v / tioxTimeConv);
-			theChart.updatePredictedInv();
+			littleGraph.updatePredictedInv();
 			break;
 
 		case 'acv':
@@ -132,7 +132,7 @@ function captureChangeInSliderS(event) {
 
 		case 'sr':
 			theSimulation.serviceRV.setTime(v * tioxTimeConv);
-			theChart.updatePredictedInv();
+			littleGraph.updatePredictedInv();
 			break;
 
 		case 'scv':
@@ -141,7 +141,7 @@ function captureChangeInSliderS(event) {
 
 		case 'speed':
 			simu.frameSpeed = speeds[v];
-			theChart.continue();
+			littleGraph.updateForSpeed();
 			itemCollection.updateForSpeed();
 			document.getElementById(id + 'Display')
 				.innerHTML = speeds[v];
@@ -157,7 +157,7 @@ function captureChangeInSliderS(event) {
 var totInv, totTime, totPeople, lastArrDep, LBRFcount;
 simu.reset2 = function () {
 	itemCollection.reset();
-	theChart.reset();
+	littleGraph.reset();
 	theProcessCollection.reset();
 	totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
 	gSF = new GStickFigure(anim.stage.foreContext,
@@ -342,12 +342,9 @@ const theSimulation = {
 			totTime += simu.now - person.arrivalTime;
 			LBRFcount = (LBRFcount + 1) % (simu.frameSpeed * 5);
 			if (!LBRFcount) {
-				theChart.push(simu.now, totInv / simu.now, totTime / simu.now);
+				littleGraph.push(simu.now, totInv / simu.now, totTime / simu.now);
 				console.log('in LBRF tot people ', totPeople)
 			};
-
-
-
 			//console.log('LB record start',simu.now,person);
 		};
 
@@ -417,286 +414,67 @@ function initializeAll() {
 	simu.initialize(); // the generic
 	theSimulation.initialize(); // the specific to queueing
 	//reset first time to make sure it is ready to play.
-	theChart.initialize();
+	littleGraph.setupGraph();
 	document.getElementById('resetButton').click();
 };
 document.addEventListener("DOMContentLoaded", initializeAll);
 
 
-//   TheChart variable is the interface to create the charts using Chart.js
-
-export const theChart = {
+import {tioxGraph} from "../modules/graph.js";
+const littleGraph ={
 	predictedInvValue: null,
-	canvas: null,
-	ctx: null,
-	chart: null,
-	stuff: {
-		type: 'scatter',
-		data: {
-			datasets: [
-				{ //*** Series #1
-					label: 'avg. inventory',
-					pointBackgroundColor: 'rgba(0,0,220,1)',
-					pointBorderColor: 'rgba(0,0,220,1)',
-					showLine: true,
-					lineTension: 0,
-					pointRadius: 5,
-					borderColor: 'rgba(0,0,220,1)',
-					borderWidth: 3,
-					fill: false,
-
-					data: []
-                },
-				{ //*** Series #2
-					label: 'avg. rate * avg. time',
-					pointBackgroundColor: 'rgba(0,150,0,1)',
-					pointBorderColor: 'rgba(0,150,0,1)',
-					showLine: true,
-					lineTension: 0,
-					pointRadius: 3,
-					borderColor: 'rgba(0,150,0,1)',
-					borderWidth: 3,
-					fill: false,
-
-					data: [],
-                },
-				{ //*** Series #3
-					label: 'predicted inventory',
-					pointBackgroundColor: 'rgb(185, 26, 26)',
-					pointBorderColor: 'rgba(185, 26, 26)',
-					showLine: true,
-					hidden: true,
-					lineTension: 0,
-					pointRadius: 0,
-					borderColor: 'rgba(185, 26, 26)',
-					borderWidth: 3,
-					fill: false,
-
-					data: [],
-                }
-            ]
-		},
-		options: {
-			animation: {
-				duration: 0
-			}, // general animation time
-			hover: {
-				animationDuration: 0
-			}, // duration of animations when hovering an item
-			responsiveAnimationDuration: 0, // animation duration after a resize
-			maintainAspectRatio: false,
-			responsive: true,
-			pointBackgroundColor: 'rgba(255,0,0,1)',
-			//showLiness: true,
-			layout: {
-				padding: {
-					left: 20,
-					right: 60,
-					top: 20,
-					bottom: 20
-				}
-			},
-			legend: {
-				display: true,
-				position: 'bottom',
-				labels: {
-					boxWidth: 20,
-					//fontSize: 14,
-					padding: 20
-				}
-			},
-			title: {
-				display: true,
-				position: 'top',
-				text: 'Inventory',
-				//fontSize: 20,
-			},
-			scales: {
-				xAxes: [{
-					type: 'linear',
-					position: 'bottom',
-					gridLines: {
-						color: 'rgba(0,0,0,.3)'
-					},
-					zeroLineColor: 'rgba(0,0,0,.3)',
-					//ticks:{ fontSize: 14,}
-                }],
-				yAxes: [{
-					type: 'linear',
-					gridLines: {
-						color: 'rgba(0,0,0,.3)'
-					},
-					zeroLineColor: 'rgba(0,0,0,.3)',
-					//ticks:{ fontSize: 14,}
-                }]
-			}
-		}
-
-	},
-	total: null,
-	count: null,
-	graphInitialTimeWidth: 40,
-	graphInitialTimeShift: 30,
-	graphTimeWidth: null,
-	graphTimeShift: null,
-	graphMin: null,
-	graphMax: null,
-	graphScale: null,
-	yAxisScale: null,
-	initialize: function () {
-		this.canvas = document.getElementById('chart')
-		this.ctx = this.canvas.getContext('2d');
-		this.chart = new Chart(this.ctx, this.stuff);
-		resizeChart();
-		this.reset();
-		this.predictedInvValue = this.predictedInv();
-	},
-	reset: function () {
-		this.stuff.data.datasets[0].data = [];
-		this.stuff.data.datasets[1].data = [];
-		this.stuff.data.datasets[2].data = [];
-		this.total = 0;
-		this.count = 0;
-		this.graphScale = 1;
-		this.yAxisScale = {
-			max: 1,
-			stepSize: .2
-		};
-		this.aVAxis = new VerticalAxisValue();
-		this.graphMin = 0;
-		this.graphMax = this.graphInitialTimeWidth;
-		this.chart.options.scales.yAxes[0].ticks.min = 0;
-		this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
-		this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
-		this.continue();
-	},
-	continue: function () {
-		this.graphScale = Math.max(this.graphScale, simu.frameSpeed);
-		this.graphTimeWidth = this.graphInitialTimeWidth * this.graphScale;
-		this.graphTimeShift = this.graphInitialTimeShift * this.graphScale;
-		this.graphMax = Math.max(this.graphMax, this.graphMin + this.graphTimeWidth);
-		this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
-		this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
-		this.chart.options.scales.xAxes[0].ticks.stepSize = this.graphTimeWidth - this.graphTimeShift;
-		var points = Math.max(1, Math.floor((11 - this.graphScale) / 4));
-		this.chart.data.datasets[0].pointRadius = 0;
-		this.chart.data.datasets[0].borderWidth = points;
-		this.chart.data.datasets[1].pointRadius = 0;
-		this.chart.data.datasets[1].borderWidth = points;
-		this.chart.data.datasets[2].borderWidth = points;
-		this.chart.update();
-	},
-	push: function (t, inv, rt) {
-
-		t /= tioxTimeConv;
-
-		if (t > this.graphMax) {
-			this.graphMin += this.graphTimeShift;
-			this.graphMax += this.graphTimeShift;
-			this.chart.options.scales.xAxes[0].ticks.min = this.graphMin;
-			this.chart.options.scales.xAxes[0].ticks.max = this.graphMax;
-		}
-		//        console.log( 'at chart ',t,inv,rt,pI);
-		if (inv > this.yAxisScale.max ||
-			(theChart.predictedInvValue > this.yAxisScale.max)) {
-			this.yAxisScale = this.aVAxis.update(inv);
-			this.yAxisScale = this.aVAxis.update(theChart.predictedInvValue * 2);
-			this.chart.options.scales.yAxes[0].ticks.max = this.yAxisScale.max;
-			this.chart.options.scales.yAxes[0].ticks.stepSize = this.yAxisScale.stepSize;
-		}
-		this.chart.data.datasets[0].data.push({
-			x: t,
-			y: inv
-		});
-		this.chart.data.datasets[1].data.push({
-			x: t,
-			y: rt
-		});
-		this.chart.data.datasets[2].data.push({
-			x: t,
-			y: theChart.predictedInvValue
-		});
-		this.chart.update();
-		// update graph with time, this.total/this.waits.length
-	},
-
 	updatePredictedInv: function () {
-		this.chart.data.datasets[2].data.push({
+		let ds = tioxGraph.chart.data.datasets;
+		ds[2].data.push({
 			x: (simu.now - 1) / 10000,
-			y: theChart.predictedInvValue
+			y: this.predictedInvValue
 		});
-		theChart.predictedInvValue = theChart.predictedInv();
-		this.chart.data.datasets[2].data.push({
+		this.predictedInvValue = this.predictedInv();
+		ds[2].data.push({
 			x: (simu.now / 10000),
-			y: theChart.predictedInvValue
+			y: this.predictedInvValue
 		});
-		this.chart.update();
+		tioxGraph.chart.update();
 	},
 	predictedInv: function () {
-		return (theSimulation.serviceRV.mean) / (theSimulation.interarrivalRV.mean);
+		return (theSimulation.serviceRV.mean) / 
+			(theSimulation.interarrivalRV.mean);
+	},
+	push: function (t, inv, rt) {
+			t /= tioxTimeConv;
+			tioxGraph.updateXaxis(t);
+			tioxGraph.updateYaxis(inv);
+			tioxGraph.updateYaxis(this.predictedInvValue);
+			let ds = tioxGraph.chart.data.datasets;
+			ds[0].data.push({
+				x: t,
+				y: inv
+			});
+			ds[1].data.push({
+				x: t,
+				y: rt
+			});
+			ds[2].data.push({
+				x: t,
+				y: this.predictedInvValue
+			});
+			tioxGraph.chart.update();
+		},
+	setupGraph: function(){
+		tioxGraph.setLabelColorVisible(0,'inventory', 'rgba(0,0,220,1)', true);
+		tioxGraph.setLabelColorVisible(1,'avg. time * avg. rate',
+									   'rgba(0,150,0,1)', true);
+		tioxGraph.setLabelColorVisible(2,'predicted inventory', 
+									   'rgb(185, 26, 26)',false);
+		tioxGraph.struc.options.title.text = 'Inventory'
+		this.predictedInvValue = this.predictedInv();
+		this.reset();	
+	},
+	reset: function(){
+		tioxGraph.reset(40, 30);
+		this.updateForSpeed();
+	},
+	updateForSpeed: function(){
+		tioxGraph.updateXaxisScale(simu.frameSpeed);
 	}
 }
-
-
-class VerticalAxisValue {
-	constructor() {
-		this.table = [
-			{
-				max: 1.0,
-				stepSize: 0.2
-			},
-			{
-				max: 1.5,
-				stepSize: 0.5
-			},
-			{
-				max: 2,
-				stepSize: 0.5
-			},
-			{
-				max: 3,
-				stepSize: 1.0
-			},
-			{
-				max: 4,
-				stepSize: 1
-			},
-			{
-				max: 5,
-				stepSize: 1
-			},
-			{
-				max: 6,
-				stepSize: 2
-			},
-			{
-				max: 8,
-				stepSize: 2
-			},
-        ];
-	};
-	update(y) {
-		while (y > this.table[0].max) {
-			this.table.push({
-				max: this.table[0].max * 10,
-				stepSize: this.table[0].stepSize * 10
-			});
-			this.table.shift();
-		}
-		return this.table[0];
-	}
-};
-
-function resizeChart() {
-	const w = document.getElementById('canvasWrapper');
-	const wW = w.clientWidth;
-	const newFontSize = wW / 750 * 14;
-	theChart.chart.options.title.fontSize = newFontSize;
-	theChart.chart.options.title.padding = 5;
-	theChart.chart.options.legend.labels.fontSize = newFontSize;
-	theChart.chart.options.legend.labels.padding = 10;
-
-	theChart.chart.update();
-	//alert(' in resize and w,h = '+wW+'  new font size');
-};
-window.addEventListener('resize', resizeChart);
