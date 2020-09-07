@@ -471,7 +471,7 @@ const littleGraph ={
 		this.reset();	
 	},
 	reset: function(){
-		tioxGraph.reset(40, 30);
+		tioxGraph.reset(40, 30,this.predictedInvValue * 1.2);
 		this.updateForSpeed();
 	},
 	updateForSpeed: function(){

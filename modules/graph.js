@@ -57,7 +57,7 @@ export const tioxGraph = {
 					left: 20,
 					right: 40,
 					top: 10,
-					padding: 20,
+					bottom: 0,
 				}
 			},
 			legend: {
@@ -65,7 +65,7 @@ export const tioxGraph = {
 				position: 'bottom',
 				labels: {
 					boxWidth: 25,
-					padding: 20,
+					padding: 5,
 					
 					
 				}
@@ -115,7 +115,7 @@ setup: function (){
 		resizeChart();
 		this.reset();
 },
-reset: function (timeWidth, timeShift){
+reset: function (timeWidth, timeShift, maxY){
 	this.chart = new Chart(this.context, this.struc);
 	this.struc.data.datasets[0].data = [];
 	this.struc.data.datasets[1].data = [];
@@ -139,6 +139,8 @@ reset: function (timeWidth, timeShift){
 	yTicks.min = 0;
 	yTicks.max = this.yaxis.current().max;
 	yTicks.stepSize = this.yaxis.current().stepSize;
+	this.updateYaxis(maxY);
+	this.resizeChart();
 	this.chart.update();
 },
 	updateXaxis: function(x){
@@ -195,11 +197,12 @@ resizeChart: function() {
 		left: Math.floor(newFontSize),
 		right: Math.floor(newFontSize*3),
 		top: Math.floor(newFontSize),
-		bottom: 40};
+		bottom: Math.floor(newFontSize)};
 	g.title.fontSize = newFontSize;
 	g.title.padding = newFontSize;
 	g.title.lineHeight = newFontSize/28;
 	g.legend.labels.fontSize = newFontSize;
+	g.legend.labels.boxWidth = newFontSize;
 	g.legend.labels.padding = 10;
 	g.scales.xAxes[0].ticks.fontSize = newFontSize;
 	g.scales.yAxes[0].ticks.fontSize = newFontSize;

@@ -173,6 +173,7 @@ function setActual(enough, total) {
 
 //var totInv, totTime, totPeople, lastArrDep, LBRFcount ;
 simu.reset2 = function () {
+	document.getElementById('actualPerc').innerHTML ="";
 	itemCollection.reset();
 	nvGraph.reset();
 	theProcessCollection.reset();
@@ -532,7 +533,10 @@ const nvGraph ={
 		this.reset();	
 	},
 	reset: function(){
-		tioxGraph.reset(12, 9);
+		let dif = theSimulation.demandRV.mean - theSimulation.quantityOrdered;
+		let c1 = theSimulation.Cu * (Math.max(0,dif)+1);
+		let c2 = theSimulation.Co * (Math.max(0,-dif)+1);
+		tioxGraph.reset(12, 9, Math.max(c1,c2) );
 		this.updateForSpeed();
 	},
 	updateForSpeed: function(){

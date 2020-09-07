@@ -152,6 +152,8 @@ simu.reset2 = function () {
 	//fudge to get animation started quickly
 	let t = simu.heap.top().time - 1;
 	simu.now = simu.frameNow = t;
+	theSimulation.nInQueue = 0;
+	document.getElementById('nInQueue').innerHTML = '';
 
 };
 
@@ -186,10 +188,18 @@ const animForQueue = {
 
 	},
 
-	arrive: function (nSeatsUsed, person) {},
+	arrive: function (nSeatsUsed, person) {
+		theSimulation.nInQueue++;
+		document.getElementById('nInQueue').innerHTML = 
+			theSimulation.nInQueue ;
+	},
 
 	leave: function (procTime, nSeatsUsed) {
 
+		theSimulation.nInQueue--;
+		document.getElementById('nInQueue').innerHTML = 
+			theSimulation.nInQueue ;
+		
 		for (let k = 0; k < theSimulation.queue.q.length; k++) {
 			let p = theSimulation.queue.q[k];
 			let time = simu.now + Math.min(animForQueue.delta.dx / anim.stage.normalSpeed, procTime);
@@ -437,7 +447,7 @@ const queueGraph ={
 			if (rho >= 1) return Infinity;
 			const iCV = theSimulation.interarrivalRV.CV;
 			const sCV = theSimulation.serviceRV.CV;
-			let p = (rho / (1 - rho) / sr / tioxTimeConv) * (iCV * iCV + sCV * sCV) / 2;
+			let p = (rho / (1 - rho) / ir / tioxTimeConv) * (iCV * iCV + sCV * sCV) / 2;
 			return p;
 		},
 	push: function (t, w) {
@@ -487,15 +497,18 @@ const queueGraph ={
 		tioxGraph.chart.update();
 	},
 	setupGraph: function(){
-		tioxGraph.setLabelColorVisible(0,'individual wait', 'rgba(0,0,220,1)', true);
-		tioxGraph.setLabelColorVisible(1,'average wait', 'rgba(0,150,0,1)', true);
-		tioxGraph.setLabelColorVisible(2,'predicted wait', 'rgb(185, 26, 26)', true);
+		tioxGraph.setLabelColorVisible(0,'individual wait',
+					'rgba(0,0,220,1)', true, 3);
+		tioxGraph.setLabelColorVisible(1,'average wait',
+					'rgba(0,150,0,1)', true, 3);
+		tioxGraph.setLabelColorVisible(2,'predicted wait',
+					'rgb(185, 26, 26)', true, 0);
 		tioxGraph.struc.options.title.text = 'Waiting Time'
 		this.predictedWaitValue = this.predictedWait();
 		this.reset();
 	},
 	reset: function(){
-		tioxGraph.reset(5,4);
+		tioxGraph.reset(5,4, Math.max( this.predictedWaitValue * 1.5, 1.5) );
 		this.updateForSpeed();
 		this.total = 0;
 		this.count = 0;

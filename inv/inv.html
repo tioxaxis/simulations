@@ -58,7 +58,22 @@
 					</canvas>
 				</div>
 				<!--end ANIMATION Stage -->
-				<div id="chartWrapper" class="chart-container">
+				<div id='statsWrapper'>
+					<div id='statsRow'>
+						<div class='statDisplay'>
+							<p>Lost Sales <span id="lostSales"></span></p>
+						</div>
+						<div class='statDisplay'>
+							Fill Rate <span id="fillRate"></span>%
+						</div>
+						<div class='statDisplay'>
+							Service Level <span id="serviceLevel"></span>%
+						</div>
+						
+
+					</div>
+				</div>
+				<div id="chartWrapper55" class="chart-container">
 					<canvas id="chart"></canvas>
 				</div>
 			</div>
@@ -149,7 +164,7 @@
 						<div class="sliderbox">
 							<p>Reorder Point =
 								<span id="ropDisplay">10</span></p>
-							<input id="rop" type="range" min="5" max="75" step="1" value="10" class="slider">
+							<input id="rop" type="range" min="5" max="85" step="1" value="10" class="slider">
 							<div class='spreadValues'>
 								<span>5</span>
 								<span>25</span>

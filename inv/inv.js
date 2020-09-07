@@ -159,8 +159,11 @@ function captureChangeInSliderS(event) {
 
 
 simu.reset2 = function () {
+	
+	
 	itemCollection.reset();
 	invGraph.reset();
+	
 	theProcessCollection.reset();
 	itemCollection.moveDisplayAll(0); //display all at start.
 	gSF = new GStickFigure(anim.stage.foreContext,
@@ -181,6 +184,9 @@ simu.reset2 = function () {
 			item: null
 		});
 	}
+	document.getElementById('lostSales').innerHTML = '';
+	document.getElementById('fillRate').innerHTML = '';
+	document.getElementById('serviceLevel').innerHTML = '';
 };
 
 //  One variable for each process step or queue
@@ -373,6 +379,7 @@ class RopStore extends GStore {
 		this.invInDoor = null;
 		this.invPosition = null;
 		this.lostSales = null;
+		this.totalDemand = null;
 		this.nRounds = null;
 		this.roundsWithEnough = null;
 		this.packages = []; //the packages in the store.
@@ -391,9 +398,10 @@ class RopStore extends GStore {
 		for (let k = 0; k < this.inv; k++)
 			this.addNew();
 		this.lostSales = 0;
-		this.nRounds = 1;
-		this.roundsWithEnough = 1;
-		this.stockOut = false;
+		this.totalDemand = 0;
+		this.nRounds = 0;
+		this.roundsWithEnough = 0;
+		this.stockout = false;
 	};
 	truckAtDoor(item) {
 		item.truck.graphic.setReverse();
@@ -435,16 +443,21 @@ class RopStore extends GStore {
 			this.invPosition);
 		// keep track stockouts by round
 		this.nRounds++;
-		if (!this.stockOut) this.roundsWithEnough++;
-		this.stockOut = false;
+		if (!this.stockout) this.roundsWithEnough++;
+		console.log( 'delivery', this.stockout, this.nRounds, this.roundsWithEnough);
+		this.stockout = false;
+		document.getElementById('serviceLevel').innerHTML =
+			( 100*(this.roundsWithEnough/this.nRounds) ).toFixed(0);
 	};
 	truckDestroy(truck) { //event when truck is finally offStageRight
 		truck.destroy();
 	};
 	pull() { //person arrived at queue, sell one unit.
-		let pack = super.pull()
+		let pack = super.pull();
+		this.totalDemand++;
 		if (pack == null) {
 			this.stockout = true;
+			this.lostSales++;
 		} else {
 			this.invPosition--;
 			if (this.invPosition <= theSimulation.rop &&
@@ -453,7 +466,11 @@ class RopStore extends GStore {
 			}
 			this.invInDoor--;
 			this.inv--;
-		}
+		};
+		document.getElementById('lostSales').innerHTML = this.lostSales;
+		document.getElementById('fillRate').innerHTML =
+			((1 - this.lostSales / this.totalDemand) * 100).toFixed(0);
+		
 		invGraph.push(simu.now, this.inv,
 			this.invPosition);
 		return pack;
@@ -538,8 +555,8 @@ class RopStore extends GStore {
 		load.addPath({
 			t: atDoorTime - 20,
 			x: anim.truck.path.left + point.dx,
-			y: Math.min(anim.truck.path.top + point.dy,
-				topOfInventory)
+			y: anim.truck.path.top + point.dy,
+				
 		});
 
 
@@ -803,7 +820,11 @@ const invGraph ={
 		this.lastpredInv = this.computePredInv();
 		this.lastinv = 0;
 		this.lastinvPos = 0;
-		tioxGraph.reset(20, 15);
+		 
+		let maxI = ( simu.whichRule == 'methRop' ?
+					 theSimulation.rop + theSimulation.quantityOrdered + 1:
+					 theSimulation.upto+1 );
+		tioxGraph.reset(20, 15, maxI);
 		this.updateForSpeed();
 	},
 	updateForSpeed: function(){
