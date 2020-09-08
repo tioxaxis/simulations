@@ -61,9 +61,13 @@ document.addEventListener('keydown', keyDownFunction);
 
 function keyDownFunction(evt) {
 	if (simu.editMode) return;
-	if (evt.code == "Space") {
+	if (evt.code == "Space" || evt.code == "Enter") {
 		evt.preventDefault();
 		togglePlayPause();
+	} else if (evt.code == "Escape"){
+		evt.preventDefault();
+		document.getElementById('resetButton')
+			.dispatchEvent(new Event('click',{bubbling: true}));
 	}
 };
 
