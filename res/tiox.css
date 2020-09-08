@@ -177,17 +177,19 @@ input[type=range] {
 /* Now the formats for the right hand side box  */
 
 #sliderBigBox {
-	width: 100%;
+/*	left: 0;*/
+/*	width: 100%;*/
 	display: flex;
-	flex-wrap: wrap;
+/*	flex-wrap: wrap;*/
 	flex-direction: column;
-	justify-content: space-around;
-	align-content: flex-start;
+/*	justify-content: space-around;*/
+/*	align-content: flex-start;*/
 }
 .sliderRow {
 	width: 100%;
 	display: flex;
 	flex-direction: row;
+	border-bottom: solid slategray 1px;
 }
 #ropupto {
 	height: 3vw;
@@ -195,6 +197,7 @@ input[type=range] {
 	flex-direction: row;
 	align-items: center;
 	justify-content: space-around;
+	border-bottom: solid slategray 1px;
 }
 #modelUpto {
 	display: flex;
@@ -202,14 +205,20 @@ input[type=range] {
 #modelRop {
 	display: none;
 }
+.sliderboxLeft {
+	left: 0;
+	right: 50%;
+}
+.sliderboxRight{
+	left: 50%;
+	right: 0;
+}
 .sliderbox,
 .actionBox,
 .playButtons {
 	width: 50%;
 	height: 5vw;
-	border-width: 1px;
-	border-color: slategray;
-	border-style: solid;
+	border-right:  solid slategray 1px;
 }
 .sliderbox p {
 	height: .8vw;
