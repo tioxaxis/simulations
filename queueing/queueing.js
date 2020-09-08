@@ -408,7 +408,7 @@ export class Person extends Item {
 		if (!aPath) return false;
 		//       console.log ( 'persons ',p.which,a.which, ' time ', pPath.t,pPath.x, aPath.t + a.width/aPath.speedX, aPath.x);
 		return false;
-		return (pPath.t < aPath.t + a.width / aPath.speedX)
+//		return (pPath.t < aPath.t + a.width / aPath.speedX)
 			//        if (  p.cur.x + p.width > a.cur.x ) return true;
 			//        if ( pPath.deltaX <= aPath.deltaX ) return false;
 			//        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
