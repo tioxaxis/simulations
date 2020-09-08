@@ -191,7 +191,7 @@ resizeChart: function() {
 	const w = document.getElementById('canvasWrapper');
 	const wW = w.clientWidth;
 	const newFontSize = Math.floor(wW / 750 * 14);
-	console.log(' New Font Size for Chart', newFontSize);
+//	console.log(' New Font Size for Chart', newFontSize);
 	let g = tioxGraph.struc.options;
 	g.layout.padding = { 
 		left: Math.floor(newFontSize),
