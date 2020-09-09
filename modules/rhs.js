@@ -230,10 +230,14 @@ const presets = {
 				if (simu.editMode)
 					if (presets.textMode) presets.saveModifiedDesc();
 					else presets.addTextBox(presets.currentLi.innerHTML);
-			} else if (key == "ArrowDown" || key == "PageDown") {
+			} else if (key == "ArrowLeft" 
+					   || key == "ArrowDown" 
+					   || key == "PageDown") {
 				evt.preventDefault();
 				presets.nextRow();
-			} else if (key == "ArrowUp" || key == "PageUp") {
+			} else if (key == "ArrowRight" 
+					   || key == "ArrowUp" 
+					   || key == "PageUp") {
 				evt.preventDefault();
 				presets.previousRow();
 			}
