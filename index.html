@@ -9,7 +9,7 @@
 		.tab {
 			border: 1px solid #ccc;
 			background-color: #cbcef4;
-			width: 100%;
+			
 			display: flex;
 			flex-direction: row;
 			flex-wrap: wrap;
@@ -55,6 +55,7 @@
 	}
 	body {
 		overflow: auto;
+		width: 800px;
 	}
 </style>
 
@@ -84,24 +85,28 @@
 	<h2> The Animations:</h2>
 		<h3><a class='simulink' href='queueing/queueing.html'>
 		Queueing</a></h3>
+		<p> An animation of a single server queue, e.g., the scanner at airport security.  Individual, average, and predicted waiting time are graphed.  </p>
 	<h3><a class='simulink' href='littleslaw/little.html'>
 		Little's Law</a></h3>
+		<p> An animation of a room where people enter and leave.  Average inventory, the product of average system time and average throughput, and predicted inventory are graphed.  </p>
 	<h3><a class='simulink' href='nv/nv.html'>
-		News Vendor</a></h3>
+		News-vendor</a></h3>
+		<p> An animation of the clasic news-vendor problem.  Each period the total overage or the total underage cost is graphed.  The average over time of the sum of overage and underage costs is also graphed.</p>
 	<h3><a class='simulink' href='inv/inv.html'>
 		Inventory</a></h3>
+		<p> An animation of customers coming to a store and buying a good.  Two rules for reordering goods can be applied: a reorder point level with a fixed reorder quantity, or a periodic reorder with the quantity based on order-up-to rule.  On hand inventory, inventory position, and predicted average on hand inventory are graphed.  </p>
 	</div>
 	
 	<div id="future" class="tabcontent">
 	<h2>Plans for further animations:</h2>
 	<h3> The Face Game: </h3>
-		<p>  An animation based on a simple 3 stage process that can be done in class with 4 people, drawing a simple face on a 3x5 index card.  It involves the concepts of flowtime, throughput, inventory, quality, and Little's Law.  I've found it useful as a follow up to doing the demonstration in class as students make suggestions for improvments.</p><br>
+		<p>  An animation based on a simple 3 stage process that can be done in class with 4 people, drawing a simple face on a 3x5 index card.  It involves the concepts of flowtime, throughput, inventory, quality, and Little's Law.  I've found the physical demonstation quite useful in an early class. Students then make suggestions for improvments.  The animation is useful to allow the class to see whether the suggested improvement affects the intended performance measure</p>
 		<h3>Batching Animations:</h3>
-		<p>  There are three distinct ones that involve producing batches of product on a series of machines that require both setup and unit processing times. It involves understanding how batching affects throughput and flowtime.  There is one where the machines are bottlenecks, one where the machines are not bottlenecks, and a third where the machines operate in parallel to do the same step. </p><br>
+		<p>  There are three distinct ones that involve producing batches of product on a series of machines that require both setup and unit processing times. The goal is to understand how batching affects throughput and flowtime.  There is one where the machines are bottlenecks, one where the machines are not bottlenecks, and a third where the machines operate in parallel to do the same step. </p>
 		<h3>The Funnel Game:</h3>
-		<p>  An animation that allows you to simulate a combination of Deming's red bead experiment and funnel experiment so everyone in the class can participate on their laptops</p><br>
+		<p>  An animation that allows you to simulate a combination of Deming's red bead experiment and funnel experiment so everyone in the class can participate on their laptops</p>
 		<h3>Economies of Scale in Queueing: </h3>
-		<p>  There are two.  First, an animation that allows one to compare two separate queueing systems (with separate queues) operating in parallel (receiving half the demand each) to a pair of machines operating with a single (joint) queue.   Second, an animation that allows one to compare a pair of queueing systems in series where each machine does half the job (at twice the pace) to a pair of machines operating with a single (joint) queue.  Flow time and throughput are compared.</p><br>
+		<p>  There are two pieces.  First, an animation that allows one to compare two separate queueing systems (with separate queues) operating in parallel (receiving half the demand each) to a pair of machines operating with a single (joint) queue.   Second, an animation that allows one to compare a pair of queueing systems in series where each machine does half the job (at twice the pace) to a pair of machines operating with a single (joint) queue.  Flow time and throughput are compared.</p>
 		<h3>Other Ideas?</h3>
 		<p>    Do you have other ideas?  Contact me and make your pitch.  :)</p>
 	
@@ -114,31 +119,34 @@
 	<p>TioX is a set of animations for demonstrating some of the main ideas in Operations Management.   These include queueing, bottlenecks, Little's Law, the Newsvendor Problem, Inventory Management, Queueing System Design (economies of scale in queueing), and batching (the impact of batching decisions on flow time and throughput).  </p>
 	<p>Each animation shows people or packages or both moving through a system and is designed as an aid to students' first exposure to these concepts.  Let's take queueing as an example to start with. Although one can observe people coming to a store or a bank and see that sometimes people wait to be served, we have no knowledge of or control over the rates of arrivals or the rates of service. The animation provides the student with the opportunity to observe a system knowing the arrival rate of customers and the service rate of the server and see how the system performs.  Crucially, it is then possible to adjust these rates and the variability in these rates and observe how the system performance (waiting time for customers in this case) changes.</p>
 		
-		<p>Many basic concepts in Operations Management involve understanding how sequences of events, such as a customers arriving at store, being served, and being checked out, will interact.  Although many ideas are straight forward, such as the rate a system can handle customers, is driven by the slowest stage of a process, it is helpful to actually see this a few times first.</p>
+	<p>Many basic concepts in Operations Management involve understanding how sequences of events, such as a customers arriving at store, being served, and being checked out, will interact.  Although many ideas are straight forward, such as the rate a system can handle customers, is driven by the slowest stage of a process, it is helpful to actually see this a few times first.</p>
+		
 	<p>These animations were designed to act as a bridge for the students, to allow them to see the phenomenon of a bottleneck of a system limiting throughput, variability causing a queue to form, inventory in a store allowing customers to be served immediately, without the need for constant delivers.
 		
-		<p> These animations are not designed to replace the mathematics Operations Managers use to understand systems. They are not designed to be used to model real systems.  There are plenty of sophisticated comercial simulation systems for modeling real systems.  They are meant to be that bridge for the first time student.  To understand inventory systems, traditionally one draws a graph of on-hand inventory over time to show customers buying product and delivery of orders from a supplier.  One might say "Inventory is on the y-axis and time is on the x-axis."  Yet, to some first time Operations students the notion of customers arriving over time and drawing a graph of inventory going down to represent this may be a challenge.  It was that idea, "Time Is On the X-axis" that led to the acronym for these simulations (TioX).  We hope that watching the inventory animation will help students expeditiously understand the connection between the events of customers and orders arriving and the inventory curves we all draw.</p>
+	<p> These animations are not designed to replace the mathematics Operations Managers use to understand systems. They are not designed to be used to model real systems.  There are plenty of sophisticated comercial simulation systems for modeling real systems.  They are meant to be that bridge for the first time student.  To understand inventory systems, traditionally one draws a graph of on-hand inventory over time to show customers buying product and delivery of orders from a supplier.  One might say "Inventory is on the y-axis and time is on the x-axis."  Yet, to some first time Operations students the notion of customers arriving over time and drawing a graph of inventory going down to represent this may be a challenge.  It was that idea, "Time Is On the X-axis" that led to the acronym for these simulations (TioX).  We hope that watching the inventory animation will help students expeditiously understand the connection between the events of customers and orders arriving and the inventory curves we all draw.</p>
 	<h3> Background and History:</h3>
-	<p>In a 2006 article entitled "Web-based Simulations for Teaching Queueing, Little's Law, and Inventory Management," published in INFORMS Transactions on Education,  Robert Shumsky and I introduced earlier versions of three of these simulations.  The Flash and Shock-Wave versions of these at some point became unavailable and the link at the publisher no longer worked.   Robert Shumsky produced and updated Flash version of the animation for Queueing, and I produced a Java version for all three and several others.  As of 2020 Flash is no longer being supported by Adobe.  Java became problematic for use via a web browser much earlier. The Java version is still available and still runs fine on a laptop if you are willing to install the Jave Runtime System. Yet, the Java version was designed around a fixed screen size. It can appear small on a modern laptop, and thus small on the projector for class, and adjusing system settings to workaround this difficulty is awkward.   For these reasons among others, I am in the process of rewriting the animations in Javascript.  They should run in most modern browsers (although Chrome is suggested).</p>
+	<p>In a 2006 article entitled <a href="https://pubsonline.informs.org/doi/10.1287/ited.7.1.106">"Web-based Simulations for Teaching Queueing, Little's Law, and Inventory Management,"</a> published in <a href="https://pubsonline.informs.org/journal/ited">INFORMS Transactions on Education</a>,  Robert Shumsky and I introduced earlier versions of three of these simulations.  The Flash and Shock-Wave versions of these at some point became unavailable and the link at the publisher no longer worked.   Robert Shumsky produced and <a href="http://www.bizsimz.com/queuesim/queuesim.html">   updated Flash version of the animation for Queueing,</a> and I produced a Java version for all three and several others.  Adobe has announced that December 2020 is the <a href="https://www.adobe.com/products/flashplayer/end-of-life.html">End-of-Life for Flash</a>.  Java became <a href="https://java.com/en/download/help/enable_browser.xml">problematic for use via a web browser</a> much earlier.   <a href="https://tiox.simonnet.rochester.edu/">   The Java version is still available</a> and still runs fine on a laptop if you are willing to install the Jave Runtime System. Yet, the Java version was designed around a fixed screen size. It can appear small on a modern laptop, and thus small on the projector for class, and adjusing system settings to workaround this difficulty is awkward. </p>
+		
+		<p>  For these reasons among others, I am in the process of rewriting the animations in Javascript. About half are completed and on this site.  The rest are in progress. They run in most modern browsers (Chrome, Safari, FireFox, although Chrome is suggested).</p>
 	
-	<p>Four of the animations have been reporduced: Queueing, Little's Law, News Vendor, and Inventory (handling both the standard Reorder Point/Reorder Quantity model and the Periodic Ordering and Order-up-to model.  Others will follow including one that simulates the "Face Game," a easy to run game for a early class to demonstrate the notions of flow time and throughput, and several that deal with batching issues, showing the implications of batching to flow time and throughput.</p>
+	<p>The animations that have been reporduced are Queueing, Little's Law, News Vendor, and Inventory (handling both the standard Reorder Point/Reorder Quantity model and the Periodic Ordering and Order-up-to model.  Others will follow including one that simulates the "Face Game," a easy to run game for a early class to demonstrate the notions of flow time and throughput, several that deal with batching issues, showing the implications of batching to flow time and throughput, and finally "The Funnel Game" which demonstrates <a href="https://deming.org/">  W. Edward Deming's</a> red bead and funnel experiment.</p>
 	
-		<h3> What if you have ideas for additions or extensions:</h3>
-	<p>If you have other ideas for an animation that would introduce a basic Operations Management concept feel free to contact me.  Perhaps we can design one together. Again my goal is to provide a bridge for first time students from what they see in the real world to the models we use in Operations Management.  The animations that I have used here have been intentially simple, for example, people and trucks. Stick figures are not intended to look like real people and the trucks don't move and act like real trucks but again, provide the bridge to first understanding these concepts related to say a retail store and then make the jump to other inventory systems, or people lining up in a straight line for a TSA agent is not realistic but may allow the student to imagine another situation such as requesting an appointment at a doctor's office and "waiting" in the scheduling system for the day of the appointment. </p>
-	
-	
+	<h3> What if you have ideas for additions or extensions:</h3>
+	<p>If you have other ideas for an animation that would introduce a basic Operations Management concept feel free to contact me.  Perhaps we can design one together. Again my goal is to provide a bridge for first time students from what they see in the real world to the models we use in Operations Management.  The animations that I have used here have been intentially simple, for example, people and trucks. Stick figures are not intended to look like real people and the trucks don't move and act like real trucks but provide the bridge to aid a student's first understanding of these concepts.  A (mathematical) model represents only a few salient aspects, ignoring much of the detail of the real situation.  Likewise these animations represent crudely some salient features and ignore much of the detail.  Thus, people queueing up in a straight line for a TSA agent is not realistic but may allow the student to imagine another situation such as requesting an appointment at a doctor's office and being queued in the scheduling system for the day of the appointment. </p>
 	
 	
-	<h3>Secenarios</h3>
+	
+	
+	<h3>Secenarios:</h3>
 	<p>If you have used the simulations for a bit you may recognise that to demonstrate some system behaviours in class it is useful to show the animation running for a first set of parameter settings and then switch to a second or third and compare the performance across the various scenarios.  To facilite this use in a class, a faculty member can predefine a set of scenarios for each animation.</p>
-	<p>Once a collection of scenarios is setup, say for a demonstration in class then presentor can switch between the scenarios.  This switching can of course be done by clicking on the different one in the list.  Alternatively, the web page will move to the next scenario by pushing the downarrow key or pagedown key.  The latter was picked because presentation remotes often have a button on them for pagedown, for seeing the next slide in a presentation.  </p>
-	<p>More details:  Of course the uparrow and pageup keys work as well.  Further, each scenario can be set to 1) pause the animation if it is playing, play the animation if it is paused, or "none" meaning leave it in the mode it was currently in paused or playing.  In addition, when a new scenario is picked it can force the animation to reset (as if the reset button were pushed).  A reset causes the animation to begin again from an empty system, and clears the chart of any old data. </p>
-	<h3> How to create your own scenarios:</h3>
-	<p>Hopefully the interface is largely self-explanitory.  Click Edit.  The animation will pause. Pick an existing scenario and then changing any of the parameters in the sliders will affect that scenario.  Double-clicking the name (or typing Return when one is selected) will allow you to change the name of the scenario.  Scenarios are kept in alpha-numeric order.  You will see this once you Save.  Use a numbering system to put your scenarios in the order you want for your presentation.  Don't forget to hit save when you are done.  Adding and deleting scenarios should be a familiar interface with +/- keys at the bottom of the list.  Although only a few will display, you are not limited to the number of scenarios you can create.</p>
+	<p>Once a collection of scenarios is setup, say for a demonstration in class then presentor can switch between the scenarios.  This switching can of course be done by clicking on the different one in the list.  Alternatively, the web page will move to the next scenario by pushing the uparrow, rightarrow, or pagedown key.  These were picked because presentation remotes presentation software often use these keyboard codes to move to the next slide in a presentation.  </p>
+	<p>More details:  Of course the downarrow, leftarrow, and pageup keys work as well.  Further, each scenario can be set to 1) pause the animation if it is playing, play the animation if it is paused, or "none" meaning leave it in the mode it was currently in paused or playing.  When a new scenario is picked it can force the animation to reset (as if the reset button were pushed).  A reset causes the animation to begin again from an empty system, and clears the chart of any old data. Play/Pause and Reset can be controlled from the keyboard or a presentation remote as well.</p>
+	<h3> How to create your own sequence of scenarios:</h3>
+	<p>The sequence of scenarios can be customized by each instructor.  Hopefully the interface is largely self-explanitory.  Click Edit.  The animation will pause. Pick an existing scenario and then changing any of the parameters in the sliders will affect that scenario.  Double-clicking the name (or typing Return when one is selected) will allow you to change the name of the scenario.  Scenarios are kept in alpha-numeric order.  You will see this once you Save.  Use a numbering system to put your scenarios in the order you want for your presentation.  Don't forget to hit save when you are done.  Adding and deleting scenarios should be a familiar interface with +/- keys at the bottom of the list.  Although only a few will display, you are not limited to the number of scenarios you can create.</p>
 	<h3> So where are they stored and how do I retrieve them?</h3>
 	<p>The mechanism for storing the scenarios is called "Local Storage" for your browser.  It is stored on your machine and for the browser (say Chrome) with which you created them.  If you return to that machine and that browser then it will all be there. This mechanism is simple, and requires no passwords or cloud storage.  Admittedly it does not make sharing them easy. 
 	</p>
-	<h3> OK, so how do I share them with my colleage or my class?</h3>
+	<h3> OK, so how do I share them with my colleage or my students?</h3>
 	<p> If you need to share a collection of scenarios for one animation, you can create a URL that references the animation and contains all the scenarios encoded in the URL.  Once you are ready, click Edit and then click Export.  Copy the URL and pass it to a colleage or post the URL in your learning managment system in an assignment for example.  If your colleague wants to keep these scenarios as his/her own in his/her "Local Storage" then he/she needs only hit the Edit and then the Save buttons.
 	</p>
 	<p>You need something more?  Let me know what you think you need and if demand is there (there are others like you with a similar request) I will try to generate something to meet your needs.</p>
@@ -167,8 +175,7 @@
 		let tablinks = document
 				.getElementsByClassName("tablinks");
 		for (let i = 0; i < tablinks.length; i++) {
-			tablinks[i].className = tablinks[i].className
-						.replace(" active", "");
+			tablinks[i].className = '';
 		}
 
 		currentTab = document.getElementById('animations');
