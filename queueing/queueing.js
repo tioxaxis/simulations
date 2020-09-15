@@ -1,3 +1,23 @@
+/*
+	TioX a set of Animations for Operations Management
+    Copyright (C) 2020  Gregory Dobson
+	gregory.c.dobson@gmail.com
+
+    GPL-3.0-or-later
+	This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/		
+
 'use strict';
 import {
 	GammaRV, Heap
@@ -15,7 +35,7 @@ import {
 from "../modules/procsteps.js";
 const tioxTimeConv = 10000; //rates in tiox are k/10 seconds
 anim.stage = {
-	normalSpeed: .10, 
+	normalSpeed: .050, 
 	width: 1000,
 	height: 300
 }
@@ -170,13 +190,17 @@ const animForQueue = {
 	reset: function () {},
 
 	join: function (nInQueue, arrivalTime, person) {
+		let guessInQueue = Math.max( 0, Math.floor(
+			nInQueue - this.walkingTime / theSimulation.serviceRV.mean));
 		let dist = nInQueue * animForQueue.delta.dx;
 		let time = simu.now + dist / anim.stage.normalSpeed;
-		person.addPath({
-			t: time,
-			x: person.cur.x,
-			y: person.cur.y
-		});
+//		person.addPath({
+//			t: time,
+//			x: person.cur.x,
+//			y: person.cur.y
+//		});
+		// simply move person back appropriate amount.
+		person.cur.x -= guessInQueue * animForQueue.delta.dx;
 		person.addPath({
 			t: arrivalTime,
 			x: anim.person.path.headQueue - dist,

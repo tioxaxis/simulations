@@ -1,3 +1,22 @@
+/*
+	TioX a set of Animations for Operations Management
+    Copyright (C) 2020  Gregory Dobson
+	gregory.c.dobson@gmail.com
+
+    GPL-3.0-or-later
+	This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/		
 import {
 	Heap
 }
@@ -403,7 +422,7 @@ export class ItemCollection extends Array {
 		super();
 		};
 	reset() {
-		this.splice(0, this.length)
+		this.splice(0, this.length);
 	};
 	moveDisplayAll(deltaSimuTime) {
 		this.forEach(p => p.moveDisplayWithPath(deltaSimuTime))
@@ -422,13 +441,14 @@ export class ItemCollection extends Array {
 };
 
 export var itemCollection = new ItemCollection();
+		var itemCollCount = 0;
 
 //Item is the simulation object that moves
 // but its graphic is what gets drawn
 export class Item {
 	constructor(x, y) {
 		itemCollection.push(this);
-		this.which = itemCollection.length;
+		this.which = ++itemCollCount;
 		if (this.ahead) this.ahead.behind = this;
 		this.behind = null;
 		this.cur = {
