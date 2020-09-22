@@ -153,11 +153,13 @@ reset: function (timeWidth, timeShift, maxY){
 //	ticks.max = Math.max(ticks.max, ticks.min + this.xaxis.timeWidth);
 //	ticks.stepSize = this.xaxis.timeWidth - this.xaxis.timeShift;
 //	
-	this.yaxis = new VerticalAxisValue();
+//	this.yaxis = new VerticalAxisValue();
+	this.yaxis = verticalAxisLimit(); //start up the generator
 	const yTicks = this.struc.options.scales.yAxes[0].ticks;
 	yTicks.min = 0;
-	yTicks.max = this.yaxis.current().max;
-	yTicks.stepSize = this.yaxis.current().stepSize;
+	var pair = this.yaxis.next().value.pair;
+	yTicks.max = pair.max;
+	yTicks.stepSize =pair.stepSize;
 	this.updateYaxis(maxY);
 	this.resizeChart();
 	this.chart.update();
@@ -198,11 +200,11 @@ reset: function (timeWidth, timeShift, maxY){
 		this.chart.update();
 	},
 	updateYaxis: function(y){
-		if( y <= this.yaxis.current().max) return false
-		const pair = this.yaxis.update(y);
+		let result = this.yaxis.next(y).value;
+		if( !result.changed ) return false
 		const yTicks = this.struc.options.scales.yAxes[0].ticks
-		yTicks.max = pair.max;
-		yTicks.stepSize = pair.stepSize;
+		yTicks.max = result.pair.max;
+		yTicks.stepSize = result.pair.stepSize;
 		return true;
 	},
 	
@@ -233,56 +235,105 @@ resizeChart: function() {
 
 }
 
-class VerticalAxisValue {
-	constructor() {
-		this.table = [
-			{
-				max: 1.0,
-				stepSize: 0.2
-			},
-			{
-				max: 1.5,
-				stepSize: 0.5
-			},
-			{
-				max: 2,
-				stepSize: 0.5
-			},
-			{
-				max: 3,
-				stepSize: 1.0
-			},
-			{
-				max: 4,
-				stepSize: 1
-			},
-			{
-				max: 5,
-				stepSize: 1
-			},
-			{
-				max: 6,
-				stepSize: 2
-			},
-			{
-				max: 8,
-				stepSize: 2
-			},
-        ];
-	};
-	current (){
-		return this.table[0];
-	};
-	update(y) {
-		while (y > this.table[0].max) {
-			this.table.push({
-				max: this.table[0].max * 10,
-				stepSize: this.table[0].stepSize * 10
-			});
-			this.table.shift();
+//class VerticalAxisValue {
+//	constructor() {
+//		this.table = [
+//			{
+//				max: 1.0,
+//				stepSize: 0.2
+//			},
+//			{
+//				max: 1.5,
+//				stepSize: 0.5
+//			},
+//			{
+//				max: 2,
+//				stepSize: 0.5
+//			},
+//			{
+//				max: 3,
+//				stepSize: 1.0
+//			},
+//			{
+//				max: 4,
+//				stepSize: 1
+//			},
+//			{
+//				max: 5,
+//				stepSize: 1
+//			},
+//			{
+//				max: 6,
+//				stepSize: 2
+//			},
+//			{
+//				max: 8,
+//				stepSize: 2
+//			},
+//        ];
+//	};
+//	current (){
+//		return this.table[0];
+//	};
+//	update(y) {
+//		while (y > this.table[0].max) {
+//			this.table.push({
+//				max: this.table[0].max * 10,
+//				stepSize: this.table[0].stepSize * 10
+//			});
+//			this.table.shift();
+//		}
+//		return this.table[0];
+//	}
+//};
+
+
+function * verticalAxisLimit(){
+	let table = [
+		{
+			max: 1.0,
+			stepSize: 0.2
+		},
+		{
+			max: 1.5,
+			stepSize: 0.5
+		},
+		{
+			max: 2,
+			stepSize: 0.5
+		},
+		{
+			max: 3,
+			stepSize: 1.0
+		},
+		{
+			max: 4,
+			stepSize: 1
+		},
+		{
+			max: 5,
+			stepSize: 1
+		},
+		{
+			max: 6,
+			stepSize: 2
+		},
+		{
+			max: 8,
+			stepSize: 2
 		}
-		return this.table[0];
+	];
+	var y = 0;
+	while(true){
+		let changed = false;
+		while( y > table[0].max ){
+			table.push({max: table[0].max * 10, stepSize: table[0].stepSize * 10});
+			table.shift();
+			changed = true;
+		}
+		y = yield {changed: changed, pair: table[0]};
 	}
-};
+}
+
 
 window.addEventListener('resize', tioxGraph.resizeChart);

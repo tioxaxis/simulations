@@ -96,7 +96,7 @@
 	left: 0;
 	right: 0;
 	height: 41%;
-	border: green solid px;
+/*	border: green solid px;*/
 	border-bottom:  solid  #7a8dd0 .5vw;
 
 /*	clip-path: content-box;*/
@@ -115,7 +115,7 @@
 	top: 0;
 	width: 100%;
 	z-index: 5;
-	/*border: red solid 3px;*/
+/*	border: red solid 3px;*/
 }
 
 
