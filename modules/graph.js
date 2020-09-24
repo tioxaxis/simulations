@@ -64,6 +64,10 @@
 		}
 	};
 
+
+let html1 = '<svg  xmlns="http://www.w3.org/2000/svg" width="20" height="20">   <circle cx="25" cy="25" r="10" fill=';
+let html2 = '></circle><text> legend name</text></svg><pre ';
+
 export class TioxGraph {
 	constructor (graphId,ratio, xInfo,yMax){
 		this.context = document.getElementById(graphId)
@@ -77,7 +81,7 @@ export class TioxGraph {
 		this.lineInfo = [];
 		
 		this.outer= {width: 2000, height: 2000*ratio}
-		this.margin = {top: this.fontSize*2, bot: this.fontSize*2,
+		this.margin = {top: this.fontSize, bot: this.fontSize*3/2,
 					   left: this.fontSize*3, right:this.fontSize}
 		this.inner = {top: this.margin.top, 
 					  bot: this.outer.height-this.margin.bot,
@@ -85,15 +89,15 @@ export class TioxGraph {
 					  right: this.outer.width- this.margin.right,
 					 height: this.outer.height - this.margin.top - this.margin.bot,
 					 width: this.outer.width - this.margin.left - this.margin.right};
-		this.reset();
+		this.reset(this.yMax);
 	}
 	
-	reset(){
+	reset(yMax){
 		this.data = [];
 		this.xInfo = Object.assign({}, this.xInfoOrig);
 		this.vertAxisGen = verticalAxis(); //start up the generator
 		this.yInfo = this.vertAxisGen.next().value.pair;
-		this.updateYaxis(this.yMax);
+		this.updateYaxis(yMax);
 		this.setupScalesAxesGrids();
 		for( let info of this.lineInfo ){
 			info.last ={x:null, y: null}
@@ -102,15 +106,19 @@ export class TioxGraph {
 	setTitle(title){
 		document.getElementById('chartTitle').innerHTML = title;
 	};
-	setLegendText(elem,name,visible){
-		elem.innerHTML = '<span ' + (visible?
-			'>':'style="text-decoration: line-through;">')
-			+'<pre>  '+name+'  </pre></span>';
+	
+	
+
+
+	setLegendText(elem,info) {
+		elem.innerHTML = '<pre style="'+
+		( info.visible?'':'text-decoration: line-through; ')
+			+'color:'+info.color+'">  &#11044;  ' +info.name+'  </pre>';
 	};
 	setLegend(k,name){
 		let elem = document.getElementById('legend'+k);
 		this.lineInfo[k].name = name;
-		this.setLegendText(elem,name,this.lineInfo[k].visible)
+		this.setLegendText(elem,this.lineInfo[k])
 		elem.addEventListener('click',this.toggleLegend.bind(this));
 		// set event to toggle legend on and off 
 		// crossed out if off
@@ -122,8 +130,7 @@ export class TioxGraph {
 		let k = Number(/[0-9]+/.exec(id)[0]);
 		this.lineInfo[k].visible = !this.lineInfo[k].visible;
 		
-		this.setLegendText(legElem,this.lineInfo[k].name,
-					  this.lineInfo[k].visible);
+		this.setLegendText(legElem,this.lineInfo[k]);
 		this.setupScalesAxesGrids();
 		this.drawLines();
 	};
@@ -153,7 +160,7 @@ export class TioxGraph {
 		this.yValues = [];
 		for (let y = 0; y<= this.yInfo.max;
 			 y += this.yInfo.step ){
-			this.yValues.push(y);
+			this.yValues.push(Math.round(y*100)/100);
 		};
 //		console.log('yvalues',this.yValues);
 	};
@@ -162,9 +169,8 @@ export class TioxGraph {
 		let delta = this.xInfo.max - this.xInfo.min; 
 		this.xInfo.min = this.xInfo.max - this.xInfo.step;
 		this.xInfo.max = this.xInfo.min + delta;
-		let access0 = this.lineInfo[0].access;
 		let k = this.data.findIndex( 
-			elem => access0(elem).x >= this.xInfo.min );
+			elem => this.xInfo.xAccess(elem) >= this.xInfo.min );
 		this.data.splice(0,k);
 		// fix this for letting show line from one previous value?
 		// splice off one less value if it is there??
@@ -222,8 +228,8 @@ export class TioxGraph {
 		this.drawGrid();
 	};
 	
-	setupLine (k,  access, color, vertical, visible, lineWidth, dotSize) {
-		this.lineInfo[k] = { access: access,
+	setupLine (k,  yAccess, color, vertical, visible, lineWidth, dotSize) {
+		this.lineInfo[k] = { yAccess: yAccess,
 				color: color, vertical: vertical,
 				visible: visible, 
 				lineWidth: lineWidth, dotSize: dotSize,
@@ -240,7 +246,8 @@ export class TioxGraph {
 				let last = {x:null, y: null};
 				this.context.beginPath();
 				for (let  p of this.data ){
-					let cur = info.access(p);
+					let cur = {x: this.xInfo.xAccess(p),
+								y: info.yAccess(p)};
 					if( last.y == null ) {
 						this.context.moveTo( 
 							this.xScale(cur.x),
@@ -276,12 +283,10 @@ export class TioxGraph {
 	checkBounds(p){
 		//either p.x or one of p.y is out of bounds 
 		// update axes and redraw all the graph up to point p
-		let x = 0;
 		let y = 0;
+		let x = this.xInfo.xAccess(p);
 		for( let info of this.lineInfo ){
-			let cur = info.access(p);
-			x = Math.max(x,cur.x);
-			y = Math.max(y,cur.y);
+			y = Math.max(y,info.yAccess(p));
 		}
 		let bool1 = this.updateXaxis(x);
 		let bool2 = this.updateYaxis(y);
@@ -295,7 +300,7 @@ export class TioxGraph {
 		this.checkBounds(p);
 		this.data.push(p);
 		for( let info of this.lineInfo ) {
-		  	let cur = info.access(p);
+		  	let cur = {x: this.xInfo.xAccess(p), y: info.yAccess(p)};
 			if( info.visible ){
 				this.context.strokeStyle = 
 					this.context.fillStyle = info.color;

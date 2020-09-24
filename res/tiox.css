@@ -170,18 +170,18 @@
 }
 #chartTitle {
 	position: absolute;
-	top: 0;
+	top: 2%;
 	left: 0;
 	right: 0;
-	min-height: 10%;
+	min-height: 8%;
 	text-align: center;
 	font-size: 1.5vw;
 	color: var(--fontColor);
-/*	border: solid red 2px;*/
+	border: solid red 2px;
 }
 #chart {
 	position: absolute;
-	top: 10%;
+	top: 5%;
 	height: 80%;
 	width: 100%;
 /*	border: solid green 2px;*/
@@ -202,9 +202,9 @@
 	
 /*	border: solid red 2px;	*/
 }
-.legitem span{
+.legitem pre{
 	font-size: 1.5vw;
-	border: solid green 2px;
+/*	border: solid green 2px;*/
 	color: var(--fontColor);
 }
 input[type=range] {

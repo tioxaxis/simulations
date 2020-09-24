@@ -35,26 +35,22 @@ import {
 from "../modules/graph.js";
 class NVGraph extends TioxGraph {
 	constructor(){
-		let dif = theSimulation.demandRV.mean - theSimulation.quantityOrdered;
-		let c1 = theSimulation.Cu * (Math.max(0,dif)+1);
-		let c2 = theSimulation.Co * (Math.max(0,-dif)+1);
-		super('chart',.3, {min:0,max:12,step:3}, Math.max(c1,c2));
+		
+		super('chart',.3, {min:0, max:12, step:3, xAccess: d=>d.t},1);
+//		console.log('nv graph', maxUnder, maxOver);
 		
 		
 		this.totalCost = 0;
 		this.setTitle('$ of cost per day');
 		
-		this.setupLine(0, (d)=> ({x: d.t, y:d.u}),
-					   'rgb(185, 26, 26)',
+		this.setupLine(0, d => d.u, 'rgb(185, 26, 26)',
 					   false, true, 3, 10);
 		
 		this.setLegend(0, 'underage cost');
-		this.setupLine(1, (d) => ({x: d.t, y:d.o}),
-					   'rgba(0,150,0,1)',
+		this.setupLine(1, d => d.o, 'rgba(0,150,0,1)',
 					   false, true, 3, 10);
 		this.setLegend(1,'overage cost');
-		this.setupLine(2, (d) => ({x: d.t, y: d.a}),
-					   'rgba(0,0,220,1)',
+		this.setupLine(2, d => d.a, 'rgba(0,0,220,1)',
 					   false, true, 3, 0);
 		this.setLegend(2,'average cost');			 
 	};
@@ -65,9 +61,9 @@ class NVGraph extends TioxGraph {
 		let p = {t: n, u: under, o: over, a: avg}
 		this.drawOnePoint(p);
 	};
-	reset(){
+	reset(yMax){
 		this.totalCost = 0;
-		super.reset()
+		super.reset(yMax)
 	}
 	updateForSpeed (){}
 }
@@ -206,7 +202,7 @@ function captureChangeInSliderS(event) {
 			break;
 
 		default:
-			console.log(' reached part for default');
+			console.log(' reached part for default id=',id);
 			break;
 	}
 }
@@ -239,7 +235,14 @@ function setActual(enough, total) {
 simu.reset2 = function () {
 	document.getElementById('actualPerc').innerHTML ="00.00";
 	itemCollection.reset();
-	nvGraph.reset();
+	let maxUnder = theSimulation.Cu * 
+			((1 + theSimulation.demandRV.variance) * theSimulation.demandRV.mean  
+			 - theSimulation.quantityOrdered + 1);
+	let maxOver = theSimulation.Co * 
+			(theSimulation.quantityOrdered - 
+			(1 - theSimulation.demandRV.variance) * theSimulation.demandRV.mean + 1) ;
+	console.log('at reset', maxUnder,maxOver);
+	nvGraph.reset(Math.max(maxUnder,maxOver));
 	theProcessCollection.reset();
 	//    totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
 	gSF = new GStickFigure(anim.stage.foreContext,
