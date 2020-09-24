@@ -81,21 +81,26 @@
 				</div>
 				<!--end ANIMATION Stage -->
 				<div id='statsWrapper'>
-					<div id='statsRow'>
+				
 						<div class='statDisplay'>
-							<p>Expected <span id="expectedPerc"></span>%</p>
+							Expected <span id="expectedPerc"></span>%
 						</div>
 						<div class='statDisplay'>
 							Desired <span id="desiredPerc"></span>%
 						</div>
 						<div class='statDisplay'>
-							Actual <span id="actualPerc"></span>%
+							Actual <span id="actualPerc">00.00</span>%
 						</div>
 
-					</div>
 				</div>
 				<div id="chartWrapper55" class="chart-container">
-					<canvas id="chart"></canvas>
+					<div id='chartTitle' ></div>
+					<canvas id="chart" width='2000' height='600'></canvas>
+					<div id='chartLegend'>
+					<div class='legitem' id='legend0'>legend text 0   </div>
+					<div class='legitem' id='legend1'>legend text 1   </div>
+					<div class='legitem' id='legend2'>legend text 2</div>
+					</div>
 				</div>
 			</div>
 			<!-- end of leftHandSide-->

@@ -29,12 +29,56 @@ import {
 }
 from '../modules/procsteps.js';
 
+import {
+	TioxGraph
+}
+from "../modules/graph.js";
+class NVGraph extends TioxGraph {
+	constructor(){
+		let dif = theSimulation.demandRV.mean - theSimulation.quantityOrdered;
+		let c1 = theSimulation.Cu * (Math.max(0,dif)+1);
+		let c2 = theSimulation.Co * (Math.max(0,-dif)+1);
+		super('chart',.3, {min:0,max:12,step:3}, Math.max(c1,c2));
+		
+		
+		this.totalCost = 0;
+		this.setTitle('$ of cost per day');
+		
+		this.setupLine(0, (d)=> ({x: d.t, y:d.u}),
+					   'rgb(185, 26, 26)',
+					   false, true, 3, 10);
+		
+		this.setLegend(0, 'underage cost');
+		this.setupLine(1, (d) => ({x: d.t, y:d.o}),
+					   'rgba(0,150,0,1)',
+					   false, true, 3, 10);
+		this.setLegend(1,'overage cost');
+		this.setupLine(2, (d) => ({x: d.t, y: d.a}),
+					   'rgba(0,0,220,1)',
+					   false, true, 3, 0);
+		this.setLegend(2,'average cost');			 
+	};
+	
+	push (n, under, over){
+		this.totalCost += under + over;
+		let avg = this.totalCost/n;
+		let p = {t: n, u: under, o: over, a: avg}
+		this.drawOnePoint(p);
+	};
+	reset(){
+		this.totalCost = 0;
+		super.reset()
+	}
+	updateForSpeed (){}
+}
+let nvGraph;
 
 const disappointed = {
 	color: 'rgb(235, 230, 230)',
 	border: 'rgb(31, 105, 245)'
 };
 const tioxTimeConv = 1000; //time are in milliseconds
+
 
 anim.stage = {
 	normalSpeed: 0.10, //.25 pixels per millisecond
@@ -193,7 +237,7 @@ function setActual(enough, total) {
 
 //var totInv, totTime, totPeople, lastArrDep, LBRFcount ;
 simu.reset2 = function () {
-	document.getElementById('actualPerc').innerHTML ="";
+	document.getElementById('actualPerc').innerHTML ="00.00";
 	itemCollection.reset();
 	nvGraph.reset();
 	theProcessCollection.reset();
@@ -314,6 +358,7 @@ const animForNewsVendor = {
 
 var theProcessCollection = new ProcessCollection();
 
+
 const theSimulation = {
 	//  the two random variables in the simulation
 	demandRV: null,
@@ -339,6 +384,7 @@ const theSimulation = {
 		theSimulation.Cu = Number(document.getElementById('Cu').value);
 		theSimulation.quantityOrdered = Number(document.getElementById('quan').value);
 
+		nvGraph = new NVGraph();
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 
@@ -453,7 +499,7 @@ class DemandCreator {
 		});
 	};
 	graph() {
-		nvGraph.push(this.nRounds, this.underageForDay, this.overageForDay, this.totCost / this.nRounds);
+		nvGraph.push(this.nRounds, this.underageForDay, this.overageForDay);
 		setActual(this.enough, this.nRounds);
 
 		theSimulation.store.makeAllGrey();
@@ -514,7 +560,6 @@ function initializeAll() {
 	simu.initialize(); // the generic
 	theSimulation.initialize(); // the specific to queueing
 	//reset first time to make sure it is ready to play.
-	nvGraph.setupGraph();
 	document.getElementById('resetButton').click();
 };
 
@@ -522,44 +567,7 @@ function initializeAll() {
 document.addEventListener("DOMContentLoaded", initializeAll);
 
 
-import {tioxGraph} from "../modules/graph.js";
-const nvGraph ={
-	push: function (n, under, over, avg) {
-			tioxGraph.updateXaxis(n);
-			let bigger = Math.max(over, under);
-			tioxGraph.updateYaxis(bigger);
-			let ds = tioxGraph.chart.data.datasets;
-			ds[0].data.push({
-				x: n,
-				y: under
-			});
-			ds[1].data.push({
-				x: n,
-				y: over
-			});
-			ds[2].data.push({
-				x: n,
-				y: avg
-			});
-			tioxGraph.chart.update();
-		},
-	setupGraph: function(){
-		tioxGraph.setLabelColorVisible(0,'underage', 'rgb(185, 26, 26)', true);
-		tioxGraph.setLabelColorVisible(1,'overage',
-									   'rgba(0,150,0,1)', true);
-		tioxGraph.setLabelColorVisible(2,'average cost', 
-									   'rgba(0,0,220,1)',true);
-		tioxGraph.struc.options.title.text = '$ of cost per day'
-		this.reset();	
-	},
-	reset: function(){
-		let dif = theSimulation.demandRV.mean - theSimulation.quantityOrdered;
-		let c1 = theSimulation.Cu * (Math.max(0,dif)+1);
-		let c2 = theSimulation.Co * (Math.max(0,-dif)+1);
-		tioxGraph.reset(12, 9, Math.max(c1,c2) );
-		this.updateForSpeed();
-	},
-	updateForSpeed: function(){
-	}
-}
+
+
+
 

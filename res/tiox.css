@@ -6,10 +6,9 @@
 	font-size: 1vw;
 }
 
-/*   for the first page    */
-
-.simulink {
-	font-size: 30px;
+:root {
+  	--fontColor: slategray;
+	--borderColor: rgb(122, 141, 208);
 }
 
 /* For the exports overlay  */
@@ -75,7 +74,7 @@
 	left: 0;
 	width: 66%;
 	bottom: 0;
-	border: #7a8dd0 solid;
+	border: var(--borderColor) solid;
 	border-width: .5vw 1px;
 }
 #rightHandSideBox {
@@ -84,7 +83,7 @@
 	right: 0;
 	width: 32%;
 	bottom: 0;
-	border: solid .5vw #7a8dd0;
+	border: solid .5vw rgb(122, 141, 208);
 	background-color: rgb(234, 235, 244);
 }
 
@@ -97,7 +96,7 @@
 	right: 0;
 	height: 41%;
 /*	border: green solid px;*/
-	border-bottom:  solid  #7a8dd0 .5vw;
+	border-bottom:  solid  var(--borderColor) .5vw;
 
 /*	clip-path: content-box;*/
 /*	z-index: 10;*/
@@ -133,24 +132,28 @@
 	left: 0;
 	right: 0;
 	height: 4%;
-	border-bottom:  solid  #7a8dd0;
-	border-bottom-width: .5vw;
-}
-#statsRow {
-	height: 100%;
+	
+/*	border: solid green 5px;*/
 	display: flex;
 	flex-direction: row;
+	flex-flow: wrap;
 	align-items: center;
 	justify-content: space-around;
+	
+	border-bottom:  solid  var(--borderColor);
+	border-bottom-width: .5vw;
+/*	border: solid red 2px;*/
 }
-.statDisplay {}
+.statDisplay {
+	color: var(--fontColor);
+}
 #chartWrapper55 {
 	position: absolute;
 	bottom: 0;
 	left: 0;
 	right: 0;
 	height: 54%;
-/*	border: solid #7a8dd0;*/
+/*	border: solid var(--borderColor);*/
 /*	border-width: .5vw 1px;*/
 /*	padding: 0;*/
 }
@@ -160,13 +163,49 @@
 	left: 0;
 	right: 0;
 	height: 54%;
-/*	border: solid #7a8dd0;*/
+	
+/*	border: solid var(--borderColor);*/
 /*	border-width: .5vw 1px;*/
 /*	padding: 0;*/
 }
+#chartTitle {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	min-height: 10%;
+	text-align: center;
+	font-size: 1.5vw;
+	color: var(--fontColor);
+/*	border: solid red 2px;*/
+}
 #chart {
-	margin: 0;
-	padding: 0;
+	position: absolute;
+	top: 10%;
+	height: 80%;
+	width: 100%;
+/*	border: solid green 2px;*/
+}
+#chartLegend{
+	position: absolute;
+	bottom: 0;
+	height: 10%; 
+	left:0;
+	right: 0;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	flex-flow: wrap;
+	align-content: center;
+	
+	
+	
+/*	border: solid red 2px;	*/
+}
+.legitem span{
+	font-size: 1.5vw;
+	border: solid green 2px;
+	color: var(--fontColor);
 }
 input[type=range] {
 	height: .5vw;
@@ -192,7 +231,7 @@ input[type=range] {
 	display: flex;
 	flex-direction: row;
 */
-	border-bottom: solid slategray 1px;
+	border-bottom: solid var(--fontColor) 1px;
 }
 #ropupto {
 	height: 3vw;
@@ -200,7 +239,7 @@ input[type=range] {
 	flex-direction: row;
 	align-items: center;
 	justify-content: space-around;
-	border-bottom: solid slategray 1px;
+	border-bottom: solid var(--fontColor) 1px;
 }
 #modelUpto {
 	display: flex;
@@ -213,7 +252,7 @@ input[type=range] {
 	left: 0;
 	right: 50%;
 	height: 5vw;
-	border-right:  solid slategray 1px;
+	border-right:  solid var(--fontColor) 1px;
 }
 .sliderboxRight{
 	position: absolute;
@@ -474,26 +513,28 @@ ul li.selected {
 	position: relative;
 	margin: 10% 10%;
 	width 40%;
-	border: solid grey 1px
+	border: solid var(--borderColor) 1px
 }
 #scenariosTop {
 	font-size: 1vw;
-	color: grey;
+	color: var(--fontColor);
 	font-weight: bold;
-	border-bottom: solid grey 1px
+	border-bottom: solid var(--borderColor) 1px
 }
 #scenariosMid12 {
 	overflow-y: auto;
 	height: 12vw;
+	color: var(--fontColor);
 }
 #scenariosMid {
 	overflow-y: auto;
 	height: 15vw;
+	color: var(--fontColor);
 }
 #scenariosBot {
 	width: 100%;
 	bottom: 0px;
-	border-top: solid grey 1px
+	border-top: solid var(--borderColor) 1px
 }
 .addDeleteBox {
 	min-width: 30px;

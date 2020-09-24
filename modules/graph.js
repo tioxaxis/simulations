@@ -17,323 +17,332 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */		
-export const tioxGraph = {
-	context: document.getElementById('chart').getContext('2d'),
-	chart: null,
-	xaxis: {
-		min:null,
-		max:null,
-		timeWidth:null,
-		timeShift:null,
-		initTimeWidth: 10,
-		initTimeShift: 7,
-		scale:1,
-	},
-	yaxis: null,
-	struc: {
-		type: 'scatter',
-		data: {
-			datasets: [
-				{ //*** Series #1
-					showLine: true,
-					lineTension: 0,
-					pointRadius: 5,
-					borderWidth: 3,
-					fill: false,
-					data: []
-				},
-				{ //*** Series #2
-					showLine: true,
-					lineTension: 0,
-					pointRadius: 3,
-					borderWidth: 3,
-					fill: false,
-					data: [],
-				},
-				{ //*** Series #3
-					showLine: true,
-					lineTension: 0,
-					pointRadius: 0,
-					borderWidth: 3,
-					fill: false,
-					data: [],
-				}
-			]
-		},
-		options: {
-			events: [],
-			animation: {
-				duration: 0
-			}, // general animation time
-			hover: {
-				animationDuration: 0
-			}, // duration of animations when hovering an item
-			responsiveAnimationDuration: 0, // animation duration after a resize
-			maintainAspectRatio: false,
-			responsive: true,
-			layout: {
-				padding: {
-					left: 20,
-					right: 40,
-					top: 10,
-					bottom: 0,
-				}
+	function * verticalAxis(){
+		let table = [
+			{
+				max: 1.0,
+				step: 0.2
 			},
-			legend: {
-				display: true,
-				position: 'bottom',
-				labels: {
-					boxWidth: 25,
-					padding: 5,
-					
-					
-				}
+			{
+				max: 1.5,
+				step: 0.5
 			},
-			title: {
-				display: true,
-				position: 'top',
-				lineHeight: 1,
-				fontSize: 18,
-				padding: 10,
+			{
+				max: 2,
+				step: 0.5
 			},
-			scales: {
-				xAxes: [{
-					ticks: {
-						fontSize: 10,
-					},
-					type: 'linear',
-					position: 'bottom',
-					gridLines: {
-						color: 'rgba(0,0,0,.3)'
-					},
-					zeroLineColor: 'rgba(0,0,0,.3)',
-				}],
-				yAxes: [{
-					ticks:{
-						fontSize: 10
-					},
-					type: 'linear',
-					gridLines: {
-						color: 'rgba(0,0,0,.3)'
-					},
-					zeroLineColor: 'rgba(0,0,0,.3)',
-				}]
+			{
+				max: 3,
+				step: 1.0
+			},
+			{
+				max: 4,
+				step: 1
+			},
+			{
+				max: 5,
+				step: 1
+			},
+			{
+				max: 6,
+				step: 2
+			},
+			{
+				max: 8,
+				step: 2
 			}
+		];
+		var y = 0;
+		while(true){
+			let changed = false;
+			while( y> table[0].max ){
+				table.push({max: table[0].max * 10, step: table[0].step * 10});
+				table.shift();
+				changed = true;
+			}
+			y = yield {changed: changed, pair: table[0]};
 		}
-	},
-setLabelColorVisible(k,label,color,visible, ptRadius = 3){
-	let ds = tioxGraph.struc.data.datasets;
-	ds[k].label  = label;
-	ds[k].pointBackgroundColor = color;
-	ds[k].pointBorderColor = color;
-	ds[k].borderColor = color;
-	ds[k].hidden = !visible;
-	ds[k].pointRadius = ptRadius;
-},
-setup: function (){
-		resizeChart();
-		this.reset();
-},
-reset: function (timeWidth, timeShift, maxY){
-	this.chart = new Chart(this.context, this.struc);
-	this.struc.data.datasets[0].data = [];
-	this.struc.data.datasets[1].data = [];
-	this.struc.data.datasets[2].data = [];
-	this.xaxis.scale = 1;
-	this.xaxis.initTimeWidth = timeWidth;
-	this.xaxis.initTimeShift = timeShift;
-	this.xaxis.timeWidth = timeWidth;
-	this.xaxis.timeShift = timeShift;
-	
-	const xTicks = this.struc.options.scales.xAxes[0].ticks;
-	xTicks.min = 0;
-	xTicks.max = this.xaxis.initTimeWidth;
-	xTicks.stepSize = this.xaxis.initTimeWidth - this.xaxis.initTimeShift;
-	
-//	ticks.max = Math.max(ticks.max, ticks.min + this.xaxis.timeWidth);
-//	ticks.stepSize = this.xaxis.timeWidth - this.xaxis.timeShift;
-//	
-//	this.yaxis = new VerticalAxisValue();
-	this.yaxis = verticalAxisLimit(); //start up the generator
-	const yTicks = this.struc.options.scales.yAxes[0].ticks;
-	yTicks.min = 0;
-	var pair = this.yaxis.next().value.pair;
-	yTicks.max = pair.max;
-	yTicks.stepSize =pair.stepSize;
-	this.updateYaxis(maxY);
-	this.resizeChart();
-	this.chart.update();
-},
-	updateXaxis: function(x){
-		const xTicks = this.struc.options.scales.xAxes[0].ticks;
-		if (x <= xTicks.max) return false
-		xTicks.min += this.xaxis.timeShift;
-		xTicks.max += this.xaxis.timeShift;
-		this.removeOldData(xTicks.min);
-		this.chart.update();
-		return true;	
-	},
-	removeOldData: function(time){
-		let ds = this.struc.data.datasets;
-		for (let i = 0; i < 3; i++) {
-			let k = ds[i].data.findIndex( elem => elem.x >= time );
-			ds[i].data.splice(0,k-1);
-		};
-	},
-	updateXaxisScale: function(speed){
-		this.xaxis.scale = Math.max(this.xaxis.scale, speed);
-		this.xaxis.timeWidth = this.xaxis.initTimeWidth * this.xaxis.scale;
-		this.xaxis.timeShift = this.xaxis.initTimeShift * this.xaxis.scale;
+	};
+
+export class TioxGraph {
+	constructor (graphId,ratio, xInfo,yMax){
+		this.context = document.getElementById(graphId)
+						.getContext('2d');
+		this.fontSize = 40;
 		
-		let ticks = this.struc.options.scales.xAxes[0].ticks;
-		ticks.max = Math.max(ticks.max, ticks.min + this.xaxis.timeWidth);
-		ticks.stepSize = this.xaxis.timeWidth - this.xaxis.timeShift;
-
-		let points = Math.max(1, Math.floor((11 - this.xaxis.scale) / 2));
-		let ds = this.struc.data.datasets;
-		for (let i = 0; i < 3; i++) {
-			if (ds[i].pointRadius > 0) {
-				ds[i].pointRadius = points;
-				ds[i].borderWidth = points;
-			}
-		};
-		this.chart.update();
-	},
-	updateYaxis: function(y){
-		let result = this.yaxis.next(y).value;
-		if( !result.changed ) return false
-		const yTicks = this.struc.options.scales.yAxes[0].ticks
-		yTicks.max = result.pair.max;
-		yTicks.stepSize = result.pair.stepSize;
-		return true;
-	},
-	
-resizeChart: function() {
-	const w = document.getElementById('canvasWrapper');
-	const wW = w.clientWidth;
-	const newFontSize = Math.floor(wW / 750 * 14);
-//	console.log(' New Font Size for Chart', newFontSize);
-	let g = tioxGraph.struc.options;
-	g.layout.padding = { 
-		left: Math.floor(newFontSize),
-		right: Math.floor(newFontSize*3),
-		top: Math.floor(newFontSize),
-		bottom: Math.floor(newFontSize)};
-	g.title.fontSize = newFontSize;
-	g.title.padding = newFontSize;
-	g.title.lineHeight = newFontSize/28;
-	g.legend.labels.fontSize = newFontSize;
-	g.legend.labels.boxWidth = newFontSize;
-	g.legend.labels.padding = 10;
-	g.scales.xAxes[0].ticks.fontSize = newFontSize;
-	g.scales.yAxes[0].ticks.fontSize = newFontSize;
-	g.scales.xAxes[0].ticks.minor.fontSize = newFontSize;
-   	g.scales.yAxes[0].ticks.minor.fontSize = newFontSize;
-	tioxGraph.chart.update();
-	//alert(' in resize and w,h = '+wW+'  new font size');
-},
-
-}
-
-//class VerticalAxisValue {
-//	constructor() {
-//		this.table = [
-//			{
-//				max: 1.0,
-//				stepSize: 0.2
-//			},
-//			{
-//				max: 1.5,
-//				stepSize: 0.5
-//			},
-//			{
-//				max: 2,
-//				stepSize: 0.5
-//			},
-//			{
-//				max: 3,
-//				stepSize: 1.0
-//			},
-//			{
-//				max: 4,
-//				stepSize: 1
-//			},
-//			{
-//				max: 5,
-//				stepSize: 1
-//			},
-//			{
-//				max: 6,
-//				stepSize: 2
-//			},
-//			{
-//				max: 8,
-//				stepSize: 2
-//			},
-//        ];
-//	};
-//	current (){
-//		return this.table[0];
-//	};
-//	update(y) {
-//		while (y > this.table[0].max) {
-//			this.table.push({
-//				max: this.table[0].max * 10,
-//				stepSize: this.table[0].stepSize * 10
-//			});
-//			this.table.shift();
-//		}
-//		return this.table[0];
-//	}
-//};
-
-
-function * verticalAxisLimit(){
-	let table = [
-		{
-			max: 1.0,
-			stepSize: 0.2
-		},
-		{
-			max: 1.5,
-			stepSize: 0.5
-		},
-		{
-			max: 2,
-			stepSize: 0.5
-		},
-		{
-			max: 3,
-			stepSize: 1.0
-		},
-		{
-			max: 4,
-			stepSize: 1
-		},
-		{
-			max: 5,
-			stepSize: 1
-		},
-		{
-			max: 6,
-			stepSize: 2
-		},
-		{
-			max: 8,
-			stepSize: 2
-		}
-	];
-	var y = 0;
-	while(true){
-		let changed = false;
-		while( y > table[0].max ){
-			table.push({max: table[0].max * 10, stepSize: table[0].stepSize * 10});
-			table.shift();
-			changed = true;
-		}
-		y = yield {changed: changed, pair: table[0]};
+		
+		this.xInfo = xInfo;
+		this.xInfoOrig = Object.assign({}, this.xInfo);
+		this.yMax = yMax;
+		this.lineInfo = [];
+		
+		this.outer= {width: 2000, height: 2000*ratio}
+		this.margin = {top: this.fontSize*2, bot: this.fontSize*2,
+					   left: this.fontSize*3, right:this.fontSize}
+		this.inner = {top: this.margin.top, 
+					  bot: this.outer.height-this.margin.bot,
+					  left: this.margin.left,
+					  right: this.outer.width- this.margin.right,
+					 height: this.outer.height - this.margin.top - this.margin.bot,
+					 width: this.outer.width - this.margin.left - this.margin.right};
+		this.reset();
 	}
-}
+	
+	reset(){
+		this.data = [];
+		this.xInfo = Object.assign({}, this.xInfoOrig);
+		this.vertAxisGen = verticalAxis(); //start up the generator
+		this.yInfo = this.vertAxisGen.next().value.pair;
+		this.updateYaxis(this.yMax);
+		this.setupScalesAxesGrids();
+		for( let info of this.lineInfo ){
+			info.last ={x:null, y: null}
+		}
+	};
+	setTitle(title){
+		document.getElementById('chartTitle').innerHTML = title;
+	};
+	setLegendText(elem,name,visible){
+		elem.innerHTML = '<span ' + (visible?
+			'>':'style="text-decoration: line-through;">')
+			+'<pre>  '+name+'  </pre></span>';
+	};
+	setLegend(k,name){
+		let elem = document.getElementById('legend'+k);
+		this.lineInfo[k].name = name;
+		this.setLegendText(elem,name,this.lineInfo[k].visible)
+		elem.addEventListener('click',this.toggleLegend.bind(this));
+		// set event to toggle legend on and off 
+		// crossed out if off
+	};
+	toggleLegend(event){
+		let legElem = event.target.closest('div.legitem');
+		if (!legElem) return
+		let id = legElem.id;
+		let k = Number(/[0-9]+/.exec(id)[0]);
+		this.lineInfo[k].visible = !this.lineInfo[k].visible;
+		
+		this.setLegendText(legElem,this.lineInfo[k].name,
+					  this.lineInfo[k].visible);
+		this.setupScalesAxesGrids();
+		this.drawLines();
+	};
+	
+	
+	
+	
+	xScale (x){
+		return ( (x-this.xInfo.min) / (this.xInfo.max - this.xInfo.min) ) * (this.inner.right - this.inner.left) + this.inner.left;
+	};
+	yScale (y){
+		return (1- (y-0) / (this.yInfo.max - 0) )  * (this.inner.bot - this.inner.top) + this.inner.top;
+	};
+	
+	
+	setupXScales (){
+		this.xValues = [];
+		for (let x = this.xInfo.min; 
+			 x <= this.xInfo.max; 
+			 x += this.xInfo.step){
+			this.xValues.push(x);
+		};
+//		console.log('xvalues',this.xValues);
+	};
+	
+	setupYScales (){
+		this.yValues = [];
+		for (let y = 0; y<= this.yInfo.max;
+			 y += this.yInfo.step ){
+			this.yValues.push(y);
+		};
+//		console.log('yvalues',this.yValues);
+	};
+	updateXaxis(x){
+		if ( x <= this.xInfo.max ) return false;
+		let delta = this.xInfo.max - this.xInfo.min; 
+		this.xInfo.min = this.xInfo.max - this.xInfo.step;
+		this.xInfo.max = this.xInfo.min + delta;
+		let access0 = this.lineInfo[0].access;
+		let k = this.data.findIndex( 
+			elem => access0(elem).x >= this.xInfo.min );
+		this.data.splice(0,k);
+		// fix this for letting show line from one previous value?
+		// splice off one less value if it is there??
+		return true;	
+	};
+	
+	adjustSpeed(factor){
+		//  do I know the base level internally??
+	}
+		
+	updateYaxis(y){
+		let result = this.vertAxisGen.next(y).value;
+		if( !result.changed ) return false
+		this.yInfo = result.pair;
+		return true; 
+	};
+	
+	cleargraph(){
+		this.context.clearRect(0,0,this.outer.width,this.outer.height);
+	};
+	
+	drawGrid(){
+		this.context.beginPath();
+		this.context.font = this.fontSize+'px Ariel ';
+		this.context.lineWidth = 1;
+		this.context.strokeStyle = 'grey';
+		this.context.fillStyle = '#5f5c5c';
+		let delta = this.fontSize/2;
+		
+		this.context.textAlign = 'center';
+		this.context.textBaseline ='top';
+		for( let x of this.xValues ) {
+			let xg = this.xScale(x);
+			this.context.moveTo(xg, this.inner.bot + delta);
+			this.context.lineTo(xg, this.inner.top);
+			this.context.fillText(x, xg, this.inner.bot + delta);
+		}
+		
+		this.context.textAlign = 'right';
+		this.context.textBaseline ='middle';
+		for( let y of this.yValues ) {
+			let yg = this.yScale(y);
+			this.context.moveTo(this.inner.left - delta, yg);
+			this.context.lineTo( this.inner.right, yg);
+			this.context.fillText(y, this.inner.left - delta, yg );
+		}
+		this.context.closePath();
+		this.context.stroke();
+	};
+
+	setupScalesAxesGrids(){
+		this.cleargraph();
+		this.setupXScales();
+		this.setupYScales();
+		this.drawGrid();
+	};
+	
+	setupLine (k,  access, color, vertical, visible, lineWidth, dotSize) {
+		this.lineInfo[k] = { access: access,
+				color: color, vertical: vertical,
+				visible: visible, 
+				lineWidth: lineWidth, dotSize: dotSize,
+				last: {x:null,y:null} };
+	};
+	
+	
+	drawLines () {
+		for( let info of this.lineInfo ) {
+			this.context.lineWidth = info.lineWidth;
+			if( info.visible ){
+				this.context.strokeStyle = 
+					this.context.fillStyle = info.color;
+				let last = {x:null, y: null};
+				this.context.beginPath();
+				for (let  p of this.data ){
+					let cur = info.access(p);
+					if( last.y == null ) {
+						this.context.moveTo( 
+							this.xScale(cur.x),
+							this.yScale(cur.y));
+
+					} else {
+						if(info.vertical) {
+							this.context.lineTo( 
+								this.xScale(cur.x),
+								this.yScale(last.y));
+						}
+						if( cur.y != null ) {
+							this.context.lineTo( 
+								this.xScale(cur.x),
+								this.yScale(cur.y));
+							this.context.stroke();
+						}
+					}
+
+					if( cur.y != null && info.dotSize > 0) {
+						this.context.beginPath();
+						this.context.arc(this.xScale(cur.x),
+							this.yScale(cur.y), info.dotSize,
+							0,2*Math.PI, true);
+						this.context.fill();
+					}
+					last = cur;
+				}
+			}
+		}
+		
+	};
+	checkBounds(p){
+		//either p.x or one of p.y is out of bounds 
+		// update axes and redraw all the graph up to point p
+		let x = 0;
+		let y = 0;
+		for( let info of this.lineInfo ){
+			let cur = info.access(p);
+			x = Math.max(x,cur.x);
+			y = Math.max(y,cur.y);
+		}
+		let bool1 = this.updateXaxis(x);
+		let bool2 = this.updateYaxis(y);
+//		console.log('checkbounds',y,this.yInfo,bool2)
+		if( bool1 || bool2 ) {
+			this.setupScalesAxesGrids();
+			this.drawLines();
+		};
+	};
+	drawOnePoint(p){
+		this.checkBounds(p);
+		this.data.push(p);
+		for( let info of this.lineInfo ) {
+		  	let cur = info.access(p);
+			if( info.visible ){
+				this.context.strokeStyle = 
+					this.context.fillStyle = info.color;
+				this.context.lineWidth = info.lineWidth;
 
 
-window.addEventListener('resize', tioxGraph.resizeChart);
+				//no previous point then skip drawing line
+				if( info.last.y != null ) {
+					this.context.beginPath();
+
+					this.context.moveTo( 
+						this.xScale(info.last.x),
+						this.yScale(info.last.y));
+
+					if(info.vertical) {
+						this.context.lineTo( 
+							this.xScale(cur.x),
+							this.yScale(info.last.y));
+					}
+					if( cur.y != null) {
+						this.context.lineTo( 
+							this.xScale(cur.x),
+							this.yScale(cur.y));
+						this.context.stroke();
+					}
+				}
+				
+				if( cur.y != null && info.dotSize > 0 ) {
+					this.context.beginPath();
+					this.context.arc(this.xScale(cur.x),
+						this.yScale(cur.y), info.dotSize,
+						0,2*Math.PI, true);
+					this.context.fill();
+				}
+
+			}
+			info.last = cur;
+		}
+	};
+	
+};
+
+function toggleVisible(k){
+		//change legend to have it cross off or not
+		this.lineInfo[k].visible = !this.lineInfo[k].visible;
+	};
+	function setLegendStatus(bool){
+		
+	};
+	
