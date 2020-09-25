@@ -171,7 +171,7 @@ export class TioxGraph {
 		this.xInfo.max = this.xInfo.min + delta;
 		let k = this.data.findIndex( 
 			elem => this.xInfo.xAccess(elem) >= this.xInfo.min );
-		this.data.splice(0,k);
+		if ( k > 0 ) this.data.splice(0,k-1);
 		// fix this for letting show line from one previous value?
 		// splice off one less value if it is there??
 		return true;	
@@ -182,9 +182,11 @@ export class TioxGraph {
 	}
 		
 	updateYaxis(y){
+//		console.log('in update Yaxis',y);
 		let result = this.vertAxisGen.next(y).value;
 		if( !result.changed ) return false
 		this.yInfo = result.pair;
+//		console.log('adjusted y axis ',this.yInfo);
 		return true; 
 	};
 	
@@ -238,6 +240,12 @@ export class TioxGraph {
 	
 	
 	drawLines () {
+		this.context.save();
+		this.context.beginPath();
+  		this.context.rect(this.inner.left, this.inner.top,
+						  this.inner.width, this.inner.height);
+  		this.context.clip(); // for the first quadrant of graph.
+
 		for( let info of this.lineInfo ) {
 			this.context.lineWidth = info.lineWidth;
 			if( info.visible ){
@@ -248,6 +256,7 @@ export class TioxGraph {
 				for (let  p of this.data ){
 					let cur = {x: this.xInfo.xAccess(p),
 								y: info.yAccess(p)};
+					if( cur.y == undefined) continue;
 					if( last.y == null ) {
 						this.context.moveTo( 
 							this.xScale(cur.x),
@@ -278,7 +287,7 @@ export class TioxGraph {
 				}
 			}
 		}
-		
+		this.context.restore();
 	};
 	checkBounds(p){
 		//either p.x or one of p.y is out of bounds 
@@ -299,8 +308,16 @@ export class TioxGraph {
 	drawOnePoint(p){
 		this.checkBounds(p);
 		this.data.push(p);
+//		console.log('in drawOne',p.t,p.i,p.a,p.p);
+		
 		for( let info of this.lineInfo ) {
 		  	let cur = {x: this.xInfo.xAccess(p), y: info.yAccess(p)};
+//			if( info.vertical ){
+//				console.log('at start p is',p.t,p.i,p.a,p.p);
+//				console.log('at start',info.last.x,info.last.y,cur.x,cur.y);
+//				}
+			//if no data then skip it and keep last for next data point
+			if( cur.y === undefined) continue;
 			if( info.visible ){
 				this.context.strokeStyle = 
 					this.context.fillStyle = info.color;
@@ -338,6 +355,8 @@ export class TioxGraph {
 
 			}
 			info.last = cur;
+//			if( info.vertical )
+//			console.log('at end',info.last.x,info.last.y,cur.x,cur.y);
 		}
 	};
 	

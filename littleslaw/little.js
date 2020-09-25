@@ -33,6 +33,63 @@ import {
 }
 from '../modules/procsteps.js';
 
+import {
+	TioxGraph
+}
+from "../modules/graph.js";
+class LittleGraph extends TioxGraph {
+	constructor(){
+		
+		super('chart',.3, {min:0, max:40, step:10, xAccess: d=>d.t},6);
+//		console.log('nv graph', maxUnder, maxOver);
+		
+		
+		this.predictedInvValue = null;
+		this.setTitle('Inventory');
+		
+		this.setupLine(0, d => d.i, 'rgba(0,0,220,1)',
+					   false, true, 3, 10);
+		
+		this.setLegend(0, 'avg. inventory');
+		this.setupLine(1, d => d.rt, 'rgba(0,150,0,1)',
+					   false, true, 3, 10);
+		this.setLegend(1,'avg. time * avg. rate');
+		this.setupLine(2, d => d.p, 'rgb(185, 26, 26)',
+					   true, false, 3, 0);
+		this.setLegend(2,'predicted inventory');	
+//		this.predictedWaitValue = this.predictedWait();
+	};
+	
+	push (t, inv, rt){
+		t /= tioxTimeConv;
+//		console.log('pushing for graph',t,w);
+	
+//		let pW = this.predictedWaitValue == Infinity ? null : this.predictedWaitValue;
+		let p = {t: t, i: inv,
+				 rt: rt,
+				 p: this.predictedInvValue};
+		this.drawOnePoint(p);
+	};
+	
+	reset(){
+		super.reset(this.predictedInvValue * 1.2);
+		this.updateForSpeed();
+	}
+	updateForSpeed (){
+//		tioxGraph.updateXaxisScale(simu.frameSpeed);
+	};
+	updatePredictedInv () {
+		this.predictedInvValue = (theSimulation.serviceRV.mean) / 
+			(theSimulation.interarrivalRV.mean);
+		this.drawOnePoint({
+			t: (simu.now / tioxTimeConv),
+			p: this.predictedInvValue
+		});
+	};
+}
+let littleGraph;
+
+
 anim.stage = {
 	normalSpeed: .10, 
 	width: 1000,
@@ -320,6 +377,7 @@ const theSimulation = {
 		cv = document.getElementById('scv').value;
 		theSimulation.serviceRV = new GammaRV(1 / t / tioxTimeConv, cv);
 
+		littleGraph = new LittleGraph();
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 
@@ -359,10 +417,10 @@ const theSimulation = {
 			lastArrDep = simu.now;
 			totPeople++;
 			totTime += simu.now - person.arrivalTime;
-			LBRFcount = (LBRFcount + 1) % (simu.frameSpeed * 5);
+			LBRFcount = (LBRFcount + 1) % simu.frameSpeed;
 			if (!LBRFcount) {
 				littleGraph.push(simu.now, totInv / simu.now, totTime / simu.now);
-				console.log('in LBRF tot people ', totPeople)
+//				console.log('in LBRF tot people ', totPeople)
 			};
 			//console.log('LB record start',simu.now,person);
 		};
@@ -433,67 +491,66 @@ function initializeAll() {
 	simu.initialize(); // the generic
 	theSimulation.initialize(); // the specific to queueing
 	//reset first time to make sure it is ready to play.
-	littleGraph.setupGraph();
 	document.getElementById('resetButton').click();
 };
 document.addEventListener("DOMContentLoaded", initializeAll);
 
 
-import {tioxGraph} from "../modules/graph.js";
-const littleGraph ={
-	predictedInvValue: null,
-	updatePredictedInv: function () {
-		let ds = tioxGraph.chart.data.datasets;
-		ds[2].data.push({
-			x: (simu.now - 1) / 10000,
-			y: this.predictedInvValue
-		});
-		this.predictedInvValue = this.predictedInv();
-		ds[2].data.push({
-			x: (simu.now / 10000),
-			y: this.predictedInvValue
-		});
-		tioxGraph.chart.update();
-	},
-	predictedInv: function () {
-		return (theSimulation.serviceRV.mean) / 
-			(theSimulation.interarrivalRV.mean);
-	},
-	push: function (t, inv, rt) {
-			t /= tioxTimeConv;
-			tioxGraph.updateXaxis(t);
-			tioxGraph.updateYaxis(inv);
-			tioxGraph.updateYaxis(this.predictedInvValue);
-			let ds = tioxGraph.chart.data.datasets;
-			ds[0].data.push({
-				x: t,
-				y: inv
-			});
-			ds[1].data.push({
-				x: t,
-				y: rt
-			});
-			ds[2].data.push({
-				x: t,
-				y: this.predictedInvValue
-			});
-			tioxGraph.chart.update();
-		},
-	setupGraph: function(){
-		tioxGraph.setLabelColorVisible(0,'inventory', 'rgba(0,0,220,1)', true);
-		tioxGraph.setLabelColorVisible(1,'avg. time * avg. rate',
-									   'rgba(0,150,0,1)', true);
-		tioxGraph.setLabelColorVisible(2,'predicted inventory', 
-									   'rgb(185, 26, 26)',true);
-		tioxGraph.struc.options.title.text = 'Inventory'
-		this.predictedInvValue = this.predictedInv();
-		this.reset();	
-	},
-	reset: function(){
-		tioxGraph.reset(40, 30,this.predictedInvValue * 1.2);
-		this.updateForSpeed();
-	},
-	updateForSpeed: function(){
-		tioxGraph.updateXaxisScale(simu.frameSpeed);
-	}
-}
+//import {tioxGraph} from "../modules/graph.js";
+//const littleGraph ={
+//	predictedInvValue: null,
+//	updatePredictedInv: function () {
+//		let ds = tioxGraph.chart.data.datasets;
+//		ds[2].data.push({
+//			x: (simu.now - 1) / 10000,
+//			y: this.predictedInvValue
+//		});
+//		this.predictedInvValue = this.predictedInv();
+//		ds[2].data.push({
+//			x: (simu.now / 10000),
+//			y: this.predictedInvValue
+//		});
+//		tioxGraph.chart.update();
+//	},
+//	predictedInv: function () {
+//		return (theSimulation.serviceRV.mean) / 
+//			(theSimulation.interarrivalRV.mean);
+//	},
+//	push: function (t, inv, rt) {
+//			t /= tioxTimeConv;
+//			tioxGraph.updateXaxis(t);
+//			tioxGraph.updateYaxis(inv);
+//			tioxGraph.updateYaxis(this.predictedInvValue);
+//			let ds = tioxGraph.chart.data.datasets;
+//			ds[0].data.push({
+//				x: t,
+//				y: inv
+//			});
+//			ds[1].data.push({
+//				x: t,
+//				y: rt
+//			});
+//			ds[2].data.push({
+//				x: t,
+//				y: this.predictedInvValue
+//			});
+//			tioxGraph.chart.update();
+//		},
+////	setupGraph: function(){
+////		tioxGraph.setLabelColorVisible(0,'inventory', 'rgba(0,0,220,1)', true);
+////		tioxGraph.setLabelColorVisible(1,'avg. time * avg. rate',
+////									   'rgba(0,150,0,1)', true);
+////		tioxGraph.setLabelColorVisible(2,'predicted inventory', 
+////									   'rgb(185, 26, 26)',true);
+////		tioxGraph.struc.options.title.text = 'Inventory'
+////		this.predictedInvValue = this.predictedInv();
+////		this.reset();	
+////	},
+//	reset: function(){
+//		tioxGraph.reset(40, 30,this.predictedInvValue * 1.2);
+//		this.updateForSpeed();
+//	},
+//	updateForSpeed: function(){
+//		tioxGraph.updateXaxisScale(simu.frameSpeed);
+//	}
+//}

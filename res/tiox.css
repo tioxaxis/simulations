@@ -146,6 +146,7 @@
 }
 .statDisplay {
 	color: var(--fontColor);
+/*	border: solid red 2px;*/
 }
 #chartWrapper55 {
 	position: absolute;
@@ -177,19 +178,19 @@
 	text-align: center;
 	font-size: 1.5vw;
 	color: var(--fontColor);
-	border: solid red 2px;
+/*	border: solid red 2px;*/
 }
 #chart {
 	position: absolute;
-	top: 5%;
-	height: 80%;
+	top: 10%;
+	height: 82%;
 	width: 100%;
 /*	border: solid green 2px;*/
 }
 #chartLegend{
 	position: absolute;
 	bottom: 0;
-	height: 10%; 
+	height: 8%; 
 	left:0;
 	right: 0;
 	display: flex;
