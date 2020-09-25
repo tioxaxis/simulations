@@ -95,7 +95,7 @@ class QueueGraph extends TioxGraph {
 		let pW = this.predictedWaitValue;
 //		let pDS = tioxGraph.chart.data.datasets[2];
 		pW = this.predictedWait();
-		console.log('update pW',pW);
+//		console.log('update pW',pW);
 		this.drawOnePoint({
 			t: (simu.now / tioxTimeConv),
 			p: (pW == Infinity)?null:pW
