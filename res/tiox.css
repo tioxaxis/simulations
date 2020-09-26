@@ -203,7 +203,7 @@
 	
 /*	border: solid red 2px;	*/
 }
-.legitem pre{
+.legitem span{
 	font-size: 1.5vw;
 /*	border: solid green 2px;*/
 	color: var(--fontColor);

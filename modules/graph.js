@@ -70,7 +70,7 @@ let html2 = '></circle><text> legend name</text></svg><pre ';
 
 export class TioxGraph {
 	constructor (graphId,ratio, xInfo,yMax){
-		this.context = document.getElementById(graphId)
+		this.ctx = document.getElementById(graphId)
 						.getContext('2d');
 		this.fontSize = 40;
 		
@@ -83,12 +83,13 @@ export class TioxGraph {
 		this.outer= {width: 2000, height: 2000*ratio}
 		this.margin = {top: this.fontSize, bot: this.fontSize*3/2,
 					   left: this.fontSize*3, right:this.fontSize}
-		this.inner = {top: this.margin.top, 
-					  bot: this.outer.height-this.margin.bot,
-					  left: this.margin.left,
-					  right: this.outer.width- this.margin.right,
-					 height: this.outer.height - this.margin.top - this.margin.bot,
-					 width: this.outer.width - this.margin.left - this.margin.right};
+		this.inner = 
+			{top: this.margin.top, 
+			 bot: this.outer.height-this.margin.bot,
+			 left: this.margin.left,
+			 right: this.outer.width- this.margin.right,
+			 height: this.outer.height - this.margin.top - this.margin.bot,
+			 width: this.outer.width - this.margin.left - this.margin.right};
 		this.reset(this.yMax);
 	}
 	
@@ -98,41 +99,41 @@ export class TioxGraph {
 		this.vertAxisGen = verticalAxis(); //start up the generator
 		this.yInfo = this.vertAxisGen.next().value.pair;
 		this.updateYaxis(yMax);
-		this.setupScalesAxesGrids();
 		for( let info of this.lineInfo ){
 			info.last ={x:null, y: null}
+		this.setupRedraw();
+		
 		}
 	};
 	setTitle(title){
 		document.getElementById('chartTitle').innerHTML = title;
 	};
 	
-	
-
-
+	//Legend routines
 	setLegendText(elem,info) {
-		elem.innerHTML = '<pre style="'+
-		( info.visible?'':'text-decoration: line-through; ')
-			+'color:'+info.color+'">  &#11044;  ' +info.name+'  </pre>';
+		elem.innerHTML = "<span style='color:" +
+		info.color + "'>&#11044;&nbsp;</span><span " +
+		(info.visible ? 
+		 ">" : "style= 'text-decoration: line-through;' >") +
+		info.name + "</span>&emsp; &emsp;"
 	};
+	
 	setLegend(k,name){
 		let elem = document.getElementById('legend'+k);
-		this.lineInfo[k].name = name;
-		this.setLegendText(elem,this.lineInfo[k])
+		let info = this.lineInfo[k]
+		info.name = name;
+		this.setLegendText(elem,info);
 		elem.addEventListener('click',this.toggleLegend.bind(this));
-		// set event to toggle legend on and off 
-		// crossed out if off
 	};
+	
 	toggleLegend(event){
-		let legElem = event.target.closest('div.legitem');
-		if (!legElem) return
-		let id = legElem.id;
-		let k = Number(/[0-9]+/.exec(id)[0]);
-		this.lineInfo[k].visible = !this.lineInfo[k].visible;
-		
-		this.setLegendText(legElem,this.lineInfo[k]);
-		this.setupScalesAxesGrids();
-		this.drawLines();
+		let elem = event.target.closest('div.legitem');
+		if (!elem) return
+		let k = Number(/[0-9]+/.exec(elem.id)[0]);
+		let info = this.lineInfo[k];
+		info.visible = !info.visible;
+		this.setLegendText(elem,info);
+		this.setupRedraw();
 	};
 	
 	
@@ -145,7 +146,6 @@ export class TioxGraph {
 		return (1- (y-0) / (this.yInfo.max - 0) )  * (this.inner.bot - this.inner.top) + this.inner.top;
 	};
 	
-	
 	setupXScales (){
 		this.xValues = [];
 		for (let x = this.xInfo.min; 
@@ -153,7 +153,6 @@ export class TioxGraph {
 			 x += this.xInfo.step){
 			this.xValues.push(x);
 		};
-//		console.log('xvalues',this.xValues);
 	};
 	
 	setupYScales (){
@@ -162,8 +161,8 @@ export class TioxGraph {
 			 y += this.yInfo.step ){
 			this.yValues.push(Math.round(y*100)/100);
 		};
-//		console.log('yvalues',this.yValues);
 	};
+	
 	updateXaxis(x){
 		if ( x <= this.xInfo.max ) return false;
 		let delta = this.xInfo.max - this.xInfo.min; 
@@ -172,122 +171,124 @@ export class TioxGraph {
 		let k = this.data.findIndex( 
 			elem => this.xInfo.xAccess(elem) >= this.xInfo.min );
 		if ( k > 0 ) this.data.splice(0,k-1);
-		// fix this for letting show line from one previous value?
-		// splice off one less value if it is there??
 		return true;	
+	};
+	
+	updateYaxis(y){
+		let result = this.vertAxisGen.next(y).value;
+		if( !result.changed ) return false
+		this.yInfo = result.pair;
+		return true; 
 	};
 	
 	adjustSpeed(factor){
 		//  do I know the base level internally??
-	}
-		
-	updateYaxis(y){
-//		console.log('in update Yaxis',y);
-		let result = this.vertAxisGen.next(y).value;
-		if( !result.changed ) return false
-		this.yInfo = result.pair;
-//		console.log('adjusted y axis ',this.yInfo);
-		return true; 
 	};
-	
+		
 	cleargraph(){
-		this.context.clearRect(0,0,this.outer.width,this.outer.height);
+		this.ctx.clearRect(0,0,
+			this.outer.width,this.outer.height);
 	};
 	
 	drawGrid(){
-		this.context.beginPath();
-		this.context.font = this.fontSize+'px Ariel ';
-		this.context.lineWidth = 1;
-		this.context.strokeStyle = 'grey';
-		this.context.fillStyle = '#5f5c5c';
+		//setup 
+		this.ctx.beginPath();
+		this.ctx.font = this.fontSize+'px Ariel ';
+		this.ctx.lineWidth = 1;
+		this.ctx.strokeStyle = 'grey';
+		this.ctx.fillStyle = '#5f5c5c';
 		let delta = this.fontSize/2;
 		
-		this.context.textAlign = 'center';
-		this.context.textBaseline ='top';
+		//x-axis
+		this.ctx.textAlign = 'center';
+		this.ctx.textBaseline ='top';
 		for( let x of this.xValues ) {
 			let xg = this.xScale(x);
-			this.context.moveTo(xg, this.inner.bot + delta);
-			this.context.lineTo(xg, this.inner.top);
-			this.context.fillText(x, xg, this.inner.bot + delta);
+			this.ctx.moveTo(xg, this.inner.bot + delta);
+			this.ctx.lineTo(xg, this.inner.top);
+			this.ctx.fillText(x, xg, this.inner.bot + delta);
 		}
 		
-		this.context.textAlign = 'right';
-		this.context.textBaseline ='middle';
+		//y-axis
+		this.ctx.textAlign = 'right';
+		this.ctx.textBaseline ='middle';
 		for( let y of this.yValues ) {
 			let yg = this.yScale(y);
-			this.context.moveTo(this.inner.left - delta, yg);
-			this.context.lineTo( this.inner.right, yg);
-			this.context.fillText(y, this.inner.left - delta, yg );
+			this.ctx.moveTo(this.inner.left - delta, yg);
+			this.ctx.lineTo( this.inner.right, yg);
+			this.ctx.fillText(y, this.inner.left - delta, yg );
 		}
-		this.context.closePath();
-		this.context.stroke();
+		
+		this.ctx.closePath();
+		this.ctx.stroke();
 	};
 
-	setupScalesAxesGrids(){
+	setupRedraw(){
 		this.cleargraph();
 		this.setupXScales();
 		this.setupYScales();
 		this.drawGrid();
+		this.drawLines();
 	};
 	
-	setupLine (k,  yAccess, color, vertical, visible, lineWidth, dotSize) {
-		this.lineInfo[k] = { yAccess: yAccess,
-				color: color, vertical: vertical,
-				visible: visible, 
-				lineWidth: lineWidth, dotSize: dotSize,
-				last: {x:null,y:null} };
+	setupLine (k, yAccess, color, vertical,
+				visible, lineWidth, dotSize) {
+		this.lineInfo[k] = {
+			yAccess: yAccess, color: color,
+			vertical: vertical, visible: visible, 
+			lineWidth: lineWidth, dotSize: dotSize,
+			last: {x:null,y:null} };
 	};
-	
 	
 	drawLines () {
-		this.context.save();
-		this.context.beginPath();
-  		this.context.rect(this.inner.left, this.inner.top,
+		this.ctx.save();
+		this.ctx.beginPath();
+  		this.ctx.rect(this.inner.left, this.inner.top,
 						  this.inner.width, this.inner.height);
-  		this.context.clip(); // for the first quadrant of graph.
+  		this.ctx.clip(); // for the first quadrant of graph.
 
 		for( let info of this.lineInfo ) {
-			this.context.lineWidth = info.lineWidth;
-			if( info.visible ){
-				this.context.strokeStyle = 
-					this.context.fillStyle = info.color;
-				let last = {x:null, y: null};
-				this.context.beginPath();
-				for (let  p of this.data ){
-					let cur = {x: this.xInfo.xAccess(p),
+			if( !info.visible ) continue;
+			this.ctx.lineWidth = info.lineWidth;
+			
+			this.ctx.strokeStyle = 
+					this.ctx.fillStyle = info.color;
+			let last = {x:null, y: null};
+			this.ctx.beginPath();
+			for (let  p of this.data ){
+				let cur = {x: this.xInfo.xAccess(p),
 								y: info.yAccess(p)};
-					if( cur.y == undefined) continue;
-					if( last.y == null ) {
-						this.context.moveTo( 
+				if( cur.y == undefined) continue;
+				if( last.y == null ) {
+					this.ctx.moveTo( 
 							this.xScale(cur.x),
 							this.yScale(cur.y));
 
-					} else {
-						if(info.vertical) {
-							this.context.lineTo( 
+				} else {
+					if(info.vertical) {
+						this.ctx.lineTo( 
 								this.xScale(cur.x),
 								this.yScale(last.y));
-						}
-						if( cur.y != null ) {
-							this.context.lineTo( 
+					}
+					if( cur.y != null ) {
+						this.ctx.lineTo( 
 								this.xScale(cur.x),
 								this.yScale(cur.y));
-							this.context.stroke();
-						}
+						this.ctx.stroke();
 					}
-
-					if( cur.y != null && info.dotSize > 0) {
-						this.context.beginPath();
-						this.context.arc(this.xScale(cur.x),
-							this.yScale(cur.y), info.dotSize,
-							0,2*Math.PI, true);
-						this.context.fill();
-					}
-					last = cur;
 				}
+
+				if( cur.y != null && info.dotSize > 0) {
+					this.ctx.beginPath();
+					this.ctx.arc(this.xScale(cur.x),
+						this.yScale(cur.y), info.dotSize,
+							0,2*Math.PI, true);
+					this.ctx.fill();
+				}
+				last = cur;
 			}
 		}
-		this.context.restore();
+		this.ctx.restore();
 	};
 	checkBounds(p){
 		//either p.x or one of p.y is out of bounds 
@@ -299,74 +300,57 @@ export class TioxGraph {
 		}
 		let bool1 = this.updateXaxis(x);
 		let bool2 = this.updateYaxis(y);
-//		console.log('checkbounds',y,this.yInfo,bool2)
 		if( bool1 || bool2 ) {
-			this.setupScalesAxesGrids();
-			this.drawLines();
+			this.setupRedraw();
 		};
 	};
+	
 	drawOnePoint(p){
 		this.checkBounds(p);
 		this.data.push(p);
-//		console.log('in drawOne',p.t,p.i,p.a,p.p);
-		
 		for( let info of this.lineInfo ) {
 		  	let cur = {x: this.xInfo.xAccess(p), y: info.yAccess(p)};
-//			if( info.vertical ){
-//				console.log('at start p is',p.t,p.i,p.a,p.p);
-//				console.log('at start',info.last.x,info.last.y,cur.x,cur.y);
-//				}
+
 			//if no data then skip it and keep last for next data point
 			if( cur.y === undefined) continue;
 			if( info.visible ){
-				this.context.strokeStyle = 
-					this.context.fillStyle = info.color;
-				this.context.lineWidth = info.lineWidth;
+				this.ctx.strokeStyle = 
+					this.ctx.fillStyle = info.color;
+				this.ctx.lineWidth = info.lineWidth;
 
 
 				//no previous point then skip drawing line
 				if( info.last.y != null ) {
-					this.context.beginPath();
+					this.ctx.beginPath();
 
-					this.context.moveTo( 
+					this.ctx.moveTo( 
 						this.xScale(info.last.x),
 						this.yScale(info.last.y));
 
 					if(info.vertical) {
-						this.context.lineTo( 
+						this.ctx.lineTo( 
 							this.xScale(cur.x),
 							this.yScale(info.last.y));
 					}
 					if( cur.y != null) {
-						this.context.lineTo( 
+						this.ctx.lineTo( 
 							this.xScale(cur.x),
 							this.yScale(cur.y));
-						this.context.stroke();
+						this.ctx.stroke();
 					}
 				}
 				
 				if( cur.y != null && info.dotSize > 0 ) {
-					this.context.beginPath();
-					this.context.arc(this.xScale(cur.x),
+					this.ctx.beginPath();
+					this.ctx.arc(this.xScale(cur.x),
 						this.yScale(cur.y), info.dotSize,
 						0,2*Math.PI, true);
-					this.context.fill();
+					this.ctx.fill();
 				}
-
 			}
 			info.last = cur;
-//			if( info.vertical )
-//			console.log('at end',info.last.x,info.last.y,cur.x,cur.y);
 		}
 	};
 	
 };
-
-function toggleVisible(k){
-		//change legend to have it cross off or not
-		this.lineInfo[k].visible = !this.lineInfo[k].visible;
-	};
-	function setLegendStatus(bool){
-		
-	};
 	
