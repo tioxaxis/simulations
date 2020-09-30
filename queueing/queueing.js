@@ -38,18 +38,11 @@ import {
 }
 from "../modules/graph.js";
 class QueueGraph extends TioxGraph {
-	constructor(){
-		
-		super('chart',.3, {min:0, max:5, step:1, xAccess: d=>d.t},1.5);
-//		console.log('nv graph', maxUnder, maxOver);
-		
-		
-		
+	constructor(){	
+		super('chart',.3, {width:5, step:1}, d=>d.t);
 		this.setTitle('Waiting Time');
-		
 		this.setupLine(0, d => d.i, 'rgba(0,0,220,1)',
 					   false, true, 3, 10);
-		
 		this.setLegend(0, 'individual wait');
 		this.setupLine(1, d => d.a, 'rgba(0,150,0,1)',
 					   false, true, 3, 10);
@@ -75,10 +68,14 @@ class QueueGraph extends TioxGraph {
 	reset(){
 		this.total = 0;
 		this.count = 0;
-		super.reset(Math.max( this.predictedWaitValue * 1.5, 1.5));
+		let yMax = (this.predictedWaitValue == Infinity)?
+			1.5: Math.max(1.5,this.predictedWaitValue * 1.1);
+		super.reset(yMax);
 		this.updateForSpeed();
 	}
-	updateForSpeed (){};
+	updateForSpeed (){
+		this.scaleXaxis(simu.frameSpeed);
+	};
 	predictedWait () {
 			const sr = theSimulation.serviceRV.rate;
 			const ir = theSimulation.interarrivalRV.rate;
@@ -92,10 +89,7 @@ class QueueGraph extends TioxGraph {
 			return pW;
 		};
 	updatePredictedWait () {
-		let pW = this.predictedWaitValue;
-//		let pDS = tioxGraph.chart.data.datasets[2];
-		pW = this.predictedWait();
-//		console.log('update pW',pW);
+		let pW = this.predictedWait();
 		this.drawOnePoint({
 			t: (simu.now / tioxTimeConv),
 			p: (pW == Infinity)?null:pW
@@ -104,8 +98,6 @@ class QueueGraph extends TioxGraph {
 					   ((pW == Infinity) ? ' = ∞' : ''));
 
 		this.predictedWaitValue = pW;
-//		tioxGraph.chart.generateLegend();
-//		tioxGraph.chart.update();
 	};
 }
 let queueGraph;
@@ -538,65 +530,3 @@ function initializeAll() {
 	document.getElementById('resetButton').click();
 };
 document.addEventListener("DOMContentLoaded", initializeAll);
-
-//import {tioxGraph} from "../modules/graph.js";
-//const queueGraph ={
-//	predictedWait: function () {
-//			const sr = theSimulation.serviceRV.rate;
-//			const ir = theSimulation.interarrivalRV.rate;
-//			if (sr == 0) return Infinity;
-//			let rho = ir / sr;
-//			if (rho >= 1) return Infinity;
-//			const iCV = theSimulation.interarrivalRV.CV;
-//			const sCV = theSimulation.serviceRV.CV;
-//			let p = (rho / (1 - rho) / ir / tioxTimeConv) * (iCV * iCV + sCV * sCV) / 2;
-//			return p;
-//		},
-//	push: function (t, w) {
-//			t /= tioxTimeConv;
-//			w /= tioxTimeConv;
-//			this.total += w;
-//			this.count++;
-//			tioxGraph.updateXaxis(t);
-//
-//			const pW = this.predictedWaitValue;
-//			if (w > tioxGraph.yaxis.current().max ) tioxGraph.updateYaxis(w);
-//			if (pW >= 0 && pW < Infinity) tioxGraph.updateYaxis(pW);
-//			let ds = tioxGraph.chart.data.datasets;
-//			ds[0].data.push({
-//				x: t,
-//				y: w
-//			});
-//			ds[1].data.push({
-//				x: t,
-//				y: this.total / this.count
-//			});
-//			if (pW >= 0 && pW < Infinity) {
-//				ds[2].data.push({
-//					x: t,
-//					y: pW
-//				})
-//			}
-//			tioxGraph.chart.update();
-//		},
-//	updatePredictedWait: function () {
-//		let pW = this.predictedWaitValue;
-//		let pDS = tioxGraph.chart.data.datasets[2];
-//
-//		pDS.data.push({
-//			x: (simu.now - 1) / tioxTimeConv,
-//			y: pW
-//		});
-//		pW = this.predictedWait();
-//		pDS.data.push({
-//			x: (simu.now / tioxTimeConv),
-//			y: pW
-//		});
-//		pDS.label = 'predicted wait' + ((pW == Infinity) ? ' = ∞' : '');
-//
-//		this.predictedWaitValue = pW;
-//		tioxGraph.chart.generateLegend();
-//		tioxGraph.chart.update();
-//	},
-//	
-//}

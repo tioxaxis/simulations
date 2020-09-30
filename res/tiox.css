@@ -6,6 +6,33 @@
 	font-size: 1vw;
 }
 
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/s/materialicons/v55/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2) format('woff2');
+}
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+.material-icons:hover {
+	color: var(--borderColor);	
+}
+.material-icons:active {
+	color: blue;
+}
 :root {
   	--fontColor: slategray;
 	--borderColor: rgb(122, 141, 208);
@@ -295,6 +322,37 @@ input[type=range] {
 	justify-content: center;
 	align-content: center;
 	align-items: flex-start
+}
+.tooltip {
+  position: relative;
+  display: inline-block;
+/*	border: red solid 2px;*/
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+   /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  top: 90%;
+	left: 20%;
+	opacity: 0;
+  transition: opacity .5s;
+  transition-delay: 1s;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+	opacity: 1;
+	
 }
 .playButtons {
 	display: flex;

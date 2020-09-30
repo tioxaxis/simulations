@@ -36,7 +36,7 @@ from "../modules/graph.js";
 class NVGraph extends TioxGraph {
 	constructor(){
 		
-		super('chart',.3, {min:0, max:12, step:3, xAccess: d=>d.t},1);
+		super('chart',.3, {width:12, step:3}, d=>d.t);
 //		console.log('nv graph', maxUnder, maxOver);
 		
 		
@@ -44,11 +44,11 @@ class NVGraph extends TioxGraph {
 		this.setTitle('$ of cost per day');
 		
 		this.setupLine(0, d => d.u, 'rgb(185, 26, 26)',
-					   false, true, 3, 10);
+					   false, true, 3, 20);
 		
 		this.setLegend(0, 'underage cost');
 		this.setupLine(1, d => d.o, 'rgba(0,150,0,1)',
-					   false, true, 3, 10);
+					   false, true, 3, 20);
 		this.setLegend(1,'overage cost');
 		this.setupLine(2, d => d.a, 'rgba(0,0,220,1)',
 					   false, true, 3, 0);
@@ -65,7 +65,9 @@ class NVGraph extends TioxGraph {
 		this.totalCost = 0;
 		super.reset(yMax)
 	}
-	updateForSpeed (){}
+	updateForSpeed (){
+		this.scaleXaxis(simu.frameSpeed);
+	}
 }
 let nvGraph;
 
@@ -568,9 +570,3 @@ function initializeAll() {
 
 
 document.addEventListener("DOMContentLoaded", initializeAll);
-
-
-
-
-
-

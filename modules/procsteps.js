@@ -33,8 +33,7 @@ simu.frameSpeed = 1.0;
 simu.isRunning = false;
 simu.requestAFId = null; // id for requestAnimationFrame
 
-simu.initialize = function () {
-};
+simu.initialize = function () {};
 
 simu.reset = function () {
 	clearCanvas();

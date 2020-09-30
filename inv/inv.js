@@ -44,17 +44,11 @@ import {
 from "../modules/graph.js";
 class InvGraph extends TioxGraph {
 	constructor(){
-		
-		super('chart',.3, {min:0, max:20, step:5, xAccess: d=>d.t},40);
-//		console.log('nv graph', maxUnder, maxOver);
-		
-		
+		super('chart',.3, {width:20, step:5}, d=>d.t);
 		this.predictedInvValue = null;
 		this.setTitle('Inventory');
-		
 		this.setupLine(0, d => d.i, 'rgba(0,0,220,1)',
 					   true, true, 3, 0);
-		
 		this.setLegend(0, 'On Hand');
 		this.setupLine(1, d => d.ip, 'rgba(0,150,0,1)',
 					   true, true, 3, 0);
@@ -62,7 +56,6 @@ class InvGraph extends TioxGraph {
 		this.setupLine(2, d => d.p, 'rgb(185, 26, 26)',
 					   true, false, 3, 0);
 		this.setLegend(2,'Predicted Inventory');	
-//		this.predictedWaitValue = this.predictedWait();
 	};
 	
 	push (t, inv, invPosition){
@@ -79,21 +72,34 @@ class InvGraph extends TioxGraph {
 					 theSimulation.rop + theSimulation.quantityOrdered + 1:
 					 theSimulation.upto+1 );
 		super.reset(maxI);
-		this.updateForSpeed();
+		this.updateForSpeed ();
 	};
 	updateForSpeed (){
-//		tioxGraph.updateXaxisScale(simu.frameSpeed);
+		this.scaleXaxis(simu.frameSpeed);
 	};
 	computePredInv () {
 		let avgInv;
-		if (simu.whichRule == 'methUpto') {
-			avgInv = theSimulation.upto - theSimulation.arrivalRV.rate *
-				(theSimulation.leadtimeRV.mean + theSimulation.period / 2);
-		} else {
-			avgInv = theSimulation.quantityOrdered / 2 +
-				theSimulation.rop - theSimulation.arrivalRV.rate * theSimulation.leadtimeRV.mean;
-		}
 		
+		const P = theSimulation.period;
+		const L = theSimulation.leadtimeRV.mean;
+		const R = theSimulation.arrivalRV.rate;
+		if (simu.whichRule == 'methUpto') {
+			const U = theSimulation.upto;
+			if ( U > R * (P + L) ){
+				avgInv = U - R * (L + P/ 2);
+			} else {
+				const t = P - L + U / R;
+				avgInv = R * t * t / (P * 8);
+			}
+		} else {  //methRop
+			const Q = theSimulation.quantityOrdered;
+			const SS = theSimulation.rop - R * L;
+			if ( SS >= 0 ) {
+				avgInv =  Q / 2 + SS;
+			} else {
+				avgInv = (Q / 2) * (Q / (Q - SS))
+			}
+		}
 		return avgInv;
 	};
 }
@@ -525,7 +531,7 @@ class RopStore extends GStore {
 		// keep track stockouts by round
 		this.nRounds++;
 		if (!this.stockout) this.roundsWithEnough++;
-		console.log( 'delivery', this.stockout, this.nRounds, this.roundsWithEnough);
+//		console.log( 'delivery', this.stockout, this.nRounds, this.roundsWithEnough);
 		this.stockout = false;
 		document.getElementById('serviceLevel').innerHTML =
 			( 100*(this.roundsWithEnough/this.nRounds) ).toFixed(0);
@@ -694,6 +700,7 @@ class FlatBed {
 		c.lineWidth = 2;
 
 		//body
+		c.beginPath();
 		c.moveTo(this.x, this.y + this.anim.truck.height);
 		c.lineTo(this.x + this.anim.truck.width, this.y + this.anim.truck.height);
 		c.lineTo(this.x + this.anim.truck.width, this.y + this.anim.truck.height - 0.75 * this.anim.box.space);
@@ -812,99 +819,3 @@ function initializeAll() {
 };
 
 document.addEventListener("DOMContentLoaded", initializeAll);
-
-//import {tioxGraph} from "../modules/graph.js";
-//const invGraph ={
-//	lastpredInv: null,
-//	lastinv: null,
-//	lastinvPos: null,
-//	predictedInvValue: null,
-//	updatePredictedInv: function () {
-//		let ds = tioxGraph.chart.data.datasets;
-//		ds[2].data.push({
-//			x: (simu.now - 1) / 10000,
-//			y: this.predictedInvValue
-//		});
-//		this.predictedInvValue = this.predictedInv();
-//		ds[2].data.push({
-//			x: (simu.now / 10000),
-//			y: this.predictedInvValue
-//		});
-//		tioxGraph.chart.update();
-//	},
-//	computePredInv: function () {
-//		let avgInv;
-//		if (simu.whichRule == 'methUpto') {
-//			avgInv = theSimulation.upto - theSimulation.arrivalRV.rate *
-//				(theSimulation.leadtimeRV.mean + theSimulation.period / 2);
-//		} else {
-//			avgInv = theSimulation.quantityOrdered / 2 +
-//				theSimulation.rop - theSimulation.arrivalRV.rate * theSimulation.leadtimeRV.mean;
-//		}
-//		return avgInv;
-//	},
-////	push: function (t, inv, invPos) {
-//			let predInv = this.computePredInv();
-//			t /= tioxTimeConv;
-//			tioxGraph.updateXaxis(t);
-//			tioxGraph.updateYaxis(Math.max(inv, invPos));
-//			let ds = tioxGraph.chart.data.datasets;
-//			if (this.lastinv != inv) {
-//				ds[0].data.push({
-//					x: t,
-//					y: this.lastinv
-//				});
-//			this.lastinv = inv;
-//			};
-//			ds[0].data.push({
-//				x: t,
-//				y: inv
-//			});
-//			
-//			if (this.lastinvPos != invPos) {
-//				ds[1].data.push({
-//					x: t,
-//					y: this.lastinvPos
-//				});
-//				this.lastinvPos = invPos;
-//			};
-//			ds[1].data.push({
-//				x: t,
-//				y: invPos
-//			});
-//			
-//			if (this.lastpredInv != predInv) {
-//				ds[2].data.push({
-//					x: t,
-//					y: this.lastpredInv
-//				});
-//				this.lastpredInv = predInv;
-//			}
-//			ds[2].data.push({
-//				x: t,
-//				y: predInv
-//			});
-//			tioxGraph.chart.update();
-//		},
-//	setupGraph: function(){
-//		tioxGraph.setLabelColorVisible(0,'On Hand', 'rgba(0,0,220,1)', true, 0);
-//		tioxGraph.setLabelColorVisible(1,'On Hand and On Order',
-//									   'rgba(0,150,0,1)', true, 0);
-//		tioxGraph.setLabelColorVisible(2,'Predicted On Hand', 
-//									   'rgb(185, 26, 26)',true, 0);
-//		tioxGraph.struc.options.title.text = 'Inventory'
-////		this.predictedInvValue = this.predictedInv();
-//		this.reset();	
-//	},
-//	reset: function(){
-//		let maxI = ( simu.whichRule == 'methRop' ?
-//					 theSimulation.rop + theSimulation.quantityOrdered + 1:
-//					 theSimulation.upto+1 );
-//		tioxGraph.reset(20, 15, maxI);
-//		this.updateForSpeed();
-//	},
-//	updateForSpeed: function(){
-//		tioxGraph.updateXaxisScale(simu.frameSpeed);
-//	}
-//}
-

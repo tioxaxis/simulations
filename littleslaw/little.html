@@ -149,15 +149,22 @@
 					</div>
 					<div class="sliderRow">
 						<div class="sliderboxLeft playButtons" id="playButtons">
-							<p id='pauseButton' style="display:none">
-								<button>Pause</button>
-							</p>
-							<p id='playButton' style="display:inline">
-								<button>Play</button>
-							</p>
-							<p id='resetButton'>
-								<button>Reset</button>
-							</p>
+							<div id='pauseButton'  style="display:none">
+							<i style="font-size:40pt" 
+							class="material-icons tooltip">pause_circle_outline
+							<span class="tooltiptext">pause the animation</span></i>
+							</div>
+							<div id='playButton'  style="display:inline">
+							<i style="font-size:40pt" 
+							class="material-icons tooltip" >play_circle_outline
+							<span class="tooltiptext">play the animation</span></i>
+							</div>
+							<div id='resetButton' class='tooltip'>
+							<i style="font-size:40pt" 
+							   class="material-icons tooltip">replay
+							<span class="tooltiptext">reset the animation</span></i>
+								
+							</div>
 						</div>
 
 						<div class="sliderboxLeft actionBox" id="actionOptions">
@@ -208,8 +215,10 @@
 						<ul id="ULPresetList"></ul>
 					</div>
 					<div style="display:none" id="scenariosBot">
-						<button id="addButton"> &plus;</button>
-						<button id="deleteButton"> &minus;</button>
+						<i id="addButton" class="material-icons">
+							add</i>
+						<i id="deleteButton" class="material-icons">
+							remove</i>
 					</div>
 				</div>
 

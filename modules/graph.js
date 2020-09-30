@@ -17,8 +17,57 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */		
-	function * verticalAxis(){
-		let table = [
+function verticalAxis(y,table) {
+	while( y > table[0].max ){
+		table.push({max: table[0].max * 10,
+					step: table[0].step * 10});
+		table.shift();
+		}
+	return {min: 0, max: table[0].max,
+			step: table[0].step};
+}
+
+function horizonalShiftAxis(x, xInfo){
+	while ( x > xInfo.max ){
+		xInfo.min = xInfo.max - xInfo.step 
+		xInfo.max = xInfo.min + xInfo.width 
+		};
+}
+function horizontalScaleAxis(newScale, xInfo){
+	xInfo.width = xInfo.width / xInfo.scale * newScale;
+	xInfo.step = xInfo.step / xInfo.scale * newScale;
+	xInfo.max = xInfo.min + xInfo.width;
+	xInfo.scale = newScale;
+}
+
+export class TioxGraph {
+	constructor (graphId, ratio, xWidthStep, xAccess ){
+		this.ctx = document.getElementById(graphId)
+						.getContext('2d');
+		this.fontSize = 40;
+		
+		
+		this.xWidthStep = xWidthStep;
+		this.xAccess= xAccess;
+		this.lineInfo = [];
+		
+		this.outer= {width: 2000, height: 2000*ratio}
+		this.margin = {top: this.fontSize, bot: this.fontSize*3/2,
+					   left: this.fontSize*3, right:this.fontSize}
+		this.inner = 
+			{top: this.margin.top, 
+			 bot: this.outer.height-this.margin.bot,
+			 left: this.margin.left,
+			 right: this.outer.width- this.margin.right,
+			 height: this.outer.height - this.margin.top - this.margin.bot,
+			 width: this.outer.width - this.margin.left - this.margin.right};
+		
+	}
+	
+	reset(yMax){
+		this.data = [];
+		//make copy of table
+		this.table = [...[
 			{
 				max: 1.0,
 				step: 0.2
@@ -51,59 +100,18 @@
 				max: 8,
 				step: 2
 			}
-		];
-		var y = 0;
-		while(true){
-			let changed = false;
-			while( y> table[0].max ){
-				table.push({max: table[0].max * 10, step: table[0].step * 10});
-				table.shift();
-				changed = true;
-			}
-			y = yield {changed: changed, pair: table[0]};
-		}
-	};
-
-
-let html1 = '<svg  xmlns="http://www.w3.org/2000/svg" width="20" height="20">   <circle cx="25" cy="25" r="10" fill=';
-let html2 = '></circle><text> legend name</text></svg><pre ';
-
-export class TioxGraph {
-	constructor (graphId,ratio, xInfo,yMax){
-		this.ctx = document.getElementById(graphId)
-						.getContext('2d');
-		this.fontSize = 40;
-		
-		
-		this.xInfo = xInfo;
-		this.xInfoOrig = Object.assign({}, this.xInfo);
-		this.yMax = yMax;
-		this.lineInfo = [];
-		
-		this.outer= {width: 2000, height: 2000*ratio}
-		this.margin = {top: this.fontSize, bot: this.fontSize*3/2,
-					   left: this.fontSize*3, right:this.fontSize}
-		this.inner = 
-			{top: this.margin.top, 
-			 bot: this.outer.height-this.margin.bot,
-			 left: this.margin.left,
-			 right: this.outer.width- this.margin.right,
-			 height: this.outer.height - this.margin.top - this.margin.bot,
-			 width: this.outer.width - this.margin.left - this.margin.right};
-		this.reset(this.yMax);
-	}
-	
-	reset(yMax){
-		this.data = [];
-		this.xInfo = Object.assign({}, this.xInfoOrig);
-		this.vertAxisGen = verticalAxis(); //start up the generator
-		this.yInfo = this.vertAxisGen.next().value.pair;
+		]];
+		this.xInfo = {min: 0, max: this.xWidthStep.width,
+					 step: this.xWidthStep.step,
+					  width: this.xWidthStep.width,
+					  lastX: 0, scale: 1};
+		this.yInfo = {min:0, max: this.table[0].max,
+					 step: this.table[0].step};
 		this.updateYaxis(yMax);
 		for( let info of this.lineInfo ){
 			info.last ={x:null, y: null}
-		this.setupRedraw();
-		
 		}
+		this.setupThenRedraw();
 	};
 	setTitle(title){
 		document.getElementById('chartTitle').innerHTML = title;
@@ -133,57 +141,42 @@ export class TioxGraph {
 		let info = this.lineInfo[k];
 		info.visible = !info.visible;
 		this.setLegendText(elem,info);
-		this.setupRedraw();
+		this.setupThenRedraw();
 	};
 	
-	
-	
-	
 	xScale (x){
+		this.xInfo.lastX = x;
 		return ( (x-this.xInfo.min) / (this.xInfo.max - this.xInfo.min) ) * (this.inner.right - this.inner.left) + this.inner.left;
 	};
 	yScale (y){
 		return (1- (y-0) / (this.yInfo.max - 0) )  * (this.inner.bot - this.inner.top) + this.inner.top;
 	};
-	
-	setupXScales (){
-		this.xValues = [];
-		for (let x = this.xInfo.min; 
-			 x <= this.xInfo.max; 
-			 x += this.xInfo.step){
-			this.xValues.push(x);
-		};
+	scaleXaxis(scale){
+		if ( scale == this.xInfo.scale ) return false;
+		horizontalScaleAxis(scale, this.xInfo);
+		
+		for (let info of this.lineInfo ) {
+			info.dotSize = Math.ceil(info.origDotSize / scale);
+			info.lineWidth = Math.ceil(info.origLineWidth / scale);
+		}
+		this.shiftXaxis(this.xInfo.lastX, this.xInfo);
+		this.setupThenRedraw();
+		return true;
 	};
-	
-	setupYScales (){
-		this.yValues = [];
-		for (let y = 0; y<= this.yInfo.max;
-			 y += this.yInfo.step ){
-			this.yValues.push(Math.round(y*100)/100);
-		};
-	};
-	
-	updateXaxis(x){
+	shiftXaxis(x){
 		if ( x <= this.xInfo.max ) return false;
-		let delta = this.xInfo.max - this.xInfo.min; 
-		this.xInfo.min = this.xInfo.max - this.xInfo.step;
-		this.xInfo.max = this.xInfo.min + delta;
+		horizonalShiftAxis(x,this.xInfo);
 		let k = this.data.findIndex( 
-			elem => this.xInfo.xAccess(elem) >= this.xInfo.min );
+			elem => this.xAccess(elem) >= this.xInfo.min );
 		if ( k > 0 ) this.data.splice(0,k-1);
 		return true;	
 	};
-	
 	updateYaxis(y){
-		let result = this.vertAxisGen.next(y).value;
-		if( !result.changed ) return false
-		this.yInfo = result.pair;
+		if ( y <= this.yInfo.max ) return false;
+		this.yInfo = verticalAxis(y,this.table);
 		return true; 
 	};
 	
-	adjustSpeed(factor){
-		//  do I know the base level internally??
-	};
 		
 	cleargraph(){
 		this.ctx.clearRect(0,0,
@@ -202,31 +195,33 @@ export class TioxGraph {
 		//x-axis
 		this.ctx.textAlign = 'center';
 		this.ctx.textBaseline ='top';
-		for( let x of this.xValues ) {
+		for( let x = this.xInfo.min; x <= this.xInfo.max;
+			x += this.xInfo.step ) {
 			let xg = this.xScale(x);
 			this.ctx.moveTo(xg, this.inner.bot + delta);
 			this.ctx.lineTo(xg, this.inner.top);
-			this.ctx.fillText(x, xg, this.inner.bot + delta);
+			let roundedX = Math.round(x*1000)/1000;
+			this.ctx.fillText(roundedX, xg, this.inner.bot + delta);
 		}
 		
 		//y-axis
 		this.ctx.textAlign = 'right';
 		this.ctx.textBaseline ='middle';
-		for( let y of this.yValues ) {
+		for( let y = this.yInfo.min; y <= this.yInfo.max;
+			y += this.yInfo.step ) {
 			let yg = this.yScale(y);
 			this.ctx.moveTo(this.inner.left - delta, yg);
 			this.ctx.lineTo( this.inner.right, yg);
-			this.ctx.fillText(y, this.inner.left - delta, yg );
+			let roundedY = Math.round(y*1000)/1000;
+			this.ctx.fillText(roundedY, this.inner.left - delta, yg );
 		}
 		
 		this.ctx.closePath();
 		this.ctx.stroke();
 	};
 
-	setupRedraw(){
+	setupThenRedraw(){
 		this.cleargraph();
-		this.setupXScales();
-		this.setupYScales();
 		this.drawGrid();
 		this.drawLines();
 	};
@@ -236,7 +231,8 @@ export class TioxGraph {
 		this.lineInfo[k] = {
 			yAccess: yAccess, color: color,
 			vertical: vertical, visible: visible, 
-			lineWidth: lineWidth, dotSize: dotSize,
+			lineWidth: lineWidth, origLineWidth: lineWidth,
+			dotSize: dotSize, origDotSize: dotSize,
 			last: {x:null,y:null} };
 	};
 	
@@ -250,16 +246,16 @@ export class TioxGraph {
 		for( let info of this.lineInfo ) {
 			if( !info.visible ) continue;
 			this.ctx.lineWidth = info.lineWidth;
-			
 			this.ctx.strokeStyle = 
 					this.ctx.fillStyle = info.color;
 			let last = {x:null, y: null};
 			this.ctx.beginPath();
+			
 			for (let  p of this.data ){
-				let cur = {x: this.xInfo.xAccess(p),
+				let cur = {x: this.xAccess(p),
 								y: info.yAccess(p)};
 				if( cur.y == undefined) continue;
-				if( last.y == null ) {
+				if( last.y == null ) {  //handles first point.
 					this.ctx.moveTo( 
 							this.xScale(cur.x),
 							this.yScale(cur.y));
@@ -288,20 +284,22 @@ export class TioxGraph {
 				last = cur;
 			}
 		}
-		this.ctx.restore();
+		this.ctx.restore();   // removes the clip path
 	};
+	
 	checkBounds(p){
 		//either p.x or one of p.y is out of bounds 
 		// update axes and redraw all the graph up to point p
 		let y = 0;
-		let x = this.xInfo.xAccess(p);
+		let x = this.xAccess(p);
 		for( let info of this.lineInfo ){
-			y = Math.max(y,info.yAccess(p));
+			let v = info.yAccess(p);
+			if (v != undefined) y = Math.max(y,v);
 		}
-		let bool1 = this.updateXaxis(x);
+		let bool1 = this.shiftXaxis(x,1);
 		let bool2 = this.updateYaxis(y);
 		if( bool1 || bool2 ) {
-			this.setupRedraw();
+			this.setupThenRedraw();
 		};
 	};
 	
@@ -309,45 +307,45 @@ export class TioxGraph {
 		this.checkBounds(p);
 		this.data.push(p);
 		for( let info of this.lineInfo ) {
-		  	let cur = {x: this.xInfo.xAccess(p), y: info.yAccess(p)};
+		  	if( !info.visible ) continue;
+			this.ctx.lineWidth = info.lineWidth;
+			this.ctx.strokeStyle = 
+				this.ctx.fillStyle = info.color;
+			
+			let cur = {x: this.xAccess(p), y: info.yAccess(p)};
 
 			//if no data then skip it and keep last for next data point
 			if( cur.y === undefined) continue;
-			if( info.visible ){
-				this.ctx.strokeStyle = 
-					this.ctx.fillStyle = info.color;
-				this.ctx.lineWidth = info.lineWidth;
+			
+			//no previous point then skip drawing line
+			if( info.last.y != null ) {
+				this.ctx.beginPath();
 
+				this.ctx.moveTo( 
+					this.xScale(info.last.x),
+					this.yScale(info.last.y));
 
-				//no previous point then skip drawing line
-				if( info.last.y != null ) {
-					this.ctx.beginPath();
-
-					this.ctx.moveTo( 
-						this.xScale(info.last.x),
+				if(info.vertical) {
+					this.ctx.lineTo( 
+						this.xScale(cur.x),
 						this.yScale(info.last.y));
-
-					if(info.vertical) {
-						this.ctx.lineTo( 
-							this.xScale(cur.x),
-							this.yScale(info.last.y));
-					}
-					if( cur.y != null) {
-						this.ctx.lineTo( 
-							this.xScale(cur.x),
-							this.yScale(cur.y));
-						this.ctx.stroke();
-					}
 				}
-				
-				if( cur.y != null && info.dotSize > 0 ) {
-					this.ctx.beginPath();
-					this.ctx.arc(this.xScale(cur.x),
-						this.yScale(cur.y), info.dotSize,
-						0,2*Math.PI, true);
-					this.ctx.fill();
+				if( cur.y != null) {
+					this.ctx.lineTo( 
+						this.xScale(cur.x),
+						this.yScale(cur.y));
+					this.ctx.stroke();
 				}
 			}
+
+			if( cur.y != null && info.dotSize > 0 ) {
+				this.ctx.beginPath();
+				this.ctx.arc(this.xScale(cur.x),
+					this.yScale(cur.y), info.dotSize,
+					0,2*Math.PI, true);
+				this.ctx.fill();
+			}
+			
 			info.last = cur;
 		}
 	};
