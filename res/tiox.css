@@ -16,7 +16,7 @@
   font-family: 'Material Icons';
   font-weight: normal;
   font-style: normal;
-  font-size: 24px;
+  font-size: 3.5vw;
   line-height: 1;
   letter-spacing: normal;
   text-transform: none;
@@ -335,11 +335,11 @@ input[type=range] {
    /* Position the tooltip text - see examples below! */
   position: absolute;
   z-index: 1;
-  width: 120px;
+  width: 10vw;
   background-color: black;
   color: #fff;
   text-align: center;
-  padding: 5px 0;
+  padding: .4vw 0;
   border-radius: 6px;
   top: 90%;
 	left: 20%;
