@@ -69,7 +69,7 @@
 		</div>
 		<div id="containerInner">
 			<div id="leftHandSideBox">
-				<div id="canvasWrapper">
+				<div id="stageWrapper">
 					<!--start ANIMATION Stage -->
 					<canvas class="theStage" id="foreground" width=1000 height=300>
 					</canvas>
@@ -145,19 +145,18 @@
 						</div>
 					</div>
 					<div class="sliderRow">
-						<div class="sliderboxLeft playButtons" id="playButtons">
+						<div class="sliderboxLeft" id="playButtons">
 							<div id='pauseButton'  style="display:none">
-							<i class="material-icons tooltip">pause_circle_outline
-							<span class="tooltiptext">pause the animation</span></i>
+							<i class="material-icons font35vw" 
+							   title="pause the animation">pause_circle_outline</i>
 							</div>
 							<div id='playButton'  style="display:inline">
-							<i class="material-icons tooltip" >play_circle_outline
-							<span class="tooltiptext">play the animation</span></i>
+							<i class="material-icons font35vw" 
+							   title="play the animation">play_circle_outline</i>
 							</div>
-							<div id='resetButton' class='tooltip'>
-							<i class="material-icons tooltip">replay
-							<span class="tooltiptext">reset the animation</span></i>
-								
+							<div id='resetButton'>
+							<i class="material-icons font35vw"
+							   title ="reset the animation">replay</i>
 							</div>
 						</div>
 
@@ -209,9 +208,9 @@
 						<ul id="ULPresetList"></ul>
 					</div>
 					<div style="display:none" id="scenariosBot">
-						<i id="addButton" class="material-icons">
+						<i id="addButton" class="material-icons font15vw">
 							add</i>
-						<i id="deleteButton" class="material-icons">
+						<i id="deleteButton" class="material-icons font15vw">
 							remove</i>
 					</div>
 				</div>

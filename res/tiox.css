@@ -1,11 +1,10 @@
-/*   Generic formats   */
-
 * {
 	box-sizing: border-box;
 	font-family: "Arial";
 	font-size: 1vw;
 }
-
+/* font for the play, pause, reset buttons
+   and for add, delete scenario buttons */
 @font-face {
   font-family: 'Material Icons';
   font-style: normal;
@@ -16,7 +15,8 @@
   font-family: 'Material Icons';
   font-weight: normal;
   font-style: normal;
-  font-size: 3.5vw;
+  
+  color: rgb(34, 129, 118);
   line-height: 1;
   letter-spacing: normal;
   text-transform: none;
@@ -27,8 +27,14 @@
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
 }
+.font35vw{
+	font-size: 3.5vw;
+}
+.font15vw{
+	font-size: 1.5vw;
+}
 .material-icons:hover {
-	color: var(--borderColor);	
+	color: rgb(0, 172, 152);
 }
 .material-icons:active {
 	color: blue;
@@ -116,7 +122,7 @@
 
 /* Now the formats for the left hand side box  */
 
-#canvasWrapper {
+#stageWrapper {
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -128,8 +134,7 @@
 /*	clip-path: content-box;*/
 /*	z-index: 10;*/
 }
-.theStage {
-}
+
 #foreground {
 	/* We only specify 3 factors (left, top, width ) because the absolute measures on the canvas element width = 1000 height = 303 give a ratio of .303.   The Canvas wrapper is 41% of height - .5vw(2 borders)=  .5% of height, gets us to 40.5% of height
 	 so 20.25% of width vs 66% of width gets a box with a 
@@ -225,9 +230,6 @@
 	justify-content: center;
 	flex-flow: wrap;
 	align-content: center;
-	
-	
-	
 /*	border: solid red 2px;	*/
 }
 .legitem span{
@@ -235,6 +237,8 @@
 /*	border: solid green 2px;*/
 	color: var(--fontColor);
 }
+
+
 input[type=range] {
 	height: .5vw;
 	margin: 1vh 0;
@@ -288,13 +292,7 @@ input[type=range] {
 	right: 0;
 	height: 5vw;
 }
-.sliderbox,
-.actionBox,
-.playButtons {
-/*	width: 50%;*/
-/*	height: 5vw;*/
-	
-}
+
 .sliderbox p {
 	height: .8vw;
 	margin: .5vh
@@ -323,16 +321,15 @@ input[type=range] {
 	align-content: center;
 	align-items: flex-start
 }
+/*
 .tooltip {
   position: relative;
   display: inline-block;
-/*	border: red solid 2px;*/
 }
 
-/* Tooltip text */
 .tooltip .tooltiptext {
   visibility: hidden;
-   /* Position the tooltip text - see examples below! */
+ 
   position: absolute;
   z-index: 1;
   width: 10vw;
@@ -348,13 +345,13 @@ input[type=range] {
   transition-delay: 1s;
 }
 
-/* Show the tooltip text when you mouse over the tooltip container */
 .tooltip:hover .tooltiptext {
   visibility: visible;
 	opacity: 1;
 	
 }
-.playButtons {
+*/
+#playButtons {
 	display: flex;
 	flex-wrap: wrap;
 	flex-direction: row;
@@ -482,18 +479,9 @@ button {
 	cursor: pointer;
 }
 
-/* not sure these next one does anything   so commenting them out for now.
-.finalValue {
-    visibility: collapse;
-    display: none;
-}
 
 /* this defines the list of presets  All the way through "inputText" */
-
-
 /* ul, li  define the format for the text boxes with the preset names  */
-
-
 /* Remove margins and padding from the list */
 
 ul {
@@ -529,6 +517,10 @@ li {
 	-ms-user-select: text;
 	user-select: text;
 }
+ul li.selected {
+	background: blue;
+	color: #fff;
+}
 
 /* Darker background-color on hover */
 
@@ -541,13 +533,6 @@ button {
 	-webkit-border-radius: 10;
 	-moz-border-radius: 10;
 	border-radius: 8px;
-}
-
-/* When clicked on, add a background color and strike out text */
-
-ul li.selected {
-	background: blue;
-	color: #fff;
 }
 
 /* the input text box for a preset name when it is being edited   */
@@ -565,8 +550,6 @@ ul li.selected {
 	color: black;
 	background-color: lightblue;
 }
-
-/* Style the "+" and "-"  buttons to add and delete presets */
 
 #scenarios {
 	position: relative;
@@ -609,20 +592,13 @@ ul li.selected {
 	cursor: pointer;
 }
 
-/*
-#addButton:hover,#deleteButton:hover, #editBox:hover, #menuBox button:hover {
-    background-color: #9ba0dd;
-    color: white;  
-}
-*/
-
-
+/
 /* these three buttons begin as NOT displayed   */
 
 #deleteButton,
 #addButton,
 #exitButton {
-	text-align: center;
+	font-size: .5vw;
 }
 
 /* the box for turning on/off the editing mode */

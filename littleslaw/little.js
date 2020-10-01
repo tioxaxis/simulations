@@ -265,7 +265,6 @@ const animForWalkOffStage = {
 	loc: {x: anim.person.path.right, y: anim.person.path.top},
 	walkingTime: Math.abs(anim.person.path.exit - anim.person.path.right) / anim.stage.normalSpeed,
 
-
 	start: function (person) {
 		person.addPath({
 			t: simu.now +
@@ -335,7 +334,6 @@ const animForLittlesBox = {
 		person.updateBadge = false;
 	}
 };
-
 
 var theProcessCollection = new ProcessCollection();
 
@@ -408,7 +406,6 @@ const theSimulation = {
 			};
 		};
 
-
 		//link the queue to machine before and after
 		this.queue.setPreviousNext(
 			this.creator, this.LittlesBox);
@@ -435,15 +432,11 @@ class Supplier {
 
 var gSF;
 export class Person extends Item {
-
 	constructor(x, y = 60, w = 30, h = 30) {
 		super(x, y);
-
 		this.width = w;
-
 		this.graphic = new NStickFigure(gSF, x, y);
 		this.updateBadge = false;
-		//        simu.theCanvas.add(this.graphic.figure);
 	};
 
 
@@ -468,9 +461,8 @@ export class Person extends Item {
 
 }; // end class Person
 
-
 function initializeAll() {
-	Math.seedrandom('this is the Queueing Simulation');
+	Math.seedrandom('this is a Simulation');
 	simu.initialize(); // the generic
 	theSimulation.initialize(); // the specific to queueing
 	//reset first time to make sure it is ready to play.

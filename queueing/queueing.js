@@ -111,7 +111,7 @@ anim.stage = {
 anim.stage.foreContext = document
 		.getElementById('foreground')
 		.getContext('2d');
-	anim.stage.backContext = document
+anim.stage.backContext = document
 		.getElementById('background')
 		.getContext('2d');
 
@@ -131,9 +131,6 @@ anim.scannerDelta = {
   	dx: 0,
 	dy: anim.person.height * 1.8
 };
-
-
-
 
 // specific info for queueing needed by general routines
 // in procsteps and rhs.
@@ -157,8 +154,6 @@ class ProcessCollection extends Array {
 	};
 }; // end class processCollection
 
-var qLenDisplay = null;
-
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
 const precision = {
 	ar: 1,
@@ -170,7 +165,6 @@ const precision = {
 const speeds = [1, 2, 5, 10, 25];
 
 function captureChangeInSliderS(event) {
-	//    console.log('is event '+(event.isTrusted?'real':'scripted'));
 	let inputElem = event.target.closest('input');
 	if (!inputElem) return
 
@@ -263,11 +257,6 @@ const animForQueue = {
 			nInQueue - this.walkingTime / theSimulation.serviceRV.mean));
 		let dist = nInQueue * animForQueue.delta.dx;
 		let time = simu.now + dist / anim.stage.normalSpeed;
-//		person.addPath({
-//			t: time,
-//			x: person.cur.x,
-//			y: person.cur.y
-//		});
 		// simply move person back appropriate amount.
 		person.cur.x -= guessInQueue * animForQueue.delta.dx;
 		person.addPath({
@@ -278,7 +267,6 @@ const animForQueue = {
 		if (person.isThereOverlap()) {
 			person.cur.y = person.ahead.cur.y - 10;
 		}
-
 	},
 
 	arrive: function (nSeatsUsed, person) {
@@ -288,7 +276,6 @@ const animForQueue = {
 	},
 
 	leave: function (procTime, nSeatsUsed) {
-
 		theSimulation.nInQueue--;
 		document.getElementById('nInQueue').innerHTML = 
 			theSimulation.nInQueue ;
@@ -322,9 +309,8 @@ const animForQueue = {
 //};
 
 const animForWalkOffStage = {
-	walkingTime: Math.abs(anim.person.path.scanner - anim.person.path.right) / anim.stage.normalSpeed,
-
-	
+	walkingTime: Math.abs(anim.person.path.scanner 
+		- anim.person.path.right) / anim.stage.normalSpeed,
 
 	start: function (person) {
 		person.addPath({
@@ -341,7 +327,6 @@ const animForWalkOffStage = {
 		if (person.isThereOverlap()) {
 			person.cur.y = person.ahead.cur.y - 10;
 		}
-
 	}
 };
 
@@ -350,10 +335,6 @@ const animForCreator = {
 	start: function (theProcTime, person, m) {},
 	finish: function () {},
 };
-
-
-
-
 
 const animForTSA = {
 	dontOverlap: true,
@@ -383,6 +364,7 @@ const animForTSA = {
 		}
 		c.closePath();
 	},
+	
 	start: function (theProcTime, person, m) {
 		person.setDestWithProcTime(theProcTime,
 			animForTSA.machLoc[m].x, animForTSA.machLoc[m].y);
@@ -491,7 +473,6 @@ export class Person extends Item {
 		//simu.theCanvas.add(this.graphic.figure);
 	};
 
-
 	isThereOverlap() {
 		// is 'p' graph above the 'a' graph in [0, p.count] ?
 		let p = this;
@@ -518,15 +499,12 @@ export class Person extends Item {
 			y: y
 		});
 	};
-
 }; // end class Person
 
 function initializeAll() {
 	Math.seedrandom('this is the Queueing Simulation');
 	simu.initialize(); // the generic
 	theSimulation.initialize(); // the specific to queueing
-//	queueGraph.setupGraph();
-	//reset first time to make sure it is ready to play.
 	document.getElementById('resetButton').click();
 };
 document.addEventListener("DOMContentLoaded", initializeAll);

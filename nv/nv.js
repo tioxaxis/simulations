@@ -37,15 +37,11 @@ class NVGraph extends TioxGraph {
 	constructor(){
 		
 		super('chart',.3, {width:12, step:3}, d=>d.t);
-//		console.log('nv graph', maxUnder, maxOver);
-		
-		
 		this.totalCost = 0;
 		this.setTitle('$ of cost per day');
 		
 		this.setupLine(0, d => d.u, 'rgb(185, 26, 26)',
 					   false, true, 3, 20);
-		
 		this.setLegend(0, 'underage cost');
 		this.setupLine(1, d => d.o, 'rgba(0,150,0,1)',
 					   false, true, 3, 20);
@@ -77,7 +73,6 @@ const disappointed = {
 };
 const tioxTimeConv = 1000; //time are in milliseconds
 
-
 anim.stage = {
 	normalSpeed: 0.10, //.25 pixels per millisecond
 	width: 1000,
@@ -107,7 +102,6 @@ anim.store.height = anim.store.width =
 	anim.box.space * anim.box.perRow;
 anim.store.right = anim.store.left + anim.store.width;
 anim.store.bot = anim.store.top + anim.store.height;
-
 
 anim.person.path = {
 	left: -100,
@@ -222,7 +216,6 @@ function setExpected(q, m, v) {
 	if (v != 0) perc = 100 * (modQ - m * (1 - v)) / (2 * m * v);
 	else if (q < m) perc = 0;
 	else perc = 100;
-
 	document.getElementById('expectedPerc').innerHTML =
 		(perc).toFixed(2);
 }
@@ -233,7 +226,6 @@ function setActual(enough, total) {
 }
 
 
-//var totInv, totTime, totPeople, lastArrDep, LBRFcount ;
 simu.reset2 = function () {
 	document.getElementById('actualPerc').innerHTML ="00.00";
 	itemCollection.reset();
@@ -246,7 +238,6 @@ simu.reset2 = function () {
 	console.log('at reset', maxUnder,maxOver);
 	nvGraph.reset(Math.max(maxUnder,maxOver));
 	theProcessCollection.reset();
-	//    totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
 	gSF = new GStickFigure(anim.stage.foreContext,
 		anim.person.height, anim.box.size);
 	setDesired(theSimulation.Cu, theSimulation.Co);
@@ -299,11 +290,6 @@ const animForQueue = {
 const animForWalkOffStage = {
 	walkingTime: (anim.person.path.right - anim.person.path.left) / anim.stage.normalSpeed,
 
-	//    computeWalkingTime: function (){
-	//         this.walkingTime = (anim.person.path.right - anim.person.path.left) / anim.stage.normalSpeed;
-	//        return this.walkingTime;
-	//    },
-
 	start: function (person) {
 		person.addPath({
 			t: simu.now +
@@ -349,6 +335,7 @@ const animForNewsVendor = {
 			});
 		}
 	},
+	
 	finish: function (person, pack) {
 		if (pack) {
 			person.graphic.packageVisible = true;
@@ -360,9 +347,7 @@ const animForNewsVendor = {
 	}
 };
 
-
 var theProcessCollection = new ProcessCollection();
-
 
 const theSimulation = {
 	//  the two random variables in the simulation
@@ -374,6 +359,8 @@ const theSimulation = {
 	walkOffStage: null,
 	demand: null,
 	newsVendor: null,
+	
+	//parameters from sliders
 	Cu: null,
 	Co: null,
 	quantityOrdered: null,
@@ -390,6 +377,7 @@ const theSimulation = {
 		theSimulation.quantityOrdered = Number(document.getElementById('quan').value);
 
 		nvGraph = new NVGraph();
+		
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 
@@ -408,17 +396,10 @@ const theSimulation = {
 			this.queue, this.store, this.walkOffStage,
 			animForNewsVendor);
 
-		//		this.newsVendor = new MachineCenter("newsVendor", 1,
-		//			theSimulation.serviceRV,
-		//			this.queue, this.walkOffStage,
-		//			animForNV, null, null);
 
 		//link the queue to machine before and after
 		this.queue.setPreviousNext(
 			this.creator, this.newsVendor);
-		//       not sure I need this.		
-		//		this.store.setPreviousNext(
-		//			null, this.newsVendor);
 
 		// put all the process steps with visible people in theProcessCollection
 		theProcessCollection.push(this.demand);
@@ -529,22 +510,17 @@ export class Person extends Item {
 
 	constructor(x, y = 60, w = 30, h = 30) {
 		super(x, y);
-
 		this.width = w;
-
 		this.graphic = new NStickFigure(gSF, x, y);
-		this.updateBadge = false;
-		//        simu.theCanvas.add(this.graphic.figure);
+//		this.updateBadge = false;
 	};
 
-
-	moveDisplayWithPath(deltaSimT) {
-		if (this.updateBadge) {
-			this.graphic.badgeSet(Math.round((simu.now - this.arrivalTime) / tioxTimeConv).toString())
-		}
-		super.moveDisplayWithPath(deltaSimT);
-	};
-
+//	moveDisplayWithPath(deltaSimT) {
+//		if (this.updateBadge) {
+//			this.graphic.badgeSet(Math.round((simu.now - this.arrivalTime) / tioxTimeConv).toString())
+//		}
+//		super.moveDisplayWithPath(deltaSimT);
+//	};
 
 	setDestWithProcTime(procTime, x, y) {
 		let distance = Math.max(Math.abs(this.cur.x - x),

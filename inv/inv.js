@@ -172,7 +172,6 @@ document.getElementById('sliderBigBox')
 const speeds = [1, 2, 5, 10, 15];
 
 function captureChangeInSliderS(event) {
-	//    console.log('is event '+(event.isTrusted?'real':'scripted'));
 	let inputElem = event.target.closest('input');
 	if (!inputElem) return
 
@@ -183,13 +182,10 @@ function captureChangeInSliderS(event) {
 		document.getElementById(id + 'Display')
 			.innerHTML = v;
 	}
-	//	console.log('in Inv, change Slider ', id);
 	switch (id) {
-
 		case 'ar':
 			theSimulation.arrivalRV.setRate(Number(v) / tioxTimeConv);
 			break;
-
 		case 'acv':
 			theSimulation.arrivalRV.setCV(Number(v));
 			break;
@@ -241,11 +237,7 @@ function captureChangeInSliderS(event) {
 	}
 }
 
-
-
 simu.reset2 = function () {
-	
-	
 	itemCollection.reset();
 	invGraph.reset();
 	
@@ -677,9 +669,7 @@ class FlatBed {
 	constructor(anim) {
 		this.anim = anim;
 		this.reverse = 0;
-		
 	};
-
 	moveTo(x, y) {
 		this.x = Math.floor(x);
 		this.y = Math.floor(y);
@@ -687,7 +677,6 @@ class FlatBed {
 	setReverse() {
 		this.reverse = this.anim.truck.cabWidth + this.anim.truck.bedWidth;
 	}
-
 	draw() {
 		let c = this.anim.stage.foreContext;
 		c.save();
@@ -788,14 +777,13 @@ export class Person extends Item {
 		super(x, y);
 		this.width = w;
 		this.graphic = new NStickFigure(gSF, x, y);
-		this.updateBadge = false;
 	};
-	moveDisplayWithPath(deltaSimT) {
-		if (this.updateBadge) {
-			this.graphic.badgeSet(Math.round((simu.now - this.arrivalTime) / tioxTimeConv).toString())
-		}
-		super.moveDisplayWithPath(deltaSimT);
-	};
+//	moveDisplayWithPath(deltaSimT) {
+//		if (this.updateBadge) {
+//			this.graphic.badgeSet(Math.round((simu.now - this.arrivalTime) / tioxTimeConv).toString())
+//		}
+//		super.moveDisplayWithPath(deltaSimT);
+//	};
 
 
 	setDestWithProcTime(procTime, x, y) {
@@ -811,10 +799,9 @@ export class Person extends Item {
 }; // end class Person
 
 function initializeAll() {
-	Math.seedrandom('this is the Queueing Simulation');
+	Math.seedrandom('this is a Simulation');
 	simu.initialize(); // the generic
-	theSimulation.initialize(); // the specific to queueing
-	//reset first time to make sure it is ready to play.
+	theSimulation.initialize(); // the specific to inv
 	document.getElementById('resetButton').click();
 };
 
