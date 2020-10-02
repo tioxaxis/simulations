@@ -468,9 +468,7 @@ export class Person extends Item {
 	constructor(x, y = 100, w = 30, h = 30) {
 		super(x, y);
 		this.width = w;
-
 		this.graphic = new NStickFigure(gSF, x, y);
-		//simu.theCanvas.add(this.graphic.figure);
 	};
 
 	isThereOverlap() {

@@ -26,6 +26,7 @@
   direction: ltr;
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
+  cursor: pointer;
 }
 .font35vw{
 	font-size: 3.5vw;
@@ -40,7 +41,7 @@
 	color: blue;
 }
 :root {
-  	--fontColor: slategray;
+  	--fontColor: #383838;
 	--borderColor: rgb(122, 141, 208);
 }
 
@@ -236,6 +237,7 @@
 	font-size: 1.5vw;
 /*	border: solid green 2px;*/
 	color: var(--fontColor);
+	cursor: pointer;
 }
 
 
@@ -367,14 +369,10 @@ input[type=range] {
 	justify-content: flex-start;
 	align-content: flex-start;
 }
-button[type=radio] {
-	-ms-transform: scale(1.5);
-	/* IE 9 */
-	-webkit-transform: scale(1.5);
-	/* Chrome, Safari, Opera */
-	transform: scale(1.5);
+input[type=checkbox],
+input[type=radio] {
+	height: 1.2vw;
 }
-input[type=checkbox] {}
 input[type=range] {
 	-webkit-appearance: none;
 	margin: .5vw;
@@ -422,7 +420,7 @@ input[type=range]::-moz-range-thumb {
 	width: .9vw;
 	border-radius: .9vw;
 	background: #3347FF;
-	cursor: pointer;
+	cursor: grab;
 }
 input[type=range]::-ms-track {
 	width: 100%;
@@ -453,7 +451,7 @@ input[type=range]::-ms-thumb {
 	width: .9vw;
 	border-radius: .9vw;
 	background: #3347FF;
-	cursor: pointer;
+	cursor: grab;
 }
 input[type=range]:focus::-ms-fill-lower {
 	background: #2497E3;
@@ -576,29 +574,14 @@ button {
 #scenariosBot {
 	width: 100%;
 	bottom: 0px;
-	border-top: solid var(--borderColor) 1px
-}
-.addDeleteBox {
-	min-width: 30px;
-	border-width: 2px;
-	text-align: center;
-	position: relative;
-	float: left;
-	font-size: 2vw;
-	border: black 1px solid;
-	background: white;
-	color: black;
-	z-index: 2;
-	cursor: pointer;
+	border-top: solid var(--borderColor) 1px;
 }
 
-/
 /* these three buttons begin as NOT displayed   */
 
 #deleteButton,
 #addButton,
-#exitButton {
-	font-size: .5vw;
+#exitButton {	
 }
 
 /* the box for turning on/off the editing mode */

@@ -306,14 +306,14 @@ export class TioxGraph {
 	drawOnePoint(p){
 		this.checkBounds(p);
 		this.data.push(p);
+//		console.log('in draw one',p);
 		for( let info of this.lineInfo ) {
-		  	if( !info.visible ) continue;
+		  let cur = {x: this.xAccess(p), y: info.yAccess(p)};
+		  if( info.visible ) {
 			this.ctx.lineWidth = info.lineWidth;
 			this.ctx.strokeStyle = 
 				this.ctx.fillStyle = info.color;
 			
-			let cur = {x: this.xAccess(p), y: info.yAccess(p)};
-
 			//if no data then skip it and keep last for next data point
 			if( cur.y === undefined) continue;
 			
@@ -345,8 +345,8 @@ export class TioxGraph {
 					0,2*Math.PI, true);
 				this.ctx.fill();
 			}
-			
-			info.last = cur;
+		  }
+		  info.last = cur;
 		}
 	};
 	

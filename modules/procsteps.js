@@ -36,23 +36,18 @@ simu.requestAFId = null; // id for requestAnimationFrame
 simu.initialize = function () {};
 
 simu.reset = function () {
-	clearCanvas();
+	clearStageForeground();
 	simu.now = 0;
 	simu.frameNow = 0;
 	simu.heap.reset();
 	simu.reset2();
 };
 
-function clearCanvas() {
+function clearStageForeground() {
 	anim.stage.foreContext.clearRect(0, 0, anim.stage.width, anim.stage.height);
 }
 
 // play pause toggle and listeners that run them.
-function togglePlayPause() {
-	if (simu.isRunning) pause();
-	else play();
-};
-
 function play() {
 	if (simu.isRunning) return;
 	if (document.getElementById('playButtons')
@@ -70,6 +65,11 @@ function pause() {
 	document.getElementById('playButton').style.display = 'block';
 	window.cancelAnimationFrame(simu.requestAFId);
 	simu.isRunning = false;
+};
+
+function togglePlayPause() {
+	if (simu.isRunning) pause();
+	else play();
 };
 
 document.getElementById('playButton').addEventListener('click', play);
@@ -98,13 +98,13 @@ function eachFrame() {
 
 	let theTop;
 	while ((theTop = simu.heap.top()) &&
-		theTop.time <= simu.frameNow) {
+	        theTop.time <= simu.frameNow) {
 		const event = simu.heap.pull();
 		simu.now = event.time;
 		event.proc(event.item);
 	}
 	simu.now = simu.frameNow;
-	clearCanvas();
+	clearStageForeground();
 	itemCollection.moveDisplayAll(deltaSimuTime);
 	simu.requestAFId = window.requestAnimationFrame(eachFrame);
 };
@@ -621,12 +621,14 @@ export class NStickFigure {
 		let n = Math.floor(Math.random() * tioxColors.length);
 		this.color = tioxColors[n];
 		this.bdaryColor = tioxBorders[n];
-		this.armAngleRadians = pi2 / 15;
-		this.legAngleRadians = pi2 / 12;
-		this.legAngleDegrees = 30;
-		this.gSF = gSF;
 		this.maxLegAngle = 120;
 		this.maxArmAngle = 90;
+		this.armAngleRadians = null //pi2 / 15;
+		this.legAngleRadians = null //pi2 / 12;
+		let d = Math.floor( Math.random() * this.maxLegAngle);
+		this.legAngleDegrees = d;
+		this.gSF = gSF;
+		
 		this.badgeText = null;
 		this.badgeVisible = false;
 		this.ratio = this.maxArmAngle / this.maxLegAngle;

@@ -254,18 +254,19 @@
 				</div>
 
 				<div id="editBox">
-					<button id='editButton'>Edit</button>
+					<button id='editButton' 
+					title="add, delete, edit, or export scenarios" >Edit</button>
 				</div>
 				<div id="menuBox" style='display:none'>
 					<button id='cancelButton'>Cancel </button>
-					<button id='saveButton'>Save </button>
-					<button id='exportButton'>Export </button>
+					<button id='saveButton' 
+					title="save scenarios to local storage" >Save </button>
+					<button id='exportButton' 
+					title="options for exporting scenarios" >Export </button>
+					<button id='clear' onclick='localStorage.clear(); location.reload();'
+					title="clear local storage and reset scenarios to defaults">
+						Clear</button>
 				</div>
-				<div style='position:absolute; right:5%; bottom:1%;'>
-					<button id='clear' onclick='localStorage.clear(); location.reload();'>
-						Clear/Reload</button>
-				</div>
-
 			</div>   <!-- end of righthandSideBox -->
 		</div>   <!-- end of containerInner-->
 	</div>  <!-- end of containerOuter -->
