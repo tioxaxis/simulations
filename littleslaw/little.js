@@ -25,7 +25,10 @@ import {
 	GammaRV, Heap
 }
 from '../modules/utility.js';
-//    from './modules/utility.js';
+import {
+	sliders, presets
+}
+from '../modules/rhs.js';
 import {
 	Queue, WalkAndDestroy, MachineCenter,
 	InfiniteMachineCenter, Item, itemCollection, ItemCollection,
@@ -172,6 +175,32 @@ function setBackground() {
 document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
 const speeds = [1, 2, 5, 10, 25];
 
+function littleDecodeURL(str){
+	const actionValue = {N:"none", G:"play", S:"pause"};
+	const resetValue = {T: true, F: false};
+	return( 
+	{ar: str.substr(0,4),
+	acv: str.substr(4,4),
+	sr: str.substr(8,4),
+	scv: str.substr(12,4),
+	speed: str.substr(16,1),
+	action: actionValue[str.substr(17,1)],
+	reset: resetValue[str.substr(18,1)],
+	desc: str.substr(19)
+	})
+};
+function littleEncodeURL(preset){
+	const actionValue = {none: "N", play: "G", pause: "S"};
+	return Number(preset.ar).toFixed(1).padStart(4,'0')
+		.concat(Number(preset.acv).toFixed(1).padStart(4,'0'), 
+		Number(preset.sr).toFixed(1).padStart(4,'0'),
+		Number(preset.scv).toFixed(1).padStart(4,'0'),
+		preset.speed,
+		actionValue[preset.action] +
+		(preset.reset == "true" ? "T" : "F"),
+		preset.desc);
+}
+
 function captureChangeInSliderS(event) {
 	//    console.log('is event '+(event.isTrusted?'real':'scripted'));
 	let inputElem = event.target.closest('input');
@@ -217,6 +246,8 @@ function captureChangeInSliderS(event) {
 			break;
 	}
 }
+
+
 
 var totInv, totTime, totPeople, lastArrDep, LBRFcount;
 simu.reset2 = function () {
@@ -463,6 +494,8 @@ export class Person extends Item {
 
 function initializeAll() {
 	Math.seedrandom('this is a Simulation');
+	sliders.initialize();
+	presets.initialize(littleEncodeURL,littleDecodeURL);
 	simu.initialize(); // the generic
 	theSimulation.initialize(); // the specific to queueing
 	//reset first time to make sure it is ready to play.

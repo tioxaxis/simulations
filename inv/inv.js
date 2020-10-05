@@ -29,6 +29,10 @@ import {
 }
 from '../modules/utility.js';
 import {
+	sliders, presets
+}
+from '../modules/rhs.js';
+import {
 	animSetup
 }
 from '../modules/setup.js';
@@ -44,7 +48,7 @@ import {
 from "../modules/graph.js";
 class InvGraph extends TioxGraph {
 	constructor(){
-		super('chart',.3, {width:20, step:5}, d=>d.t);
+		super('chart',.3, {width:12, step:3}, d=>d.t);
 		this.predictedInvValue = null;
 		this.setTitle('Inventory');
 		this.setupLine(0, d => d.i, 'rgba(0,0,220,1)',
@@ -170,6 +174,43 @@ function pickInvSimulation(which) {
 document.getElementById('sliderBigBox')
 	.addEventListener('input', captureChangeInSliderS);
 const speeds = [1, 2, 5, 10, 15];
+
+function invDecodeURL(str){
+	const actionValue = {N:"none", G:"play", S:"pause"};
+	const resetValue = {T: true, F: false};
+	const whichValue = {R: "methRop", U: "methUpto"}
+	return( 
+	{ar: str.substr(0,4),
+	acv: str.substr(4,4),
+	lt: str.substr(8,4),
+	ltcv: str.substr(12,4),
+	quan: str.substr(16,2),
+	rop: str.substr(18,2),
+	period: str.substr(20,2),
+	upto: str.substr(22,2),
+	 speed: str.substr(24,1),
+	 action: actionValue[str.substr(25,1)],
+	 which: whichValue[str.substr(26,1)],
+	 reset: resetValue[str.substr(27,1)],
+	 desc: str.substr(28)
+	})
+};
+function invEncodeURL(preset){
+	const actionValue = {none: "N", play: "G", pause: "S"};
+	return Number(preset.ar).toFixed(1).padStart(4,'0')
+	.concat(Number(preset.acv).toFixed(1).padStart(4,'0'), 
+		Number(preset.lt).toFixed(1).padStart(4,'0'),
+		Number(preset.ltcv).toFixed(1).padStart(4,'0'),
+		preset.quan.padStart(2,'0'),
+		preset.rop.padStart(2,'0'),
+		preset.period.padStart(2,'0'),
+		preset.upto.padStart(2,'0'),
+		preset.speed,
+		actionValue[preset.action],
+		(preset.which == "methRop" ? "R" : "U"),
+		(preset.reset == "true" ? "T" : "F" ),
+		preset.desc);
+}
 
 function captureChangeInSliderS(event) {
 	let inputElem = event.target.closest('input');
@@ -800,6 +841,8 @@ export class Person extends Item {
 
 function initializeAll() {
 	Math.seedrandom('this is a Simulation');
+	sliders.initialize();
+	presets.initialize(invEncodeURL,invDecodeURL);
 	simu.initialize(); // the generic
 	theSimulation.initialize(); // the specific to inv
 	document.getElementById('resetButton').click();

@@ -57,11 +57,16 @@
 		<div id='exportBoxOuter' style='display:none'>
 			<div id="exportPresetsBox" style="display:block">
 				<h2 style='margin:20px'>Export Options</h2>
-				<p> 1) Copy and save the text below into the 'presets.json' file and place it on the server, or </p>
-				<p class="blueBox" id="jsonDisplay"></p>
-				<br>
-				<p> 2) Copy and save the URL below and use it to access the animation</p>
+				<p> 1) Copy and save the URL below and use it to access the animation. 
+				<label for="AllowEditButton">
+					<input type="checkbox" id="allowEditButton" value="reset">
+					<span>Allow Edit</span>
+				</label> 
 				<p class="blueBox" id="urlDisplay"></p>
+				<br>
+				
+				<p> 2) Copy and save the text below into the 'presets.json' file and place it on the server, or </p>
+				<p class="blueBox" id="jsonDisplay"></p>
 				<br>
 				<button onclick=" document.getElementById('exportBoxOuter').style='display:none'; "> X </button>
 			</div>

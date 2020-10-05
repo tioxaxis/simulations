@@ -24,9 +24,9 @@ import {
 }
 from "../modules/utility.js";
 import {
-	animSetup
+	sliders, presets
 }
-from '../modules/setup.js';
+from '../modules/rhs.js';
 import {
 	Queue, WalkAndDestroy, MachineCenter,
 	InfiniteMachineCenter, Item, itemCollection, ItemCollection,
@@ -163,6 +163,32 @@ const precision = {
 	speed: 0
 }
 const speeds = [1, 2, 5, 10, 25];
+
+function queueDecodeURL(str){
+	const actionValue = {N:"none", G:"play", S:"pause"};
+	const resetValue = {T: true, F: false};
+	return( 
+	{ar: str.substr(0,4),
+	acv: str.substr(4,4),
+	sr: str.substr(8,4),
+	scv: str.substr(12,4),
+	speed: str.substr(16,1),
+	 action: actionValue[str.substr(17,1)],
+	 reset: resetValue[str.substr(18,1)],
+	 desc: str.substr(19)
+	})
+};
+function queueEncodeURL(preset){
+	const actionValue = {none: "N", play: "G", pause: "S"};
+	return Number(preset.ar).toFixed(1).padStart(4,'0') 
+	.concat(Number(preset.acv).toFixed(1).padStart(4,'0'),
+		Number(preset.sr).toFixed(1).padStart(4,'0'),
+		Number(preset.scv).toFixed(1).padStart(4,'0'),
+		preset.speed,
+		actionValue[preset.action],
+		(preset.reset == "true" ? "T" : "F"),
+		preset.desc);
+}
 
 function captureChangeInSliderS(event) {
 	let inputElem = event.target.closest('input');
@@ -501,6 +527,8 @@ export class Person extends Item {
 
 function initializeAll() {
 	Math.seedrandom('this is the Queueing Simulation');
+	sliders.initialize();
+	presets.initialize(queueEncodeURL,queueDecodeURL);
 	simu.initialize(); // the generic
 	theSimulation.initialize(); // the specific to queueing
 	document.getElementById('resetButton').click();

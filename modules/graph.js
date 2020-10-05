@@ -239,8 +239,8 @@ export class TioxGraph {
 	drawLines () {
 		this.ctx.save();
 		this.ctx.beginPath();
-  		this.ctx.rect(this.inner.left, this.inner.top,
-						  this.inner.width, this.inner.height);
+  		this.ctx.rect(this.inner.left, 0,
+						  this.inner.width, this.outer.height);
   		this.ctx.clip(); // for the first quadrant of graph.
 
 		for( let info of this.lineInfo ) {

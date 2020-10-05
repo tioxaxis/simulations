@@ -22,9 +22,8 @@
 // the list of presets are below on the rhs
 
 var keyForLocalStorage = 'Tiox-' + simu.nameOfSimulation;
-//export 
 
-const sliders = {
+export const sliders = {
 	initialize: function () {
 		document.getElementById('sliderBigBox')
 			.addEventListener('input', captureChangeInSliderG);
@@ -164,10 +163,12 @@ function neighborLi() {
 	return null;
 };
 
+function handleSearchStr(str) {
+	return ;
+}
 
 
-//export 
-const presets = {
+export const presets = {
 
 	currentLi: null, // poiner to current  LI in the UL in the HTML
 	ulPointer: null, //pointer to the UL in the HTML
@@ -180,45 +181,97 @@ const presets = {
 	saveState: null,
 
 
-	initialize: async function () {
+	initialize: async function (sEncode,sDecode) {
 		// setup the input text box
 		this.textInpBox = document.createElement("INPUT");
 		this.textInpBox.type = "text";
 		this.textInpBox.className = "textInput";
 		this.textInpBox.placeholder = "preset name";
-
+		this.sEncode = sEncode;
 		this.ulPointer = document.getElementById("ULPresetList");
 
 
 		// get the presets from the URL, or local storage or .json file in that order
-		var presetsRows = null;
+		var presetsRows = [];
+		var editValue = false;
+		var urlValue = null;
+		var scens = [];
+		//process search string
+		const searchString = decodeURI(location.search.slice(1));
+		if (searchString.length > 0){
+			const terms = searchString.split('&');
+			console.log('terms',terms);
+			let pairs =[];
+			let k = 0;
+			for (let term of terms){
+				let j = term.indexOf('=');
+				if ( j > 0 ) {
+					pairs[k] = {key: term.substr(0,j),
+							   value: term.substr(j+1)};
+					k++;
+				} else {
+					console.log( 'term missing =',term);
+				}
+			}
+			console.log('print pairs',pairs);
+			for (let pair of pairs){
+				switch (pair.key){
+					case "edit":
+						editValue = pair.value;
+						break;
+					case "url":
+						urlValue = pair.value;
+						break;
+					case "scenarios":
+						scens = pair.value.split(';');
+						break;
+					default:
+						console.log('this didnt match',pair.key);
+				}
 
-		let presetsString = location.search;
-		if (presetsString) {
-			presetsString = decodeURI(presetsString.slice(9));
-			presetsRows = JSON.parse(presetsString);
-		} else {
-			presetsString = localStorage.getItem(keyForLocalStorage);
+			}
+		}
+		
+		let presetsString =  localStorage.getItem(keyForLocalStorage);
+		simu.warningLSandScens = ( scens.length > 0) && presetsString;
+		
+		// case 1: scenarios in url,
+		if ( scens.length > 0 ){
+			for ( let k = 0; k < scens.length; k++ ){
+				presetsRows[k] = sDecode(scens[k]);
+			}
+			if ( editValue != "allow"){
+				document.getElementById("editBox")
+						.style.display = 'none'
+			}
+			simu.warningLocalStorageExists = true;
+		} else {  // case 2: local storage
 			if (presetsString) {
 				presetsRows = JSON.parse(presetsString);
 			} else {
-				let response = await fetch(
-					simu.nameOfSimulation + '.json');
-				if (response.ok) {
-					presetsRows = await response.json();
-				} else {
-					console.log("json file HTTP-Error: " + response.status);
+				if ( urlValue ) { // case 3: try url given
+					let response = await fetch(urlValue);
+					if (response.ok) {
+						presetsRows = await response.json();
+					} 
+				}
+				//case 4: url wasn't given or url given failed
+				// try standard .json file
+				if ( !urlValue || !response.ok) {
+					let response = await fetch(
+						simu.nameOfSimulation + '.json');
+					if (response.ok) {
+						presetsRows = await response.json();
+					} else {
+						console.log("json file HTTP-Error: " + response.status);
+					}
 				}
 			}
 		}
+		// if one thing worked the presetsRows has it.
 		createList(presetsRows);
-		presets.printPresets();
-//		presets.changeCurrentLiTo(nextLi());
-
-		// defaults to nothing selected in list
-		//presets.currentLi = null;
+		//presets.printPresets();
 		this.started = true;
-
 
 		//set up event listeners for user interface
 
@@ -236,6 +289,8 @@ const presets = {
 			.addEventListener('click', presets.cancelEdit);
 		document.getElementById('exportButton')
 			.addEventListener('click', presets.popupExport);
+		document.getElementById('allowEditButton')
+			.addEventListener('click', toggleAllowEdit);
 		document.addEventListener('keydown', keyDownFunction);
 
 
@@ -376,6 +431,10 @@ const presets = {
 		document.getElementById('editBox').style.display = 'none';
 		document.getElementById('actionOptions').style.display = 'flex';
 		document.getElementById('playButtons').style.display = 'none';
+		
+		if (simu.warningLSandScens){
+			alert('If you exit this edit by saving you will overwrite your current scenarios stored in Local Storage');
+		}
 	},
 
 
@@ -389,6 +448,7 @@ const presets = {
 
 	// sorts and saves the current list to localStorage
 	saveEdit: function () {
+		simu.warningLSandScens= false;
 		presets.exitEdit();
 
 		// sort the Li's in UL;  key is desc
@@ -422,7 +482,7 @@ const presets = {
 	popupExport: function () {
 		document.getElementById('exportBoxOuter').style = 'display:block';
 		document.getElementById('jsonDisplay').innerHTML = createJSON();
-		document.getElementById('urlDisplay').innerHTML = createURL();
+		document.getElementById('urlDisplay').innerHTML = createURL(false);
 	},
 
 	//  user clicked on an item in the list, 
@@ -452,11 +512,9 @@ const presets = {
 	}
 };
 
-function createURL() { //from current UL
-	return encodeURI(location.href + '?presets=' + createJSON());
-};
 
-function createJSON() { //from curreent UL
+
+function createRows(){
 	let rows = [];
 	let contents = document.querySelectorAll('#ULPresetList li');
 	for (let i = 0; i < contents.length; i++) {
@@ -464,8 +522,38 @@ function createJSON() { //from curreent UL
 		};
 		rows[i].desc = contents[i].innerHTML;
 	}
-	let JSONstr = JSON.stringify(rows);
-	return JSONstr;
+	console.log('in createRows',rows);
+	return rows;
+};
+
+function createScenarioStr(rows){
+	let first = true;
+	let str = '';
+	for (let row of rows){
+		str += (first ? "" : ";") + presets.sEncode(row);
+		first = false;
+	}
+	console.log('in crateScenarioStr', str);
+	return str;
+}
+
+function createURL(edit) { //from current UL
+	let result = location.origin + location.pathname +
+		'?scenarios=' + createScenarioStr(createRows()) +
+		( edit ? "&edit=allow" : "" );
+	let encResult =  encodeURI(result);
+	console.log('in createURL',result, encResult);
+	return encResult;
+};
+					 
+function toggleAllowEdit(event){
+	document.getElementById('urlDisplay')
+		.innerHTML = createURL(event.target.checked)
+	}
+	
+
+function createJSON() { //from curreent UL
+	return JSON.stringify(createRows());
 };
 
 function createList(presetsRows) { //from row of objects in argument
@@ -496,6 +584,17 @@ function findId(nodelist, str) {
 	}
 	return -1;
 };
+simu.copyToClipboard = function (id){
+	let url = document.getElementById(id).innerHTML;
+	navigator.clipboard.writeText(url)
+		.then(function() {
+  				/* clipboard successfully set */
+				}, 
+			  function() {
+  				alert('failed to copy to clipboard')
+				});
 
-sliders.initialize();
-presets.initialize();
+}
+
+//sliders.initialize();
+//presets.initialize();

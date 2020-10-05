@@ -23,6 +23,10 @@ import {
 }
 from '../modules/utility.js';
 import {
+	sliders, presets
+}
+from '../modules/rhs.js';
+import {
 	Queue, WalkAndDestroy, MachineCenter,
 	InfiniteMachineCenter, Combine, Item, itemCollection, ItemCollection,
 	GStickFigure, NStickFigure, GStore, tioxColors
@@ -143,6 +147,34 @@ class ProcessCollection extends Array {
 document.getElementById('sliderBigBox')
 	.addEventListener('input', captureChangeInSliderS);
 const speeds = [1, 3, 10, 30];
+
+function nvDecodeURL(str){
+	const actionValue = {N:"none", G:"play", S:"pause"};
+	const resetValue = {T: true, F: false};
+	return( 
+	{dr: str.substr(0,4),
+	dcv: str.substr(4,4),
+	Cu: str.substr(8,4),
+	Co: str.substr(12,4),
+	quan: str.substr(16,2),
+	speed: str.substr(18,1),
+	action: actionValue[str.substr(19,1)],
+	reset: resetValue[str.substr(20,1)],
+	desc: str.substr(21)
+	})
+};
+function nvEncodeURL(preset){
+	const actionValue = {none: "N", play: "G", pause: "S"};
+	return Number(preset.dr).toFixed(1).padStart(4,'0')
+	 	.concat(Number(preset.dcv).toFixed(1).padStart(4,'0'),
+				Number(preset.Cu).toFixed(1).padStart(4,'0'),
+				Number(preset.Co).toFixed(1).padStart(4,'0'),
+				preset.quan.padStart(2,'0'),
+				preset.speed,
+				actionValue[preset.action],
+				(preset.reset == "true" ? "T" : "F"),
+				preset.desc);
+}
 
 function captureChangeInSliderS(event) {
 	//    console.log('is event '+(event.isTrusted?'real':'scripted'));
@@ -538,6 +570,8 @@ export class Person extends Item {
 
 function initializeAll() {
 	Math.seedrandom('this is the Queueing Simulation');
+	sliders.initialize();
+	presets.initialize(nvEncodeURL,nvDecodeURL);
 	simu.initialize(); // the generic
 	theSimulation.initialize(); // the specific to queueing
 	//reset first time to make sure it is ready to play.
