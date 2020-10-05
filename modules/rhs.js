@@ -483,6 +483,7 @@ export const presets = {
 		document.getElementById('exportBoxOuter').style = 'display:block';
 		document.getElementById('jsonDisplay').innerHTML = createJSON();
 		document.getElementById('urlDisplay').innerHTML = createURL(false);
+		document.getElementById('allowEditButton').checked = false;
 	},
 
 	//  user clicked on an item in the list, 
