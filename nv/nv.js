@@ -152,15 +152,15 @@ function nvDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
 	const resetValue = {T: true, F: false};
 	return( 
-	{dr: str.substr(0,4),
-	dcv: str.substr(4,4),
-	Cu: str.substr(8,4),
-	Co: str.substr(12,4),
-	quan: str.substr(16,2),
-	speed: str.substr(18,1),
-	action: actionValue[str.substr(19,1)],
-	reset: resetValue[str.substr(20,1)],
-	desc: str.substr(21)
+	{dr: str.substring(0,4),
+	dcv: str.substring(4,8),
+	Cu: str.substring(8,12),
+	Co: str.substring(12,16),
+	quan: str.substring(16,18),
+	speed: str.substring(18,19),
+	action: actionValue[str.substring(19,20)],
+	reset: resetValue[str.substring(20,21)],
+	desc: str.substring(21)
 	})
 };
 function nvEncodeURL(preset){

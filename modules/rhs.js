@@ -585,8 +585,11 @@ function findId(nodelist, str) {
 	return -1;
 };
 simu.copyToClipboard = function (id){
-	let url = document.getElementById(id).innerHTML;
-	navigator.clipboard.writeText(url)
+	let url = document.getElementById(id);
+//	console.log('HTML', url.innerHTML);
+//	console.log('innerText', url.innerText);
+//	console.log('textContent', url.textContent);
+	navigator.clipboard.writeText(url.innerText)
 		.then(function() {
   				/* clipboard successfully set */
 				}, 

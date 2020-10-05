@@ -180,19 +180,19 @@ function invDecodeURL(str){
 	const resetValue = {T: true, F: false};
 	const whichValue = {R: "methRop", U: "methUpto"}
 	return( 
-	{ar: str.substr(0,4),
-	acv: str.substr(4,4),
-	lt: str.substr(8,4),
-	ltcv: str.substr(12,4),
-	quan: str.substr(16,2),
-	rop: str.substr(18,2),
-	period: str.substr(20,2),
-	upto: str.substr(22,2),
-	 speed: str.substr(24,1),
-	 action: actionValue[str.substr(25,1)],
-	 which: whichValue[str.substr(26,1)],
-	 reset: resetValue[str.substr(27,1)],
-	 desc: str.substr(28)
+	{ar: str.substring(0,4),
+	acv: str.substring(4,8),
+	lt: str.substring(8,12),
+	ltcv: str.substring(12,16),
+	quan: str.substring(16,18),
+	rop: str.substring(18,20),
+	period: str.substring(20,22),
+	upto: str.substring(22,24),
+	 speed: str.substring(24,25),
+	 action: actionValue[str.substring(25,26)],
+	 which: whichValue[str.substring(26,27)],
+	 reset: resetValue[str.substring(27,28)],
+	 desc: str.substring(28)
 	})
 };
 function invEncodeURL(preset){

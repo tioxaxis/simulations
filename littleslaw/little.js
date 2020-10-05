@@ -179,14 +179,14 @@ function littleDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
 	const resetValue = {T: true, F: false};
 	return( 
-	{ar: str.substr(0,4),
-	acv: str.substr(4,4),
-	sr: str.substr(8,4),
-	scv: str.substr(12,4),
-	speed: str.substr(16,1),
-	action: actionValue[str.substr(17,1)],
-	reset: resetValue[str.substr(18,1)],
-	desc: str.substr(19)
+	{ar: str.substring(0,4),
+	acv: str.substring(4,8),
+	sr: str.substring(8,12),
+	scv: str.substring(12,16),
+	speed: str.substring(16,17),
+	action: actionValue[str.substring(17,18)],
+	reset: resetValue[str.substring(18,19)],
+	desc: str.substring(19)
 	})
 };
 function littleEncodeURL(preset){
