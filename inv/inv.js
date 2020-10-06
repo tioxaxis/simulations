@@ -59,7 +59,7 @@ class InvGraph extends TioxGraph {
 		this.setLegend(1,'On Hand and On Order');
 		this.setupLine(2, d => d.p, 'rgb(185, 26, 26)',
 					   true, false, 3, 0);
-		this.setLegend(2,'Predicted Inventory');	
+		this.setLegend(2,'Predicted On Hand Inventory');	
 	};
 	
 	push (t, inv, invPosition){
@@ -76,10 +76,12 @@ class InvGraph extends TioxGraph {
 					 theSimulation.rop + theSimulation.quantityOrdered + 1:
 					 theSimulation.upto+1 );
 		super.reset(maxI);
-		this.updateForSpeed ();
+		const v = document.getElementById('speed').value;
+		const f = speeds[v].graph;
+		this.updateForSpeed(f);
 	};
-	updateForSpeed (){
-		this.scaleXaxis(simu.frameSpeed);
+	updateForSpeed (factor){
+		this.scaleXaxis(factor);
 	};
 	computePredInv () {
 		let avgInv;
@@ -173,7 +175,12 @@ function pickInvSimulation(which) {
 
 document.getElementById('sliderBigBox')
 	.addEventListener('input', captureChangeInSliderS);
-const speeds = [1, 2, 5, 10, 15];
+const speeds = [{time:1,graph:1,anim:true},
+				{time:2,graph:1,anim:true},
+				{time:5,graph:2,anim:true},
+				{time:10,graph:2,anim:true},
+				{time:25,graph:5,anim:true}];
+//const speeds = [1, 2, 5, 10, 15];
 
 function invDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
@@ -260,11 +267,11 @@ function captureChangeInSliderS(event) {
 			}
 			break;
 		case 'speed':
-			simu.frameSpeed = speeds[v];
-			invGraph.updateForSpeed();
+			simu.frameSpeed = speeds[v].time;
+			invGraph.updateForSpeed(speeds[v].graph);
 			itemCollection.updateForSpeed();
 			document.getElementById(id + 'Display')
-				.innerHTML = speeds[v];
+				.innerHTML = speeds[v].time;
 			break;
 		case 'none':
 		case 'pause':

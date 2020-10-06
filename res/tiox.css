@@ -377,8 +377,10 @@ input[type=range] {
 	align-content: flex-start;
 }
 input[type=checkbox],
-input[type=radio] {
-	height: 1.2vw;
+input[type=radio],
+label {
+	height: 1vw;
+	cursor: pointer;
 }
 input[type=range] {
 	-webkit-appearance: none;

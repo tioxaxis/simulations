@@ -39,16 +39,16 @@ import {
 from "../modules/graph.js";
 class QueueGraph extends TioxGraph {
 	constructor(){	
-		super('chart',.3, {width:5, step:1}, d=>d.t);
+		super('chart',.3, {width:10, step:2}, d=>d.t);
 		this.setTitle('Waiting Time');
 		this.setupLine(0, d => d.i, 'rgba(0,0,220,1)',
-					   false, true, 3, 10);
+					   false, true, 5, 10);
 		this.setLegend(0, 'individual wait');
 		this.setupLine(1, d => d.a, 'rgba(0,150,0,1)',
-					   false, true, 3, 10);
+					   false, true, 5, 10);
 		this.setLegend(1,'average wait');
 		this.setupLine(2, d => d.p, 'rgb(185, 26, 26)',
-					   true, false, 3, 0);
+					   true, false, 10, 0);
 		this.setLegend(2,'predicted wait');	
 		this.predictedWaitValue = this.predictedWait();
 	};
@@ -71,10 +71,14 @@ class QueueGraph extends TioxGraph {
 		let yMax = (this.predictedWaitValue == Infinity)?
 			1.5: Math.max(1.5,this.predictedWaitValue * 1.1);
 		super.reset(yMax);
-		this.updateForSpeed();
+		
+		const v = document.getElementById('speed').value;
+		const f = speeds[v].graph;
+		this.updateForSpeed(f);
 	}
-	updateForSpeed (){
-		this.scaleXaxis(simu.frameSpeed);
+	updateForSpeed (factor){
+		this.scaleXaxis(factor);
+		console.log('in graph update for speed',factor)
 	};
 	predictedWait () {
 			const sr = theSimulation.serviceRV.rate;
@@ -162,7 +166,12 @@ const precision = {
 	scv: 1,
 	speed: 0
 }
-const speeds = [1, 2, 5, 10, 25];
+const speeds = [{time:1,graph:1,anim:true},
+				{time:2,graph:1,anim:true},
+				{time:5,graph:2,anim:true},
+				{time:10,graph:2,anim:true},
+				{time:25,graph:5,anim:true}]; 
+// old version = [1, 2, 5, 10, 25];
 
 function queueDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
@@ -234,11 +243,11 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			simu.frameSpeed = speeds[v];
-			queueGraph.updateForSpeed();
+			simu.frameSpeed = speeds[v].time;
+			queueGraph.updateForSpeed(speeds[v].graph);
 			itemCollection.updateForSpeed();
 			document.getElementById(id + 'Display')
-				.innerHTML = speeds[v];
+				.innerHTML = speeds[v].time;
 			break;
 
 		default:

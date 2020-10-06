@@ -42,7 +42,7 @@ import {
 from "../modules/graph.js";
 class LittleGraph extends TioxGraph {
 	constructor(){
-		super('chart',.3, {width:40, step:10}, d=>d.t);
+		super('chart',.3, {width:20, step:5}, d=>d.t);
 		this.predictedInvValue = null;
 		this.setTitle('Inventory');
 		this.setupLine(0, d => d.i, 'rgba(0,0,220,1)',
@@ -67,10 +67,12 @@ class LittleGraph extends TioxGraph {
 	
 	reset(){
 		super.reset(this.predictedInvValue * 1.2);
-		this.updateForSpeed();
+		const v = document.getElementById('speed').value;
+		const f = speeds[v].graph;
+		this.updateForSpeed(f);
 	}
-	updateForSpeed (){
-		this.scaleXaxis(simu.frameSpeed);
+	updateForSpeed (factor){
+		this.scaleXaxis(factor);
 	};
 	predictedInv() {
 		return (theSimulation.serviceRV.mean) / 
@@ -172,8 +174,13 @@ function setBackground() {
 	c.closePath();
 };
 
-document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
-const speeds = [1, 2, 5, 10, 25];
+document.getElementById('sliderBigBox')
+	.addEventListener('input', captureChangeInSliderS);
+const speeds = [{time:1,graph:1,anim:true},
+				{time:2,graph:1,anim:true},
+				{time:5,graph:2,anim:true},
+				{time:10,graph:2,anim:true},
+				{time:25,graph:5,anim:true}];
 
 function littleDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
@@ -234,11 +241,11 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			simu.frameSpeed = speeds[v];
-			littleGraph.updateForSpeed();
+			simu.frameSpeed = speeds[v].time;
+			littleGraph.updateForSpeed(speeds[v].graph);
 			itemCollection.updateForSpeed();
 			document.getElementById(id + 'Display')
-				.innerHTML = speeds[v];
+				.innerHTML = speeds[v].time;
 			break;
 
 		default:
@@ -431,10 +438,10 @@ const theSimulation = {
 			lastArrDep = simu.now;
 			totPeople++;
 			totTime += simu.now - person.arrivalTime;
-			LBRFcount = (LBRFcount + 1) % simu.frameSpeed;
-			if (!LBRFcount) {
+//			LBRFcount = (LBRFcount + 1) % simu.frameSpeed;
+//			if (!LBRFcount) {
 				littleGraph.push(simu.now, totInv / simu.now, totTime / simu.now);
-			};
+//			};
 		};
 
 		//link the queue to machine before and after

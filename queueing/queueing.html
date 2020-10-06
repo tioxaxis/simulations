@@ -58,8 +58,8 @@
 			<div id="exportPresetsBox" style="display:block">
 				<h2 style='margin:20px'>Export Options</h2>
 				<p> 1) Copy the URL below and use it to access the animation, or 
-				<label for="AllowEditButton">
-					<input type="checkbox" id="allowEditButton" value="reset">
+				<label for="allowEditButton">
+					<input type="checkbox" id="allowEditButton" value="allowEditButton">
 					<span>Allow Edit</span>
 				</label>
 				<p class="blueBox" id="urlDisplay"></p>
@@ -181,25 +181,28 @@
 							<div>Action:</div>
 							<div>
 								<div class="radiopair">
-									<input type="radio" name="action" id="none" value="none" checked>
-									<label for="none"> None</label>
+									<label for="none">
+										<input type="radio" name="action" id="none" value="none" checked>
+									 None</label>
 								</div>
 
 								<div class="radiopair">
-									<input type="radio" name="action" id="pause" value="pause">
-									<label for="pause">Pause</label>
+									<label for="pause">
+										<input type="radio" name="action" id="pause" value="pause">
+									Pause</label>
 								</div>
 
 								<div class="radiopair">
-									<input type="radio" name="action" id="play" value="play">
-									<label for="play">Play</label>
+									<label for="play">
+										<input type="radio" name="action" id="play" value="play">
+									Play</label>
 								</div>
 							</div>
 
 							<div class="radiopair">
 								<label for="reset">
 									<input type="checkbox" id="reset" value="reset">
-									<span>Reset</span></label>
+									Reset</label>
 							</div>
 
 						</div>

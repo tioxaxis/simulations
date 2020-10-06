@@ -45,13 +45,13 @@ class NVGraph extends TioxGraph {
 		this.setTitle('$ of cost per day');
 		
 		this.setupLine(0, d => d.u, 'rgb(185, 26, 26)',
-					   false, true, 3, 20);
+					   false, true, 5, 16);
 		this.setLegend(0, 'underage cost');
 		this.setupLine(1, d => d.o, 'rgba(0,150,0,1)',
-					   false, true, 3, 20);
+					   false, true, 5, 16);
 		this.setLegend(1,'overage cost');
 		this.setupLine(2, d => d.a, 'rgba(0,0,220,1)',
-					   false, true, 3, 0);
+					   false, true, 8, 0);
 		this.setLegend(2,'average cost');			 
 	};
 	
@@ -63,10 +63,13 @@ class NVGraph extends TioxGraph {
 	};
 	reset(yMax){
 		this.totalCost = 0;
-		super.reset(yMax)
+		super.reset(yMax);
+		const v = document.getElementById('speed').value;
+		const f = speeds[v].graph;
+		this.updateForSpeed(f);
 	}
-	updateForSpeed (){
-		this.scaleXaxis(simu.frameSpeed);
+	updateForSpeed (factor){
+		this.scaleXaxis(factor);
 	}
 }
 let nvGraph;
@@ -146,7 +149,13 @@ class ProcessCollection extends Array {
 
 document.getElementById('sliderBigBox')
 	.addEventListener('input', captureChangeInSliderS);
-const speeds = [1, 3, 10, 30];
+const speeds = [{time:1,graph:1,anim:true},
+				{time:2,graph:1,anim:true},
+				{time:5,graph:2,anim:true},
+				{time:10,graph:2,anim:true},
+				{time:25,graph:5,anim:true}];
+
+//const speeds = [1, 3, 10, 30];
 
 function nvDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
@@ -222,11 +231,11 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			simu.frameSpeed = speeds[v];
-			nvGraph.updateForSpeed();
+			simu.frameSpeed = speeds[v].time;
+			nvGraph.updateForSpeed(speeds[v].graph);
 			itemCollection.updateForSpeed();
 			document.getElementById(id + 'Display')
-				.innerHTML = speeds[v];
+				.innerHTML = speeds[v].time;
 			break;
 
 		default:

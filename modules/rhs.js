@@ -19,7 +19,14 @@
 */		
 
 // two parts:  Sliders are on top of rhs
-// the list of presets are below on the rhs
+// the list of scenarios (name is still presets) are below on the rhs
+//  a scenario is stored several ways:
+//  1) in the sliders (but without a title called desc)
+//  2) in an object called a row,  the array of all of them is rows
+//	3) in an li elem in DOM under .scenario;  the set is in the UL element
+//  4) encoded in a string to go into a url
+//  5) in JSON in a file for the defaults
+//   option 2 is the way to go between the various types.
 
 var keyForLocalStorage = 'Tiox-' + simu.nameOfSimulation;
 
@@ -37,17 +44,17 @@ export const sliders = {
 				let id = event.target.id;
 				let v = inputElem.value;
 				let t = inputElem.type;
-				let ds = presets.currentLi.dataset;
+				let scen = presets.currentLi.scenario;
 				// pull value into preset based on type of input
 				switch (t) {
 					case 'range':
-						ds[id] = v;
+						scen[id] = v;
 						break;
 					case 'checkbox':
-						ds[id] = inputElem.checked.toString();
+						scen[id] = inputElem.checked.toString();
 						break;
 					case 'radio':
-						ds[inputElem.name] = id;
+						scen[inputElem.name] = id;
 						break;
 					default:
 				}
@@ -65,73 +72,71 @@ export const sliders = {
 		bubbles: true
 	}),
 
-	setSlidersFrom: function (aPreset) {
-		let inputBox;
+	setSlidersFrom: function (row) {
+		
 		//console.log(simu.sliderTypes);
 		for (let key in simu.sliderTypes) {
 			let t = simu.sliderTypes[key];
-			inputBox = document.getElementById(key);
-			let v = aPreset[key];
-			if (t == 'range') {
-				inputBox.value = v;
-			} else if (t == 'checkbox')
-				inputBox.checked = (v == 'true');
-
-			else if (t == 'radio') {
-				inputBox = document.getElementById(v);
-				let theNodeList = document.getElementsByName(key);
-				let j = findId(theNodeList, v);
-				if (j < 0) {
-					alert("can't find the doc elem with name", key, " and value ", v);
-					debugger;
-				}
-				theNodeList[j].checked = true;
+			let inputBox = document.getElementById(key);
+			let v = row[key];
+			switch (t){
+				case 'range':
+					inputBox.value = v;
+					break;
+				case 'checkbox':
+					inputBox.checked = (v == 'true');
+					break;
+				case 'radio':
+					inputBox = document.getElementById(v);
+					let theNodeList = document.getElementsByName(key);
+					let j = findId(theNodeList, v);
+					if (j < 0) {
+						alert("can't find the doc elem with name", key, " and value ", v);
+						debugger;
+					}
+					theNodeList[j].checked = true;
+					break;
 			}
-			////			console.log('in setSliders inputBox ',
-			//							inputBox.type, inputBox.id, inputBox.value);
 			inputBox.dispatchEvent(sliders.inputEvent);
 		}
 		// not in edit mode then may cause a reset, a play, or a pause.
 		if (!simu.editMode) {
-			if (aPreset.reset == 'true')
+			if (row.reset == 'true')
 				document.getElementById('resetButton').click();
-			if (aPreset.action == 'play')
+			if (row.action == 'play')
 				document.getElementById('playButton').click();
-			else if (aPreset.action == 'pause')
+			else if (row.action == 'pause')
 				document.getElementById('pauseButton').click();
 		}
 	},
 
 	getSliders: function () {
-		let aPreset = {};
-		for (let k in simu.sliderTypes) {
-			let inputElem = document.getElementById(k);
-			let t = simu.sliderTypes[k];
+		let row = {};
+		for (let key in simu.sliderTypes) {
+			let inputElem = document.getElementById(key);
+			let t = simu.sliderTypes[key];
 			switch (t) {
 				case 'range':
-					aPreset[k] = inputElem.value
+					row[key] = inputElem.value
 					break;
 				case 'checkbox':
-					aPreset[k] = inputElem.checked.toString();
+					row[key] = inputElem.checked.toString();
 					break;
 				case 'radio':
-					let theNodeList = document.getElementsByName(k);
-					aPreset[k] = theNodeList[getChecked(theNodeList)].id;
+					let theNodeList = document.getElementsByName(key);
+					row[key] = theNodeList[getChecked(theNodeList)].id;
 					break;
 				default:
 			}
 		}
-		return aPreset;
+		return row;
 	},
 };
 
-function createOne(params) {
+function createLineFromRow(row) {
 	const liElem = document.createElement("LI");
-	liElem.innerHTML = params.desc;
-	// liElem.dataset = {...params};
-	for (let key in params) {
-		liElem.dataset[key] = params[key];
-	}
+	liElem.innerHTML = row.desc;
+	liElem.scenario = row;
 	return liElem;
 }
 
@@ -163,11 +168,6 @@ function neighborLi() {
 	return null;
 };
 
-function handleSearchStr(str) {
-	return ;
-}
-
-
 export const presets = {
 
 	currentLi: null, // poiner to current  LI in the UL in the HTML
@@ -188,93 +188,71 @@ export const presets = {
 		this.textInpBox.className = "textInput";
 		this.textInpBox.placeholder = "preset name";
 		this.sEncode = sEncode;
+		this.sDecode = sDecode;
 		this.ulPointer = document.getElementById("ULPresetList");
 
 
-		// get the presets from the URL, or local storage or .json file in that order
-		var presetsRows = [];
-		var editValue = false;
-		var urlValue = null;
-		var scens = [];
-		//process search string
-		const searchString = decodeURI(location.search.slice(1));
-		if (searchString.length > 0){
-			const terms = searchString.split('&');
-			console.log('terms',terms);
-			let pairs =[];
-			let k = 0;
+		// get the presets from 1) the URL, 2) user specified .json
+		// 3) local storage or 4) default .json file in that order
+
+		// capture the three possible 'search' parameters
+		function parseSearchString(str){
+			let search = {edit: null, url: null, scenarios: null}
+			if (str.length == 0) return search;
+			
+			const terms = str.split('&');
 			for (let term of terms){
 				let j = term.indexOf('=');
 				if ( j > 0 ) {
-					pairs[k] = {key: term.substr(0,j),
-							   value: term.substr(j+1)};
-					k++;
+					search[term.substring(0,j)] = term.substring(j+1)
 				} else {
 					console.log( 'term missing =',term);
 				}
 			}
-			console.log('print pairs',pairs);
-			for (let pair of pairs){
-				switch (pair.key){
-					case "edit":
-						editValue = pair.value;
-						break;
-					case "url":
-						urlValue = pair.value;
-						break;
-					case "scenarios":
-						scens = pair.value.split(';');
-						break;
-					default:
-						console.log('this didnt match',pair.key);
-				}
-
-			}
+			return search
 		}
 		
-		let presetsString =  localStorage.getItem(keyForLocalStorage);
-		simu.warningLSandScens = ( scens.length > 0) && presetsString;
 		
-		// case 1: scenarios in url,
-		if ( scens.length > 0 ){
-			for ( let k = 0; k < scens.length; k++ ){
-				presetsRows[k] = sDecode(scens[k]);
+		
+		// try the 4 options in order returning the rows of parameters 
+		async function fourCases(search,presetsString ){
+			if ( search.scenarios ){
+				if ( search.edit != "allow" ){
+					document.getElementById("editBox")
+							.style.display = 'none'
+				} 
+				return parseURLScenariosToRows(search.scenarios)
 			}
-			if ( editValue != "allow"){
-				document.getElementById("editBox")
-						.style.display = 'none'
+			
+			if ( search.url ) { 
+				let response = await fetch(search.url);
+				if (response.ok) {
+					return await response.json();
+				} 
 			}
-			simu.warningLocalStorageExists = true;
-		} else {  // case 2: local storage
 			if (presetsString) {
-				presetsRows = JSON.parse(presetsString);
-			} else {
-				if ( urlValue ) { // case 3: try url given
-					let response = await fetch(urlValue);
-					if (response.ok) {
-						presetsRows = await response.json();
-					} 
-				}
-				//case 4: url wasn't given or url given failed
-				// try standard .json file
-				if ( !urlValue || !response.ok) {
-					let response = await fetch(
-						simu.nameOfSimulation + '.json');
-					if (response.ok) {
-						presetsRows = await response.json();
-					} else {
-						console.log("json file HTTP-Error: " + response.status);
-					}
-				}
+				 return JSON.parse(presetsString);
 			}
+			let response = await fetch(simu.nameOfSimulation + '.json');
+			if (response.ok) {
+				return await response.json();
+				}
+			console.log("json file HTTP-Error: " + response.status);
+			return null
 		}
-		// if one thing worked the presetsRows has it.
-		createList(presetsRows);
-		//presets.printPresets();
+		
+		let search = parseSearchString(decodeURI(location.search.slice(1)))
+		let presetsString =  localStorage.getItem(keyForLocalStorage);
+		simu.warningLSandScens = search.scenarios  && presetsString;
+		let rows = await fourCases(search, presetsString);
+		
+		
+	
+		// if one thing worked 'rows' has it.
+		setUL(rows);
 		this.started = true;
 
 		//set up event listeners for user interface
-
 		this.ulPointer.addEventListener('click', this.liClicked);
 		this.ulPointer.addEventListener('dblclick', this.liDblClicked);
 		document.getElementById('addButton')
@@ -357,8 +335,10 @@ export const presets = {
 			presets.currentLi.classList.remove("selected");
 		}
 
-		const li = createOne(sliders.getSliders()); //presets.currentLi.dataset)
-		li.innerHTML = li.dataset.desc = desc;
+		const row = sliders.getSliders();
+		row.desc = desc;
+		const li = createLineFromRow(row);
+		li.innerHTML = desc; 
 		li.classList.add("selected");
 		presets.ulPointer.append(li);
 		presets.currentLi = li;
@@ -397,7 +377,7 @@ export const presets = {
 		presets.saveModifiedDesc();
 		if (presets.currentLi) this.currentLi.classList.remove("selected");
 		if (newRow) {
-			sliders.setSlidersFrom(newRow.dataset);
+			sliders.setSlidersFrom(newRow.scenario);
 			newRow.classList.add("selected");
 		};
 		presets.currentLi = newRow;
@@ -411,21 +391,19 @@ export const presets = {
 
 	// Routines to start, cancel and save an edit    
 	startEdit: function () {
+		//    save / clone the list ulPointer.
 		presets.save = {
 			slidersValues: sliders.getSliders(),
-			theJSON: createJSON()
+			rows: createRowsFromUL()
 		};
-		//    save / clone the list ulPointer.
-
+		
 		simu.editMode = true;
+		
 		// simulate a click on pause if running.
 		let theButton = document.getElementById('pauseButton')
 		if (theButton.style.display != 'none') theButton.click();
 
-		// if nothing is selected as we enter edit mode pick first preset;  
-		//        let x = presets.ulPointer.firstElementChild;
-		//        if ( !presets.currentLi ) presets.changeCurrentLiTo(x);
-		//        
+		//adjust the page for edit mode
 		document.getElementById("scenariosBot").style.display = "block";
 		document.getElementById('menuBox').style.display = 'block';
 		document.getElementById('editBox').style.display = 'none';
@@ -441,7 +419,7 @@ export const presets = {
 	// this restores previous state (to what it was at start of edit)
 	cancelEdit: function () {
 		presets.exitEdit();
-		createList(JSON.parse(presets.save.theJSON));
+		setUL(presets.save.rows);
 		sliders.setSlidersFrom(presets.save.slidersValues);
 		presets.currentLi = null;
 	},
@@ -466,10 +444,11 @@ export const presets = {
 		}
 
 		sortTheUL(presets.ulPointer);
-		localStorage.setItem(keyForLocalStorage, createJSON());
+		localStorage.setItem(keyForLocalStorage, createJSONfromUL());
 	},
 
 	exitEdit: function () {
+		// restore the page to non-edit mode
 		simu.editMode = false;
 		presets.saveModifiedDesc();
 		document.getElementById("scenariosBot").style.display = "none";
@@ -481,7 +460,7 @@ export const presets = {
 
 	popupExport: function () {
 		document.getElementById('exportBoxOuter').style = 'display:block';
-		document.getElementById('jsonDisplay').innerHTML = createJSON();
+		document.getElementById('jsonDisplay').innerHTML = createJSONfromUL();
 		document.getElementById('urlDisplay').innerHTML = createURL(false);
 		document.getElementById('allowEditButton').checked = false;
 	},
@@ -490,7 +469,8 @@ export const presets = {
 	//  possibly changing the selected choice
 	//  and if textMode save the last entered name into the selected row
 	liClicked: function (ev) {
-		if (ev.target == presets.currentLi || ev.target.parentNode == presets.currentLi) return;
+		if (ev.target == presets.currentLi || 
+			ev.target.parentNode == presets.currentLi) return;
 
 		presets.saveModifiedDesc();
 		if (ev.target.tagName === 'LI') {
@@ -514,57 +494,67 @@ export const presets = {
 };
 
 
-
-function createRows(){
+function createRowsFromUL(){
 	let rows = [];
-	let contents = document.querySelectorAll('#ULPresetList li');
-	for (let i = 0; i < contents.length; i++) {
-		rows[i] = {...contents[i].dataset
-		};
-		rows[i].desc = contents[i].innerHTML;
+	let lines = document.querySelectorAll('#ULPresetList li');
+	for (let i = 0; i < lines.length; i++) {
+		rows[i] = lines[i].scenario;
 	}
-	console.log('in createRows',rows);
 	return rows;
 };
 
-function createScenarioStr(rows){
+
+function setUL(rows){ 
+	presets.ulPointer.innerHTML = '';
+	for (let row of rows) {
+		let li = createLineFromRow(row);
+		presets.ulPointer.append(li);
+	}
+}
+
+function createURLScenarioStr(rows){
 	let first = true;
 	let str = '';
 	for (let row of rows){
 		str += (first ? "" : ";") + presets.sEncode(row);
 		first = false;
 	}
-	console.log('in crateScenarioStr', str);
+	//console.log('in crateScenarioStr', str);
 	return str;
+};
+
+//convert each coded scenario into a row of parameters
+function parseURLScenariosToRows(str){
+	let rows = [];
+	let scens = str.split(';')
+	for ( let scenario of scens){
+		rows.push( presets.sDecode(scenario) );
+	}
+	return rows;
 }
 
+
 function createURL(edit) { //from current UL
-	let result = location.origin + location.pathname +
-		'?scenarios=' + createScenarioStr(createRows()) +
+	const result = location.origin + location.pathname +
+		'?scenarios=' +
+		createURLScenarioStr(createRowsFromUL()) +
 		( edit ? "&edit=allow" : "" );
-	let encResult =  encodeURI(result);
-	console.log('in createURL',result, encResult);
+	const encResult =  encodeURI(result);
+	//console.log('in createURL',result, encResult);
 	return encResult;
 };
-					 
+
+function createJSONfromUL() { //from curreent UL
+	return JSON.stringify(createRowsFromUL());
+};
+
+
 function toggleAllowEdit(event){
 	document.getElementById('urlDisplay')
 		.innerHTML = createURL(event.target.checked)
 	}
 	
 
-function createJSON() { //from curreent UL
-	return JSON.stringify(createRows());
-};
-
-function createList(presetsRows) { //from row of objects in argument
-	presets.ulPointer.innerHTML = '';
-	if (presetsRows) {
-		for (let row of presetsRows) {
-			presets.ulPointer.append(createOne(row));
-		}
-	}
-};
 
 
 // three Nodelist routines;
@@ -585,20 +575,13 @@ function findId(nodelist, str) {
 	}
 	return -1;
 };
+
 simu.copyToClipboard = function (id){
 	let url = document.getElementById(id);
-//	console.log('HTML', url.innerHTML);
-//	console.log('innerText', url.innerText);
-//	console.log('textContent', url.textContent);
 	navigator.clipboard.writeText(url.innerText)
-		.then(function() {
-  				/* clipboard successfully set */
+		.then(  function() { /* clipboard successfully set */
 				}, 
-			  function() {
-  				alert('failed to copy to clipboard')
+			    function() {
+  					alert('failed to copy to clipboard')
 				});
-
 }
-
-//sliders.initialize();
-//presets.initialize();
