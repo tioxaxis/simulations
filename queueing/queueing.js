@@ -78,7 +78,7 @@ class QueueGraph extends TioxGraph {
 	}
 	updateForSpeed (factor){
 		this.scaleXaxis(factor);
-		console.log('in graph update for speed',factor)
+//		console.log('in graph update for speed',factor)
 	};
 	predictedWait () {
 			const sr = theSimulation.serviceRV.rate;
@@ -249,9 +249,14 @@ function captureChangeInSliderS(event) {
 			document.getElementById(id + 'Display')
 				.innerHTML = speeds[v].time;
 			break;
-
+		case 'none':
+		case 'play':
+		case 'pause':
+		case 'reset':
+			break;
 		default:
-			console.log(' reached part for default');
+			alert(' reached part for default, id=',id);
+			console.log(' reached part for default, id=',id);
 			break;
 	}
 }

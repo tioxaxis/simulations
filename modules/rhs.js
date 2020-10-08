@@ -316,6 +316,7 @@ export const presets = {
 			this.textMode = false;
 			this.currentLi.removeChild(this.textInpBox);
 			this.currentLi.innerHTML = this.textInpBox.value;
+			this.currentLi.scenario.desc = this.textInpBox.value;
 		}
 		return presets.currentLi ? presets.currentLi.innerHTML : ''; //does this test ever apply?
 	},

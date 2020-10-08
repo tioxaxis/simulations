@@ -145,8 +145,9 @@ export class TioxGraph {
 	};
 	
 	xScale (x){
-		this.xInfo.lastX = x;
-		return ( (x-this.xInfo.min) / (this.xInfo.max - this.xInfo.min) ) * (this.inner.right - this.inner.left) + this.inner.left;
+//		this.xInfo.lastX = x;
+		return ( (x-this.xInfo.min) / (this.xInfo.max - this.xInfo.min) ) 
+			* (this.inner.right - this.inner.left) + this.inner.left;
 	};
 	yScale (y){
 		return (1- (y-0) / (this.yInfo.max - 0) )  * (this.inner.bot - this.inner.top) + this.inner.top;
@@ -347,6 +348,7 @@ export class TioxGraph {
 			}
 		  }
 		  info.last = cur;
+		  this.xInfo.lastX = cur.x;	
 		}
 	};
 	
