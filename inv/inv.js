@@ -23,6 +23,7 @@ const disappointed = {
 	color: 'rgb(235, 230, 230)',
 	border: 'rgb(31, 105, 245)'
 };
+const extraLineColor = 'rgb(255, 100, 100)';
 const tioxTimeConv = 10000; //time are in milliseconds/10
 import {
 	GammaRV, UniformRV, DeterministicRV, Heap
@@ -59,7 +60,14 @@ class InvGraph extends TioxGraph {
 		this.setLegend(1,'On Hand and On Order');
 		this.setupLine(2, d => d.p, 'rgb(185, 26, 26)',
 					   true, false, 3, 0);
-		this.setLegend(2,'Predicted On Hand Inventory');	
+		this.setLegend(2,'Predicted On Hand Inventory');
+		if( simu.whichRule == 'methRop'){
+			const rop = document.getElementById('rop');
+			this.resetRopLine(Number(rop.value));
+		} else {
+			const period = document.getElementById('period');
+			this.resetPeriodLines(Number(period.value));
+		}
 	};
 	
 	push (t, inv, invPosition){
@@ -72,9 +80,12 @@ class InvGraph extends TioxGraph {
 	};
 	
 	reset(){
-		let maxI = ( simu.whichRule == 'methRop' ?
-					 theSimulation.rop + theSimulation.quantityOrdered + 1:
-					 theSimulation.upto+1 );
+		let maxI;
+		if ( simu.whichRule == 'methRop' ){
+			maxI = theSimulation.rop + theSimulation.quantityOrdered + 1;
+		} else {
+			maxI = theSimulation.upto+1;
+		};
 		super.reset(maxI);
 		const v = document.getElementById('speed').value;
 		const f = speeds[v].graph;
@@ -108,6 +119,14 @@ class InvGraph extends TioxGraph {
 		}
 		return avgInv;
 	};
+	
+		
+	resetRopLine(y){
+		this.setExtraLines(extraLineColor,{min:y},null);
+	}
+	resetPeriodLines(x){
+		this.setExtraLines(extraLineColor,null, {min:x,step:x});
+	}
 }
 let invGraph;
 
@@ -155,9 +174,9 @@ class ProcessCollection extends Array {
 
 
 function pickInvSimulation(which) {
-	let modelUpto = document.getElementById('modelUpto');
-	let modelRop = document.getElementById('modelRop');
-
+	const modelUpto = document.getElementById('modelUpto');
+	const modelRop = document.getElementById('modelRop');
+	
 	switch (which) {
 		case 'methRop':
 			modelRop.style = 'display:flex';
@@ -248,23 +267,30 @@ function captureChangeInSliderS(event) {
 			break;
 		case 'rop':
 			theSimulation.rop = Number(v);
+			invGraph.resetRopLine(Number(v));
+			invGraph.setupThenRedraw();
 			break;
 		case 'period':
 			theSimulation.period = Number(v) * tioxTimeConv;
+			invGraph.resetPeriodLines(Number(v));
+			invGraph.setupThenRedraw();
 			break;
 		case 'upto':
 			theSimulation.upto = Number(v);
 			break;
 		case 'methRop':
 		case 'methUpto':
-			let temp = simu.whichRule;
 			simu.whichRule = id;
-			//			console.log('the rule switched from ', temp, ' to ', id);
-
-			if (temp != simu.whichRule) {
-				pickInvSimulation(simu.whichRule);
-				simu.reset();
+			if( simu.whichRule == 'methRop'){
+				const rop = document.getElementById('rop');
+				invGraph.resetRopLine(Number(rop.value));
+			} else {
+				const period = document.getElementById('period');
+				invGraph.resetPeriodLines(Number(period.value));
 			}
+			pickInvSimulation(simu.whichRule);
+			simu.reset();
+			
 			break;
 		case 'speed':
 			simu.frameSpeed = speeds[v].time;
@@ -288,6 +314,8 @@ function captureChangeInSliderS(event) {
 simu.reset2 = function () {
 	itemCollection.reset();
 	invGraph.reset();
+	pickInvSimulation(simu.whichRule);
+								  
 	
 	theProcessCollection.reset();
 	itemCollection.moveDisplayAll(0); //display all at start.
@@ -421,7 +449,7 @@ const theSimulation = {
 	upto: null,
 
 	initialize: function () {
-		pickInvSimulation(simu.whichRule);
+		
 
 		// random variables
 		let ar = Number(document.getElementById('ar').value);
@@ -434,6 +462,7 @@ const theSimulation = {
 		theSimulation.leadtimeRV = new GammaRV(1 / (lt * tioxTimeConv), ltcv);
 		
 		invGraph = new InvGraph();
+		
 
 		theSimulation.quantityOrdered = Number(
 			document.getElementById('quan').value);

@@ -1,7 +1,7 @@
 * {
 	box-sizing: border-box;
 	font-family: "Arial";
-	font-size: 1vw;
+	font-size: 1.3vw;
 }
 /* font for the play, pause, reset buttons
    and for add, delete scenario buttons */
@@ -186,7 +186,7 @@
 }
 .statDisplay {
 	color: var(--fontColor);
-/*	border: solid red 2px;*/
+
 }
 #chartWrapper55 {
 	position: absolute;
@@ -241,7 +241,7 @@
 /*	border: solid red 2px;	*/
 }
 .legitem span{
-	font-size: 1.5vw;
+	font-size: 1.3vw;
 /*	border: solid green 2px;*/
 	color: var(--fontColor);
 	cursor: pointer;

@@ -39,7 +39,7 @@ function horizontalScaleAxis(newScale, xInfo){
 	xInfo.max = xInfo.min + xInfo.width;
 	xInfo.scale = newScale;
 }
-
+var dxlcount = 0;
 export class TioxGraph {
 	constructor (graphId, ratio, xWidthStep, xAccess ){
 		this.ctx = document.getElementById(graphId)
@@ -220,10 +220,43 @@ export class TioxGraph {
 		this.ctx.closePath();
 		this.ctx.stroke();
 	};
+	setExtraLines(color,horz,vert){
+		if( horz && !horz.step ) horz.step = Infinity;
+		if( vert && !vert.step ) vert.step = Infinity;
+		this.xl = {horz: horz, vert: vert, color: color};
+//		this.setupThenRedraw();
+	};
+	
+	drawExtraLines(){
+		if( !this.xl ) return;
+		console.log('drawing extra lines',++dxlcount);
+		this.ctx.beginPath();
+		this.ctx.lineWidth = 4;
+		this.ctx.strokeStyle = this.xl.color;
+		if (this.xl.horz )
+			for( let y = this.xl.horz.min; y <= this.yInfo.max;
+				y += this.xl.horz.step){
+				let yg = this.yScale(y);
+				this.ctx.moveTo(this.inner.left, yg);
+				this.ctx.lineTo( this.inner.right, yg);	
+			}
+		if (this.xl.vert )
+			for( let x = this.xl.vert.min; x <= this.xInfo.max;
+				x += this.xl.vert.step){
+				if ( x > this.xInfo.min ){
+					let xg = this.xScale(x);
+					this.ctx.moveTo(xg, this.inner.bot);
+					this.ctx.lineTo(xg, this.inner.top);
+				}
+		}
+			this.ctx.closePath();
+			this.ctx.stroke();
+	};
 
 	setupThenRedraw(){
 		this.cleargraph();
 		this.drawGrid();
+		this.drawExtraLines();
 		this.drawLines();
 	};
 	
