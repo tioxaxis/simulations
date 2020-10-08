@@ -52,7 +52,7 @@ class LittleGraph extends TioxGraph {
 					   false, true, 3, 10);
 		this.setLegend(1,'avg. time * avg. rate');
 		this.setupLine(2, d => d.p, 'rgb(185, 26, 26)',
-					   true, false, 3, 0);
+					   true, false, 10, 0);
 		this.setLegend(2,'predicted inventory');	
 		this.predictedInvValue = this.predictedInv();
 	};
@@ -256,12 +256,13 @@ function captureChangeInSliderS(event) {
 
 
 
-var totInv, totTime, totPeople, lastArrDep, LBRFcount;
+var totInv, totTime, totPeople, firstArr, lastArrDep, LBRFcount;
 simu.reset2 = function () {
 	itemCollection.reset();
 	littleGraph.reset();
 	theProcessCollection.reset();
-	totInv = totTime = totPeople = lastArrDep = LBRFcount = 0;
+	totInv = totTime = totPeople =  LBRFcount = 0;
+	firstArr = lastArrDep = 3500;
 	gSF = new GStickFigure(anim.stage.foreContext,
 		anim.person.height,
 		0);
@@ -440,7 +441,9 @@ const theSimulation = {
 			totTime += simu.now - person.arrivalTime;
 //			LBRFcount = (LBRFcount + 1) % simu.frameSpeed;
 //			if (!LBRFcount) {
-				littleGraph.push(simu.now, totInv / simu.now, totTime / simu.now);
+				littleGraph.push(simu.now, 
+								 totInv / (simu.now - firstArr),
+								 totTime / (simu.now - firstArr) );
 //			};
 		};
 

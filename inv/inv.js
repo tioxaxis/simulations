@@ -23,7 +23,7 @@ const disappointed = {
 	color: 'rgb(235, 230, 230)',
 	border: 'rgb(31, 105, 245)'
 };
-const extraLineColor = 'rgb(255, 100, 100)';
+const extraLineColor = 'rgba(138, 84, 171,.5)';
 const tioxTimeConv = 10000; //time are in milliseconds/10
 import {
 	GammaRV, UniformRV, DeterministicRV, Heap
@@ -59,7 +59,7 @@ class InvGraph extends TioxGraph {
 					   true, true, 3, 0);
 		this.setLegend(1,'On Hand and On Order');
 		this.setupLine(2, d => d.p, 'rgb(185, 26, 26)',
-					   true, false, 3, 0);
+					   true, false, 10, 0);
 		this.setLegend(2,'Predicted On Hand Inventory');
 		if( simu.whichRule == 'methRop'){
 			const rop = document.getElementById('rop');
@@ -122,10 +122,10 @@ class InvGraph extends TioxGraph {
 	
 		
 	resetRopLine(y){
-		this.setExtraLines(extraLineColor,{min:y},null);
+		this.setExtraLines(extraLineColor,10,{min:y},null);
 	}
 	resetPeriodLines(x){
-		this.setExtraLines(extraLineColor,null, {min:x,step:x});
+		this.setExtraLines(extraLineColor,10,null, {min:x,step:x});
 	}
 }
 let invGraph;
@@ -647,7 +647,10 @@ class RopStore extends GStore {
 	};
 
 	createDelivery(quantity) {
+		console.log('at create a delivery:', simu.now);
 		this.invPosition += quantity;
+		invGraph.push(simu.now, this.inv,
+			this.invPosition);
 		const truck = new Truck(anim);
 		const truckLT = theSimulation.leadtimeRV.observe();
 		const timeMoveDown1 = Math.min(2000, truckLT / 6);

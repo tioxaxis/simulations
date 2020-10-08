@@ -220,18 +220,17 @@ export class TioxGraph {
 		this.ctx.closePath();
 		this.ctx.stroke();
 	};
-	setExtraLines(color,horz,vert){
+	setExtraLines(color,width,horz,vert){
 		if( horz && !horz.step ) horz.step = Infinity;
 		if( vert && !vert.step ) vert.step = Infinity;
-		this.xl = {horz: horz, vert: vert, color: color};
+		this.xl = {horz: horz, vert: vert, color: color, width: width};
 //		this.setupThenRedraw();
 	};
 	
 	drawExtraLines(){
 		if( !this.xl ) return;
-		console.log('drawing extra lines',++dxlcount);
 		this.ctx.beginPath();
-		this.ctx.lineWidth = 4;
+		this.ctx.lineWidth = this.xl.width;
 		this.ctx.strokeStyle = this.xl.color;
 		if (this.xl.horz )
 			for( let y = this.xl.horz.min; y <= this.yInfo.max;
