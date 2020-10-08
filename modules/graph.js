@@ -40,6 +40,8 @@ function horizontalScaleAxis(newScale, xInfo){
 	xInfo.scale = newScale;
 }
 var dxlcount = 0;
+
+
 export class TioxGraph {
 	constructor (graphId, ratio, xWidthStep, xAccess ){
 		this.ctx = document.getElementById(graphId)
@@ -102,7 +104,7 @@ export class TioxGraph {
 			}
 		]];
 		this.xInfo = {min: 0, max: this.xWidthStep.width,
-					 step: this.xWidthStep.step,
+					  step: this.xWidthStep.step,
 					  width: this.xWidthStep.width,
 					  lastX: 0, scale: 1};
 		this.yInfo = {min:0, max: this.table[0].max,
@@ -145,7 +147,6 @@ export class TioxGraph {
 	};
 	
 	xScale (x){
-//		this.xInfo.lastX = x;
 		return ( (x-this.xInfo.min) / (this.xInfo.max - this.xInfo.min) ) 
 			* (this.inner.right - this.inner.left) + this.inner.left;
 	};
