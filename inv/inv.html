@@ -54,13 +54,12 @@
 		<div id='exportBoxOuter' style='display:none'>
 			<div id="exportPresetsBox" style="display:block">
 				<h2 style='margin:20px'>Export Options</h2>
-				<p> 1) Copy the URL below and use it to access the animation, or 
-				<label for="allowEditButton">
+				<p> 1) Copy the URL below and use it to access the animation. </p>
+				
+				<p class="blueBox" id="urlDisplay"></p>
+				<p class="belowBlueBox"><button onclick="simu.copyToClipboard('urlDisplay')">Copy to Clipboard</button><label for="allowEditButton">
 					<input type="checkbox" id="allowEditButton" value="allowEditButton">
 					<span>Allow Edit</span>
-				</label>
-				<p class="blueBox" id="urlDisplay"></p>
-				<p class="belowBlueBox"><button onclick="simu.copyToClipboard('urlDisplay')">Copy to Clipboard</button></p>
 				<br>
 				
 				<p> 2) Copy the text below into a file, say 'presets.json', and place it on a server and add ?file=http://...your server.../presets.json to the search portion of url to access the animation </p>

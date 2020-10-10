@@ -283,13 +283,11 @@ export const presets = {
 				if (simu.editMode)
 					if (presets.textMode) presets.saveModifiedDesc();
 					else presets.addTextBox(presets.currentLi.innerHTML);
-			} else if (key == "ArrowLeft" 
-					   || key == "ArrowDown" 
+			} else if ( key == "ArrowDown" 
 					   || key == "PageDown") {
 				evt.preventDefault();
 				presets.nextRow();
-			} else if (key == "ArrowRight" 
-					   || key == "ArrowUp" 
+			} else if ( key == "ArrowUp" 
 					   || key == "PageUp") {
 				evt.preventDefault();
 				presets.previousRow();

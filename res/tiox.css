@@ -48,7 +48,7 @@
 /* For the exports overlay  */
 
 .blueBox {
-	border: blue solid 5px;
+	border: var(--borderColor) solid 5px;
 	margin: 0% 5%;
 	background: white;
 	font-size: 1vw;
@@ -68,6 +68,7 @@
 	height: 100%;
 	width: 100%;
 	z-index: 6;
+	
 }
 #exportPresetsBox {
 	position: fixed;
@@ -79,7 +80,7 @@
 	background-color: #b8becb;
 	z-index: 9;
 	margin: auto;
-	width: ;
+	border: solid var(--borderColor) 4px;
 }
 #exportPresetsBox p {
 	padding: 0px 3%;

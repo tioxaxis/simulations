@@ -276,7 +276,7 @@ simu.reset2 = function () {
 	let t = simu.heap.top().time - 1;
 	simu.now = simu.frameNow = t;
 	theSimulation.nInQueue = 0;
-	document.getElementById('nInQueue').innerHTML = '';
+	document.getElementById('nInQueue').innerHTML = '0';
 
 };
 

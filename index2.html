@@ -91,7 +91,7 @@
 <div class="tab">
 		<button id="animationsButton" class="tablinks" 
 				onclick="openTab(event, 'animations')">
-			Animations</button>
+			Animations2</button>
 		<button id="futureButton" class="tablinks" 
 				onclick="openTab(event, 'future')">
 			Future Additions</button>
@@ -105,8 +105,8 @@
 </div>
 <div id="allcontent">
 	<!-- Tab content -->
-	<div id="animations" class="tabcontent">
-	<h2> The Animations:</h2>
+	<div id="animations" class="tabcontent" style='display:none'>
+	<h2> The Animations2:</h2>
 		<h3><a class='simulink' href='queueing/queueing.html'>
 		Queueing</a></h3>
 		<p> An animation of a single server queue, e.g., the scanner at airport security.  Individual, average, and predicted waiting time are graphed.  </p>
@@ -121,7 +121,7 @@
 		<p> An animation of customers coming to a store and buying a good.  Two rules for reordering goods can be applied: a reorder point level with a fixed reorder quantity, or a periodic reorder with the quantity based on order-up-to rule.  On hand inventory, inventory position, and predicted average on hand inventory are graphed.  </p>
 	</div>
 	
-	<div id="future" class="tabcontent">
+	<div id="future" class="tabcontent" style='display:none'>
 	<h2>Plans for further animations:</h2>
 	<h3> The Face Game: </h3>
 		<p>  An animation based on a simple 3 stage process that can be done in class with 4 people, drawing a simple face on a 3x5 index card.  It involves the concepts of flowtime, throughput, inventory, quality, and Little's Law.  I've found the physical demonstation quite useful in an early class. Students then make suggestions for improvments.  The animation is useful to allow the class to see whether the suggested improvement affects the intended performance measure</p>
@@ -137,7 +137,7 @@
 	</div>
 	
 	
-	<div id="instructors" class="tabcontent">
+	<div id="instructors" class="tabcontent" style='display:none'>
 		<h2>Information for Instructors</h2>
 		<h3>What is TioX?  </h3>
 	<p>TioX (/taɪ ɑːks/) is a set of animations for demonstrating some of the main ideas in Operations Management.   These include queueing, bottlenecks, Little's Law, the newsvendor problem, inventory management, economies of scale in queueing, and batching (the impact of batching decisions on flow time and throughput).  </p>
@@ -158,7 +158,7 @@
 	<p>The animations that have been reproduced are Queueing, Little's Law, News Vendor, and Inventory (handling both the standard Reorder Point/Reorder Quantity model and the Periodic Ordering and Order-up-to model.  Others will follow including, "Face Game," an easy to run game for an early class to demonstrate the notions of flow time and throughput, several that deal with batching issues (showing the implications of batching to flow time and throughput), and finally "The Funnel Game" which demonstrates <a href="https://deming.org/">  W. Edward Deming's</a> red bead and funnel experiment.</p>
 	
 	<h3> What if you have ideas for additions or extensions:</h3>
-	<p>If you have other ideas for an animation that would introduce a basic Operations Management concept feel free to <a href="mailto:c751dobson@gmail.com?Subject=TioX%20new%20idea" target="_top">contact me</a>.  Perhaps we can design one together. Again my goal is to provide a bridge for first time students from what they see in the real world to the models we use in Operations Management.  The animations that I have used here have been intentially simple, for example, people and trucks. Stick figures are not intended to look like real people and the trucks here don't move and act like real trucks but provide the bridge to aid a student's first understanding of these concepts.  A (mathematical) model represents only a few salient aspects, ignoring much of the detail of the real situation.  Likewise these animations represent crudely some salient features and ignore much of the detail.  Thus, people queueing up in a straight line for a TSA agent is not realistic but may allow the student to imagine another situation such as requesting an appointment at a doctor's office and being placed in the scheduling system for the day of the appointment, as a queueing system. </p>
+	<p>If you have other ideas for an animation that would introduce a basic Operations Management concept feel free to <a href="mailto:c751dobson@gmail.com?Subject=TioX%20new%20idea" target="_top">contact me</a>.  Perhaps we can design one together. Again my goal is to provide a bridge for first time students from what they see in the real world to the models we use in Operations Management.  The animations that I have used here have been intentially simple, for example, people and trucks. Stick figures are not intended to look like real people and the trucks here don't move and act like real trucks but provide the bridge to aid a student's first understanding of these concepts.  A (mathematical) model represents only a few salient aspects, ignoring much of the detail of the real situation.  Likewise these animations crudely represent some salient features and ignore much of the detail.  Thus, people queueing up in a straight line for a TSA agent is not realistic but may allow the student to imagine another situation such as requesting an appointment at a doctor's office and being placed in the scheduling system for the day of the appointment, as a queueing system. </p>
 	
 	
 	
@@ -182,7 +182,7 @@
 	</div>
 	
 	
-	<div id="contact" class="tabcontent">
+	<div id="contact" class="tabcontent" style='display:none'>
 		<h2>Contact Information</h2>
 		<p>Gregory (Greg) Dobson</p>
 		<p>Email: <a href="mailto:c751dobson@gmail.com?Subject=TioX" target="_top">c751dobson@gmail.com</a></p>
@@ -195,23 +195,29 @@
 	var currentButton = null;
 		
 	function setup(){ 
-		let tabcontent = document
-		.getElementsByClassName("tabcontent");
-		for (let i = 0; i < tabcontent.length; i++) {
-			tabcontent[i].style.display = "none";
-		}
+//		let tabcontent = document
+//		.getElementsByClassName("tabcontent");
+//		for (let i = 0; i < tabcontent.length; i++) {
+//			tabcontent[i].style.display = "none";
+//		}
 
 		// Get all elements with class="tablinks" and remove the class "active"
-		let tablinks = document
-				.getElementsByClassName("tablinks");
-		for (let i = 0; i < tablinks.length; i++) {
-			tablinks[i].className = '';
-		}
-
+//		let tablinks = document
+//				.getElementsByClassName("tablinks");
+//		for (let i = 0; i < tablinks.length; i++) {
+//			tablinks[i].className = '';
+//		}
+const which = location.hash.slice(1);
+	const possibles = ["animations","future","instructors","contact"];
+	if (possibles.findIndex(str => str == which) >= 0 ){
+		currentButton = document.getElementById(which+"Button");
+		currentTab = document.getElementById(which);
+	} else {
 		currentTab = document.getElementById('animations');
-		currentTab.style.display = "block";
 		currentButton = document.getElementById('animationsButton');
-		currentButton.className += " active";
+	}
+	currentTab.style.display = "block";
+	currentButton.className += "active";
 	};
 	setup();
 	function openTab(evt, tabName) {

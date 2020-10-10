@@ -337,9 +337,9 @@ simu.reset2 = function () {
 			item: null
 		});
 	}
-	document.getElementById('lostSales').innerHTML = '';
-	document.getElementById('fillRate').innerHTML = '';
-	document.getElementById('serviceLevel').innerHTML = '';
+	document.getElementById('lostSales').innerHTML = '0';
+	document.getElementById('fillRate').innerHTML = '100';
+	document.getElementById('serviceLevel').innerHTML = '100';
 };
 
 //  One variable for each process step or queue
