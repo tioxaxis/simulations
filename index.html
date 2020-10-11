@@ -34,9 +34,9 @@
 			flex-wrap: wrap;
 			justify-content: space-around;
 		}
-		/* Style the buttons that are used to open the tab content */
+		/* Style the spans that are used to open the tab content */
 		
-		.tab button {
+		.tab span {
 			background-color: inherit;
 			border: none;
 /*			outline: none;*/
@@ -44,15 +44,16 @@
 			padding: 14px 16px;
 /*			transition: 0.3s;*/
 		}
-		/* Change background color of buttons on hover */
+		/* Change background color of spans on hover */
 		
-		.tab button:hover {
+		.tab span:hover {
 			background-color: #5d43a2;
 		}
 		/* Create an active/current tablink class */
 		
-		.tab button.active {
+		.tab span.active {
 			background-color: #7a96f5;
+			border: none;
 		}
 		/* Style the tab content */
 		
@@ -89,23 +90,23 @@
 <div id='topofpage'>TioX </div>
 	
 <div class="tab">
-		<button id="animationsButton" class="tablinks" 
+		<span id="animationsButton" class="tablinks" 
 				onclick="openTab(event, 'animations')">
-			Animations</button>
-		<button id="futureButton" class="tablinks" 
+			Animations</span>
+		<span id="futureButton" class="tablinks" 
 				onclick="openTab(event, 'future')">
-			Future Additions</button>
-		<button id="instructorsButton" class="tablinks" 
+			Future Additions</span>
+		<span id="instructorsButton" class="tablinks" 
 				onclick="openTab(event, 'instructors')">
-			Information for Instructors</button>
+			Information for Instructors</span>
 		
-		<button id="contactButton" class="tablinks" 
+		<span id="contactButton" class="tablinks" 
 				onclick="openTab(event, 'contact')">
-			Contact Us</button>
+			Contact Us</span>
 </div>
 <div id="allcontent">
 	<!-- Tab content -->
-	<div id="animations" class="tabcontent">
+	<div id="animations" class="tabcontent" style='display:none'>
 	<h2> The Animations:</h2>
 		<h3><a class='simulink' href='queueing/queueing.html'>
 		Queueing</a></h3>
@@ -121,7 +122,7 @@
 		<p> An animation of customers coming to a store and buying a good.  Two rules for reordering goods can be applied: a reorder point level with a fixed reorder quantity, or a periodic reorder with the quantity based on order-up-to rule.  On hand inventory, inventory position, and predicted average on hand inventory are graphed.  </p>
 	</div>
 	
-	<div id="future" class="tabcontent">
+	<div id="future" class="tabcontent" style='display:none'>
 	<h2>Plans for further animations:</h2>
 	<h3> The Face Game: </h3>
 		<p>  An animation based on a simple 3 stage process that can be done in class with 4 people, drawing a simple face on a 3x5 index card.  It involves the concepts of flowtime, throughput, inventory, quality, and Little's Law.  I've found the physical demonstation quite useful in an early class. Students then make suggestions for improvments.  The animation is useful to allow the class to see whether the suggested improvement affects the intended performance measure</p>
@@ -137,7 +138,7 @@
 	</div>
 	
 	
-	<div id="instructors" class="tabcontent">
+	<div id="instructors" class="tabcontent" style='display:none'>
 		<h2>Information for Instructors</h2>
 		<h3>What is TioX?  </h3>
 	<p>TioX (/taɪ ɑːks/) is a set of animations for demonstrating some of the main ideas in Operations Management.   These include queueing, bottlenecks, Little's Law, the newsvendor problem, inventory management, economies of scale in queueing, and batching (the impact of batching decisions on flow time and throughput).  </p>
@@ -158,7 +159,7 @@
 	<p>The animations that have been reproduced are Queueing, Little's Law, News Vendor, and Inventory (handling both the standard Reorder Point/Reorder Quantity model and the Periodic Ordering and Order-up-to model.  Others will follow including, "Face Game," an easy to run game for an early class to demonstrate the notions of flow time and throughput, several that deal with batching issues (showing the implications of batching to flow time and throughput), and finally "The Funnel Game" which demonstrates <a href="https://deming.org/">  W. Edward Deming's</a> red bead and funnel experiment.</p>
 	
 	<h3> What if you have ideas for additions or extensions:</h3>
-	<p>If you have other ideas for an animation that would introduce a basic Operations Management concept feel free to <a href="mailto:c751dobson@gmail.com?Subject=TioX%20new%20idea" target="_top">contact me</a>.  Perhaps we can design one together. Again my goal is to provide a bridge for first time students from what they see in the real world to the models we use in Operations Management.  The animations that I have used here have been intentially simple, for example, people and trucks. Stick figures are not intended to look like real people and the trucks here don't move and act like real trucks but provide the bridge to aid a student's first understanding of these concepts.  A (mathematical) model represents only a few salient aspects, ignoring much of the detail of the real situation.  Likewise these animations represent crudely some salient features and ignore much of the detail.  Thus, people queueing up in a straight line for a TSA agent is not realistic but may allow the student to imagine another situation such as requesting an appointment at a doctor's office and being placed in the scheduling system for the day of the appointment, as a queueing system. </p>
+	<p>If you have other ideas for an animation that would introduce a basic Operations Management concept feel free to <a href="mailto:c751dobson@gmail.com?Subject=TioX%20new%20idea" target="_top">contact me</a>.  Perhaps we can design one together. Again my goal is to provide a bridge for first time students from what they see in the real world to the models we use in Operations Management.  The animations that I have used here have been intentially simple, for example, people and trucks. Stick figures are not intended to look like real people and the trucks here don't move and act like real trucks but provide the bridge to aid a student's first understanding of these concepts.  A (mathematical) model represents only a few salient aspects, ignoring much of the detail of the real situation.  Likewise these animations crudely represent some salient features and ignore much of the detail.  Thus, people queueing up in a straight line for a TSA agent is not realistic but may allow the student to imagine another situation such as requesting an appointment at a doctor's office and being placed in the scheduling system for the day of the appointment, as a queueing system. </p>
 	
 	
 	
@@ -177,12 +178,12 @@
 	<h3> OK, so how do I share them with my colleague or my students?</h3>
 	<p> If you need to share a collection of scenarios for one animation, you can create a URL that references the animation and contains all the scenarios encoded in the URL.  Once you are ready, click Edit and then click Export.  Copy the URL and pass it to a colleague or post the URL in your learning managment system in an assignment for example. If you are sending them to a colleage you should probably hit the "Allow Edit" check box so your colleague can save them and make further changes. If your colleague wants to keep these scenarios as his/her own in his/her "Local Storage" then he/she needs only hit the Edit and then the Save buttons.  For passing a collection of scenarios to students you may chose to not "Allow Edit" so they will not tamper with the scenarios.
 	</p>
-	<p>You need something more?  Let me know what you think you need and if demand is there (there are others like you with a similar request) I will try to generate something to meet your needs.  Of course if you find bugs please let me know.  You can submit an issue to me directly or to <a href="https://github.com/tioxaxis/tioxaxis.github.io/issues">GitHub</a></p>
+	<p>You need something more?  Let me know what you think you need and if demand is there (there are others like you with a similar request) I will try to generate something to meet your needs.  Of course if you find bugs please let me know.  You can submit an issue to me directly or to <a href="https://github.com/tioxaxis/tioxaxis.github.io/issues" target="_blank">GitHub</a></p>
 		<p>-Greg</p>
 	</div>
 	
 	
-	<div id="contact" class="tabcontent">
+	<div id="contact" class="tabcontent" style='display:none'>
 		<h2>Contact Information</h2>
 		<p>Gregory (Greg) Dobson</p>
 		<p>Email: <a href="mailto:c751dobson@gmail.com?Subject=TioX" target="_top">c751dobson@gmail.com</a></p>
@@ -190,40 +191,45 @@
 	</div>
 </div> <!-- end of main page -->
 </body>
-	<script defer>
-	var currentTab = null;
-	var currentButton = null;
-		
-	function setup(){ 
-		let tabcontent = document
-		.getElementsByClassName("tabcontent");
-		for (let i = 0; i < tabcontent.length; i++) {
-			tabcontent[i].style.display = "none";
-		}
-
-		// Get all elements with class="tablinks" and remove the class "active"
-		let tablinks = document
-				.getElementsByClassName("tablinks");
-		for (let i = 0; i < tablinks.length; i++) {
-			tablinks[i].className = '';
-		}
-
+<script defer>
+function openTab(evt, tabName) {
+	// remove the old
+	currentButton.className = 'tablinks';
+	currentTab.style.display = "none";
+	// add the new
+	currentTab = document.getElementById(tabName);
+	currentTab.style.display = "block";
+	currentButton = evt.currentTarget;
+	currentButton.className += " active";
+	window.history.pushState({tabName:tabName},'','#'+tabName)
+}
+	
+function switchTo(which){
+	if( currentButton ) currentButton.className = 'tablinks';
+	if( currentTab ) currentTab.style.display = 'none';
+	const possibles = ["animations","future","instructors","contact"];
+	if (possibles.findIndex(str => str == which) >= 0 ){
+		currentButton = document.getElementById(which+"Button");
+		currentTab = document.getElementById(which);
+	} else {
 		currentTab = document.getElementById('animations');
-		currentTab.style.display = "block";
 		currentButton = document.getElementById('animationsButton');
-		currentButton.className += " active";
-	};
-	setup();
-	function openTab(evt, tabName) {
-		// remove the old
-		currentButton.className = '';
-		currentTab.style.display = "none";
-		// add the new
-		currentTab = document.getElementById(tabName);
-		currentTab.style.display = "block";
-		currentButton = evt.currentTarget;
-		currentButton.className = "active";
 	}
+	currentTab.style.display = "block";
+	currentButton.className += " active";
+};
+
+window.onpopstate = function(event) {
+	const s = event.state;
+	switchTo(s ? s.tabName : '');
+};
+
+
+var currentTab = null;
+var currentButton = null;
+switchTo(location.hash.slice(1));
+
+
 </script>
 
 </html>
