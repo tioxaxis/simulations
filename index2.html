@@ -34,9 +34,9 @@
 			flex-wrap: wrap;
 			justify-content: space-around;
 		}
-		/* Style the buttons that are used to open the tab content */
+		/* Style the spans that are used to open the tab content */
 		
-		.tab button {
+		.tab span {
 			background-color: inherit;
 			border: none;
 /*			outline: none;*/
@@ -44,15 +44,16 @@
 			padding: 14px 16px;
 /*			transition: 0.3s;*/
 		}
-		/* Change background color of buttons on hover */
+		/* Change background color of spans on hover */
 		
-		.tab button:hover {
+		.tab span:hover {
 			background-color: #5d43a2;
 		}
 		/* Create an active/current tablink class */
 		
-		.tab button.active {
+		.tab span.active {
 			background-color: #7a96f5;
+			border: none;
 		}
 		/* Style the tab content */
 		
@@ -89,19 +90,19 @@
 <div id='topofpage'>TioX </div>
 	
 <div class="tab">
-		<button id="animationsButton" class="tablinks" 
+		<span id="animationsButton" class="tablinks" 
 				onclick="openTab(event, 'animations')">
-			Animations2</button>
-		<button id="futureButton" class="tablinks" 
+			Animations2</span>
+		<span id="futureButton" class="tablinks" 
 				onclick="openTab(event, 'future')">
-			Future Additions</button>
-		<button id="instructorsButton" class="tablinks" 
+			Future Additions</span>
+		<span id="instructorsButton" class="tablinks" 
 				onclick="openTab(event, 'instructors')">
-			Information for Instructors</button>
+			Information for Instructors</span>
 		
-		<button id="contactButton" class="tablinks" 
+		<span id="contactButton" class="tablinks" 
 				onclick="openTab(event, 'contact')">
-			Contact Us</button>
+			Contact Us</span>
 </div>
 <div id="allcontent">
 	<!-- Tab content -->
@@ -177,7 +178,7 @@
 	<h3> OK, so how do I share them with my colleague or my students?</h3>
 	<p> If you need to share a collection of scenarios for one animation, you can create a URL that references the animation and contains all the scenarios encoded in the URL.  Once you are ready, click Edit and then click Export.  Copy the URL and pass it to a colleague or post the URL in your learning managment system in an assignment for example. If you are sending them to a colleage you should probably hit the "Allow Edit" check box so your colleague can save them and make further changes. If your colleague wants to keep these scenarios as his/her own in his/her "Local Storage" then he/she needs only hit the Edit and then the Save buttons.  For passing a collection of scenarios to students you may chose to not "Allow Edit" so they will not tamper with the scenarios.
 	</p>
-	<p>You need something more?  Let me know what you think you need and if demand is there (there are others like you with a similar request) I will try to generate something to meet your needs.  Of course if you find bugs please let me know.  You can submit an issue to me directly or to <a href="https://github.com/tioxaxis/tioxaxis.github.io/issues">GitHub</a></p>
+	<p>You need something more?  Let me know what you think you need and if demand is there (there are others like you with a similar request) I will try to generate something to meet your needs.  Of course if you find bugs please let me know.  You can submit an issue to me directly or to <a href="https://github.com/tioxaxis/tioxaxis.github.io/issues" target="_blank">GitHub</a></p>
 		<p>-Greg</p>
 	</div>
 	
@@ -194,7 +195,7 @@
 	var currentTab = null;
 	var currentButton = null;
 		
-	function setup(){ 
+function setup(){ 
 //		let tabcontent = document
 //		.getElementsByClassName("tabcontent");
 //		for (let i = 0; i < tabcontent.length; i++) {
@@ -207,7 +208,16 @@
 //		for (let i = 0; i < tablinks.length; i++) {
 //			tablinks[i].className = '';
 //		}
-const which = location.hash.slice(1);
+window.onpopstate = function(event) {
+//  alert("location: " + document.location + ", state: " + JSON.stringify(event.state));
+	const s = event.state;
+	switchTo(s ? s.tabName : '');
+};
+switchTo(location.hash.slice(1));
+};
+function switchTo(which){
+	if( currentButton ) currentButton.className = 'tablinks';
+	if( currentTab ) currentTab.style.display = 'none';
 	const possibles = ["animations","future","instructors","contact"];
 	if (possibles.findIndex(str => str == which) >= 0 ){
 		currentButton = document.getElementById(which+"Button");
@@ -217,19 +227,21 @@ const which = location.hash.slice(1);
 		currentButton = document.getElementById('animationsButton');
 	}
 	currentTab.style.display = "block";
-	currentButton.className += "active";
-	};
-	setup();
-	function openTab(evt, tabName) {
-		// remove the old
-		currentButton.className = '';
-		currentTab.style.display = "none";
-		// add the new
-		currentTab = document.getElementById(tabName);
-		currentTab.style.display = "block";
-		currentButton = evt.currentTarget;
-		currentButton.className = "active";
-	}
+	currentButton.className += " active";
+};
+setup();
+
+function openTab(evt, tabName) {
+	// remove the old
+	currentButton.className = 'tablinks';
+	currentTab.style.display = "none";
+	// add the new
+	currentTab = document.getElementById(tabName);
+	currentTab.style.display = "block";
+	currentButton = evt.currentTarget;
+	currentButton.className += " active";
+	window.history.pushState({tabName:tabName},'','#'+tabName)
+}
 </script>
 
 </html>
