@@ -29,7 +29,7 @@
   cursor: pointer;
 }
 .font35vw{
-	font-size: 3.5vw;
+	font-size: 3.5vw;  /* min(3.5vw, 7vh) */
 }
 .font15vw{
 	font-size: 1.5vw;
@@ -95,14 +95,18 @@
 }
 
 /* for the main 4 boxes:  outer, inner, left, and right   */
-
-#containerOuter {
-	position: relative;                          */
-	width: 100%;
-	/* vw = % of view width                       */
-	height: 50vw;
-	/* use vw to make it proportional to width    */
+body{
+	overflow: hidden;
 }
+#containerOuter {
+	position: relative;  
+	width: 100%; /* min(100vw,200vh);
+	/*	 vw = % of view width                       */
+	height: 50vw;/*min(100vh,50vw);
+	/* use vw to make it proportional to width    */
+		
+}
+/*
 #containerInner {
 	position: absolute;
 	top: 0;
@@ -110,6 +114,7 @@
 	right: 0;
 	bottom: 0;
 }
+*/
 #leftHandSideBox {
 	position: absolute;
 	top: 0;
@@ -361,27 +366,48 @@ input[type=range] {
 	
 }
 */
+/*
 #playButtons {
-	display: flex;
-	flex-wrap: wrap;
-	flex-direction: row;
-	justify-content: space-around;
-	align-items: center;
-	align-content: center;
-}
-.radiopair {
 	display: flex;
 	flex-wrap: nowrap;
 	flex-direction: row;
+	justify-content: space-around;
+	align-items: flex-end;
+}
+*/
+
+.rowAroundEnd{
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: row;
+	justify-content: space-around;
+	align-items: flex-end;
+/*	border: solid red;*/
+}
+.rowAroundCenter{
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: row;
+	justify-content: space-around;
 	align-items: center;
-	justify-content: flex-start;
-	align-content: flex-start;
+/*	border: solid blue;*/
+}
+.columnAroundStart{
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: flex-start;
+	
+/*	border: solid green;*/
 }
 input[type=checkbox],
-input[type=radio],
-label {
+input[type=radio]{
 	height: 1vw;
+}
+label {
 	cursor: pointer;
+	font-size: 1.2vw;
 }
 input[type=range] {
 	-webkit-appearance: none;

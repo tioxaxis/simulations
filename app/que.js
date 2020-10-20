@@ -21,24 +21,24 @@
 import {
 	GammaRV, Heap
 }
-from "../modules/utility.js";
+from "./util.js";
 import {
-	sliders, presets
+	OmConcept
 }
-from '../modules/rhs.js';
+from './rhs.js';
 import {
 	Queue, WalkAndDestroy, MachineCenter,
-	InfiniteMachineCenter, Item, itemCollection, ItemCollection,
+	InfiniteMachineCenter, Item, 
 	GStickFigure, NStickFigure
 }
-from "../modules/procsteps.js";
+from "./stepitem.js";
 import {
 	TioxGraph
 }
-from "../modules/graph.js";
+from "./graph.js";
 class QueueGraph extends TioxGraph {
-	constructor(){	
-		super('chart',.3, {width:10, step:2}, d=>d.t);
+	constructor(omConcept){	
+		super(omConcept, .3, {width:10, step:2}, d=>d.t);
 		this.setTitle('Waiting Time');
 		this.setupLine(0, d => d.i, 'rgba(0,0,220,1)',
 					   false, true, 5, 10);
@@ -71,7 +71,7 @@ class QueueGraph extends TioxGraph {
 			1.5: Math.max(1.5,this.predictedWaitValue * 1.1);
 		super.reset(yMax);
 		
-		const v = document.getElementById('speed').value;
+		const v = document.getElementById('speedque').value;
 		const f = speeds[v].graph;
 		this.updateForSpeed(f);
 	}
@@ -94,7 +94,7 @@ class QueueGraph extends TioxGraph {
 	updatePredictedWait () {
 		let pW = this.predictedWait();
 		this.drawOnePoint({
-			t: (simu.now / tioxTimeConv),
+			t: (que.now / tioxTimeConv),
 			p: (pW == Infinity)?null:pW
 		});
 		this.setLegend(2,'predicted wait' +
@@ -103,21 +103,31 @@ class QueueGraph extends TioxGraph {
 		this.predictedWaitValue = pW;
 	};
 }
+const anim = {};
 let queueGraph;
 
 const tioxTimeConv = 10000; //rates in tiox are k/10 seconds
+
+var que ;
+
+const precision = {
+	ar: 1,
+	acv: 1,
+	sr: 1,
+	scv: 1,
+	speed: 0
+}
+const speeds = [{time:1,graph:1,anim:true},
+				{time:2,graph:1,anim:true},
+				{time:5,graph:2,anim:true},
+				{time:10,graph:2,anim:true},
+				{time:25,graph:5,anim:true}];
+
 anim.stage = {
 	normalSpeed: .050, 
 	width: 1000,
 	height: 300
-}
-anim.stage.foreContext = document
-		.getElementById('foreground')
-		.getContext('2d');
-anim.stage.backContext = document
-		.getElementById('background')
-		.getContext('2d');
-
+};
 anim.person = {
 	width: 40,
 	height: 60,
@@ -134,10 +144,10 @@ anim.scannerDelta = {
   	dx: 0,
 	dy: anim.person.height * 1.8
 };
-
-// specific info for queueing needed by general routines
-// in procsteps and rhs.
-simu.sliderTypes = {
+function queDefine(){
+	que = new OmConcept('que', queueEncodeURL, queueDecodeURL,queueReset);
+	
+que.sliderTypes = {
 	ar: 'range',
 	acv: 'range',
 	sr: 'range',
@@ -146,8 +156,24 @@ simu.sliderTypes = {
 	action: 'radio',
 	reset: 'checkbox'
 };
-simu.editMode = false;
+	
+	document.getElementById('slidersWrapperque')
+	.addEventListener('input', captureChangeInSliderS);
 
+anim.stage.foreContext = document
+		.getElementById('foregroundque')
+		.getContext('2d');
+anim.stage.backContext = document
+		.getElementById('backgroundque')
+		.getContext('2d');
+	que.stage = anim.stage;
+
+
+
+// specific info for queueing needed by general routines
+// in procsteps and rhs.
+
+};
 class ProcessCollection extends Array {
 	constructor() {
 		super();
@@ -157,19 +183,8 @@ class ProcessCollection extends Array {
 	};
 }; // end class processCollection
 
-document.getElementById('sliderBigBox').addEventListener('input', captureChangeInSliderS);
-const precision = {
-	ar: 1,
-	acv: 1,
-	sr: 1,
-	scv: 1,
-	speed: 0
-}
-const speeds = [{time:1,graph:1,anim:true},
-				{time:2,graph:1,anim:true},
-				{time:5,graph:2,anim:true},
-				{time:10,graph:2,anim:true},
-				{time:25,graph:5,anim:true}]; 
+
+ 
 // old version = [1, 2, 5, 10, 25];
 
 function queueDecodeURL(str){
@@ -202,25 +217,26 @@ function captureChangeInSliderS(event) {
 	let inputElem = event.target.closest('input');
 	if (!inputElem) return
 
-	var id = inputElem.id;
+	var id = inputElem.id.slice(0,-3) ;
+	      //need to remove the concept name or
 	if (inputElem.type == 'range') {
 		var v = Number(inputElem.value)
 			.toFixed(precision[id]);
-		document.getElementById(id + 'Display')
+		document.getElementById(id + 'queDisplay')
 			.innerHTML = v;
 	}
 	switch (id) {
 		case 'ar':
 			theSimulation.interarrivalRV
 				.setRate(v / tioxTimeConv);
-			simu.heap.modify('finish/creator', simu.now, 
+			que.heap.modify('finish/creator', que.now, 
 							 theSimulation.interarrivalRV);
 			queueGraph.updatePredictedWait();
 			break;
 
 		case 'acv':
 			theSimulation.interarrivalRV.setCV(v);
-			simu.heap.modify('finish/creator', simu.now,
+			que.heap.modify('finish/creator', que.now,
 							 theSimulation.interarrivalRV);
 			queueGraph.updatePredictedWait();
 
@@ -229,23 +245,23 @@ function captureChangeInSliderS(event) {
 		case 'sr':
 			theSimulation.serviceRV
 				.setRate(v / tioxTimeConv);
-			simu.heap.modify('finish/TSAagent', simu.now, 
+			que.heap.modify('finish/TSAagent', que.now, 
 							 theSimulation.serviceRV);
 			queueGraph.updatePredictedWait();
 			break;
 
 		case 'scv':
 			theSimulation.serviceRV.setCV(v);
-			simu.heap.modify('finish/TSAagent', simu.now, 
+			que.heap.modify('finish/TSAagent', que.now, 
 							 theSimulation.serviceRV);
 			queueGraph.updatePredictedWait();
 			break;
 
 		case 'speed':
-			simu.frameSpeed = speeds[v].time;
+			que.frameSpeed = speeds[v].time;
 			queueGraph.updateForSpeed(speeds[v].graph);
-			itemCollection.updateForSpeed();
-			document.getElementById(id + 'Display')
+			que.itemCollection.updateForSpeed();
+			document.getElementById(id + 'queDisplay')
 				.innerHTML = speeds[v].time;
 			break;
 		case 'none':
@@ -260,8 +276,8 @@ function captureChangeInSliderS(event) {
 	}
 }
 
-simu.reset2 = function () {
-	itemCollection.reset();
+function queueReset () {
+	que.itemCollection.reset();
 	queueGraph.reset();
 	theProcessCollection.reset();
 	gSF = new GStickFigure(anim.stage.foreContext,
@@ -272,8 +288,8 @@ simu.reset2 = function () {
 	theSimulation.creator.knockFromPrevious();
 
 	//fudge to get animation started quickly
-	let t = simu.heap.top().time - 1;
-	simu.now = simu.frameNow = t;
+	let t = que.heap.top().time - 1;
+	que.now = que.frameNow = t;
 	theSimulation.nInQueue = 0;
 	document.getElementById('nInQueue').innerHTML = '0';
 
@@ -295,7 +311,7 @@ const animForQueue = {
 		let guessInQueue = Math.max( 0, Math.floor(
 			nInQueue - this.walkingTime / theSimulation.serviceRV.mean));
 		let dist = nInQueue * animForQueue.delta.dx;
-		let time = simu.now + dist / anim.stage.normalSpeed;
+		let time = que.now + dist / anim.stage.normalSpeed;
 		// simply move person back appropriate amount.
 		person.cur.x -= guessInQueue * animForQueue.delta.dx;
 		person.addPath({
@@ -321,7 +337,7 @@ const animForQueue = {
 		
 		for (let k = 0; k < theSimulation.queue.q.length; k++) {
 			let p = theSimulation.queue.q[k];
-			let time = simu.now + Math.min(animForQueue.delta.dx / anim.stage.normalSpeed, procTime);
+			let time = que.now + Math.min(animForQueue.delta.dx / anim.stage.normalSpeed, procTime);
 			if (p.pathList.length == 0) {
 				p.addPath({
 					t: time,
@@ -353,12 +369,12 @@ const animForWalkOffStage = {
 
 	start: function (person) {
 		person.addPath({
-			t: simu.now + 50 / anim.stage.normalSpeed,
+			t: que.now + 50 / anim.stage.normalSpeed,
 			x: 800,
 			y: 100
 		});
 		person.addPath({
-			t: simu.now + this.walkingTime - 50 / anim.stage.normalSpeed,
+			t: que.now + this.walkingTime - 50 / anim.stage.normalSpeed,
 			x: anim.person.path.right,
 			y: anim.person.path.top
 		});
@@ -411,7 +427,7 @@ const animForTSA = {
 		if (animForTSA.lastFinPerson &&
 			animForTSA.lastFinPerson.pathList.length > 1) {
 			let path = animForTSA.lastFinPerson.pathList[0];
-			path.t = Math.min(path.t, simu.now + theProcTime);
+			path.t = Math.min(path.t, que.now + theProcTime);
 		}
 	},
 
@@ -438,42 +454,43 @@ const theSimulation = {
 	initialize: function () {
 
 		// random variables
-		let r = document.getElementById('ar').value;
-		let cv = document.getElementById('acv').value;
+		let r = document.getElementById('arque').value;
+		let cv = document.getElementById('acvque').value;
 		theSimulation.interarrivalRV = new GammaRV(r / tioxTimeConv, cv);
-		r = document.getElementById('sr').value;
-		cv = document.getElementById('scv').value;
+		r = document.getElementById('srque').value;
+		cv = document.getElementById('scvque').value;
 		theSimulation.serviceRV = new GammaRV(r / tioxTimeConv, cv);
 
-		queueGraph = new QueueGraph();
+		queueGraph = new QueueGraph(que);
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 
 
-		this.queue = new Queue("theQueue", -1, animForQueue.walkingTime,   
-			animForQueue,
+		this.queue = new Queue(que, "theQueue", -1,
+			animForQueue.walkingTime, animForQueue,
 			recordQueueArrival, recordQueueLeave);
 
 		// define the helper functions for theQueue
 		function recordQueueArrival(person) {
-			person.arrivalTime = simu.now;
+			person.arrivalTime = que.now;
 		};
 
 		function recordQueueLeave(person) {
-			queueGraph.push(simu.now, simu.now - person.arrivalTime);
+			queueGraph.push(que.now, que.now - person.arrivalTime);
 		};
 
 
-		this.walkOffStage = new WalkAndDestroy("walkOff", animForWalkOffStage, true);
+		this.walkOffStage = new WalkAndDestroy(que, "walkOff",
+								animForWalkOffStage, true);
 
 
 		// machine centers 
-		this.creator = new MachineCenter("creator",
+		this.creator = new MachineCenter(que, "creator",
 			1, theSimulation.interarrivalRV,
 			this.supply, this.queue,
 			animForCreator);
 
-		this.TSAagent = new MachineCenter("TSAagent",
+		this.TSAagent = new MachineCenter(que, "TSAagent",
 			1, theSimulation.serviceRV,
 			this.queue, this.walkOffStage,
 			animForTSA);
@@ -497,15 +514,15 @@ class Supplier {
 		this.y = y;
 	};
 	pull() {
-		return new Person(this.x, this.y,
+		return new Person(que, this.x, this.y,
 			30, anim.person.height);
 	}
 }; //end class Supplier
 
 var gSF;
 export class Person extends Item {
-	constructor(x, y = 100, w = 30, h = 30) {
-		super(x, y);
+	constructor(omConcept, x, y = 100, w = 30, h = 30) {
+		super(omConcept, x, y);
 		this.width = w;
 		this.graphic = new NStickFigure(gSF, x, y);
 	};
@@ -531,19 +548,17 @@ export class Person extends Item {
 			Math.abs(this.cur.y - y));
 		let deltaTime = Math.min(distance / anim.stage.normalSpeed, procTime);
 		this.addPath({
-			t: simu.now + deltaTime,
+			t: que.now + deltaTime,
 			x: x,
 			y: y
 		});
 	};
 }; // end class Person
 
-function initializeAll() {
+export function queStart() {
+	queDefine();
 	Math.seedrandom('this is the Queueing Simulation');
-	sliders.initialize();
-	presets.initialize(queueEncodeURL,queueDecodeURL);
-	simu.initialize(); // the generic
 	theSimulation.initialize(); // the specific to queueing
-	document.getElementById('resetButton').click();
+	que.reset();
 };
-document.addEventListener("DOMContentLoaded", initializeAll);
+//document.addEventListener("DOMContentLoaded", initializeAll);

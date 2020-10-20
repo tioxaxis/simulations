@@ -228,8 +228,8 @@
 					<!-- two states either non-edit mode or edit mode
 						 in the first the play/pause and reset buttons show
  						 in the second the Action buttons are displayed     -->
-					<div class="sliderRow">
-						<div class="sliderboxLeft" id="playButtons">
+										<div class="sliderRow">
+					  <div class="sliderboxLeft rowAroundEnd" id="playButtons">
 							<div id='pauseButton'  style="display:none">
 							<i class="material-icons font35vw" 
 							   title="pause the animation">pause_circle_outline</i>
@@ -243,35 +243,19 @@
 							   title ="reset the animation">replay</i>
 							</div>
 						</div>
-
-						<div class="sliderboxLeft actionBox" id="actionOptions">
-							<div>Action:</div>
-							<div>
-								<div class="radiopair">
-									<label for="none"> 
-										<input type="radio" name="action" id="none" value="none" checked>
-									None</label>
-								</div>
-
-								<div class="radiopair">
-									<label for="pause">
-										<input type="radio" name="action" id="pause" value="pause">
-									Pause</label>
-								</div>
-
-								<div class="radiopair">
-									<label for="play">
-										<input type="radio" name="action" id="play" value="play">
-									Play</label>
-								</div>
+						
+						<div class="sliderboxLeft rowAroundCenter" id="actionOptions" style="display:none">
+							<div class="columnAroundStart">
+							<label>Action:</label>
+							<label><input type="checkbox" id="reset">Reset</label>
 							</div>
-
-							<div class="radiopair">
-								<label for="reset">
-									<input type="checkbox" id="reset" value="reset"> Reset </label>
+							
+							<div class="columnAroundStart">
+							<label><input type="radio" name="action" id="none" value="none" checked>None</label>
+							<label><input type="radio" name="action" id="pause" value="pause">Pause</label>
+							<label><input type="radio" name="action" id="play" value="play">Play</label>
 							</div>
 						</div>
-
 
 						<div class="sliderboxRight sliderbox">
 							<p>Speed =

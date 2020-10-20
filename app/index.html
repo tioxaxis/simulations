@@ -1,0 +1,148 @@
+<!--
+	TioX a set of Animations for Operations Management
+    Copyright (C) 2020  Gregory Dobson
+	gregory.c.dobson@gmail.com
+
+    GPL-3.0-or-later
+	This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->		
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="shortcut icon" href="../res/tiox3.png">
+	<link rel="stylesheet" type="text/css" href="./app.css">
+
+	<!--software for random number generation-->
+	<script src='../res/jstat.min.js'></script>
+	
+	<!-- converts Math.random() to be seeded    -->
+	<script src='../res/seedrandom.min.js'></script>
+
+	<script type='module' src='./app.js'></script>
+
+</head>
+<body >
+<div class='displayNone'>
+<div id='genericPlayResetBox'>
+	<div class='actionBox' id="playButtons">
+		<div id='pauseButton'  style="display:none">
+		<i class="material-icons font35vw" 
+		   title="pause the animation">pause_circle_outline</i>
+		</div>
+		<div id='playButton'  style="display:inline">
+		<i class="material-icons font35vw" 
+		   title="play the animation">play_circle_outline</i>
+		</div>
+		<div id='resetButton'>
+		<i class="material-icons font35vw"
+		   title ="reset the animation">replay</i>
+		</div>
+	</div>
+</div>
+	
+	
+	
+	
+	
+	</div>
+<div class="wrapper2by1 displayNone" id='whole'>
+	<div class='exportBoxOuter' id='exportBoxOuter' style='display:none'>
+		<div class="exportPresetsBox"  id="exportPresetsBox" style="display:block">
+		<div id="exportOption1">
+			<h2 style='margin:20px'>Export Options</h2>
+			<p> 1) Copy the URL below and use it to access the animation.</p>
+			<p class="blueBox" id="urlDisplay"></p>
+			<p class="belowBlueBox">
+				<button id="copyURLToClipboard">Copy to Clipboard</button>
+		</div>
+		<div id="exportOption2">
+
+			<p> 2) Copy the text below into a file, say 'presets.json', and place it on a server and add ?file=http://...your server.../presets.json to the search portion of url to access the animation. </p>
+			<p class="blueBox" id="jsonDisplay"></p>
+			<p class="belowBlueBox"><button id="copyJSONToClipboard">Copy to Clipboard</button> </p>
+			<br>
+			<button class="closeExportBox" id="closeExportBox"> X </button>
+		</div>
+		</div>
+	</div>
+	
+	<div class='leftHandSideBox'>	
+		<div class='stageWrapper' id="stageWrapper" >
+			<canvas class="theStage foreground" id="foreground" width=1000 height=300></canvas>
+			<canvas class="theStage background" id="background" width=1000 height=300></canvas>
+		</div>
+		<div class='statsWrapper'  id='statsWrapper' ></div>
+		<div class='chartWrapper' id="chartWrapper">
+			<div class='chartTitle' id='chartTitle'> title </div>
+			<div class='chart' id='chart'> 
+				<canvas  class="chartCanvas" id="chartCanvas" width='2000' height='600'></canvas>
+			</div>
+			<div class='chartLegend' id='chartLegend'></div>
+		</div>
+	</div>
+
+	<div class='rightHandSideBox'>
+		<div class='slidersWrapper' id='slidersWrapper'>	</div>
+		<div class='scenariosWrapper' id='scenariosWrapper'>
+			<div class="scenariosTop" id="scenariosTop">Scenarios</div>
+			<div class="scenariosMid" id="scenariosMid">
+				<ul id="ULPresetList"></ul>
+			</div>
+			<div class="scenariosBot" id="scenariosBot" style='display:none'> 
+				<i id="addButton" class="material-icons font15vw"> add</i>
+				<i id="deleteButton" class="material-icons font15vw"> remove</i>
+			</div>
+		</div>
+		<div class='editWrapper' id='editWrapper'>
+			<div id="editBox">
+				<button id='editButton' 
+				title="add, delete, edit, or export scenarios" >Edit</button>				
+			</div>
+			<div id="menuBox" style='display:none'>
+				<button id='cancelButton'>Cancel </button>
+				<button id='saveButton' 
+				title="save scenarios to local storage" >Save </button>
+				<button id='exportButton' 
+				title="options for exporting scenarios" >Export </button>
+				<button id='clear' onclick='localStorage.clear()'
+				title="clear local storage">
+					Clear</button>
+			</div>
+		</div>
+	</div> 	<!-- end of rightHandSideBox  -->
+</div>	<!-- end of wrapper2to1 -->
+	<div id='que' class='wrapper2by1 displayNone'></div>
+	<div id='lit' class='wrapper2by1 displayNone'></div>
+	<div id='nvp' class='wrapper2by1 displayNone'></div>
+	<div id='inv' class='wrapper2by1 displayNone'></div>
+	
+</body>
+<script>
+ 	function copyToClipboard (id){
+		let elem = document.getElementById(id);
+		navigator.clipboard.writeText(elem.innerText)
+			.then(  function() {
+				/* clipboard successfully set */
+				}, 
+			    function() {
+  					alert('failed to copy to clipboard')
+				});
+	}
+</script>
+</html>
+
+

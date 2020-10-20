@@ -52,27 +52,27 @@
 
 
 
-	<div id="containerOuter">
+<div id="containerOuter">
 
-		<div id='exportBoxOuter' style='display:none'>
-			<div id="exportPresetsBox" style="display:block">
-				<h2 style='margin:20px'>Export Options</h2>
-				<p> 1) Copy the URL below and use it to access the animation.</p>
-				<p class="blueBox" id="urlDisplay"></p>
-				<p class="belowBlueBox"><button onclick="simu.copyToClipboard('urlDisplay')">Copy to Clipboard</button><label for="allowEditButton">
-					<input type="checkbox" id="allowEditButton" value="allowEditButton">
-					<span>Allow Edit</span></label></p>
-				<br>
-				
-				<p> 2) Copy the text below into a file, say 'presets.json', and place it on a server and add ?file=http://...your server.../presets.json to the search portion of url to access the animation. </p>
-				<p class="blueBox" id="jsonDisplay"></p>
-				<p class="belowBlueBox"><button onclick="simu.copyToClipboard('jsonDisplay')">Copy to Clipboard</button></p>
-				<br>
-				<button id="closeExportBox" onclick=" document.getElementById('exportBoxOuter').style='display:none'; "> X </button>
-			</div>
+	<div id='exportBoxOuter' style='display:none'>
+		<div id="exportPresetsBox" style="display:block">
+			<h2 style='margin:20px'>Export Options</h2>
+			<p> 1) Copy the URL below and use it to access the animation.</p>
+			<p class="blueBox" id="urlDisplay"></p>
+			<p class="belowBlueBox"><button onclick="simu.copyToClipboard('urlDisplay')">Copy to Clipboard</button><label for="allowEditButton">
+				<input type="checkbox" id="allowEditButton" value="allowEditButton">
+				<span>Allow Edit</span></label></p>
+			<br>
+
+			<p> 2) Copy the text below into a file, say 'presets.json', and place it on a server and add ?file=http://...your server.../presets.json to the search portion of url to access the animation. </p>
+			<p class="blueBox" id="jsonDisplay"></p>
+			<p class="belowBlueBox"><button onclick="simu.copyToClipboard('jsonDisplay')">Copy to Clipboard</button></p>
+			<br>
+			<button id="closeExportBox" onclick=" document.getElementById('exportBoxOuter').style='display:none'; "> X </button>
 		</div>
+	</div>
 
-		<div id="containerInner">
+<!--		<div id="containerInner">-->
 			<div id="leftHandSideBox">
 				<div id="stageWrapper">
 					<!--start ANIMATION Stage -->
@@ -97,8 +97,7 @@
 					<div class='legitem' id='legend2'>legend text 2</div>
 					</div>
 				</div>
-			</div>
-			<!-- end of leftHandSide-->
+			</div> <!-- end of leftHandSide-->
 
 			<!--  5 sliders.  Each stores the final value when user mouseup in 'nameMouseUP' <span></span> -->
 
@@ -160,7 +159,7 @@
 						</div>
 					</div>
 					<div class="sliderRow">
-					  <div class="sliderboxLeft" id="playButtons">
+					  <div class="sliderboxLeft rowAroundEnd" id="playButtons">
 							<div id='pauseButton'  style="display:none">
 							<i class="material-icons font35vw" 
 							   title="pause the animation">pause_circle_outline</i>
@@ -175,34 +174,17 @@
 							</div>
 						</div>
 						
-						<div class="sliderboxLeft actionBox" id="actionOptions">
-							<div>Action:</div>
-							<div>
-								<div class="radiopair">
-									<label for="none">
-										<input type="radio" name="action" id="none" value="none" checked>
-									 None</label>
-								</div>
-
-								<div class="radiopair">
-									<label for="pause">
-										<input type="radio" name="action" id="pause" value="pause">
-									Pause</label>
-								</div>
-
-								<div class="radiopair">
-									<label for="play">
-										<input type="radio" name="action" id="play" value="play">
-									Play</label>
-								</div>
+						<div class="sliderboxLeft rowAroundCenter" id="actionOptions" style="display:none">
+							<div class="columnAroundStart">
+							<label>Action:</label>
+							<label><input type="checkbox" id="reset">Reset</label>
 							</div>
-
-							<div class="radiopair">
-								<label for="reset">
-									<input type="checkbox" id="reset" value="reset">
-									Reset</label>
+							
+							<div class="columnAroundStart">
+							<label><input type="radio" name="action" id="none" value="none" checked>None</label>
+							<label><input type="radio" name="action" id="pause" value="pause">Pause</label>
+							<label><input type="radio" name="action" id="play" value="play">Play</label>
 							</div>
-
 						</div>
 
 						<div class="sliderboxRight sliderbox">
@@ -251,7 +233,7 @@
 				</div>
 			</div>
 			<!-- end of righthandSideBox -->
-		</div>
+<!--		</div>-->
 		<!-- end of containerInner-->
 	</div>
 	<!-- end of containerOuter -->
