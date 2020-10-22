@@ -184,20 +184,22 @@ export class OmConcept {
 			let inputElem = event.target.closest('input');
 			if (!inputElem) return
 			if (event.isTrusted && this.editMode && this.currentLi) {
-				let id = event.target.id.slice(0,-3);
+				let iShort = event.target.id.slice(0,-3);
 				let v = inputElem.value;
 				let t = inputElem.type;
+				let nShort = inputElem.name.slice(0,-3);
 				let scen = this.currentLi.scenario;
 				// pull value into preset based on type of input
 				switch (t) {
 					case 'range':
-						scen[id] = v;
+						scen[iShort] = v;
 						break;
 					case 'checkbox':
-						scen[id] = inputElem.checked.toString();
+						scen[iShort] = inputElem.checked.toString();
 						break;
 					case 'radio':
-						scen[inputElem.name] = id;
+//						console.log(' in capture', inputElem.name, 'id=', iShort);
+						scen[nShort] = iShort;
 						break;
 					default:
 				}
@@ -210,7 +212,7 @@ export class OmConcept {
 	
 	setSlidersFrom (row) {
 		
-		console.log('the picked row is',row);
+//		console.log('the picked row is',row);
 		//console.log(this.sliderTypes);
 		for (let key in this.sliderTypes) {
 			let t = this.sliderTypes[key];
@@ -261,7 +263,7 @@ export class OmConcept {
 					break;
 				case 'radio':
 					let theNodeList = document.getElementsByName(key+this.key);
-					row[key] = theNodeList[getChecked(theNodeList)].id;
+					row[key] = theNodeList[getChecked(theNodeList)].value;
 					break;
 				default:
 			}

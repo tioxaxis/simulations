@@ -146,6 +146,9 @@ anim.scannerDelta = {
 };
 function queDefine(){
 	que = new OmConcept('que', queueEncodeURL, queueDecodeURL,queueReset);
+
+	document.getElementById('slidersWrapperque')
+	.addEventListener('input', captureChangeInSliderS);
 	
 que.sliderTypes = {
 	ar: 'range',
@@ -157,9 +160,7 @@ que.sliderTypes = {
 	reset: 'checkbox'
 };
 	
-	document.getElementById('slidersWrapperque')
-	.addEventListener('input', captureChangeInSliderS);
-
+	
 anim.stage.foreContext = document
 		.getElementById('foregroundque')
 		.getContext('2d');
@@ -213,19 +214,22 @@ function queueEncodeURL(preset){
 		preset.desc);
 }
 
+
+
+
 function captureChangeInSliderS(event) {
 	let inputElem = event.target.closest('input');
 	if (!inputElem) return
 
-	var id = inputElem.id.slice(0,-3) ;
+	var idShort = inputElem.id.slice(0,-3) ;
 	      //need to remove the concept name or
 	if (inputElem.type == 'range') {
 		var v = Number(inputElem.value)
-			.toFixed(precision[id]);
-		document.getElementById(id + 'queDisplay')
+			.toFixed(precision[idShort]);
+		document.getElementById(idShort + 'queDisplay')
 			.innerHTML = v;
 	}
-	switch (id) {
+	switch (idShort) {
 		case 'ar':
 			theSimulation.interarrivalRV
 				.setRate(v / tioxTimeConv);
@@ -261,7 +265,7 @@ function captureChangeInSliderS(event) {
 			que.frameSpeed = speeds[v].time;
 			queueGraph.updateForSpeed(speeds[v].graph);
 			que.itemCollection.updateForSpeed();
-			document.getElementById(id + 'queDisplay')
+			document.getElementById(idShort + 'queDisplay')
 				.innerHTML = speeds[v].time;
 			break;
 		case 'none':
@@ -270,8 +274,8 @@ function captureChangeInSliderS(event) {
 		case 'reset':
 			break;
 		default:
-			alert(' reached part for default, id=',id);
-			console.log(' reached part for default, id=',id);
+			alert(' reached part for default, id=',idShort);
+			console.log(' reached part for default, id=',idShort);
 			break;
 	}
 }
@@ -555,7 +559,44 @@ export class Person extends Item {
 	};
 }; // end class Person
 
+import {
+	addKeyForIds, genCheckbox,  genPlayResetBox, genSlider, copyMainPage
+}
+from './genHTML.js';
+
+function queHTML(){	
+	copyMainPage('que');
+	 
+	//stats line
+	const d2 = document.getElementById('statsWrapperque');
+	const delem = document.createElement('div');
+	const selem = document.createElement('span');
+	 selem.id = 'nInQueue';
+	 delem.append('Number in Queue: ',selem);
+	 d2.append(delem);
+	 
+	//now put in the sliders with the play/reset box	
+	let elem = document.getElementById('slidersWrapperque');
+	elem.append(
+		genSlider('arque','Arrival Rate = ','5.0','',
+				  5,0,10,.5,[0,2,4,6,8,10]),
+		genSlider('acvque','Arrival CV = ','0.0','',
+				  0,0,2,.5,['0.0','1.0','2.0']),
+		genSlider('srque','Service Rate = ','6.0','',
+				  6,0,10,.5,[0,2,4,6,8,10] ), 
+		genSlider('scvque','Service CV = ','0.0','',
+				  0,0,2,.5,['0.0','1.0','2.0']),
+		genPlayResetBox('que'),
+		genSlider('speedque','Speed = ','1','x',
+				  0,0,4,1,["slow","fast"])
+	);
+	
+	const f = document.getElementById('scenariosMidque');
+	f.style = "max-height: 18vw";
+};
+
 export function queStart() {
+	queHTML();
 	queDefine();
 	Math.seedrandom('this is the Queueing Simulation');
 	theSimulation.initialize(); // the specific to queueing

@@ -205,6 +205,20 @@
 	grid-template-columns: 50% 50%;
 
 }
+.ropupto {
+	height: 3vw;
+	border-bottom: solid var(--fontColor) 1px;
+}
+/*
+#modelUpto {
+	display: flex;
+}
+#modelRop {
+	display: none;
+}
+*/
+
+
 .sliderBox{
 	font-size: 1.2vw;
 	padding: .5vw;
@@ -214,18 +228,42 @@
 .sliderBox:nth-child(odd) {
 	border-right:  solid var(--fontColor) 1px;
 }
-	
+.rowAroundEnd{
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: row;
+	justify-content: space-around;
+	align-items: flex-end;
+/*	border: solid red;*/
+}
+.rowAroundCenter{
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: row;
+	justify-content: space-around;
+	align-items: center;
+/*	border: solid blue;*/
+}
+.columnAroundStart{
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: flex-start;
+}
+.columnAroundCenter {
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items: center;
+}
 
 
 	
 /*   within slider formats  */
 	/*  spreadValues for #'s on scale and Input formats */
-.inputBox{
-	display: flex;
-	flex-wrap: nowrap;
-	flex-direction: column;
-	align-items: center;
-}
+
 .spreadValues {
 	margin: 0% 8% 0% 6%;
 	width: 84%;
@@ -401,7 +439,6 @@ input[type=range]:focus::-ms-fill-upper {
 	border-bottom: solid var(--borderColor) 1px
 }
 .scenariosMid {
-	max-height: 20vw;
 	overflow-y: auto;
 	flex: 0 1 22vw;
 	color: var(--fontColor);
@@ -424,9 +461,7 @@ ul {
 	display: flex;
 	flex-wrap: nowrap;
 	flex-direction: column;
-	justify-items:flex-start;
-	
-	
+	justify-items:flex-start;	
 }
 li {
 	position: relative;
@@ -435,8 +470,9 @@ li {
 	font-size: 1vw;
 	font-family: "Times New Roman";
 	cursor: pointer;
-	padding: .5vw 0px .5vw border-bottom: grey 1px solid;
-	margin-left: .5vw;
+	padding: .1vw 0px .1vw;
+/*	border-bottom: grey 1px solid;*/
+	margin-left: 1vw;
 	list-style-type: none;
 	transition: 0.2s;
 	/* make the list items unselectable */
@@ -454,11 +490,23 @@ ul li.selected {
 }
 
 /* Darker background-color on hover */
-
 ul li:hover,
 button:hover {
 	background: #a0a7f2;
 	color: white;
+}
+.textInput {
+	position: absolute;
+	top: 0;
+	left: -1%;
+	display: block;
+	box-sizing: border-box;
+	height: 100%;
+	width: 101%;
+	font-size: 1vw;
+	font-family: "Times New Roman";
+	color: black;
+	background-color: lightblue;
 }
 
 	

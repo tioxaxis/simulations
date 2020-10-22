@@ -64,13 +64,6 @@ export function animSetup(){
 	};
 	anim.truck.cabWidth = anim.truck.height/2;
 	anim.truck.width = anim.truck.bedWidth + anim.truck.cabWidth;
-	
-	anim.stage.foreContext = document
-		.getElementById('foreground')
-		.getContext('2d');
-	anim.stage.backContext = document
-		.getElementById('background')
-		.getContext('2d');
 
 
 };

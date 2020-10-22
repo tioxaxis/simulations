@@ -21,162 +21,74 @@ import {
 	queStart
 }
 from './que.js';
-	function addKeyForIds(name,node){
-		if ( node.id ) node.id += name;
-		const children = node.childNodes;
-		for( let child of children )
-			if ( child.tagName ) 
-				addKeyForIds( name, child ); 
-		
-	}
 
-	function genRadio(name,desc,id,value,checked){	
-		const inp = document.createElement('input');
-		inp.type = 'radio';
-		inp.name = name;
-		inp.id = id;
-		inp.value = value;
-		if (checked) inp.setAttribute('checked','');
-		
-		const label = document.createElement('LABEL');	
-		label.append(inp, desc);
-		return label;
-	}
+import {
+	litStart
+}
+from './lit.js';
+import {
+	nvpStart
+}
+from './nvp.js';
 
-	function genCheckbox(desc,id,value){
-		const inp = document.createElement('input');
-		inp.type = 'checkbox';
-		inp.id = id;
-//		inp.value = value;
-		
-		const label = document.createElement('LABEL');
-		label.append(inp, desc);
-		return label; 
-	}
-	function genRange(id, initial, min, max, step){
-		let inp = document.createElement('input');
-		inp.type ='range';
-		inp.id = id;
-		inp.min = min;
-		inp.max = max;
-		inp.step = step;
-		inp.value = initial;
-		return inp;
-	};
-
-	function genSlider(name, desc, initial, min, max, step, values){
-		
-		const dispSpan = document.createElement('span');
-		dispSpan.id = name+"Display";
-		dispSpan.innerHTML= initial;
-		
-		const disp = document.createElement('div');
-		disp.append(desc + ' = ',dispSpan);
-		
-		const vals = document.createElement('div');
-		vals.className="spreadValues";
-		for( let v of values){
-			let s = document.createElement('span');
-			s.append(v);
-			vals.append(s);
-		}
-		
-		const d = document.createElement('div');
-		d.className = "sliderBox inputBox";
-		d.append(disp, genRange(name,initial,min,max,step), vals);
-		return d;
-	}
-//	function genSlider(name,desc,
-//				init,min,max,step,values){
-//		let d = document.createElement('div');
-//		d.className = "sliderBox inputBox";
-//		let str = `<div>${desc} = <span id="${name}Display">${init}	</span></div><input id="${name}" type="range" min=" ${min}" max="${max}" step="${step}" value="${init}">  <div class="spreadValues">`;
-//		for( let v of values){
-//			str += `<span>${v}</span>`;
-//		}
-//		d.innerHTML = str;
-//		return d;
-//	}
-
-	function genPlayResetButtons(key){
-		const d = document.getElementById('playButtons').cloneNode(true);
-		addKeyForIds(key,d);
-		return d;
-	};
-	function genPlayResetOptions(key){
-		const d = document.createElement('div');
-		d.style = "display:none";
-		d.className = "actionBox";
-		d.id = 'actionOptions'+key;
-	 	const d1 = document.createElement('div');
-		d1.appendChild(document.createTextNode('Action:'));
-	 	d.appendChild(d1);
-		
-	 	const d2 = document.createElement('div');
-			const d21 = document.createElement('div');
-			d21.appendChild( 
-				genRadio('action'+key, 'None','none'+key,'none', true) );
-			d2.appendChild(d21);
-
-			const d22 = document.createElement('div');
-			d22.appendChild( 
-				genRadio('action'+key, 'Pause','pause'+key,'pause', false) );
-			d2.appendChild(d22);
-
-			const d23 = document.createElement('div');
-			d23.appendChild( 
-				genRadio('action'+key, 'Play','play'+key,'play', false) );
-			d2.appendChild(d23);
-		d.appendChild(d2);
-		
-		const d3 = document.createElement('div');
-		d3.appendChild( genCheckbox('Reset','reset'+key,'reset') );
-		d.appendChild(d3);
-		return d;
-	};
-
-
-
- function queHTML(){	
-	let page = document.getElementById('whole').cloneNode(true);
-	addKeyForIds('que',page);
-	let quePage = document.getElementById('que');
-	quePage.innerHTML = page.innerHTML;
-	quePage.classList.remove('displayNone');
-
-	 //export: insert the allow edit checkbox
-	 {	const d = document.getElementById('copyURLToClipboard'+'que')
-	 		.parentNode;
-	 	d.appendChild( genCheckbox('Allow Edit',
-					 'allowEditButton'+'que','allowEditButton'));
-	 }
-	 
-	//stats line
-	document.getElementById('statsWrapperque')
-	 	.innerHTML = '<div>Number in Queue: <span id="nInQueue"></span></div>';
-	 
-	//put in the sliders
-	let elem = document.getElementById('slidersWrapperque');
-	elem.appendChild(genSlider('arque', 'Arrival Rate',
-				'5.0',0,10,.5,[0,2,4,6,8,10]));
-	elem.appendChild(genSlider('acvque','Arrival CV',
-			'0.0',0,2,.5,['0.0','1.0','2.0']));
-	elem.appendChild(genSlider('srque','Service Rate',
-			'6.0',0,10,.5,[0,2,4,6,8,10] ));
-	elem.appendChild(genSlider('scvque','Service CV',
-			'0.0',0,2,.5,['0.0','1.0','2.0']));
-		 
-	 {const d = document.createElement('div');
-		 d.className = 'sliderBox';
-		 d.appendChild(genPlayResetButtons('que'));
-		 d.appendChild(genPlayResetOptions('que'));	
-		 elem.appendChild(d);
-	 }
-	 elem.appendChild(genSlider('speedque','Speed',
-					'1x',0,4,1,["slow","fast"]));
+import {
+	invStart
+}
+from './inv.js';
 	
+function openTab(evt, tabName, startFunc) {
+	// remove the old
+	currentTab.classList.add('displayNone');
+	// add the new
+	currentTab = document.getElementById(tabName);
+	currentTab.classList.remove('displayNone');
+	window.history.pushState({tabName:tabName},'','#'+tabName)
+	startFunc();
+}
 	
+function switchTo(which){
+	
+	if( currentTab ) currentTab.classList.add('displayNone');
+	const possibles = [{key:"que", start:queStart},
+					   {key:"lit", start:litStart},
+					   {key:"nvp", start:nvpStart},
+					   {key:"inv", start:invStart}];
+	let k = possibles.findIndex(option => option.key == which)
+	if( k >= 0 ){
+		currentTab = document.getElementById(which);
+		currentTab.classList.remove('displayNone');
+		possibles[k].start();
+	} else {
+		currentTab = document.getElementById('mainPage');
+		currentTab.classList.remove('displayNone');
+	}
 	
 };
-queHTML();
+
+window.onpopstate = function(event) {
+	const s = event.state;
+	switchTo(s ? s.tabName : '');
+};
+
+
+function router(event){
+	let inputElem = event.target.closest('h2');
+	if (!inputElem) return;
+	let key = inputElem.id.slice(0,3);
+	window.history.pushState({tabName:key},'','#'+key);
+	switchTo(key);
+}
+let start = new Date();
+var currentTab = null;
+var currentButton = null;
+switchTo(location.hash.slice(1));
+document.getElementById('mainPage').addEventListener('click',router);
 queStart();
+litStart();
+nvpStart();
+invStart();
+console.log( new Date - start);
+debugger;
+
+
+

@@ -685,7 +685,8 @@ export class BoxStack {
 }
 
 export class GStore {
-	constructor(anim) {
+	constructor(omConcept,anim) {
+		this.omConcept = omConcept;
 		this.anim = anim;
 		this.boxStack = new BoxStack(anim.box, true);
 		this.drawStore(this.anim.stage.backContext,
@@ -739,7 +740,7 @@ export class GStore {
 		let point = this.boxStack.relCoord(this.packages.length);
 		let color = tioxColors[Math.floor(
 			Math.random() *	tioxColors.length)];
-		let pack = new Package(
+		let pack = new Package(this.omConcept,
 			this.anim.stage.foreContext, color, this.anim.box.size,
 			this.anim.store.left + point.x, this.anim.store.bot + point.y);
 		this.packages.push(pack);
@@ -773,8 +774,8 @@ export class GStore {
 };
 
 export class Package extends Item {
-	constructor(ctx, color, boxSize, x, y) {
-		super(x, y);
+	constructor(omConcept,ctx, color, boxSize, x, y) {
+		super(omConcept,x, y);
 		this.graphic = new ColorBox(ctx, color, boxSize);
 		this.graphic.moveTo(x, y);
 	};

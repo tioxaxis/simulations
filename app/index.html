@@ -38,7 +38,7 @@
 <body >
 <div class='displayNone'>
 <div id='genericPlayResetBox'>
-	<div class='actionBox' id="playButtons">
+	<div class='rowAroundEnd' id="playButtons">
 		<div id='pauseButton'  style="display:none">
 		<i class="material-icons font35vw" 
 		   title="pause the animation">pause_circle_outline</i>
@@ -125,24 +125,41 @@
 		</div>
 	</div> 	<!-- end of rightHandSideBox  -->
 </div>	<!-- end of wrapper2to1 -->
+	<div id='mainPage' class='wrapper2by1 displayNone'>
+<!--		<span onclick="hit(1)">Queueing</span>-->
+		<h2 id="queLink">Queueing</h2>
+		<h2 id="litLink">Little's Law</h2>
+		<h2 id="nvpLink">News Vendor Problem</h2>
+		<h2 id="invLink">Inventory</h2>
+	</div>
 	<div id='que' class='wrapper2by1 displayNone'></div>
 	<div id='lit' class='wrapper2by1 displayNone'></div>
 	<div id='nvp' class='wrapper2by1 displayNone'></div>
 	<div id='inv' class='wrapper2by1 displayNone'></div>
 	
 </body>
-<script>
- 	function copyToClipboard (id){
-		let elem = document.getElementById(id);
-		navigator.clipboard.writeText(elem.innerText)
-			.then(  function() {
-				/* clipboard successfully set */
-				}, 
-			    function() {
-  					alert('failed to copy to clipboard')
-				});
+<!--
+	<script>
+	function hit(k){
+	switch (k){
+		case 1:
+			openTab(event, 'que', queStart);
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		case 4:
+			break;
+		default :
+			break;
 	}
-</script>
+	}
+	</script>
+-->
+
+
+
 </html>
 
 
