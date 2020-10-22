@@ -146,7 +146,8 @@ anim.scannerDelta = {
 };
 function queDefine(){
 	que = new OmConcept('que', queueEncodeURL, queueDecodeURL,queueReset);
-
+	document.getElementById('que').omConcept = que;
+	
 	document.getElementById('slidersWrapperque')
 	.addEventListener('input', captureChangeInSliderS);
 	
@@ -601,5 +602,6 @@ export function queStart() {
 	Math.seedrandom('this is the Queueing Simulation');
 	theSimulation.initialize(); // the specific to queueing
 	que.reset();
+	return que;
 };
 //document.addEventListener("DOMContentLoaded", initializeAll);

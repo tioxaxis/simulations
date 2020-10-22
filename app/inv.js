@@ -180,6 +180,7 @@ animSetup();
 
 function invDefine(){
 	inv = new OmConcept('inv', invEncodeURL, invDecodeURL,invReset);
+	document.getElementById('inv').omConcept = inv;
 	
 	document.getElementById('slidersWrapperinv')
 	.addEventListener('input', captureChangeInSliderS);
@@ -969,7 +970,7 @@ function invHTML(){
 	d2.className ="statDisplay";
 	const s2 = document.createElement('span');
 	s2.id = 'fillRate'
-	d2.append('fillRate: ',s2,'%');
+	d2.append('Fill Rate: ',s2,'%');
 	
 	const d3 = document.createElement('div');
 	d3.className ="statDisplay";
@@ -1038,4 +1039,5 @@ export function invStart() {
 	Math.seedrandom('this is a Simulation');
 	theSimulation.initialize(); // the specific to inv
 	inv.reset();
+	return inv;
 };

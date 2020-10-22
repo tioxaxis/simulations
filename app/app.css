@@ -174,12 +174,10 @@
 	.chartLegend{
 		flex: 0 0 10%;
 /*		border: solid blue;*/
-		display: flex;
-		flex-flow: nowrap;
-		flex-direction: row;
-		align-items: center;
-		justify-content: space-around;
 	}
+.legitem {
+	cursor: pointer;
+}
 
 /*    ************  Right Hand Side   *************    */
 .rightHandSideBox {

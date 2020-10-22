@@ -103,7 +103,9 @@ export class OmConcept {
 			.addEventListener('click', this.closeExportBox.bind(this));
 		
 		//keyboard
-		document.addEventListener('keydown', this.keyDownFunction.bind(this));
+		
+//		console.log('in constructor for omconcpt', this.key, this);
+//		debugger;
 		
 		// click on scenario name
 		this.ulPointer.addEventListener('click', this.liClicked.bind(this));
@@ -377,40 +379,7 @@ export class OmConcept {
 
 		
 	};
-	keyDownFunction(evt) {
-		switch (evt.code) {
-			case "Space":
-				if (this.editMode)return;
-				evt.preventDefault();
-				this.togglePlayPause();
-				break;
-			case "Enter":
-				if (!this.editMode) return;
-				if (this.textMode) this.saveModifiedDesc();
-				else this.addTextBox(this.currentLi.innerHTML);
-				break;
-			case "KeyB":
-				evt.preventDefault();
-				this.reset();
-				break;
-			case "Escape":
-				let elem = document.getElementById('exportBoxOuter'+this.key);
-				if (elem.style.display == 'block')
-					elem.style.display = 'none'
-				else this.deleteTextInpBox();
-				break;
-			case "ArrowDown":
-			case "PageDown":
-				evt.preventDefault();
-				this.nextRow();
-				break;
-			case "ArrowUp":
-			case "PageUp":
-				evt.preventDefault();
-				this.previousRow();
-				break;
-		};
-	};
+	
 
 	printPresets () {
 		//console.log(this.ulPointer);

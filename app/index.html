@@ -91,7 +91,7 @@
 			<div class='chart' id='chart'> 
 				<canvas  class="chartCanvas" id="chartCanvas" width='2000' height='600'></canvas>
 			</div>
-			<div class='chartLegend' id='chartLegend'></div>
+			<div class='chartLegend rowAroundCenter' id='chartLegend'></div>
 		</div>
 	</div>
 
@@ -125,19 +125,25 @@
 		</div>
 	</div> 	<!-- end of rightHandSideBox  -->
 </div>	<!-- end of wrapper2to1 -->
+	<div class='grid3col'>
 	<div id='mainPage' class='wrapper2by1 displayNone'>
-<!--		<span onclick="hit(1)">Queueing</span>-->
-		<h2 id="queLink">Queueing</h2>
-		<h2 id="litLink">Little's Law</h2>
-		<h2 id="nvpLink">News Vendor Problem</h2>
-		<h2 id="invLink">Inventory</h2>
+		<h2 id="queLink"><button>Queueing</button></h2>
+		<h2 id="litLink"><button>Little's Law</button></h2>
+		<h2 id="nvpLink"><button>News Vendor Problem</button></h2>
+		<h2 id="invLink"><button>Inventory</button></h2>
 	</div>
 	<div id='que' class='wrapper2by1 displayNone'></div>
 	<div id='lit' class='wrapper2by1 displayNone'></div>
 	<div id='nvp' class='wrapper2by1 displayNone'></div>
 	<div id='inv' class='wrapper2by1 displayNone'></div>
-	
+	</div>
 </body>
+	<style>
+		.grid33col{
+			display: grid;
+			grid-template-columns: auto auto auto
+		}
+	</style>
 <!--
 	<script>
 	function hit(k){

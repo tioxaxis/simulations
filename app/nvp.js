@@ -116,6 +116,7 @@ anim.person.path.mid = (anim.person.path.top + anim.person.path.bot) / 2;
 
 function nvpDefine(){
 	nvp = new OmConcept('nvp', nvEncodeURL, nvDecodeURL,nvReset);
+	document.getElementById('nvp').omConcept = nvp;
 	
 	document.getElementById('slidersWrappernvp')
 	.addEventListener('input', captureChangeInSliderS);
@@ -654,4 +655,5 @@ export function nvpStart() {
 	theSimulation.initialize(); // the specific to queueing
 	//reset first time to make sure it is ready to play.
 	nvp.reset();
+	return nvp;
 };

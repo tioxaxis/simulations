@@ -134,7 +134,8 @@ anim.pathway = {
 
 function litDefine(){
 	lit = new OmConcept('lit',littleEncodeURL,littleDecodeURL,littleReset);
-
+	document.getElementById('lit').omConcept = lit;
+	
 	document.getElementById('slidersWrapperlit')
 	.addEventListener('input', captureChangeInSliderS);
 	
@@ -551,4 +552,5 @@ export function litStart() {
 	Math.seedrandom('this is a Simulation');
 	theSimulation.initialize(); // the specific to queueing
 	lit.reset();
+	return lit;
 };
