@@ -272,7 +272,7 @@ const speeds = [{time:1,graph:1,anim:true},
 
 function invDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
-	const resetValue = {T: true, F: false};
+	const resetValue = {T: "true", F: "false"};
 	const whichValue = {R: "methRop", U: "methUpto"}
 	return( 
 	{ar: str.substring(0,4),

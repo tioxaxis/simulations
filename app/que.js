@@ -191,7 +191,7 @@ class ProcessCollection extends Array {
 
 function queueDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
-	const resetValue = {T: true, F: false};
+	const resetValue = {T: 'true', F: 'false'};
 	return( 
 	{ar: str.substring(0,4),
 	acv: str.substring(4,8),

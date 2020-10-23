@@ -81,8 +81,7 @@ function router(event){
 	switchTo(key);
 }
 function keyDownFunction(evt) {
-		let omConc = omConcepts[currentTab.id]; 
-		console.log('in keydown omConcept=',omConc,currentTab.id);
+	let omConc = omConcepts[currentTab.id]; 
 	if (!omConc) return;
 		switch (evt.code) {
 			case "Space":
@@ -120,7 +119,7 @@ function keyDownFunction(evt) {
 document.addEventListener('keydown', keyDownFunction);
 document.getElementById('mainPage').addEventListener('click',router);
 
-let start = new Date();
+
 var currentTab = null;
 switchTo(location.hash.slice(1));
 
@@ -128,7 +127,7 @@ omConcepts['que'] = queStart();
 omConcepts['lit'] = litStart();
 omConcepts['nvp'] = nvpStart();
 omConcepts['inv'] = invStart();
-console.log( new Date - start);
+
 
 
 

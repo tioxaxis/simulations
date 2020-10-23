@@ -310,39 +310,15 @@ export class OmConcept {
 		return null;
 	};
 
-	async initialize (sEncode,sDecode) {
-		
-
-		// get the scenarios from 1) the URL, 2) user specified .json
-		// 3) local storage or 4) default .json file in that order
-
-		// capture the three possible 'search' parameters
-		function parseSearchString(str){
-			let search = {edit: null, url: null, scenarios: null}
-			if (str.length == 0) return search;
-			
-			const terms = str.split('&');
-			for (let term of terms){
-				let j = term.indexOf('=');
-				if ( j > 0 ) {
-					search[term.substring(0,j)] = term.substring(j+1)
-				} else {
-					console.log( 'term missing =',term);
-				}
-			}
-			return search
-		}
-		
-		
-		
-		// try the 4 options in order returning the rows of parameters 
-		async function fourCases(key,search,scenariosString ){
+	/******************* Two Helper Functions for Initialize  *********/
+	// try the 4 options in order returning the rows of parameters 
+	async fourCases(key,search,scenariosString ){
 			if ( search.scenarios ){
 				if ( search.edit != "allow" ){
 					document.getElementById("editBox")
 							.style.display = 'none'
 				} 
-				return parseURLScenariosToRows(search.scenarios)
+				return this.parseURLScenariosToRows(search.scenarios)
 			}
 			
 			if ( search.url ) { 
@@ -360,24 +336,42 @@ export class OmConcept {
 				}
 			console.log("json file HTTP-Error: " + response.status);
 			return null
+		};
+	
+	// capture the three possible 'search' parameters
+	parseSearchString(str, hashMatchesKey ){
+			let search = {edit: null, url: null, scenarios: null}
+			if (str.length == 0) return search;
+			if (!hashMatchesKey) return search;
+			const terms = str.split('&');
+			for (let term of terms){
+				let j = term.indexOf('=');
+				if ( j > 0 ) {
+					search[term.substring(0,j)] = term.substring(j+1)
+				} else {
+					console.log( 'term missing =',term);
+				}
+			}
+			return search
 		}
+	
+	async initialize (sEncode,sDecode) {
+		console.log('in initialize rhs omConcept',this.key);
 		
-		let search = parseSearchString(
-			decodeURI(location.search.slice(1)))
+		// get the scenarios from 1) the URL, 2) user specified .json
+		// 3) local storage or 4) default .json file in that order
+		let hash = location.hash.slice(1);
+		let search = this.parseSearchString(
+			decodeURI(location.search.slice(1)), hash == this.key)
+		
+//		if ( hash != this.key) search =
 		let scenariosString =  localStorage.getItem(this.keyForLocalStorage);
 		this.warningLSandScens = search.scenarios  && scenariosString;
-		let rows = await fourCases(this.key,search, scenariosString);
-		
-		
+		let rows = await this.fourCases(this.key,search, scenariosString);
 	
 		// if one thing worked 'rows' has it.
 		this.setUL(rows);
 		this.started = true;
-
-		
-
-
-		
 	};
 	
 
@@ -631,7 +625,7 @@ export class OmConcept {
 	const result = location.origin + location.pathname +
 		'?scenarios=' +
 		this.createURLScenarioStr(this.createRowsFromUL()) +
-		( edit ? "&edit=allow" : "" );
+		( edit ? "&edit=allow" : "" ) + '#' + this.key;
 	const encResult =  encodeURI(result);
 	//console.log('in createURL',result, encResult);
 	return encResult;

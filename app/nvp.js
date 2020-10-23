@@ -171,7 +171,7 @@ const speeds = [{time:1,graph:1,anim:true},
 
 function nvDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
-	const resetValue = {T: true, F: false};
+	const resetValue = {T: 'true', F: 'false'};
 	return( 
 	{dr: str.substring(0,4),
 	dcv: str.substring(4,8),
