@@ -229,7 +229,7 @@ export class MachineCenter {
 
 			this.omConcept.heap.push({
 				time: this.omConcept.now + theProcTime,
-				type: 'finish/' + this.omConcept.name,
+				type: 'finish/' + this.name,
 				proc: this.finish.bind(this),
 				item: machine
 			});

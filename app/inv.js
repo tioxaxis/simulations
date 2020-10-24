@@ -46,7 +46,7 @@ import {
 from "./graph.js";
 class InvGraph extends TioxGraph {
 	constructor(omConcept){
-		super(omConcept,.3, {width:12, step:3}, d=>d.t);
+		super(omConcept,.3, {width:24, step:6}, d=>d.t);
 		this.predictedInvValue = null;
 		this.setTitle('Inventory');
 		this.setupLine(0, d => d.i, 'rgba(0,0,220,1)',
@@ -336,19 +336,24 @@ function captureChangeInSliderS(event) {
 			break;
 		case 'rop':
 			theSimulation.rop = Number(v);
-			invGraph.resetRopLine(Number(v));
-			invGraph.setupThenRedraw();
+			if( inv.whichRule == 'methRop'){
+				invGraph.resetRopLine(Number(v));
+				invGraph.setupThenRedraw();
+			}
 			break;
 		case 'period':
 			theSimulation.period = Number(v) * tioxTimeConv;
-			invGraph.resetPeriodLines(Number(v));
-			invGraph.setupThenRedraw();
+			if( inv.whichRule == 'methUpto'){
+				invGraph.resetPeriodLines(Number(v));
+				invGraph.setupThenRedraw();
+			}
 			break;
 		case 'upto':
 			theSimulation.upto = Number(v);
 			break;
 		case 'methRop':
 		case 'methUpto':
+			if( inv.whichRule == idShort )break
 			inv.whichRule = idShort;
 			if( inv.whichRule == 'methRop'){
 				const rop = document.getElementById('ropinv');
@@ -667,6 +672,7 @@ class RopStore extends GStore {
 
 		invGraph.push(inv.now, this.inv,
 			this.invPosition);
+		console.log('graphing in truck arrival', inv.now, this.inv);
 		// keep track stockouts by round
 		this.nRounds++;
 		if (!this.stockout) this.roundsWithEnough++;
@@ -699,6 +705,7 @@ class RopStore extends GStore {
 		
 		invGraph.push(inv.now, this.inv,
 			this.invPosition);
+		console.log('graphing in pull', inv.now, this.inv);
 		return pack;
 	};
 
@@ -747,7 +754,7 @@ class RopStore extends GStore {
 			}
 		});
 		inv.heap.push({
-			time: load.arrivalTime,
+			time: load.arrivalTime+1,
 			type: 'truck arrival',
 			proc: this.truckArrival.bind(this),
 			item: {
@@ -1008,7 +1015,7 @@ function invHTML(){
 				  3,2,8,1,[2,5,8]);
 	upto1.id = 'upto1';
 	const upto2 = genSlider('uptoinv','Up to Quantity = ','36','',
-				  26,10,50,1,[10,30,50,70,90]);
+				  36,10,90,1,[10,30,50,70,90]);
 	upto2.id = 'upto2';
 	
 	

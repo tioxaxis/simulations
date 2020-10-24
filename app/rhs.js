@@ -356,15 +356,12 @@ export class OmConcept {
 		}
 	
 	async initialize (sEncode,sDecode) {
-		console.log('in initialize rhs omConcept',this.key);
-		
 		// get the scenarios from 1) the URL, 2) user specified .json
 		// 3) local storage or 4) default .json file in that order
 		let hash = location.hash.slice(1);
 		let search = this.parseSearchString(
 			decodeURI(location.search.slice(1)), hash == this.key)
 		
-//		if ( hash != this.key) search =
 		let scenariosString =  localStorage.getItem(this.keyForLocalStorage);
 		this.warningLSandScens = search.scenarios  && scenariosString;
 		let rows = await this.fourCases(this.key,search, scenariosString);
