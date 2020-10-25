@@ -647,7 +647,7 @@ class RopStore extends GStore {
 	};
 
 	createDelivery(quantity) {
-		console.log('at create a delivery:', simu.now);
+//		console.log('at create a delivery:', simu.now);
 		this.invPosition += quantity;
 		invGraph.push(simu.now, this.inv,
 			this.invPosition);

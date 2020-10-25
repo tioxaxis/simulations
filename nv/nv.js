@@ -276,7 +276,7 @@ simu.reset2 = function () {
 	let maxOver = theSimulation.Co * 
 			(theSimulation.quantityOrdered - 
 			(1 - theSimulation.demandRV.variance) * theSimulation.demandRV.mean + 1) ;
-	console.log('at reset', maxUnder,maxOver);
+//	console.log('at reset', maxUnder,maxOver);
 	nvGraph.reset(Math.max(maxUnder,maxOver));
 	theProcessCollection.reset();
 	gSF = new GStickFigure(anim.stage.foreContext,

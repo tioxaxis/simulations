@@ -274,7 +274,11 @@ function captureChangeInSliderS(event) {
 			document.getElementById(idShort + 'litDisplay')
 				.innerHTML = speeds[v].time;
 			break;
-
+		case 'none':
+		case 'play':
+		case 'pause':
+		case 'reset':
+			break;
 		default:
 			console.log(' reached part for default');
 			break;

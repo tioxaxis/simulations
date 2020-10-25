@@ -581,7 +581,7 @@ class Supplier {
 		this.y = y;
 	};
 	pull() {
-		return new Person(inv, this.x, this.y);
+		return new Person(inv, this.x, this.y		);
 	}
 }; //end class Supplier
 
