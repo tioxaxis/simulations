@@ -16,7 +16,8 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/		
+*/	
+
 function verticalAxis(y,table) {
 	while( y > table[0].max ){
 		table.push({max: table[0].max * 10,

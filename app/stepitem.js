@@ -414,7 +414,18 @@ export class Item {
 		this.graphic.moveTo(this.cur.x, this.cur.y);
 		this.graphic.draw();
 	};
-
+	
+	setDestWithProcTime(procTime, x, y) {
+		let distance = Math.max(Math.abs(this.cur.x - x),
+			Math.abs(this.cur.y - y));
+		let deltaTime = Math.min(distance / 
+							this.omConcept.stage.normalSpeed, procTime);
+		this.addPath({
+			t: this.omConcept.now + deltaTime,
+			x: x,
+			y: y
+		});
+	};
 	updatePathDelta(t, dx, dy) {
 		let n = this.pathList.length;
 		let tempPath = this.pathList[n - 1];

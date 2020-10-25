@@ -72,8 +72,8 @@ class NVGraph extends TioxGraph {
 	}
 }
 const anim = {};
-let nvGraph;
 var nvp;
+var gSF;
 
 const disappointed = {
 	color: 'rgb(235, 230, 230)',
@@ -115,7 +115,7 @@ anim.person.path = {
 anim.person.path.mid = (anim.person.path.top + anim.person.path.bot) / 2;
 
 function nvpDefine(){
-	nvp = new OmConcept('nvp', nvEncodeURL, nvDecodeURL,nvReset);
+	nvp = new OmConcept('nvp', nvEncodeURL, nvDecodeURL, localReset);
 	document.getElementById('nvp').omConcept = nvp;
 	
 	document.getElementById('slidersWrappernvp')
@@ -147,19 +147,37 @@ function nvpDefine(){
 		.getElementById('backgroundnvp')
 		.getContext('2d');
 	nvp.stage = anim.stage;
-	
-	
-	
+	gSF = new GStickFigure(anim.stage.foreContext,
+			anim.person.height, anim.box.size);
 };
 
-class ProcessCollection extends Array {
-	constructor() {
-		super();
+function localReset() {
+		document.getElementById('actualPercnvp').innerHTML ="00.00";
+	//	nvp.itemCollection.reset();
+		let maxUnder = theSimulation.Cu * 
+				((1 + theSimulation.demandRV.variance) * theSimulation.demandRV.mean  
+				 - theSimulation.quantityOrdered + 1);
+		let maxOver = theSimulation.Co * 
+				(theSimulation.quantityOrdered - 
+				(1 - theSimulation.demandRV.variance) * theSimulation.demandRV.mean + 1) ;
+	//	console.log('at reset', maxUnder,maxOver);
+		nvp.graph.reset(Math.max(maxUnder,maxOver));
+	//	theProcessCollection.reset();
+		
+		setDesired(theSimulation.Cu, theSimulation.Co);
+		setExpected(theSimulation.quantityOrdered,
+			theSimulation.demandRV.mean,
+			theSimulation.demandRV.variance);
+
+		theSimulation.supply.previous = null;
+		nvp.heap.push({
+			time: nvp.now + 500,
+			type: 'new cycle',
+			proc: theSimulation.demand.cycle.bind(theSimulation.demand),
+			item: null
+		});
+
 	};
-	reset() {
-		this.forEach(aProcess => aProcess.reset());
-	};
-}; // end class processCollection
 
 const speeds = [{time:1,graph:1,anim:true},
 				{time:2,graph:1,anim:true},
@@ -184,17 +202,17 @@ function nvDecodeURL(str){
 	desc: str.substring(21)
 	})
 };
-function nvEncodeURL(preset){
+function nvEncodeURL(row){
 	const actionValue = {none: "N", play: "G", pause: "S"};
-	return Number(preset.dr).toFixed(1).padStart(4,'0')
-	 	.concat(Number(preset.dcv).toFixed(1).padStart(4,'0'),
-				Number(preset.Cu).toFixed(1).padStart(4,'0'),
-				Number(preset.Co).toFixed(1).padStart(4,'0'),
-				preset.quan.padStart(2,'0'),
-				preset.speed,
-				actionValue[preset.action],
-				(preset.reset == "true" ? "T" : "F"),
-				preset.desc);
+	return Number(row.dr).toFixed(1).padStart(4,'0')
+	 	.concat(Number(row.dcv).toFixed(1).padStart(4,'0'),
+				Number(row.Cu).toFixed(1).padStart(4,'0'),
+				Number(row.Co).toFixed(1).padStart(4,'0'),
+				row.quan.padStart(2,'0'),
+				row.speed,
+				actionValue[row.action],
+				(row.reset == "true" ? "T" : "F"),
+				row.desc);
 }
 
 function captureChangeInSliderS(event) {
@@ -244,7 +262,7 @@ function captureChangeInSliderS(event) {
 
 		case 'speed':
 			nvp.frameSpeed = speeds[v].time;
-			nvGraph.updateForSpeed(speeds[v].graph);
+			nvp.graph.updateForSpeed(speeds[v].graph);
 			nvp.itemCollection.updateForSpeed();
 			document.getElementById(idShort + 'nvpDisplay')
 				.innerHTML = speeds[v].time;
@@ -283,34 +301,7 @@ function setActual(enough, total) {
 		(100 * enough / total).toFixed(2);
 }
 
-function nvReset() {
-	document.getElementById('actualPercnvp').innerHTML ="00.00";
-	nvp.itemCollection.reset();
-	let maxUnder = theSimulation.Cu * 
-			((1 + theSimulation.demandRV.variance) * theSimulation.demandRV.mean  
-			 - theSimulation.quantityOrdered + 1);
-	let maxOver = theSimulation.Co * 
-			(theSimulation.quantityOrdered - 
-			(1 - theSimulation.demandRV.variance) * theSimulation.demandRV.mean + 1) ;
-//	console.log('at reset', maxUnder,maxOver);
-	nvGraph.reset(Math.max(maxUnder,maxOver));
-	theProcessCollection.reset();
-	gSF = new GStickFigure(anim.stage.foreContext,
-		anim.person.height, anim.box.size);
-	setDesired(theSimulation.Cu, theSimulation.Co);
-	setExpected(theSimulation.quantityOrdered,
-		theSimulation.demandRV.mean,
-		theSimulation.demandRV.variance);
 
-	theSimulation.supply.previous = null;
-	nvp.heap.push({
-		time: nvp.now + 500,
-		type: 'new cycle',
-		proc: theSimulation.demand.cycle.bind(theSimulation.demand),
-		item: null
-	});
-
-};
 
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
@@ -404,7 +395,7 @@ const animForNewsVendor = {
 	}
 };
 
-var theProcessCollection = new ProcessCollection();
+//var theProcessCollection = new ProcessCollection();
 
 const theSimulation = {
 	//  the two random variables in the simulation
@@ -433,37 +424,41 @@ const theSimulation = {
 		theSimulation.Cu = Number(document.getElementById('Cunvp').value);
 		theSimulation.quantityOrdered = Number(document.getElementById('quannvp').value);
 
-		nvGraph = new NVGraph(nvp);
+		nvp.graph = new NVGraph(nvp);
 		
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 
-		this.queue = new Queue(nvp, "theQueue", -1, animForQueue.walkingTime,   
-			animForQueue,
+		this.queue = new Queue(nvp, "theQueue", -1,
+			animForQueue.walkingTime, animForQueue,
 			null, null);
-
+		nvp.resetCollection.push(this.queue);
+		
 		this.store = new RetailStore(nvp, anim);
-
+		nvp.resetCollection.push(this.store);
+		
 		this.walkOffStage = new WalkAndDestroy(nvp, "walkOff", animForWalkOffStage, true);
+		nvp.resetCollection.push(this.walkOffStage);
 
 		this.demand = new DemandCreator(20000, theSimulation.demandRV);
+		nvp.resetCollection.push(this.demand);
 
 		this.newsVendor = new Combine(nvp,'newsVendor',
 			theSimulation.serviceRV,
 			this.queue, this.store, this.walkOffStage,
 			animForNewsVendor);
-
+		nvp.resetCollection.push(this.newsVendor);
 
 		//link the queue to machine before and after
 		this.queue.setPreviousNext(
 			this.creator, this.newsVendor);
 
-		// put all the process steps with visible people in theProcessCollection
-		theProcessCollection.push(this.demand);
-		theProcessCollection.push(this.queue);
-		theProcessCollection.push(this.store);
-		theProcessCollection.push(this.newsVendor);
-		theProcessCollection.push(this.walkOffStage);
+//		// put all the process steps with visible people in theProcessCollection
+//		theProcessCollection.push(this.demand);
+//		theProcessCollection.push(this.queue);
+//		theProcessCollection.push(this.store);
+//		theProcessCollection.push(this.newsVendor);
+//		theProcessCollection.push(this.walkOffStage);
 	},
 };
 
@@ -475,8 +470,7 @@ class Supplier {
 	};
 	pull() {
 		return new Person(nvp,
-			this.x, this.y,
-			30, anim.person.height);
+			this.x, this.y);
 	}
 }; //end class Supplier
 
@@ -542,7 +536,7 @@ class DemandCreator {
 		});
 	};
 	graph() {
-		nvGraph.push(this.nRounds, this.underageForDay, this.overageForDay);
+		nvp.graph.push(this.nRounds, this.underageForDay, this.overageForDay);
 		setActual(this.enough, this.nRounds);
 
 		theSimulation.store.makeAllGrey();
@@ -562,38 +556,18 @@ class RetailStore extends GStore {
 	};
 };
 
-var gSF;
+
 export class Person extends Item {
 
-	constructor(omConcept, x, y = 60, w = 30, h = 30) {
+	constructor(omConcept, x, y = 60) {
 		super(omConcept, x, y);
-		this.width = w;
+		
 		this.graphic = new NStickFigure(gSF, x, y);
-//		this.updateBadge = false;
 	};
-
-//	moveDisplayWithPath(deltaSimT) {
-//		if (this.updateBadge) {
-//			this.graphic.badgeSet(Math.round((nvp.now - this.arrivalTime) / tioxTimeConv).toString())
-//		}
-//		super.moveDisplayWithPath(deltaSimT);
-//	};
-
-	setDestWithProcTime(procTime, x, y) {
-		let distance = Math.max(Math.abs(this.cur.x - x),
-			Math.abs(this.cur.y - y));
-		let deltaTime = Math.min(distance / anim.stage.normalSpeed, procTime);
-		this.addPath({
-			t: nvp.now + deltaTime,
-			x: x,
-			y: y
-		});
-	};
-
 }; // end class Person
 
 import {
-	addKeyForIds, genCheckbox,  genPlayResetBox, genSlider, copyMainPage
+	addKeyForIds, genPlayResetBox, genSlider, copyMainPage
 }
 from './genHTML.js';
 
@@ -651,7 +625,6 @@ function nvpHTML(){
 export function nvpStart() {
 	nvpHTML();
 	nvpDefine();
-	Math.seedrandom('this is the Queueing Simulation');
 	theSimulation.initialize(); // the specific to queueing
 	//reset first time to make sure it is ready to play.
 	nvp.reset();

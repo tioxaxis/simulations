@@ -1,10 +1,29 @@
-	export function addKeyForIds(name,node){
-		if ( node.id ) node.id += name;
+	/*
+	TioX a set of Animations for Operations Management
+    Copyright (C) 2020  Gregory Dobson
+	gregory.c.dobson@gmail.com
+
+    GPL-3.0-or-later
+	This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/		
+
+export function addKeyForIds(key,node){
+		if ( node.id ) node.id += key;
 		const children = node.childNodes;
 		for( let child of children )
 			if ( child.tagName ) 
-				addKeyForIds( name, child ); 
-		
+				addKeyForIds( key, child ); 	
 	}
 
 	export function genRadio(name,desc,id,value,checked){	
@@ -19,12 +38,10 @@
 		label.append(inp, desc);
 		return label;
 	}
-
-	export function genCheckbox(desc,id,value){
+	export function genCheckbox(desc,id){
 		const inp = document.createElement('input');
 		inp.type = 'checkbox';
 		inp.id = id;
-//		inp.value = value;
 		
 		const label = document.createElement('LABEL');
 		label.append(inp, desc);
@@ -48,8 +65,7 @@
 	}
 
 	export function genSlider( id, before, mid, after,
-								initial, min, max, step, values){
-		
+								initial, min, max, step, values){	
 		const sp = document.createElement('span');
 		sp.id = id + 'Display';
 		sp.append(mid);
@@ -76,14 +92,12 @@
 		return d;
 	};
 
-
 	 function genPlayResetOptions(key){
 		const c1 = document.createElement('div');
 		c1.className = 'columnAroundStart';
 			const i11 = document.createElement('label');
 			i11.append('Action:');
-		c1.append(i11,genCheckbox('Reset','reset'+key,'reset'));
-
+		c1.append(i11,genCheckbox('Reset','reset'+key));
 
 		const c2 = document.createElement('div');
 		c2.className = 'columnAroundStart';
@@ -108,16 +122,14 @@
 		return d
 	}
 	
-	
 	export function copyMainPage(key){
 		let page = document.getElementById('whole').cloneNode(true);
 		addKeyForIds(key, page);
 		let keyPage = document.getElementById(key);
 		keyPage.innerHTML = page.innerHTML;
-//		keyPage.classList.remove('displayNone');
 
 	 	//export: insert the allow edit checkbox
 	 	const d1 = document.getElementById('copyURLToClipboard'+ key);
 	 	d1.parentNode.append( genCheckbox('Allow Edit',
-				'allowEditButton'+ key,'allowEditButton'));	
+				'allowEditButton'+ key));	
 	}

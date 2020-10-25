@@ -38,23 +38,25 @@ import {
 from "./stepitem.js";
 
 export class OmConcept {
-	constructor(key, sEncode, sDecode, concReset){
+	constructor(key, sEncode, sDecode, localReset){
 		this.key = key;
 		this.sEncode = sEncode;
 		this.sDecode = sDecode;
-		this.concReset = concReset;
+		this.localReset = localReset;
+		this.resetCollection = [];
+		
 		
 		this.keyForLocalStorage = 'Tiox-' + key;
+		Math.seedrandom('this is a Simulation');
 		
 		this.textInpBox = document.createElement("INPUT");
 		this.textInpBox.type = "text";
 		this.textInpBox.className = "textInput";
-		this.textInpBox.placeholder = "preset name";
+		this.textInpBox.placeholder = "scenario name";
 		
-		this.ulPointer = document.getElementById("ULPresetList"+key);		
+		this.ulPointer = document.getElementById("ULScenarioList"+key);		
 		this.currentLi = null, // poiner to current  LI in the UL in the HTML
 
-		this.started = null,
 		this.textMode = false,
 		this.editMode = false,
 
@@ -69,10 +71,11 @@ export class OmConcept {
 		this.isRunning = false;
 		this.requestAFId = null; // id for requestAnimationFrame
 
-		this.initialize(sDecode,sDecode);
+		this.setupScenarios();
 		this.itemCollection = new ItemCollection();
+		this.resetCollection.push(this.itemCollection);
 		
-		//set up event listeners for user interface
+		//***** Set up event listeners for user interface  ********
 		
 		// buttons
 		document.getElementById('playButton' + this.key)
@@ -102,11 +105,6 @@ export class OmConcept {
 		document.getElementById('closeExportBox' + this.key)
 			.addEventListener('click', this.closeExportBox.bind(this));
 		
-		//keyboard
-		
-//		console.log('in constructor for omconcpt', this.key, this);
-//		debugger;
-		
 		// click on scenario name
 		this.ulPointer.addEventListener('click', this.liClicked.bind(this));
 		this.ulPointer.addEventListener('dblclick', this.liDblClicked.bind(this));
@@ -116,23 +114,22 @@ export class OmConcept {
 			.addEventListener('input', this.captureChangeInSliderG.bind(this));
 		this.inputEvent = new Event('input', {bubbles: true});
 	}
-	
-	
 
-
+	//this reset routine calls all the other reset()'s eventually
 	reset  () {
 		this.clearStageForeground();
 		this.now = 0;
 		this.frameNow = 0;
 		this.heap.reset();
-		this.concReset();
+		this.resetCollection.forEach(obj => obj.reset());
+		this.localReset();
 	};
 
 	clearStageForeground() {
 		this.stage.foreContext.clearRect(0, 0, this.stage.width, this.stage.height);
 	}
 
-// play pause toggle and listeners that run them.
+	// play, pause, toggle .
 	play() {
 		if (this.isRunning) return;
 		if (document.getElementById('playButtons' + this.key)
@@ -191,7 +188,7 @@ export class OmConcept {
 				let t = inputElem.type;
 				let nShort = inputElem.name.slice(0,-3);
 				let scen = this.currentLi.scenario;
-				// pull value into preset based on type of input
+				// pull value into 'scen' or currentLi based on type of input
 				switch (t) {
 					case 'range':
 						scen[iShort] = v;
@@ -200,22 +197,18 @@ export class OmConcept {
 						scen[iShort] = inputElem.checked.toString();
 						break;
 					case 'radio':
-//						console.log(' in capture', inputElem.name, 'id=', iShort);
 						scen[nShort] = iShort;
 						break;
 					default:
 				}
 			} else {
-				// changing a slider in non edit mode just deselects preset.
+				// changing a slider in non edit mode just deselects currentLi row.
 				if (this.currentLi) this.currentLi.classList.remove("selected");
 				this.currentLi = null;
 			};
 		};
 	
 	setSlidersFrom (row) {
-		
-//		console.log('the picked row is',row);
-		//console.log(this.sliderTypes);
 		for (let key in this.sliderTypes) {
 			let t = this.sliderTypes[key];
 			let inputBox = document.getElementById(key+this.key);
@@ -272,13 +265,13 @@ export class OmConcept {
 		}
 		return row;
 	};
+	
 	createLineFromRow(row) {
 		const liElem = document.createElement("LI");
 		liElem.innerHTML = row.desc;
 		liElem.scenario = row;
 		return liElem;
 	}
-
 
 	nextLi() {
 		let cur = this.currentLi;
@@ -310,7 +303,7 @@ export class OmConcept {
 		return null;
 	};
 
-	/******************* Two Helper Functions for Initialize  *********/
+	/******************* Two Helper Functions for setupScenarios  *********/
 	// try the 4 options in order returning the rows of parameters 
 	async fourCases(key,search,scenariosString ){
 			if ( search.scenarios ){
@@ -355,7 +348,7 @@ export class OmConcept {
 			return search
 		}
 	
-	async initialize (sEncode,sDecode) {
+	async setupScenarios () {
 		// get the scenarios from 1) the URL, 2) user specified .json
 		// 3) local storage or 4) default .json file in that order
 		let hash = location.hash.slice(1);
@@ -368,15 +361,14 @@ export class OmConcept {
 	
 		// if one thing worked 'rows' has it.
 		this.setUL(rows);
-		this.started = true;
 	};
 	
 
-	printPresets () {
+	printScenarios () {
 		//console.log(this.ulPointer);
 	};
 
-	// utilities for the text box:  
+	// ***** Utilities for the text box:  
 	//  Delete, Save, Add  from the CurrentLi row.
 	deleteTextInpBox () {
 		if (this.textMode) {
@@ -402,7 +394,7 @@ export class OmConcept {
 		this.textInpBox.focus();
 	};
 
-	// for adding an new Preset row
+	// for adding an new scenario row
 	addRow () {
 		let desc = ''
 		if (this.currentLi) {
@@ -459,7 +451,7 @@ export class OmConcept {
 	};
 
 
-	// Routines to start, cancel and save an edit    
+	// ****** Routines to start, cancel and save an edit    
 	startEdit () {
 		//    save / clone the list ulPointer.
 		this.save = {
@@ -563,11 +555,13 @@ export class OmConcept {
 		};
 	};
 
-	// 2. double click on item in UL list;  
+	//   double click on item in UL list;  
 	//    start editing name if in edit mode
 	liDblClicked (ev) {
 		if (!this.editMode) return;
-		if (this.textMode) return; // ignore if in text mode already; everything is setup.
+		if (this.textMode) return; 
+		// ignore if in text mode already; everything is setup.
+		
 		if (ev.target == this.currentLi) {
 			if (ev.target.childNodes[0]) {
 				this.addTextBox(ev.target.childNodes[0].nodeValue);
@@ -578,89 +572,88 @@ export class OmConcept {
 	};
 	
 
-
- createRowsFromUL(){
-	let rows = [];
-	let lines = document.querySelectorAll(`#ULPresetList${this.key} li`);
-	for (let i = 0; i < lines.length; i++) {
-		rows[i] = lines[i].scenario;
-	}
-	return rows;
-};
-
-
- setUL(rows){ 
-	this.ulPointer.innerHTML = '';
-	for (let row of rows) {
-		let li = this.createLineFromRow(row);
-		this.ulPointer.append(li);
-	}
-};
-
- createURLScenarioStr(rows){
-	let first = true;
-	let str = '';
-	for (let row of rows){
-		str += (first ? "" : ";") + this.sEncode(row);
-		first = false;
-	}
-	//console.log('in crateScenarioStr', str);
-	return str;
-};
-
-//convert each coded scenario into a row of parameters
- parseURLScenariosToRows(str){
-	let rows = [];
-	let scens = str.split(';')
-	for ( let scenario of scens){
-		rows.push( this.sDecode(scenario) );
-	}
-	return rows;
-};
-
- createURL(edit) { //from current UL
-	const result = location.origin + location.pathname +
-		'?scenarios=' +
-		this.createURLScenarioStr(this.createRowsFromUL()) +
-		( edit ? "&edit=allow" : "" ) + '#' + this.key;
-	const encResult =  encodeURI(result);
-	//console.log('in createURL',result, encResult);
-	return encResult;
-};
-
- createJSONfromUL() { //from curreent UL
-	return JSON.stringify(this.createRowsFromUL());
-};
+// ****** A set of routines for manipulating a collection of scenarios (rows)
+	createRowsFromUL(){
+		let rows = [];
+		let lines = document.querySelectorAll(`#ULScenarioList${this.key} li`);
+		for (let i = 0; i < lines.length; i++) {
+			rows[i] = lines[i].scenario;
+		}
+		return rows;
+	};
 
 
- toggleAllowEdit(event){
-	document.getElementById('urlDisplay'+this.key)
-		.innerHTML = this.createURL(event.target.checked)
-	}
-	
+	setUL(rows){ 
+		this.ulPointer.innerHTML = '';
+		for (let row of rows) {
+			let li = this.createLineFromRow(row);
+			this.ulPointer.append(li);
+		}
+	};
+
+	createURLScenarioStr(rows){
+		let first = true;
+		let str = '';
+		for (let row of rows){
+			str += (first ? "" : ";") + this.sEncode(row);
+			first = false;
+		}
+		return str;
+	};
+
+	//convert each coded scenario into a row of parameters
+	parseURLScenariosToRows(str){
+		let rows = [];
+		let scens = str.split(';')
+		for ( let scenario of scens){
+			rows.push( this.sDecode(scenario) );
+		}
+		return rows;
+	};
+
+	createURL(edit) { //from current UL
+		const result = location.origin + location.pathname +
+			'?scenarios=' +
+			this.createURLScenarioStr(this.createRowsFromUL()) +
+			( edit ? "&edit=allow" : "" ) + '#' + this.key;
+		const encResult =  encodeURI(result);
+		//console.log('in createURL',result, encResult);
+		return encResult;
+	};
+
+	createJSONfromUL() { //from curreent UL
+		return JSON.stringify(this.createRowsFromUL());
+	};
+
+
+	toggleAllowEdit(event){
+		document.getElementById('urlDisplay'+this.key)
+			.innerHTML = this.createURL(event.target.checked)
+	};
+
 	copyURLToClipboard (event){
 		copyToClipboard('urlDisplay'+this.key)
-	}
+	};
 	copyJSONToClipboard (event){
 		copyToClipboard('jsonDisplay'+this.key)
-	}
+	};
 	closeExportBox (event){
 		document.getElementById('exportBoxOuter'+this.key)
-			.style='display:none';
-	}
+				.style='display:none';
+	};
 };
 
 
 function copyToClipboard (id){
-		let elem = document.getElementById(id);
-		navigator.clipboard.writeText(elem.innerText)
-			.then(  function() {
-				/* clipboard successfully set */
-				}, 
-			    function() {
-  					alert('failed to copy to clipboard')
-				});
-	};
+	let elem = document.getElementById(id);
+	navigator.clipboard.writeText(elem.innerText)
+		.then(  function() {
+			/* clipboard successfully set */
+			}, 
+			function() {
+				alert('failed to copy to clipboard')
+			});
+};
 
 // three Nodelist routines;
 function getChecked(nodelist) {

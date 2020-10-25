@@ -127,7 +127,8 @@ class InvGraph extends TioxGraph {
 }
 const anim = {};
 var inv;
-let invGraph;
+var gSF;
+
 function animSetup(){
 	anim.stage = { 
 	normalSpeed: .10, //.10 pixels per millisecond
@@ -179,17 +180,15 @@ animSetup();
 
 
 function invDefine(){
-	inv = new OmConcept('inv', invEncodeURL, invDecodeURL,invReset);
+	inv = new OmConcept('inv', invEncodeURL, invDecodeURL, localReset);
 	document.getElementById('inv').omConcept = inv;
-	
+
 	document.getElementById('slidersWrapperinv')
 	.addEventListener('input', captureChangeInSliderS);
 	document.getElementById('ropuptoinv')
 	.addEventListener('input', captureChangeInSliderS);
 	
-	
 	inv.whichRule = 'methRop';
-
 
 	inv.sliderTypes = {
 		ar: 'range',
@@ -224,18 +223,38 @@ function invDefine(){
 		.getElementById('backgroundinv')
 		.getContext('2d');
 	inv.stage = anim.stage;
+	gSF = new GStickFigure(anim.stage.foreContext,
+			anim.person.height, anim.box.size);
 };
 
+function localReset () {
+	//	inv.itemCollection.reset();
+	//	inv.graph.reset();
+		pickInvSimulation(inv.whichRule);
 
-class ProcessCollection extends Array {
-	constructor() {
-		super();
-	};
-	reset() {
-		this.forEach(aProcess => aProcess.reset());
-	};
-}; // end class processCollection
 
+	//	theProcessCollection.reset();
+		inv.itemCollection.moveDisplayAll(0); //display all at start.
+		
+		// schedule the initial Person to arrive and start the simulation/animation.
+		theSimulation.supply.previous = null;
+		theSimulation.creator.knockFromPrevious();
+		//fudge to get animation started quickly
+		let t = inv.heap.top().time - 1;
+		inv.now = inv.frameNow = t;
+		if (inv.whichRule == 'methUpto') {
+			inv.heap.push({
+				time: 0 + theSimulation.period,
+				type: 'next order',
+				proc: theSimulation.store.orderUpto
+					.bind(theSimulation.store),
+				item: null
+			});
+		}
+		document.getElementById('lostSales').innerHTML = '0';
+		document.getElementById('fillRate').innerHTML = '100';
+		document.getElementById('serviceLevel').innerHTML = '100';
+	};
 
 function pickInvSimulation(which) {
 	const rop1 = document.getElementById('rop1');
@@ -290,21 +309,21 @@ function invDecodeURL(str){
 	 desc: str.substring(28)
 	})
 };
-function invEncodeURL(preset){
+function invEncodeURL(row){
 	const actionValue = {none: "N", play: "G", pause: "S"};
-	return Number(preset.ar).toFixed(1).padStart(4,'0')
-	.concat(Number(preset.acv).toFixed(1).padStart(4,'0'), 
-		Number(preset.lt).toFixed(1).padStart(4,'0'),
-		Number(preset.ltcv).toFixed(1).padStart(4,'0'),
-		preset.quan.padStart(2,'0'),
-		preset.rop.padStart(2,'0'),
-		preset.period.padStart(2,'0'),
-		preset.upto.padStart(2,'0'),
-		preset.speed,
-		actionValue[preset.action],
-		(preset.which == "methRop" ? "R" : "U"),
-		(preset.reset == "true" ? "T" : "F" ),
-		preset.desc);
+	return Number(row.ar).toFixed(1).padStart(4,'0')
+	.concat(Number(row.acv).toFixed(1).padStart(4,'0'), 
+		Number(row.lt).toFixed(1).padStart(4,'0'),
+		Number(row.ltcv).toFixed(1).padStart(4,'0'),
+		row.quan.padStart(2,'0'),
+		row.rop.padStart(2,'0'),
+		row.period.padStart(2,'0'),
+		row.upto.padStart(2,'0'),
+		row.speed,
+		actionValue[row.action],
+		(row.which == "methRop" ? "R" : "U"),
+		(row.reset == "true" ? "T" : "F" ),
+		row.desc);
 }
 
 function captureChangeInSliderS(event) {
@@ -337,15 +356,15 @@ function captureChangeInSliderS(event) {
 		case 'rop':
 			theSimulation.rop = Number(v);
 			if( inv.whichRule == 'methRop'){
-				invGraph.resetRopLine(Number(v));
-				invGraph.setupThenRedraw();
+				inv.graph.resetRopLine(Number(v));
+				inv.graph.setupThenRedraw();
 			}
 			break;
 		case 'period':
 			theSimulation.period = Number(v) * tioxTimeConv;
 			if( inv.whichRule == 'methUpto'){
-				invGraph.resetPeriodLines(Number(v));
-				invGraph.setupThenRedraw();
+				inv.graph.resetPeriodLines(Number(v));
+				inv.graph.setupThenRedraw();
 			}
 			break;
 		case 'upto':
@@ -357,10 +376,10 @@ function captureChangeInSliderS(event) {
 			inv.whichRule = idShort;
 			if( inv.whichRule == 'methRop'){
 				const rop = document.getElementById('ropinv');
-				invGraph.resetRopLine(Number(rop.value));
+				inv.graph.resetRopLine(Number(rop.value));
 			} else {
 				const period = document.getElementById('periodinv');
-				invGraph.resetPeriodLines(Number(period.value));
+				inv.graph.resetPeriodLines(Number(period.value));
 			}
 			pickInvSimulation(inv.whichRule);
 			inv.reset();
@@ -368,7 +387,7 @@ function captureChangeInSliderS(event) {
 			break;
 		case 'speed':
 			inv.frameSpeed = speeds[v].time;
-			invGraph.updateForSpeed(speeds[v].graph);
+			inv.graph.updateForSpeed(speeds[v].graph);
 			inv.itemCollection.updateForSpeed();
 			document.getElementById(idShort + 'invDisplay')
 				.innerHTML = speeds[v].time;
@@ -385,36 +404,6 @@ function captureChangeInSliderS(event) {
 	}
 }
 
-function invReset() {
-	inv.itemCollection.reset();
-	invGraph.reset();
-	pickInvSimulation(inv.whichRule);
-								  
-	
-	theProcessCollection.reset();
-	inv.itemCollection.moveDisplayAll(0); //display all at start.
-	gSF = new GStickFigure(anim.stage.foreContext,
-		anim.person.height,
-		anim.box.size);
-	// schedule the initial Person to arrive and start the simulation/animation.
-	theSimulation.supply.previous = null;
-	theSimulation.creator.knockFromPrevious();
-	//fudge to get animation started quickly
-	let t = inv.heap.top().time - 1;
-	inv.now = inv.frameNow = t;
-	if (inv.whichRule == 'methUpto') {
-		inv.heap.push({
-			time: 0 + theSimulation.period,
-			type: 'next order',
-			proc: theSimulation.store.orderUpto
-				.bind(theSimulation.store),
-			item: null
-		});
-	}
-	document.getElementById('lostSales').innerHTML = '0';
-	document.getElementById('fillRate').innerHTML = '100';
-	document.getElementById('serviceLevel').innerHTML = '100';
-};
 
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
@@ -500,7 +489,7 @@ const animForWalkOffStage = {
 	}
 };
 
-var theProcessCollection = new ProcessCollection();
+//var theProcessCollection = new ProcessCollection();
 
 const theSimulation = {
 	arrivalRV: null,
@@ -535,7 +524,8 @@ const theSimulation = {
 		let ltcv = Number(document.getElementById('ltcvinv').value);
 		theSimulation.leadtimeRV = new GammaRV(1 / (lt * tioxTimeConv), ltcv);
 		
-		invGraph = new InvGraph(inv);
+		inv.graph = new InvGraph(inv);
+		inv.resetCollection.push(inv.graph);
 		
 
 		theSimulation.quantityOrdered = Number(
@@ -555,34 +545,30 @@ const theSimulation = {
 			animForQueue.walkingTime,   
 			animForQueue,
 			null, null);
+		inv.resetCollection.push(this.queue);
 
 		this.walkOffStage = new WalkAndDestroy(inv, "walkOff", animForWalkOffStage, true);
+		inv.resetCollection.push(this.walkOffStage);
 
 		this.store = new RopStore(inv,anim);
+		inv.resetCollection.push(this.store);
 
 		//machine centers 
 		this.creator = new MachineCenter(inv,"creator",
 			1, theSimulation.arrivalRV,
 			this.supply, this.queue,
 			null);
+		inv.resetCollection.push(this.creator);
 
 		this.seller = new Combine(inv,'seller',
 			theSimulation.serviceRV,
 			this.queue, this.store, this.walkOffStage,
 			animForSeller);
-
+		inv.resetCollection.push(this.seller);
 
 		//link the queue to machine before and after
 		this.queue.setPreviousNext(
 			this.creator, this.seller);
-
-		// put all the process steps with visible people in theProcessCollection
-		//        theProcessCollection.push(this.creator);
-		theProcessCollection.push(this.creator);
-		theProcessCollection.push(this.queue);
-		theProcessCollection.push(this.seller);
-		theProcessCollection.push(this.store);
-		theProcessCollection.push(this.walkOffStage);
 	}, //end of initialize
 };
 
@@ -595,8 +581,7 @@ class Supplier {
 		this.y = y;
 	};
 	pull() {
-		return new Person(inv, this.x, this.y,
-						30, anim.person.height);
+		return new Person(inv, this.x, this.y);
 	}
 }; //end class Supplier
 
@@ -670,9 +655,8 @@ class RopStore extends GStore {
 		load.destroy();
 		this.inv += n;
 
-		invGraph.push(inv.now, this.inv,
+		inv.graph.push(inv.now, this.inv,
 			this.invPosition);
-		console.log('graphing in truck arrival', inv.now, this.inv);
 		// keep track stockouts by round
 		this.nRounds++;
 		if (!this.stockout) this.roundsWithEnough++;
@@ -703,9 +687,8 @@ class RopStore extends GStore {
 		document.getElementById('fillRate').innerHTML =
 			((1 - this.lostSales / this.totalDemand) * 100).toFixed(0);
 		
-		invGraph.push(inv.now, this.inv,
+		inv.graph.push(inv.now, this.inv,
 			this.invPosition);
-		console.log('graphing in pull', inv.now, this.inv);
 		return pack;
 	};
 
@@ -726,7 +709,7 @@ class RopStore extends GStore {
 	createDelivery(quantity) {
 //		console.log('at create a delivery:', inv.now);
 		this.invPosition += quantity;
-		invGraph.push(inv.now, this.inv,
+		inv.graph.push(inv.now, this.inv,
 			this.invPosition);
 		const truck = new Truck(inv, anim);
 		const truckLT = theSimulation.leadtimeRV.observe();
@@ -754,7 +737,7 @@ class RopStore extends GStore {
 			}
 		});
 		inv.heap.push({
-			time: load.arrivalTime+1,
+			time: load.arrivalTime+1,  //just ensures truck arrives after pull.
 			type: 'truck arrival',
 			proc: this.truckArrival.bind(this),
 			item: {
@@ -928,35 +911,16 @@ class DisplayBoxes {
 		this.ctxDB.restore();
 	};
 };
-var gSF;
+
 export class Person extends Item {
-	constructor(omConcept, x, y, w = 30, h = 30) {
+	constructor(omConcept, x, y) {
 		super(omConcept, x, y);
-		this.width = w;
 		this.graphic = new NStickFigure(gSF, x, y);
-	};
-//	moveDisplayWithPath(deltaSimT) {
-//		if (this.updateBadge) {
-//			this.graphic.badgeSet(Math.round((inv.now - this.arrivalTime) / tioxTimeConv).toString())
-//		}
-//		super.moveDisplayWithPath(deltaSimT);
-//	};
-
-
-	setDestWithProcTime(procTime, x, y) {
-		let distance = Math.max(Math.abs(this.cur.x - x),
-			Math.abs(this.cur.y - y));
-		let deltaTime = Math.min(distance / anim.stage.normalSpeed, procTime);
-		this.addPath({
-			t: inv.now + deltaTime,
-			x: x,
-			y: y
-		});
-	};
+	};	
 }; // end class Person
 
 import {
-	addKeyForIds, genCheckbox, genRadio, genPlayResetBox, 
+	genRadio, genPlayResetBox, 
 	genSlider, copyMainPage, hideNode
 }
 from './genHTML.js';
@@ -1043,7 +1007,6 @@ function invHTML(){
 export function invStart() {
 	invHTML();
 	invDefine();
-	Math.seedrandom('this is a Simulation');
 	theSimulation.initialize(); // the specific to inv
 	inv.reset();
 	return inv;

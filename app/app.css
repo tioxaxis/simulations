@@ -60,7 +60,7 @@
 	z-index: 6;
 	
 }
-.exportPresetsBox {
+.exportBox {
 	position: fixed;
 	top: 10%;
 	bottom: 10%;
@@ -72,7 +72,7 @@
 	margin: auto;
 	border: solid var(--borderColor) .8vw;
 }
-.exportPresetsBox p {
+.exportBox p {
 	padding: 0px 3%;
 	word-wrap: break-word;
 	overflow: auto;
@@ -482,7 +482,8 @@ li {
 	display: flex;
 	align-items: center;
 }
-ul li.selected {
+ul li.selected,
+ul li.selected:hover{
 	background: blue;
 	color: #fff;
 }

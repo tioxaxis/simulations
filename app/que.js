@@ -55,7 +55,6 @@ class QueueGraph extends TioxGraph {
 	push (t,w){
 		t /= tioxTimeConv;
 		w /= tioxTimeConv;
-//		console.log('pushing for graph',t,w);
 		this.total += w;
 		this.count++;
 		let pW = this.predictedWaitValue == Infinity ? null : this.predictedWaitValue;
@@ -103,13 +102,11 @@ class QueueGraph extends TioxGraph {
 		this.predictedWaitValue = pW;
 	};
 }
+let que ;
 const anim = {};
-let queueGraph;
+var gSF;
 
 const tioxTimeConv = 10000; //rates in tiox are k/10 seconds
-
-var que ;
-
 const precision = {
 	ar: 1,
 	acv: 1,
@@ -145,49 +142,45 @@ anim.scannerDelta = {
 	dy: anim.person.height * 1.8
 };
 function queDefine(){
-	que = new OmConcept('que', queueEncodeURL, queueDecodeURL,queueReset);
+	que = new OmConcept('que', queueEncodeURL, queueDecodeURL, localReset);
 	document.getElementById('que').omConcept = que;
 	
 	document.getElementById('slidersWrapperque')
 	.addEventListener('input', captureChangeInSliderS);
 	
-que.sliderTypes = {
-	ar: 'range',
-	acv: 'range',
-	sr: 'range',
-	scv: 'range',
-	speed: 'range',
-	action: 'radio',
-	reset: 'checkbox'
-};
-	
-	
-anim.stage.foreContext = document
-		.getElementById('foregroundque')
-		.getContext('2d');
-anim.stage.backContext = document
-		.getElementById('backgroundque')
-		.getContext('2d');
+	que.sliderTypes = {
+		ar: 'range',
+		acv: 'range',
+		sr: 'range',
+		scv: 'range',
+		speed: 'range',
+		action: 'radio',
+		reset: 'checkbox'
+	};
+
+
+	anim.stage.foreContext = document
+			.getElementById('foregroundque')
+			.getContext('2d');
+	anim.stage.backContext = document
+			.getElementById('backgroundque')
+			.getContext('2d');
 	que.stage = anim.stage;
-
-
-
-// specific info for queueing needed by general routines
-// in procsteps and rhs.
-
+	gSF = new GStickFigure(anim.stage.foreContext,
+			anim.person.height);
 };
-class ProcessCollection extends Array {
-	constructor() {
-		super();
-	};
-	reset() {
-		this.forEach(aProcess => aProcess.reset());
-	};
-}; // end class processCollection
+function localReset () {
+		
+	// schedule the initial Person to arrive and start the simulation/animation.
+	theSimulation.supply.previous = null;
+	theSimulation.creator.knockFromPrevious();
 
-
- 
-// old version = [1, 2, 5, 10, 25];
+	//fudge to get animation started quickly
+	let t = que.heap.top().time - 1;
+	que.now = que.frameNow = t;
+	theSimulation.nInQueue = 0;
+	document.getElementById('nInQueue').innerHTML = '0';
+};
 
 function queueDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
@@ -203,20 +196,17 @@ function queueDecodeURL(str){
 	 desc: str.substring(19)
 	})
 };
-function queueEncodeURL(preset){
+function queueEncodeURL(row){
 	const actionValue = {none: "N", play: "G", pause: "S"};
-	return Number(preset.ar).toFixed(1).padStart(4,'0') 
-	.concat(Number(preset.acv).toFixed(1).padStart(4,'0'),
-		Number(preset.sr).toFixed(1).padStart(4,'0'),
-		Number(preset.scv).toFixed(1).padStart(4,'0'),
-		preset.speed,
-		actionValue[preset.action],
-		(preset.reset == "true" ? "T" : "F"),
-		preset.desc);
+	return Number(row.ar).toFixed(1).padStart(4,'0') 
+	.concat(Number(row.acv).toFixed(1).padStart(4,'0'),
+		Number(row.sr).toFixed(1).padStart(4,'0'),
+		Number(row.scv).toFixed(1).padStart(4,'0'),
+		row.speed,
+		actionValue[row.action],
+		(row.reset == "true" ? "T" : "F"),
+		row.desc);
 }
-
-
-
 
 function captureChangeInSliderS(event) {
 	let inputElem = event.target.closest('input');
@@ -236,14 +226,14 @@ function captureChangeInSliderS(event) {
 				.setRate(v / tioxTimeConv);
 			que.heap.modify('finish/creator', que.now, 
 							 theSimulation.interarrivalRV);
-			queueGraph.updatePredictedWait();
+			que.graph.updatePredictedWait();
 			break;
 
 		case 'acv':
 			theSimulation.interarrivalRV.setCV(v);
 			que.heap.modify('finish/creator', que.now,
 							 theSimulation.interarrivalRV);
-			queueGraph.updatePredictedWait();
+			que.graph.updatePredictedWait();
 
 			break;
 
@@ -252,19 +242,19 @@ function captureChangeInSliderS(event) {
 				.setRate(v / tioxTimeConv);
 			que.heap.modify('finish/TSAagent', que.now, 
 							 theSimulation.serviceRV);
-			queueGraph.updatePredictedWait();
+			que.graph.updatePredictedWait();
 			break;
 
 		case 'scv':
 			theSimulation.serviceRV.setCV(v);
 			que.heap.modify('finish/TSAagent', que.now, 
 							 theSimulation.serviceRV);
-			queueGraph.updatePredictedWait();
+			que.graph.updatePredictedWait();
 			break;
 
 		case 'speed':
 			que.frameSpeed = speeds[v].time;
-			queueGraph.updateForSpeed(speeds[v].graph);
+			que.graph.updateForSpeed(speeds[v].graph);
 			que.itemCollection.updateForSpeed();
 			document.getElementById(idShort + 'queDisplay')
 				.innerHTML = speeds[v].time;
@@ -281,24 +271,7 @@ function captureChangeInSliderS(event) {
 	}
 }
 
-function queueReset () {
-	que.itemCollection.reset();
-	queueGraph.reset();
-	theProcessCollection.reset();
-	gSF = new GStickFigure(anim.stage.foreContext,
-		anim.person.height);
 
-	// schedule the initial Person to arrive and start the simulation/animation.
-	theSimulation.supply.previous = null;
-	theSimulation.creator.knockFromPrevious();
-
-	//fudge to get animation started quickly
-	let t = que.heap.top().time - 1;
-	que.now = que.frameNow = t;
-	theSimulation.nInQueue = 0;
-	document.getElementById('nInQueue').innerHTML = '0';
-
-};
 
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
@@ -357,16 +330,6 @@ const animForQueue = {
 		}
 	}
 };
-
-//function printPath(p, str){
-//   
-//    if(p.pathList.length == 0) 
-//        console.log(str,'person',p.which,'no path****');
-//    for ( let i = 0; i < p.pathList.length; i++ ) {
-//        let pt = p.pathList[i];
-//        console.log(str,'person',p.which, pt.t,pt.x,pt.y);
-//    }
-//};
 
 const animForWalkOffStage = {
 	walkingTime: Math.abs(anim.person.path.scanner 
@@ -441,9 +404,6 @@ const animForTSA = {
 	}
 };
 
-
-var theProcessCollection = new ProcessCollection();
-
 const theSimulation = {
 	//  the two random variables in the simulation
 	interarrivalRV: null,
@@ -466,7 +426,9 @@ const theSimulation = {
 		cv = document.getElementById('scvque').value;
 		theSimulation.serviceRV = new GammaRV(r / tioxTimeConv, cv);
 
-		queueGraph = new QueueGraph(que);
+		que.graph = new QueueGraph(que);
+		que.resetCollection.push(que.graph);
+		
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 
@@ -474,41 +436,38 @@ const theSimulation = {
 		this.queue = new Queue(que, "theQueue", -1,
 			animForQueue.walkingTime, animForQueue,
 			recordQueueArrival, recordQueueLeave);
-
+		que.resetCollection.push(this.queue);
+		
 		// define the helper functions for theQueue
 		function recordQueueArrival(person) {
 			person.arrivalTime = que.now;
 		};
 
 		function recordQueueLeave(person) {
-			queueGraph.push(que.now, que.now - person.arrivalTime);
+			que.graph.push(que.now, que.now - person.arrivalTime);
 		};
 
 
 		this.walkOffStage = new WalkAndDestroy(que, "walkOff",
 								animForWalkOffStage, true);
-
+		que.resetCollection.push(this.walkOffStage);
 
 		// machine centers 
 		this.creator = new MachineCenter(que, "creator",
 			1, theSimulation.interarrivalRV,
 			this.supply, this.queue,
 			animForCreator);
+		que.resetCollection.push(this.creator);
 
 		this.TSAagent = new MachineCenter(que, "TSAagent",
 			1, theSimulation.serviceRV,
 			this.queue, this.walkOffStage,
 			animForTSA);
+		que.resetCollection.push(this.TSAagent);
 
 		//link the queue to machine before and after
 		this.queue.setPreviousNext(
 			this.creator, this.TSAagent);
-
-		// put all the process steps with visible people in theProcessCollection
-		theProcessCollection.push(this.creator);
-		theProcessCollection.push(this.queue);
-		theProcessCollection.push(this.TSAagent);
-		theProcessCollection.push(this.walkOffStage);
 	},
 };
 
@@ -519,16 +478,14 @@ class Supplier {
 		this.y = y;
 	};
 	pull() {
-		return new Person(que, this.x, this.y,
-			30, anim.person.height);
+		return new Person(que, this.x, this.y);
 	}
 }; //end class Supplier
 
-var gSF;
+
 export class Person extends Item {
-	constructor(omConcept, x, y = 100, w = 30, h = 30) {
+	constructor(omConcept, x, y = 100) {
 		super(omConcept, x, y);
-		this.width = w;
 		this.graphic = new NStickFigure(gSF, x, y);
 	};
 
@@ -547,21 +504,10 @@ export class Person extends Item {
 			//        if ( pPath.deltaX <= aPath.deltaX ) return false;
 			//        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
 	};
-
-	setDestWithProcTime(procTime, x, y) {
-		let distance = Math.max(Math.abs(this.cur.x - x),
-			Math.abs(this.cur.y - y));
-		let deltaTime = Math.min(distance / anim.stage.normalSpeed, procTime);
-		this.addPath({
-			t: que.now + deltaTime,
-			x: x,
-			y: y
-		});
-	};
 }; // end class Person
 
 import {
-	addKeyForIds, genCheckbox,  genPlayResetBox, genSlider, copyMainPage
+	genPlayResetBox, genSlider, copyMainPage
 }
 from './genHTML.js';
 
@@ -599,9 +545,7 @@ function queHTML(){
 export function queStart() {
 	queHTML();
 	queDefine();
-	Math.seedrandom('this is the Queueing Simulation');
 	theSimulation.initialize(); // the specific to queueing
 	que.reset();
 	return que;
 };
-//document.addEventListener("DOMContentLoaded", initializeAll);

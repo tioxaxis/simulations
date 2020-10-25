@@ -84,9 +84,10 @@ class LittleGraph extends TioxGraph {
 		});
 	};
 }
-let littleGraph;
 
 var lit;
+var gSF;
+
 const speeds = [{time:1,graph:1,anim:true},
 				{time:2,graph:1,anim:true},
 				{time:5,graph:2,anim:true},
@@ -132,8 +133,12 @@ anim.pathway = {
 	height: anim.person.height + 4
 };
 
+
+var totInv, totTime, totPeople, firstArr, lastArrDep, LBRFcount;
+
+
 function litDefine(){
-	lit = new OmConcept('lit',littleEncodeURL,littleDecodeURL,littleReset);
+	lit = new OmConcept('lit',littleEncodeURL,littleDecodeURL, localReset);
 	document.getElementById('lit').omConcept = lit;
 	
 	document.getElementById('slidersWrapperlit')
@@ -162,16 +167,28 @@ function litDefine(){
 		.getElementById('backgroundlit')
 		.getContext('2d');
 	lit.stage = anim.stage;
+	
+	gSF = new GStickFigure(anim.stage.foreContext,
+			anim.person.height,0);
 };
 
-class ProcessCollection extends Array {
-	constructor() {
-		super();
+function localReset () {
+	//	lit.itemCollection.reset();
+	//	lit.graph.reset();
+	//	theProcessCollection.reset();
+		totInv = totTime = totPeople =  LBRFcount = 0;
+		firstArr = lastArrDep = 3500;
+		
+
+		// schedule the initial Person to arrive and start the simulation/animation.
+		theSimulation.supply.previous = null;
+		theSimulation.creator.knockFromPrevious();
+
+		//fudge to get animation started quickly
+		let t = lit.heap.top().time - 1;
+		lit.now = lit.frameNow = t;
+
 	};
-	reset() {
-		this.forEach(aProcess => aProcess.reset());
-	};
-}; // end class processCollection
 
 function setBackground() {
 	const c = anim.stage.backContext;
@@ -205,16 +222,16 @@ function littleDecodeURL(str){
 	desc: str.substring(19)
 	})
 };
-function littleEncodeURL(preset){
+function littleEncodeURL(row){
 	const actionValue = {none: "N", play: "G", pause: "S"};
-	return Number(preset.ar).toFixed(1).padStart(4,'0')
-		.concat(Number(preset.acv).toFixed(1).padStart(4,'0'), 
-		Number(preset.sr).toFixed(1).padStart(4,'0'),
-		Number(preset.scv).toFixed(1).padStart(4,'0'),
-		preset.speed,
-		actionValue[preset.action] +
-		(preset.reset == "true" ? "T" : "F"),
-		preset.desc);
+	return Number(row.ar).toFixed(1).padStart(4,'0')
+		.concat(Number(row.acv).toFixed(1).padStart(4,'0'), 
+		Number(row.sr).toFixed(1).padStart(4,'0'),
+		Number(row.scv).toFixed(1).padStart(4,'0'),
+		row.speed,
+		actionValue[row.action] +
+		(row.reset == "true" ? "T" : "F"),
+		row.desc);
 }
 
 
@@ -234,7 +251,7 @@ function captureChangeInSliderS(event) {
 		case 'ar':
 			theSimulation.interarrivalRV
 				.setRate(v / tioxTimeConv);
-			littleGraph.updatePredictedInv();
+			lit.graph.updatePredictedInv();
 			break;
 
 		case 'acv':
@@ -243,7 +260,7 @@ function captureChangeInSliderS(event) {
 
 		case 'sr':
 			theSimulation.serviceRV.setTime(v * tioxTimeConv);
-			littleGraph.updatePredictedInv();
+			lit.graph.updatePredictedInv();
 			break;
 
 		case 'scv':
@@ -252,7 +269,7 @@ function captureChangeInSliderS(event) {
 
 		case 'speed':
 			lit.frameSpeed = speeds[v].time;
-			littleGraph.updateForSpeed(speeds[v].graph);
+			lit.graph.updateForSpeed(speeds[v].graph);
 			lit.itemCollection.updateForSpeed();
 			document.getElementById(idShort + 'litDisplay')
 				.innerHTML = speeds[v].time;
@@ -266,26 +283,6 @@ function captureChangeInSliderS(event) {
 
 
 
-var totInv, totTime, totPeople, firstArr, lastArrDep, LBRFcount;
-function littleReset () {
-	lit.itemCollection.reset();
-	littleGraph.reset();
-	theProcessCollection.reset();
-	totInv = totTime = totPeople =  LBRFcount = 0;
-	firstArr = lastArrDep = 3500;
-	gSF = new GStickFigure(anim.stage.foreContext,
-		anim.person.height,
-		0);
-
-	// schedule the initial Person to arrive and start the simulation/animation.
-	theSimulation.supply.previous = null;
-	theSimulation.creator.knockFromPrevious();
-
-	//fudge to get animation started quickly
-	let t = lit.heap.top().time - 1;
-	lit.now = lit.frameNow = t;
-
-};
 
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
@@ -384,7 +381,7 @@ const animForLittlesBox = {
 	}
 };
 
-var theProcessCollection = new ProcessCollection();
+//var theProcessCollection = new ProcessCollection();
 
 const theSimulation = {
 	//  the two random variables in the simulation
@@ -409,7 +406,8 @@ const theSimulation = {
 		cv = document.getElementById('scvlit').value;
 		theSimulation.serviceRV = new GammaRV(1 / t / tioxTimeConv, cv);
 
-		littleGraph = new LittleGraph(lit);
+		lit.graph = new LittleGraph(lit);
+		lit.resetCollection.push(lit.graph);
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 
@@ -417,8 +415,10 @@ const theSimulation = {
 		this.queue = new Queue(lit,"theQueue", -1, animForQueue.walkingTime,   
 			animForQueue,
 			null, null);
-
+		lit.resetCollection.push(this.queue);
+		
 		this.walkOffStage = new WalkAndDestroy(lit, "walkOff", animForWalkOffStage, true);
+		lit.resetCollection.push(this.walkOffStage);
 
 
 		// machine centers 
@@ -426,11 +426,13 @@ const theSimulation = {
 			1, theSimulation.interarrivalRV,
 			this.supply, this.queue,
 			animForCreator);
+		lit.resetCollection.push(this.creator);
 
 		this.LittlesBox = new InfiniteMachineCenter(lit, "LittlesBox",
 			theSimulation.serviceRV,
 			this.queue, this.walkOffStage,
 			animForLittlesBox, LBRecordStart, LBRecordFinish);
+		lit.resetCollection.push(this.LittlesBox);
 
 		function LBRecordStart(person) {
 
@@ -451,7 +453,7 @@ const theSimulation = {
 			totTime += lit.now - person.arrivalTime;
 //			LBRFcount = (LBRFcount + 1) % lit.frameSpeed;
 //			if (!LBRFcount) {
-				littleGraph.push(lit.now, 
+				lit.graph.push(lit.now, 
 								 totInv / (lit.now - firstArr),
 								 totTime / (lit.now - firstArr) );
 //			};
@@ -462,10 +464,10 @@ const theSimulation = {
 			this.creator, this.LittlesBox);
 
 		// put all the process steps with visible people in theProcessCollection
-		theProcessCollection.push(this.creator);
-		theProcessCollection.push(this.queue);
-		theProcessCollection.push(this.LittlesBox);
-		theProcessCollection.push(this.walkOffStage);
+//		theProcessCollection.push(this.creator);
+//		theProcessCollection.push(this.queue);
+//		theProcessCollection.push(this.LittlesBox);
+//		theProcessCollection.push(this.walkOffStage);
 	},
 };
 
@@ -476,52 +478,34 @@ class Supplier {
 		this.y = y;
 	};
 	pull() {
-		return new Person(lit, this.x, this.y, 30, anim.person.height);
+		return new Person(lit, this.x, this.y);
 	}
 }; //end class Supplier
 
 
-var gSF;
+
 export class Person extends Item {
-	constructor(omConcept, x, y = 60, w = 30, h = 30) {
+	constructor(omConcept, x, y = 60) {
 		super(omConcept, x, y);
-		this.width = w;
 		this.graphic = new NStickFigure(gSF, x, y);
 		this.updateBadge = false;
 	};
-
-
 	moveDisplayWithPath(deltaSimT) {
 		if (this.updateBadge) {
 			this.graphic.badgeSet(Math.round((lit.now - this.arrivalTime) / tioxTimeConv).toString())
 		}
 		super.moveDisplayWithPath(deltaSimT);
 	};
-
-
-	setDestWithProcTime(procTime, x, y) {
-		let distance = Math.max(Math.abs(this.cur.x - x),
-			Math.abs(this.cur.y - y));
-		let deltaTime = Math.min(distance / anim.stage.normalSpeed, procTime);
-		this.addPath({
-			t: lit.now + deltaTime,
-			x: x,
-			y: y
-		});
-	};
-
 }; // end class Person
 
 import {
-	addKeyForIds, genCheckbox,  genSlider, genPlayResetBox,
-	copyMainPage
+	genSlider, genPlayResetBox, copyMainPage
 }
 from './genHTML.js'; 
 
 function litHTML(){
 	copyMainPage('lit');
-	 
-	 
+	 	 
 	//stats line
 	const d2 = document.getElementById('statsWrapperlit');
 	d2.parentNode.removeChild(d2);
@@ -549,7 +533,6 @@ function litHTML(){
 export function litStart() {
 	litHTML();
 	litDefine();
-	Math.seedrandom('this is a Simulation');
 	theSimulation.initialize(); // the specific to queueing
 	lit.reset();
 	return lit;
