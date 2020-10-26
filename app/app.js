@@ -36,15 +36,6 @@ import {
 }
 from './inv.js';
 	
-//function openTab(evt, tabName, startFunc) {
-//	// remove the old
-//	currentTab.classList.add('displayNone');
-//	// add the new
-//	currentTab = document.getElementById(tabName);
-//	currentTab.classList.remove('displayNone');
-//	window.history.pushState({tabName:tabName},'','#'+tabName)
-//	startFunc();
-//}
 	
 const possibles = ["que", "lit", "nvp", "inv" ];
 const omConcepts ={};
@@ -74,7 +65,7 @@ window.onpopstate = function(event) {
 
 
 function router(event){
-	let inputElem = event.target.closest('h2');
+	let inputElem = event.target.closest('div');
 	if (!inputElem) return;
 	let key = inputElem.id.slice(0,3);
 	window.history.pushState({tabName:key},'','#'+key);

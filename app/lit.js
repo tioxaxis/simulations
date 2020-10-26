@@ -521,7 +521,7 @@ function litHTML(){
 				  1,1,6,1,[1,2,3,4,5,6]),
 		genSlider('acvlit','Arrival CV = ','0.0','',
 				  0,0,2,.5,['0.0','1.0','2.0']),
-		genSlider('srlit','Service Rate = ','5.0','',
+		genSlider('srlit','Service Time = ','5.0','',
 				  5,5,25,1,[5,15,25] ), 
 		genSlider('scvlit','Service CV = ','0.0','',
 				  0,0,2,.5,['0.0','1.0','2.0']),
