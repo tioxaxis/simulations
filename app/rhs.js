@@ -37,6 +37,22 @@ import {
 }
 from "./stepitem.js";
 
+export function displayToggle(a,b){
+	if( Array.isArray(a)){
+		for (let elem of a)
+			document.getElementById(elem).classList.remove('displayNone');
+	} else if (a) { 
+		document.getElementById(a).classList.remove('displayNone');
+	}
+	
+	if( Array.isArray(b)){
+		for (let elem of b)
+			document.getElementById(elem).classList.add('displayNone');
+	} else if (b) {
+		document.getElementById(b).classList.add('displayNone');
+	}
+}
+
 export class OmConcept {
 	constructor(key, sEncode, sDecode, localReset){
 		this.key = key;
@@ -132,10 +148,7 @@ export class OmConcept {
 	// play, pause, toggle .
 	play() {
 		if (this.isRunning) return;
-		if (document.getElementById('playButtons' + this.key)
-			.style.display == 'none') return
-		document.getElementById('playButton' + this.key).style.display = 'none';
-		document.getElementById('pauseButton' + this.key).style.display = 'inline';
+		displayToggle('pauseButton' + this.key, 'playButton' + this.key);
 		this.lastPerfNow = performance.now();
 		this.requestAFId = window.requestAnimationFrame(this.eachFrame.bind(this));
 		this.isRunning = true;
@@ -143,8 +156,7 @@ export class OmConcept {
 
 	pause() {
 		if (!this.isRunning) return;
-		document.getElementById('pauseButton' + this.key).style.display = 'none';
-		document.getElementById('playButton' + this.key).style.display = 'block';
+		displayToggle('playButton' + this.key, 'pauseButton' + this.key);
 		window.cancelAnimationFrame(this.requestAFId);
 		this.isRunning = false;
 	};
@@ -308,7 +320,7 @@ export class OmConcept {
 	async fourCases(key,search,scenariosString ){
 			if ( search.scenarios ){
 				if ( search.edit != "allow" ){
-					document.getElementById("editBox")
+					document.getElementById("editBox"+this.key)
 							.style.display = 'none'
 				} 
 				return this.parseURLScenariosToRows(search.scenarios)
@@ -461,24 +473,15 @@ export class OmConcept {
 		
 		this.editMode = true;
 		
-		// simulate a click on pause if running.
-		let theButton = document.getElementById('pauseButton'+this.key)
-		if (theButton.style.display != 'none') theButton.click();
+		this.pause();
 
 		//adjust the page for edit mode
-		document.getElementById("scenariosBot"+this.key)
-			.style.display = "block";
-		document.getElementById('menuBox'+this.key)
-			.style.display = 'block';
-		document.getElementById('editBox'+this.key)
-			.style.display = 'none';
-		document.getElementById('actionOptions'+this.key)
-			.style.display = 'flex';
-		document.getElementById('playButtons'+this.key)
-			.style.display = 'none';
+		displayToggle(
+			['scenariosBot'+this.key,'menuBox'+this.key, 'actionOptions'+this.key],
+			['editBox'+this.key,'playButtons'+this.key]);
 		
 		if (this.warningLSandScens){
-			alert('If you exit this edit by saving you will overwrite your current scenarios stored in Local Storage');
+			alert('If you Save you will overwrite your current scenarios stored in Local Storage');
 		}
 	};
 
@@ -519,19 +522,13 @@ export class OmConcept {
 		// restore the page to non-edit mode
 		this.editMode = false;
 		this.saveModifiedDesc();
-		document.getElementById("scenariosBot"+this.key)
-			.style.display = "none";
-		document.getElementById('menuBox'+this.key)
-			.style.display = 'none';
-		document.getElementById('editBox'+this.key)
-			.style.display = 'block';
-		document.getElementById('actionOptions'+this.key)
-			.style.display = 'none';
-		document.getElementById('playButtons'+this.key)
-			.style.display = 'flex';
+		displayToggle(['editBox'+this.key,'playButtons'+this.key],
+			['scenariosBot'+this.key, 'menuBox'+this.key, 'actionOptions'+this.key]);
 	};
 
 	popupExport () {
+		this.exporting = true;
+		this.saveModifiedDesc (); 
 		document.getElementById('exportBoxOuter'+this.key)
 			.style = 'display:block';
 		document.getElementById('jsonDisplay'+this.key)
@@ -638,6 +635,7 @@ export class OmConcept {
 		copyToClipboard('jsonDisplay'+this.key)
 	};
 	closeExportBox (event){
+		this.exporting = false;
 		document.getElementById('exportBoxOuter'+this.key)
 				.style='display:none';
 	};

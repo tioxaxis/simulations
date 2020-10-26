@@ -60,7 +60,7 @@ export function addKeyForIds(key,node){
 
 
 	export function hideNode( node ){
-		node.style = 'display:none';
+		node.classList.add('displayNone');
 		return node;
 	}
 
@@ -107,8 +107,7 @@ export function addKeyForIds(key,node){
 			genRadio('action'+key, 'Play','play'+key,'play', false) );
 
 		const d = document.createElement('div');
-		d.style = "display:none";
-		d.className = "rowAroundCenter";
+		d.className = "rowAroundCenter displayNone";
 		d.id = 'actionOptions'+key;
 		d.append(c1,c2);
 		

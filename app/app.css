@@ -25,9 +25,7 @@
 	font-family: "Arial";
 	font-size: 1.2vw;
 }
-.displayNone{
-	display:none
-}
+
 .wrapper2by1 {
 	box-sizing:border-box;
 	position: relative;
@@ -513,5 +511,8 @@ button:hover {
 	
 .editWrapper{
 	flex: 0 0 1.5vw
-}	
+}
+.displayNone{
+	display:none
+}
 	

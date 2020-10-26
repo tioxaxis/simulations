@@ -80,42 +80,46 @@ function router(event){
 	window.history.pushState({tabName:key},'','#'+key);
 	switchTo(key);
 }
+//handles keyboard entry for all simulations.
 function keyDownFunction(evt) {
 	let omConc = omConcepts[currentTab.id]; 
 	if (!omConc) return;
-		switch (evt.code) {
-			case "Space":
-				if (omConc.editMode)return;
-				evt.preventDefault();
-				omConc.togglePlayPause();
-				break;
-			case "Enter":
-				if (!omConc.editMode) return;
-				if (omConc.textMode) omConc.saveModifiedDesc();
-				else omConc.addTextBox(omConc.currentLi.innerHTML);
-				break;
-			case "KeyB":
-				evt.preventDefault();
-				omConc.reset();
-				break;
-			case "Escape":
-				let elem = document.getElementById('exportBoxOuter'+omConc.key);
-				if (elem.style.display == 'block')
-					elem.style.display = 'none'
-				else omConc.deleteTextInpBox();
-				break;
-			case "ArrowDown":
-			case "PageDown":
-				evt.preventDefault();
-				omConc.nextRow();
-				break;
-			case "ArrowUp":
-			case "PageUp":
-				evt.preventDefault();
-				omConc.previousRow();
-				break;
-		};
+	if (omConc.exporting){
+		if (evt.code == "Escape")
+			omConc.closeExportBox();
+		return;
+	}
+	switch (evt.code) {
+		case "Space":
+			if (omConc.editMode) return;
+			evt.preventDefault();
+			omConc.togglePlayPause();
+			break;
+		case "Enter":
+			if (!omConc.editMode) return;
+			if (omConc.textMode) omConc.saveModifiedDesc();
+			else omConc.addTextBox(omConc.currentLi.innerHTML);
+			break;
+		case "KeyB":
+			if (omConc.editMode) return;
+			evt.preventDefault();
+			omConc.reset();
+			break;
+		case "Escape":
+			omConc.deleteTextInpBox();
+			break;
+		case "ArrowDown":
+		case "PageDown":
+			evt.preventDefault();
+			omConc.nextRow();
+			break;
+		case "ArrowUp":
+		case "PageUp":
+			evt.preventDefault();
+			omConc.previousRow();
+			break;
 	};
+};
 document.addEventListener('keydown', keyDownFunction);
 document.getElementById('mainPage').addEventListener('click',router);
 
