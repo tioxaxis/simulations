@@ -25,7 +25,24 @@
 <style>
 		/* Style the tab */
 		
-		.tab {
+#mainPage{
+	position: relative;
+	max-width: 600px;
+	margin: auto;
+	height: 98vh;
+/*	border: solid blue*/
+	}
+	
+	#headerForTabs{
+	position: relative;
+/*
+	top:0;
+	left:0;
+	right:0
+*/
+	}
+	
+	.tab {
 			border: 1px solid #ccc;
 			background-color: #cbcef4;
 			
@@ -62,22 +79,23 @@
 
 /*			display: none;*/
 			padding: 6px 12px;
-			border: 1px solid #ccc;
-			border-top: none;
+			
+			
 		}
-	#topofpage {
+	#tioxLink,
+	#tioxLink:visited{
 		font-size: 50px;
 		color: #1244ea;
 		text-align: center;
-		padding: 30px;
+		padding: 10px;
 	}
 	#allcontent {
-		overflow: auto;
-		font-size: 18px
-	}
-	#mainPage {
-		margin: auto;
-  		width: 600px;
+		position: absolute;
+		top:130px;
+		bottom: 0;
+		border: 1px solid #ccc;
+		font-size: 18px;
+			overflow-y: scroll;
 	}
 	h3 {
 			background-color: #cacdf4;
@@ -87,7 +105,13 @@
 		background-color: #cbf4f2;
 	}
 	body {
-		overflow: auto;
+		overflow-y:hidden;
+	}
+	#tableOfContents{
+		position: absolute;
+		left:-30%;
+			top:200px;
+		
 	}
 </style>
 
@@ -95,7 +119,8 @@
 <body>
 	<!-- Tab links -->
 <div id='mainPage'>
-<div id='topofpage'><a href='app/index.html'>TioX</a></div>
+<div id='headerForTabs'>
+<div id='tioxLink'><a href='app/index.html'>TioX</a></div>
 	
 <div class="tab">
 		<span id="animationsButton" class="tablinks" 
@@ -110,13 +135,15 @@
 		
 		<span id="contactButton" class="tablinks" 
 				onclick="openTab(event, 'contact')">
-			Contact Us</span>
+			Contact Me</span>
 </div>
+</div> <!-- end of header-->
+
 <div id="allcontent">
 	<!-- Tab content -->
 	<div id="animations" class="tabcontent" style='display:none'>
 		<h2> <a class='simulink' href='app/index.html'>
-			The Animations (link to app):</a></h2>
+			The Animations:</a></h2>
 		<h3><span class='simulink' >
 		Queueing</span></h3>
 		<p> An animation of a single server queue, e.g., the scanner at airport security.  Individual, average, and predicted waiting time are graphed.  </p>
@@ -158,23 +185,23 @@
 	<p>These animations are designed to act as a bridge for the students, to allow them to see the phenomenon of a bottleneck of a system limiting throughput, variability causing a queue to form, or inventory in a store allowing customers to be served immediately.
 		
 	<p> These animations are not designed to replace the mathematics Operations Managers use to understand systems. They are not designed to be used to model real systems.  There are plenty of sophisticated commercial simulation systems for modeling real systems.  These animations are meant simply to be a bridge for the first time student.  To understand inventory systems, traditionally one draws a graph of on-hand inventory over time to show customers buying product and delivery of orders from a supplier.  One might say "Inventory is on the y-axis and time is on the x-axis."  Yet, to some first time Operations' students the notion of customers arriving over time and drawing a graph of inventory going down to represent this may be a challenge.  It was that idea, "Time Is On the X-axis" that led to the acronym for these simulations (TioX).  We hope that watching the inventory animation will help students expeditiously understand the connection between the events of customers and orders arriving and the inventory curves we all draw.</p>
-	<h3>2. Possible short teaching notes for each animation</h3>
+	<h3 id='techingNotes'>2. Short teaching notes for each animation</h3>
 		<p>Below is a set of short teaching notes you may use as a starting point for planning how to incorporate the animations into your teaching plan.  Each is designed to take just a few minutes of class time and be used early on in the introduction of each of the topics.</p>
-		<p> Each of the plans below runs the animation for perhaps a minute or so in each of a set of scenarios.  You will see them on the right hand side of the screen typically labeled A, B, C.</p>
+		<p> Each of the plans below runs the animation for perhaps a minute or so in each of a set of scenarios.  In each of the animations, you will see the scenarios on the right hand side of the screen typically labeled A, B, C.</p>
 		
 		<h4>Queueing</h4>
-		<p>Students new to Operations Management are not at ease with rates (of arrival or of service) or with variability in rates.  The most common misconception is that if "people are coming to a server at a rate that is less than the service rate then no queue should form."  Thus, I start with Scenario A: no variability where customers are arriving at a rate of 5/minute and being served at a rate of 6/minute with no variability in either the interarrival times for the service times.  They see that no one waits and the graph shows zero wait for all customers as then enter service.  
+		<p>Students new to Operations Management are not at ease with rates (of arrival or of service) or with variability in rates.  The most common misconception is that if "people are coming to a server at a rate that is less than the service rate then no queue should form."  Thus, I start with Scenario A: no variability, where customers are arriving at a rate of 5/minute and being served at a rate of 6/minute with no variability in either the interarrival times or the service times.  They see that no one waits and the graph shows zero wait for all customers as then enter service.  
 		</p>
-		<p> Next I switch to Scenario B: arrival variability, in which CV of arrivals is raised to 1. The key point here is that the average arrival rate has not changed but that people are arriving in a more clumped fashion and so some of them wait for service.</p>
-		<p> Next I switch to Scenario C: arrival and service variability, so now CV of service is not 1 as well.  Explain what that means and then run it long enough to observe that waiting times are longer than in the first scenario.</p>
-		<p>At this point the students should have a sense of what is going on in the animation and what the graph means.  The number of people the server has processed is small so it seems reasonable to speed up time so I run Scenario D: speed it up, for another minute.</p>
+		<p> Next I switch to Scenario B: arrival variability, in which the CV of arrivals is raised to 1. The key point here is that the average arrival rate has not changed and is still less than the service rate, yet people are arriving in a more clumped fashion and so some of them wait for service.</p>
+		<p> Next I switch to Scenario C: arrival and service variability, so now the CV of service times is 1 as well.  Explain what that means and then run it long enough to observe that waiting times are longer than in the previous scenario.</p>
+		<p>At this point the students should have a sense of what is going on in the animation and what the graph means.  The number of people the server has processed is small so it seems reasonable to speed up time, so I run Scenario D: speed it up, for another minute.</p>
 		<p>I then weave into the story that our TSA agent has been working hard and needs a coffee break.  As I start Scenario E: coffee break, I draw their attention to the statistic showing the number of people in queue, because the number of people waiting soon fills the screen and the rest are off screen to the left.</p>
-		<p>After probably less than a minute of real time, and the simulation operating at speed 5, roughly 100 people have queued, so when I switch to Scenario F: return to work, it takes some time for the queue to return to zero.  "Why does is it taking so long?  Didn't we just say that the server is operating at a rate faster than the arrivals?  Didn't we see some people waiting no time before in this situation?"  I wait for the class to explain first that it is the large queue that built up and estimate the amount of time it will take to deplete that queue.</p>
-		<p>Perhaps you end this segment suggesting that highly utilized systems can't afford downtime.</p>
+		<p>After probably less than a minute of real time, and the simulation operating at speed 5, roughly 100 people have queued, so when I switch to Scenario F: return to work, it takes some time for the queue to return to zero. I ask them, "Why does is it taking so long?  Didn't we just say that the server is operating at a rate faster than the arrivals?  Didn't we see some people waiting no time before in this situation?"  I wait for the class to explain that it is the large queue that built up that must be worked down.  Next I ask them to estimate how long it will take to deplete that queue.</p>
+		<p>Perhaps you end this segment suggesting that highly utilized systems can't afford much downtime without causing significant delays.</p>
 		<p>As described in more detail below, you can switch the scenarios using a "presentation remote" allowing you to roam the class as you discuss the different scenarios.</p>
 		<h4>Little's Law</h4>
-		<p>In the deterministic case where the arrival rate and the service time (or time in system) has no variability then Little's Law is fairly clear.  So, I start with this situation with Scenario A: no variability, and arrival rate of 1, service time is 6, so there are 6 people in the system at any one time on average. Mention that the number on each person is the time they have spent in the room</p> 
-		<p>To make a bit more interesting I increase the arrival rate to 2 and the service time to 10.  So now average inventory I  is 20 = 2 * 10.  Here people will spend some of their time waiting at a particular spot in the box.</p>
+		<p>In the deterministic case in which the arrival rate and the service time (or time in system) has no variability then Little's Law is fairly clear.  So, I start with this situation with Scenario A: no variability, and arrival rate of 1, service time is 6, so there are 1 * 6 = 6 people in the system at any one time on average. Mention to the students that the number on each person is the time they have spent in the room.</p> 
+		<p>To make the example a bit more interesting I increase the arrival rate to 2 and the service time to 10.  So, now average inventory <italics>I</italics> is 20 = 2 * 10.  Here people will spend some of their time waiting at a particular spot in the box.</p>
 		<p>Next I add variability with Scenario C. This adds variability in the arrival rate as well as the service time. Even though some people will zip through the system and others wait much longer in the system, and the arrival pattern is variable the average inventory over time and the average throughput times the average stay in the room are both converging on 20.  If they haven't then I switch to Senario D: speed it up, to run the simulation faster so the students can see that there is convergence of these two average performance measures.  The actual numbers tend to be below the predicted because the system always starts empty. </p>
 		<h4>News Vendor Problem</h4>
 		<p>This animation shows a number of "days" in which the newsvendor orders a given number of parcels which are seen in the "store".  The random number of customers come one by one to pick up the parcels.  If their are parcels left over at the end of the day the parcels turn dark before disappearing.  If there are too many customers then the people turn "pale" as they leave the store emptyhanded.  For each day both the underage and the overage costs are plotted.  The blue line represents the average across the days of the two costs.</p>
@@ -232,6 +259,14 @@
 	</div>
 	</div>
 </div> <!-- end of main page -->
+	<div id='tableOfContents'>
+	<div>What is TioX</div>
+	
+	<a href='#teachingNotes'>Teaching Notes</a>
+	<div>Background and History</div>
+	<div>Have Other Ideas?</div>
+	<div>Scenarios</div>
+</div>
 </body>
 <script defer>
 function openTab(evt, tabName) {
