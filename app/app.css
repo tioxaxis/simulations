@@ -506,6 +506,9 @@ button:hover {
 	background: #a0a7f2;
 	color: white;
 }
+button:active {
+	background: blue;
+}
 .textInput {
 	position: absolute;
 	top: 0;

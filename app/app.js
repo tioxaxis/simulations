@@ -41,7 +41,9 @@ const possibles = ["que", "lit", "nvp", "inv" ];
 const omConcepts ={};
 
 function switchTo(which){
-	if( currentTab ) {
+	if (which == 'doc') 
+		window.location.href = "../index.html";
+	else if( currentTab ) {
 		currentTab.classList.add('displayNone');
 		if (currentTab.id != 'mainPage')
 			omConcepts[currentTab.id].pause();
