@@ -324,6 +324,7 @@ export class TioxGraph {
 						this.yScale(cur.y), info.dotSize,
 							0,2*Math.PI, true);
 					this.ctx.fill();
+					this.ctx.stroke();
 				}
 				last = cur;
 			}
@@ -388,6 +389,7 @@ export class TioxGraph {
 					this.yScale(cur.y), info.dotSize,
 					0,2*Math.PI, true);
 				this.ctx.fill();
+				this.ctx.stroke();
 			}
 		  }
 		  info.last = cur;
