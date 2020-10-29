@@ -183,6 +183,13 @@ export class TioxGraph {
 		if ( k > 0 ) this.data.splice(0,k-1);
 		return true;	
 	};
+	shiftXaxis2(){
+		let delta = this.xInfo.max - this.xInfo.min;
+		this.xInfo.min = this.xInfo.max;
+		this.xInfo.max += delta;
+		this.data.splice(0,this.data.length-1);
+		this.setupThenRedraw();
+	}
 	updateYaxis(y){
 		if ( y <= this.yInfo.max ) return false;
 		this.yInfo = verticalAxis(y,this.table);
@@ -292,6 +299,7 @@ export class TioxGraph {
 			this.ctx.lineWidth = info.lineWidth;
 			this.ctx.strokeStyle = 
 					this.ctx.fillStyle = info.color;
+			console.log(' in line draw color=',info.color);
 			let last = {x:null, y: null};
 			this.ctx.beginPath();
 			
@@ -323,7 +331,10 @@ export class TioxGraph {
 					this.ctx.arc(this.xScale(cur.x),
 						this.yScale(cur.y), info.dotSize,
 							0,2*Math.PI, true);
+					console.log('drawlines',info.dotSize,
+								cur.x,cur.y,this.ctx.lineWidth);
 					this.ctx.fill();
+
 				}
 				last = cur;
 			}
@@ -352,6 +363,7 @@ export class TioxGraph {
 		this.data.push(p);
 //		console.log('in draw one',p);
 		for( let info of this.lineInfo ) {
+			console.log(' in one draw color=',info.color);
 		  let cur = {x: this.xAccess(p), y: info.yAccess(p)};
 		  if( info.visible ) {
 			this.ctx.lineWidth = info.lineWidth;
@@ -387,6 +399,8 @@ export class TioxGraph {
 				this.ctx.arc(this.xScale(cur.x),
 					this.yScale(cur.y), info.dotSize,
 					0,2*Math.PI, true);
+				console.log('draw one',info.dotSize,
+							cur.x,cur.y,this.ctx.lineWidth);
 				this.ctx.fill();
 			}
 		  }

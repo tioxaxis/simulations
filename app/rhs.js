@@ -150,8 +150,14 @@ export class OmConcept {
 		if (this.isRunning) return;
 		displayToggle('pauseButton' + this.key, 'playButton' + this.key);
 		this.lastPerfNow = performance.now();
-		this.requestAFId = window.requestAnimationFrame(this.eachFrame.bind(this));
 		this.isRunning = true;
+		if (this.frameSpeed < 100){
+			this.requestAFId = window.requestAnimationFrame(
+					this.eachFrame.bind(this));
+		} else {
+			this.fullSpeedSim();
+			this.pause();
+		}
 	};
 
 	pause() {
@@ -186,9 +192,39 @@ export class OmConcept {
 		}
 		this.now = this.frameNow;
 		this.clearStageForeground();
+//		this.itemCollection.updatePositionAll();
 		this.itemCollection.moveDisplayAll(deltaSimuTime);
 		this.requestAFId = window.requestAnimationFrame(this.eachFrame.bind(this));
+//		console.log(this.now);
 	};
+	
+	coverAnimation(){
+		// fill in later
+	}
+	uncoverAnimation(){
+		// remove blur, reset?
+	}
+	
+	fullSpeedSim(){
+		// check last data on graph and if we need to move graph over
+		// so it updates xInfo.max then continue
+		if (this.frameNow == this.graph.xInfo.max * this.tioxTimeConv){
+			this.graph.shiftXaxis2();
+		}
+		this.frameNow = this.graph.xInfo.max * this.tioxTimeConv;;
+		let theTop;
+		while ((theTop = this.heap.top()) &&
+				theTop.time <= this.frameNow) {
+			const event = this.heap.pull();
+			// event on heap is {time: ,proc: ,item: }
+			this.now = event.time;
+			event.proc(event.item);
+		}
+		this.now = this.frameNow;
+		this.clearStageForeground();
+		this.itemCollection.updatePositionAll();
+		console.log(this.now);
+	}
 
 	
 	 captureChangeInSliderG(event) {
@@ -320,8 +356,7 @@ export class OmConcept {
 	async fourCases(key,search,scenariosString ){
 			if ( search.scenarios ){
 				if ( search.edit != "allow" ){
-					document.getElementById("editBox"+this.key)
-							.style.display = 'none'
+					displayToggle(null, 'editBox'+this.key);
 				} 
 				return this.parseURLScenariosToRows(search.scenarios)
 			}

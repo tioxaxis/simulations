@@ -118,7 +118,8 @@ const speeds = [{time:1,graph:1,anim:true},
 				{time:2,graph:1,anim:true},
 				{time:5,graph:2,anim:true},
 				{time:10,graph:2,anim:true},
-				{time:25,graph:5,anim:true}];
+				{time:25,graph:5,anim:true},
+			   {time:1000,graph:20,anim:false}];
 
 anim.stage = {
 	normalSpeed: .050, 
@@ -148,6 +149,7 @@ function queDefine(){
 	document.getElementById('slidersWrapperque')
 	.addEventListener('input', captureChangeInSliderS);
 	
+	que.tioxTimeConv = tioxTimeConv;
 	que.sliderTypes = {
 		ar: 'range',
 		acv: 'range',
@@ -258,6 +260,13 @@ function captureChangeInSliderS(event) {
 			que.itemCollection.updateForSpeed();
 			document.getElementById(idShort + 'queDisplay')
 				.innerHTML = speeds[v].time;
+			if (que.frameSpeed > 100 ){
+				if (que.isRunning){
+					que.pause();
+					que.play();
+				}
+				que.coverAnimation();
+			}
 			break;
 		case 'none':
 		case 'play':
@@ -535,7 +544,7 @@ function queHTML(){
 				  0,0,2,.5,['0.0','1.0','2.0']),
 		genPlayResetBox('que'),
 		genSlider('speedque','Speed = ','1','x',
-				  0,0,4,1,["slow","fast"])
+				  0,0,5,1,["slow",' ',' ',' ',"fast",'full'])
 	);
 	
 	const f = document.getElementById('scenariosMidque');

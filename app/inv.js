@@ -257,25 +257,12 @@ function localReset () {
 	};
 
 function pickInvSimulation(which) {
-//	const rop1 = document.getElementById('rop1');
-//	const rop2 = document.getElementById('rop2');
-//	const upto1 = document.getElementById('upto1');
-//	const upto2 = document.getElementById('upto2');
-	
 	switch (which) {
 		case 'methRop':
 			displayToggle(['rop1','rop2'], ['upto1','upto2']);
-//			rop1.style = 'display:flex';
-//			rop2.style = 'display:flex';
-//			upto1.style = 'display:none';
-//			upto2.style = 'display:none';
 			break;
 		case 'methUpto':
 			displayToggle(['upto1','upto2'], ['rop1','rop2']);
-//			upto1.style = 'display:flex';
-//			upto2.style = 'display:flex';
-//			rop1.style = 'display:none';
-//			rop2.style = 'display:none';
 			break;
 		default:
 			alert('picked inv simulation with ', which);
