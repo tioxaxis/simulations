@@ -223,7 +223,13 @@ export class OmConcept {
 		this.now = this.frameNow;
 		this.clearStageForeground();
 		this.itemCollection.updatePositionAll();
-		console.log(this.now);
+//		console.log(this.now);
+//		for( let p of this.itemCollection){
+//			console.log(p.which,p.cur.x)
+//			for (let path of p.pathList){
+//				console.log('    pathlist =' ,path.x,path.speedX);
+//			}
+//		}
 	}
 
 	

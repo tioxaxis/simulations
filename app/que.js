@@ -299,6 +299,7 @@ const animForQueue = {
 			nInQueue - this.walkingTime / theSimulation.serviceRV.mean));
 		let dist = nInQueue * animForQueue.delta.dx;
 		let time = que.now + dist / anim.stage.normalSpeed;
+//		console.log('in Queue join', guessInQueue,dist,time);
 		// simply move person back appropriate amount.
 		person.cur.x -= guessInQueue * animForQueue.delta.dx;
 		person.addPath({
@@ -306,6 +307,7 @@ const animForQueue = {
 			x: anim.person.path.headQueue - dist,
 			y: anim.person.path.top
 		});
+//		if (person.cur.x < -110) console.log('adding person with arrival',arrivalTime,'starting point',person.cur.x);
 		if (person.isThereOverlap()) {
 			person.cur.y = person.ahead.cur.y - 10;
 		}

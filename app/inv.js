@@ -119,10 +119,10 @@ class InvGraph extends TioxGraph {
 	
 		
 	resetRopLine(y){
-		this.setExtraLines(extraLineColor,10,{min:y},null);
+		this.setExtraLines(extraLineColor,{min:y},null);
 	}
 	resetPeriodLines(x){
-		this.setExtraLines(extraLineColor,10,null, {min:x,step:x});
+		this.setExtraLines(extraLineColor,null, {min:x,step:x});
 	}
 }
 const anim = {};
@@ -225,6 +225,8 @@ function invDefine(){
 	inv.stage = anim.stage;
 	gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height, anim.box.size);
+	
+	inv.tioxTimeConv = tioxTimeConv;
 };
 
 function localReset () {
@@ -275,7 +277,8 @@ const speeds = [{time:1,graph:1,anim:true},
 				{time:2,graph:1,anim:true},
 				{time:5,graph:2,anim:true},
 				{time:10,graph:2,anim:true},
-				{time:25,graph:5,anim:true}];
+				{time:25,graph:5,anim:true},
+			   {time:1000,graph:10,anim:false}];
 //const speeds = [1, 2, 5, 10, 15];
 
 function invDecodeURL(str){
@@ -380,6 +383,13 @@ function captureChangeInSliderS(event) {
 			inv.itemCollection.updateForSpeed();
 			document.getElementById(idShort + 'invDisplay')
 				.innerHTML = speeds[v].time;
+			if (inv.frameSpeed > 100 ){
+				if (inv.isRunning){
+					inv.pause();
+					inv.play();
+				}
+				inv.coverAnimation();
+			}
 			break;
 		case 'none':
 		case 'pause':
@@ -985,7 +995,7 @@ function invHTML(){
 		hideNode(upto1), hideNode(upto2),
 		genPlayResetBox('inv'),
 		genSlider('speedinv','Speed = ','1','x',
-				  0,0,4,1,["slow","fast"])
+				  0,0,5,1,["slow",' ',' ',' ',"fast ",' full'])
 	);
 	
 	

@@ -74,6 +74,7 @@ class NVGraph extends TioxGraph {
 const anim = {};
 var nvp;
 var gSF;
+var lastRound;
 
 const disappointed = {
 	color: 'rgb(235, 230, 230)',
@@ -149,6 +150,26 @@ function nvpDefine(){
 	nvp.stage = anim.stage;
 	gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height, anim.box.size);
+	
+	
+	nvp.fullSpeedSim = function(){
+				
+		if (this.nRounds == this.graph.xInfo.max){
+			this.graph.shiftXaxis2();
+		} 
+		lastRound = this.graph.xInfo.max;
+		let theTop;
+		while ((theTop = this.heap.top()) &&
+				this.nRounds < lastRound) {
+			const event = this.heap.pull();
+			// event on heap is {time: ,proc: ,item: }
+			this.now = event.time;
+			event.proc(event.item);
+//			console.log('nRounds, lastRound',this.nRounds,lastRound);
+		}
+		this.frameNow = this.now;
+		this.clearStageForeground();
+	}
 };
 
 function localReset() {
@@ -160,6 +181,11 @@ function localReset() {
 		let maxOver = theSimulation.Co * 
 				(theSimulation.quantityOrdered - 
 				(1 - theSimulation.demandRV.variance) * theSimulation.demandRV.mean + 1) ;
+	
+	
+		nvp.totCost = 0;
+		nvp.nRounds = 0;
+		nvp.enough = 0;
 	//	console.log('at reset', maxUnder,maxOver);
 		nvp.graph.reset(Math.max(maxUnder,maxOver));
 	//	theProcessCollection.reset();
@@ -176,6 +202,8 @@ function localReset() {
 			proc: theSimulation.demand.cycle.bind(theSimulation.demand),
 			item: null
 		});
+		nvp.tioxTimeConv = tioxTimeConv;
+		lastRound = 0;
 
 	};
 
@@ -183,7 +211,8 @@ const speeds = [{time:1,graph:1,anim:true},
 				{time:2,graph:1,anim:true},
 				{time:5,graph:2,anim:true},
 				{time:10,graph:2,anim:true},
-				{time:25,graph:5,anim:true}];
+				{time:25,graph:5,anim:true},
+			{time:1000,graph:20,anim:false}];
 
 //const speeds = [1, 3, 10, 30];
 
@@ -266,6 +295,13 @@ function captureChangeInSliderS(event) {
 			nvp.itemCollection.updateForSpeed();
 			document.getElementById(idShort + 'nvpDisplay')
 				.innerHTML = speeds[v].time;
+			if (nvp.frameSpeed > 100 ){
+				if (nvp.isRunning){
+					nvp.pause();
+					nvp.play();
+				}
+				nvp.coverAnimation();
+			}
 			break;
 		case 'none':
 		case 'pause':
@@ -395,7 +431,6 @@ const animForNewsVendor = {
 	}
 };
 
-//var theProcessCollection = new ProcessCollection();
 
 const theSimulation = {
 	//  the two random variables in the simulation
@@ -452,13 +487,6 @@ const theSimulation = {
 		//link the queue to machine before and after
 		this.queue.setPreviousNext(
 			this.creator, this.newsVendor);
-
-//		// put all the process steps with visible people in theProcessCollection
-//		theProcessCollection.push(this.demand);
-//		theProcessCollection.push(this.queue);
-//		theProcessCollection.push(this.store);
-//		theProcessCollection.push(this.newsVendor);
-//		theProcessCollection.push(this.walkOffStage);
 	},
 };
 
@@ -481,33 +509,30 @@ class DemandCreator {
 		this.timeToNV = ((anim.person.path.right - anim.person.path.left) +
 			(anim.person.path.bot - anim.person.path.top)) / anim.stage.normalSpeed;
 		this.demandRV = demandRV;
-		this.totCost = null;
-		this.nRounds = null;
+		
+		
 		this.curDemand = null;
-		this.enough = null;
 		this.overageForDay = null;
 		this.underageForDay = null;
 
 	};
 
 	reset() {
-		this.totCost = 0
-		this.nRounds = 0;
-		this.enough = 0;
 	};
 
 	cycle() {
+//		console.log('start of cycle', nvp.now)
 		theSimulation.store.emptyStore();
 		this.curDemand = Math.floor(theSimulation.demandRV.observe());
 		theSimulation.store.addBox(theSimulation.quantityOrdered);
 		//		this.store.packages.drawAll();
-		this.nRounds++;
+		nvp.nRounds++;
 		let excess = theSimulation.quantityOrdered - this.curDemand;
 		this.overageForDay = theSimulation.Co * Math.max(0, excess);
 		this.underageForDay = theSimulation.Cu * Math.max(0, -excess);
-		this.totCost += this.overageForDay + this.underageForDay;
+		nvp.totCost += this.overageForDay + this.underageForDay;
 		if (this.curDemand <= theSimulation.quantityOrdered)
-			this.enough++;
+			nvp.enough++;
 
 		let t = nvp.now;
 		let deltaT = peopleSpacing / anim.stage.normalSpeed;
@@ -536,8 +561,9 @@ class DemandCreator {
 		});
 	};
 	graph() {
-		nvp.graph.push(this.nRounds, this.underageForDay, this.overageForDay);
-		setActual(this.enough, this.nRounds);
+		nvp.graph.push(nvp.nRounds, this.underageForDay, this.overageForDay);
+//		console.log(nvp.nRounds,nvp.now);
+		setActual(nvp.enough, nvp.nRounds);
 
 		theSimulation.store.makeAllGrey();
 	}
@@ -615,7 +641,7 @@ function nvpHTML(){
 		empty,
 		genPlayResetBox('nvp'),
 		genSlider('speednvp','Speed = ','1','x',
-				  0,0,4,1,["slow","fast"])
+				  0,0,5,1,["slow",' ',' ',' ',"fast ",' full'])
 	);
 	
 	const f = document.getElementById('scenariosMidnvp');

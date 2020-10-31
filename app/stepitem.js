@@ -24,7 +24,6 @@ from './util.js';
 const darkGrey = 'rgb(52,52,52)';
 
 
-
 export class Queue {
 	constructor(omConcept, name, numSeats, walkingTime,
 		animFunc,
@@ -386,7 +385,7 @@ export class Item {
 
 	setColor(bodyColor, borderColor) {
 		this.graphic.setColor(bodyColor, borderColor);
-	}
+	};
 
 	moveDisplayWithPath(deltaSimuT) {
 		if (this.inBatch) return;
@@ -423,26 +422,23 @@ export class Item {
 		if (this.inBatch) return;
 		while (this.pathList.length > 0) {
 			var path = this.pathList[0];
-			let delta = path.t - this.omConcept.now;
-			if (delta < 0) {
+			let deltaT = path.t - this.omConcept.now;
+			if (deltaT <= 0) {
 				this.cur.t = path.t;
 				this.cur.x = path.x;
 				this.cur.y = path.y;
 				this.pathList.splice(0, 1);
 			} else {
 				this.cur.t = this.omConcept.now;
-				const signX = Math.sign(path.x - this.cur.x);
-				this.cur.x = path.x - signX * speed * delta;
-				if (signX > 0)
-					this.cur.x = Math.min(this.cur.x, path.x);
-				else
-					this.cur.x = Math.max(this.cur.x, path.x);
-				const signY = Math.sign(path.y - this.cur.y);
-				this.cur.y = path.y - signY * speed * delta;
-				if (signY > 0)
-					this.cur.y = Math.min(this.cur.y, path.y);
-				else
-					this.cur.y = Math.max(this.cur.y, path.y);
+				
+				const velocX = (path.x - this.cur.x)/deltaT;
+				const signX = Math.sign(velocX);
+				this.speedX = signX * Math.min(Math.abs(velocX),speed);	this.cur.x = path.x - this.speedX * deltaT;
+												   
+				const velocY = (path.y - this.cur.y)/deltaT;
+				const signY = Math.sign(velocY);
+				this.speedY = signY * Math.min(Math.abs(velocY,speed));	this.cur.y = path.y - this.speedY * deltaT;
+											   
 				break;
 			};
 		};
