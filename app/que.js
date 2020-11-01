@@ -255,18 +255,23 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			que.frameSpeed = speeds[v].time;
-			que.graph.updateForSpeed(speeds[v].graph);
-			que.itemCollection.updateForSpeed();
-			document.getElementById(idShort + 'queDisplay')
-				.innerHTML = speeds[v].time;
-			if (que.frameSpeed > 100 ){
-				if (que.isRunning){
-					que.pause();
-					que.play();
-				}
-				que.coverAnimation();
-			}
+			que.adjustSpeed(idShort,v,speeds);
+//			const oldFramespeed = que.frameSpeed;
+//			que.frameSpeed = speeds[v].time;
+//			que.graph.updateForSpeed(speeds[v].graph);
+//			que.itemCollection.updateForSpeed();
+//			document.getElementById(idShort + 'queDisplay')
+//				.innerHTML = speeds[v].time;
+//			if (oldFramespeed < 100 && que.frameSpeed > 100 ){
+//				if (que.isRunning){
+//					que.pause();
+//					que.play();
+//				}
+//				que.coverAnimation();
+//			} else if (oldFramespeed > 100 
+//					   && que.frameSpeed < 100){
+//				que.uncoverAnimation();
+//			}
 			break;
 		case 'none':
 		case 'play':

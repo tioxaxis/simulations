@@ -198,11 +198,32 @@ export class OmConcept {
 //		console.log(this.now);
 	};
 	
+	adjustSpeed(idShort,v,speeds){
+		const oldFrameSpeed = this.frameSpeed;
+		this.frameSpeed = speeds[v].time;
+		this.graph.updateForSpeed(speeds[v].graph);
+		this.itemCollection.updateForSpeed();
+		document.getElementById(idShort + this.key + 'Display')
+				.innerHTML = speeds[v].time;
+		if (oldFrameSpeed < 100 && this.frameSpeed > 100 ){
+			if (this.isRunning){
+				this.pause();
+				this.play();
+			}
+			this.coverAnimation();
+		} else if (oldFrameSpeed > 100 
+				   && this.frameSpeed < 100){
+			this.uncoverAnimation();
+		}
+	}
 	coverAnimation(){
-		// fill in later
+		const elem = document.getElementById(
+			'coverAnimation'+this.key);
+		elem.classList.add('coverAnimation2');
 	}
 	uncoverAnimation(){
-		// remove blur, reset?
+		const elem = document.getElementById(
+			'coverAnimation'+this.key);		elem.classList.remove('coverAnimation2');
 	}
 	
 	fullSpeedSim(){

@@ -378,18 +378,7 @@ function captureChangeInSliderS(event) {
 			
 			break;
 		case 'speed':
-			inv.frameSpeed = speeds[v].time;
-			inv.graph.updateForSpeed(speeds[v].graph);
-			inv.itemCollection.updateForSpeed();
-			document.getElementById(idShort + 'invDisplay')
-				.innerHTML = speeds[v].time;
-			if (inv.frameSpeed > 100 ){
-				if (inv.isRunning){
-					inv.pause();
-					inv.play();
-				}
-				inv.coverAnimation();
-			}
+			inv.adjustSpeed(idShort,v,speeds);
 			break;
 		case 'none':
 		case 'pause':

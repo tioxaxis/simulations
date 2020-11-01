@@ -290,18 +290,7 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			nvp.frameSpeed = speeds[v].time;
-			nvp.graph.updateForSpeed(speeds[v].graph);
-			nvp.itemCollection.updateForSpeed();
-			document.getElementById(idShort + 'nvpDisplay')
-				.innerHTML = speeds[v].time;
-			if (nvp.frameSpeed > 100 ){
-				if (nvp.isRunning){
-					nvp.pause();
-					nvp.play();
-				}
-				nvp.coverAnimation();
-			}
+			nvp.adjustSpeed(idShort,v,speeds);
 			break;
 		case 'none':
 		case 'pause':

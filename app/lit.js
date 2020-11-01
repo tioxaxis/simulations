@@ -270,18 +270,7 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			lit.frameSpeed = speeds[v].time;
-			lit.graph.updateForSpeed(speeds[v].graph);
-			lit.itemCollection.updateForSpeed();
-			document.getElementById(idShort + 'litDisplay')
-				.innerHTML = speeds[v].time;
-			if (lit.frameSpeed > 100 ){
-				if (lit.isRunning){
-					lit.pause();
-					lit.play();
-				}
-				lit.coverAnimation();
-			}
+			lit.adjustSpeed(idShort,v,speeds);
 			break;
 		case 'none':
 		case 'play':
