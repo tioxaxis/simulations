@@ -406,6 +406,7 @@ export class TioxGraph {
 //				console.log('draw one',info.dotSize,
 //							cur.x,cur.y,this.ctx.lineWidth);
 				this.ctx.fill();
+				this.ctx.stroke();
 			}
 		  }
 		  info.last = cur;
