@@ -335,10 +335,6 @@ export class TioxGraph {
 							0,2*Math.PI, true);
 					this.ctx.fill();
 					this.ctx.stroke();
-<<<<<<< HEAD
-=======
-
->>>>>>> FullSpeed
 				}
 				last = cur;
 			}
