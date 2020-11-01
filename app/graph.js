@@ -50,7 +50,7 @@ export class TioxGraph {
 			'chartCanvas' + this.omConcept.key).getContext('2d');
 		this.fontSize = 40;
 		
-		
+		this.extraLine = {width: 15, origWidth: 15};
 		this.xWidthStep = xWidthStep;
 		this.xAccess= xAccess;
 		this.lineInfo = [];
@@ -171,6 +171,9 @@ export class TioxGraph {
 			info.dotSize = Math.ceil(info.origDotSize / scale);
 			info.lineWidth = Math.ceil(info.origLineWidth / scale);
 		}
+		this.extraLine.width = Math.ceil(
+			this.extraLine.origWidth/scale);
+
 		this.shiftXaxis(this.xInfo.lastX, this.xInfo);
 		this.setupThenRedraw();
 		return true;
@@ -183,6 +186,13 @@ export class TioxGraph {
 		if ( k > 0 ) this.data.splice(0,k-1);
 		return true;	
 	};
+	shiftXaxis2(){
+		let delta = this.xInfo.max - this.xInfo.min;
+		this.xInfo.min = this.xInfo.max;
+		this.xInfo.max += delta;
+		this.data.splice(0,this.data.length-1);
+		this.setupThenRedraw();
+	}
 	updateYaxis(y){
 		if ( y <= this.yInfo.max ) return false;
 		this.yInfo = verticalAxis(y,this.table);
@@ -231,17 +241,17 @@ export class TioxGraph {
 		this.ctx.closePath();
 		this.ctx.stroke();
 	};
-	setExtraLines(color,width,horz,vert){
+	setExtraLines(color,horz,vert){
 		if( horz && !horz.step ) horz.step = Infinity;
 		if( vert && !vert.step ) vert.step = Infinity;
-		this.xl = {horz: horz, vert: vert, color: color, width: width};
+		this.xl = {horz: horz, vert: vert, color: color};
 //		this.setupThenRedraw();
 	};
 	
 	drawExtraLines(){
 		if( !this.xl ) return;
 		this.ctx.beginPath();
-		this.ctx.lineWidth = this.xl.width;
+		this.ctx.lineWidth = this.extraLine.width;
 		this.ctx.strokeStyle = this.xl.color;
 		if (this.xl.horz )
 			for( let y = this.xl.horz.min; y <= this.yInfo.max;
@@ -325,6 +335,10 @@ export class TioxGraph {
 							0,2*Math.PI, true);
 					this.ctx.fill();
 					this.ctx.stroke();
+<<<<<<< HEAD
+=======
+
+>>>>>>> FullSpeed
 				}
 				last = cur;
 			}
@@ -353,6 +367,7 @@ export class TioxGraph {
 		this.data.push(p);
 //		console.log('in draw one',p);
 		for( let info of this.lineInfo ) {
+//			console.log(' in one draw color=',info.color);
 		  let cur = {x: this.xAccess(p), y: info.yAccess(p)};
 		  if( info.visible ) {
 			this.ctx.lineWidth = info.lineWidth;
@@ -388,6 +403,8 @@ export class TioxGraph {
 				this.ctx.arc(this.xScale(cur.x),
 					this.yScale(cur.y), info.dotSize,
 					0,2*Math.PI, true);
+//				console.log('draw one',info.dotSize,
+//							cur.x,cur.y,this.ctx.lineWidth);
 				this.ctx.fill();
 				this.ctx.stroke();
 			}

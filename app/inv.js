@@ -119,10 +119,10 @@ class InvGraph extends TioxGraph {
 	
 		
 	resetRopLine(y){
-		this.setExtraLines(extraLineColor,10,{min:y},null);
+		this.setExtraLines(extraLineColor,{min:y},null);
 	}
 	resetPeriodLines(x){
-		this.setExtraLines(extraLineColor,10,null, {min:x,step:x});
+		this.setExtraLines(extraLineColor,null, {min:x,step:x});
 	}
 }
 const anim = {};
@@ -225,6 +225,8 @@ function invDefine(){
 	inv.stage = anim.stage;
 	gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height, anim.box.size);
+	
+	inv.tioxTimeConv = tioxTimeConv;
 };
 
 function localReset () {
@@ -257,25 +259,12 @@ function localReset () {
 	};
 
 function pickInvSimulation(which) {
-//	const rop1 = document.getElementById('rop1');
-//	const rop2 = document.getElementById('rop2');
-//	const upto1 = document.getElementById('upto1');
-//	const upto2 = document.getElementById('upto2');
-	
 	switch (which) {
 		case 'methRop':
 			displayToggle(['rop1','rop2'], ['upto1','upto2']);
-//			rop1.style = 'display:flex';
-//			rop2.style = 'display:flex';
-//			upto1.style = 'display:none';
-//			upto2.style = 'display:none';
 			break;
 		case 'methUpto':
 			displayToggle(['upto1','upto2'], ['rop1','rop2']);
-//			upto1.style = 'display:flex';
-//			upto2.style = 'display:flex';
-//			rop1.style = 'display:none';
-//			rop2.style = 'display:none';
 			break;
 		default:
 			alert('picked inv simulation with ', which);
@@ -288,7 +277,8 @@ const speeds = [{time:1,graph:1,anim:true},
 				{time:2,graph:1,anim:true},
 				{time:5,graph:2,anim:true},
 				{time:10,graph:2,anim:true},
-				{time:25,graph:5,anim:true}];
+				{time:25,graph:5,anim:true},
+			   {time:1000,graph:10,anim:false}];
 //const speeds = [1, 2, 5, 10, 15];
 
 function invDecodeURL(str){
@@ -388,11 +378,7 @@ function captureChangeInSliderS(event) {
 			
 			break;
 		case 'speed':
-			inv.frameSpeed = speeds[v].time;
-			inv.graph.updateForSpeed(speeds[v].graph);
-			inv.itemCollection.updateForSpeed();
-			document.getElementById(idShort + 'invDisplay')
-				.innerHTML = speeds[v].time;
+			inv.adjustSpeed(idShort,v,speeds);
 			break;
 		case 'none':
 		case 'pause':
@@ -998,7 +984,7 @@ function invHTML(){
 		hideNode(upto1), hideNode(upto2),
 		genPlayResetBox('inv'),
 		genSlider('speedinv','Speed = ','1','x',
-				  0,0,4,1,["slow","fast"])
+				  0,0,5,1,["slow",' ',' ',' ',"fast ",' full'])
 	);
 	
 	

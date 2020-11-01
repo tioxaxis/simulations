@@ -24,7 +24,6 @@ from './util.js';
 const darkGrey = 'rgb(52,52,52)';
 
 
-
 export class Queue {
 	constructor(omConcept, name, numSeats, walkingTime,
 		animFunc,
@@ -345,6 +344,9 @@ export class ItemCollection extends Array {
 	moveDisplayAll(deltaSimuTime) {
 		this.forEach(p => p.moveDisplayWithPath(deltaSimuTime))
 	}
+	updatePositionAll(){
+		this.forEach(p => p.updatePosition())
+	};
 	updateForSpeed() {
 		this.forEach(p => p.updateAllPaths());
 	};
@@ -383,7 +385,7 @@ export class Item {
 
 	setColor(bodyColor, borderColor) {
 		this.graphic.setColor(bodyColor, borderColor);
-	}
+	};
 
 	moveDisplayWithPath(deltaSimuT) {
 		if (this.inBatch) return;
@@ -414,6 +416,37 @@ export class Item {
 		this.graphic.moveTo(this.cur.x, this.cur.y);
 		this.graphic.draw();
 	};
+	
+	updatePosition(){
+		const speed = this.omConcept.stage.normalSpeed;
+		if (this.inBatch) return;
+		while (this.pathList.length > 0) {
+			var path = this.pathList[0];
+			let deltaT = path.t - this.omConcept.now;
+			if (deltaT <= 0) {
+				this.cur.t = path.t;
+				this.cur.x = path.x;
+				this.cur.y = path.y;
+				this.pathList.splice(0, 1);
+			} else {
+				this.cur.t = this.omConcept.now;
+				
+				const velocX = (path.x - this.cur.x)/deltaT;
+				const signX = Math.sign(velocX);
+				this.speedX = signX * Math.min(Math.abs(velocX),speed);	this.cur.x = path.x - this.speedX * deltaT;
+												   
+				const velocY = (path.y - this.cur.y)/deltaT;
+				const signY = Math.sign(velocY);
+				this.speedY = signY * Math.min(Math.abs(velocY,speed));	this.cur.y = path.y - this.speedY * deltaT;
+											   
+				break;
+			};
+		};
+
+		this.graphic.moveTo(this.cur.x, this.cur.y);
+		this.graphic.draw();
+	};
+		
 	
 	setDestWithProcTime(procTime, x, y) {
 		let distance = Math.max(Math.abs(this.cur.x - x),

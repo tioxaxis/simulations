@@ -118,7 +118,8 @@ const speeds = [{time:1,graph:1,anim:true},
 				{time:2,graph:1,anim:true},
 				{time:5,graph:2,anim:true},
 				{time:10,graph:2,anim:true},
-				{time:25,graph:5,anim:true}];
+				{time:25,graph:5,anim:true},
+			   {time:1000,graph:20,anim:false}];
 
 anim.stage = {
 	normalSpeed: .050, 
@@ -148,6 +149,7 @@ function queDefine(){
 	document.getElementById('slidersWrapperque')
 	.addEventListener('input', captureChangeInSliderS);
 	
+	que.tioxTimeConv = tioxTimeConv;
 	que.sliderTypes = {
 		ar: 'range',
 		acv: 'range',
@@ -253,11 +255,23 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			que.frameSpeed = speeds[v].time;
-			que.graph.updateForSpeed(speeds[v].graph);
-			que.itemCollection.updateForSpeed();
-			document.getElementById(idShort + 'queDisplay')
-				.innerHTML = speeds[v].time;
+			que.adjustSpeed(idShort,v,speeds);
+//			const oldFramespeed = que.frameSpeed;
+//			que.frameSpeed = speeds[v].time;
+//			que.graph.updateForSpeed(speeds[v].graph);
+//			que.itemCollection.updateForSpeed();
+//			document.getElementById(idShort + 'queDisplay')
+//				.innerHTML = speeds[v].time;
+//			if (oldFramespeed < 100 && que.frameSpeed > 100 ){
+//				if (que.isRunning){
+//					que.pause();
+//					que.play();
+//				}
+//				que.coverAnimation();
+//			} else if (oldFramespeed > 100 
+//					   && que.frameSpeed < 100){
+//				que.uncoverAnimation();
+//			}
 			break;
 		case 'none':
 		case 'play':
@@ -290,6 +304,7 @@ const animForQueue = {
 			nInQueue - this.walkingTime / theSimulation.serviceRV.mean));
 		let dist = nInQueue * animForQueue.delta.dx;
 		let time = que.now + dist / anim.stage.normalSpeed;
+//		console.log('in Queue join', guessInQueue,dist,time);
 		// simply move person back appropriate amount.
 		person.cur.x -= guessInQueue * animForQueue.delta.dx;
 		person.addPath({
@@ -297,6 +312,7 @@ const animForQueue = {
 			x: anim.person.path.headQueue - dist,
 			y: anim.person.path.top
 		});
+//		if (person.cur.x < -110) console.log('adding person with arrival',arrivalTime,'starting point',person.cur.x);
 		if (person.isThereOverlap()) {
 			person.cur.y = person.ahead.cur.y - 10;
 		}
@@ -535,7 +551,7 @@ function queHTML(){
 				  0,0,2,.5,['0.0','1.0','2.0']),
 		genPlayResetBox('que'),
 		genSlider('speedque','Speed = ','1','x',
-				  0,0,4,1,["slow","fast"])
+				  0,0,5,1,["slow",' ',' ',' ',"fast",'full'])
 	);
 	
 	const f = document.getElementById('scenariosMidque');

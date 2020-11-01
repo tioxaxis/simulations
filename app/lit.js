@@ -92,7 +92,8 @@ const speeds = [{time:1,graph:1,anim:true},
 				{time:2,graph:1,anim:true},
 				{time:5,graph:2,anim:true},
 				{time:10,graph:2,anim:true},
-				{time:25,graph:5,anim:true}];
+				{time:25,graph:5,anim:true},
+			{time:1000,graph:20,anim:false}];
 
 const anim = {};
 anim.stage = {
@@ -144,6 +145,7 @@ function litDefine(){
 	document.getElementById('slidersWrapperlit')
 	.addEventListener('input', captureChangeInSliderS);
 	
+	lit.tioxTimeConv = tioxTimeConv;
 	lit.sliderTypes = {
 		ar: 'range',
 		acv: 'range',
@@ -268,11 +270,7 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			lit.frameSpeed = speeds[v].time;
-			lit.graph.updateForSpeed(speeds[v].graph);
-			lit.itemCollection.updateForSpeed();
-			document.getElementById(idShort + 'litDisplay')
-				.innerHTML = speeds[v].time;
+			lit.adjustSpeed(idShort,v,speeds);
 			break;
 		case 'none':
 		case 'play':
@@ -494,6 +492,14 @@ export class Person extends Item {
 		this.graphic = new NStickFigure(gSF, x, y);
 		this.updateBadge = false;
 	};
+	updatePosition() {
+		if (this.updateBadge) {
+			this.graphic.badgeSet(Math.round((lit.now - this.arrivalTime) / tioxTimeConv).toString())
+		} else {
+			this.graphic.badgeVisible = false;
+		}
+		super.updatePosition();
+	}    
 	moveDisplayWithPath(deltaSimT) {
 		if (this.updateBadge) {
 			this.graphic.badgeSet(Math.round((lit.now - this.arrivalTime) / tioxTimeConv).toString())
@@ -526,8 +532,8 @@ function litHTML(){
 		genSlider('scvlit','Service CV = ','0.0','',
 				  0,0,2,.5,['0.0','1.0','2.0']),
 		genPlayResetBox('lit'),
-		genSlider('speedlit','Speed = ','1','x',
-				  0,0,4,1,["slow","fast"])
+		genSlider('speedlit','Speed = ','1','x', 0,0,5,1,
+				  ["slow",' ',' ',' ',"fast "," full"])
 	);
 	
 	const f = document.getElementById('scenariosMidlit');
