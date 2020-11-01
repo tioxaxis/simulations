@@ -337,6 +337,7 @@ export class TioxGraph {
 //					console.log('drawlines',info.dotSize,
 //								cur.x,cur.y,this.ctx.lineWidth);
 					this.ctx.fill();
+					this.ctx.stroke();
 
 				}
 				last = cur;
