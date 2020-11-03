@@ -41,9 +41,7 @@ const possibles = ["que", "lit", "nvp", "inv" ];
 const omConcepts ={};
 
 function switchTo(which){
-	if (which == 'doc') 
-		window.location.href = "../doc/doc.html";
-	else if( currentTab ) {
+	if( currentTab ) {
 		currentTab.classList.add('displayNone');
 		if (currentTab.id != 'mainPage')
 			omConcepts[currentTab.id].pause();
@@ -70,8 +68,12 @@ function router(event){
 	let inputElem = event.target.closest('div');
 	if (!inputElem) return;
 	let key = inputElem.id.slice(0,3);
-	window.history.pushState({tabName:key},'','#'+key);
-	switchTo(key);
+	if ( key == 'doc'){
+		window.location.href = "/doc/doc.html";
+	} else {	
+		window.history.pushState({tabName:key},'','#'+key);
+		switchTo(key);
+	}
 }
 //handles keyboard entry for all simulations.
 function keyDownFunction(evt) {
