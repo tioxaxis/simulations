@@ -69,7 +69,7 @@ function router(event){
 	if (!inputElem) return;
 	let key = inputElem.id.slice(0,3);
 	if ( key == 'doc'){
-		window.location.href = "../doc/doc.html";
+		window.location.href = "./doc/doc.html";
 	} else {	
 		window.history.pushState({tabName:key},'','#'+key);
 		switchTo(key);
