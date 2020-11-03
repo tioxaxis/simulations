@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <!--
 	TioX a set of Animations for Operations Management
     Copyright (C) 2020  Gregory Dobson
@@ -18,313 +17,138 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->		
+<!DOCTYPE html>
+
 <html>
+
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="shortcut icon" href="../res/tiox3.png">
-<style>
-		/* Style the tab */
-		
-#mainPage{
-	position: relative;
-	max-width: 600px;
-	margin: auto;
-	height: 98vh;
-/*	border: solid blue*/
-	}
-	
-	#headerForTabs{
-	position: relative;
-/*
-	top:0;
-	left:0;
-	right:0
-*/
-	}
-	
-	.tab {
-			border: 1px solid #ccc;
-			background-color: #cbcef4;
-			
-			display: flex;
-			flex-direction: row;
-			flex-wrap: wrap;
-			justify-content: space-around;
-		}
-		/* Style the spans that are used to open the tab content */
-		
-		.tab span {
-			background-color: inherit;
-			border: none;
-/*			outline: none;*/
-			cursor: pointer;
-			padding: 14px 16px;
-/*			transition: 0.3s;*/
-		}
-		/* Change background color of spans on hover */
-		
-		.tab span:hover {
-			background-color: #5d43a2;
-			color:white;
-		}
-		/* Create an active/current tablink class */
-		
-		.tab span.active {
-			background-color: #7a96f5;
-			border: none;
-		}
-		/* Style the tab content */
-		
-		.tabcontent {
+	<link rel="shortcut icon" href="./app/res/tiox3.png">
+	<link rel="stylesheet" type="text/css" href="./app/app.css">
 
-/*			display: none;*/
-			padding: 6px 12px;
-			
-			
-		}
-	#tioxLink,
-	#tioxLink:visited{
-		font-size: 50px;
-		color: #1244ea;
-		text-align: center;
-		padding: 10px;
-	}
-	#allcontent {
-		position: absolute;
-		top:130px;
-		width: 100%;
-		bottom: 0;
-		border: 1px solid #ccc;
-		font-size: 18px;
-			overflow-y: auto;
-	}
-	h3 {
-			background-color: #cacdf4;
-	}
-	h4 {
-		text-align: center;
-		background-color: #cbf4f2;
-	}
-	body {
-		overflow-y:hidden;
-	}
-	#tableOfContents{
-		position: absolute;
-		left:-30%;
-			top:200px;
-		
-	}
-	#contact{
-		
-		
-	}
-	a, a:link , a:visited{
-		text-decoration: none;
-		color: black;
-	}
-	a:hover{
-		background-color: #3771f4;
-		color: white;
-	}
-	a:active{
-		background-color: blue;
-		color:white;
-	}
-</style>
+	<!--software for random number generation-->
+	<script src='./app/res/jstat.min.js'></script>
+	
+	<!-- converts Math.random() to be seeded    -->
+	<script src='./app/res/seedrandom.min.js'></script>
+
+	<script type='module' src='./app/app.js'></script>
 
 </head>
-<body>
-	<!-- Tab links -->
-<div id='mainPage'>
-<div id='headerForTabs'>
-<div id='tioxLink' title='open the applications'><a href='app/index.html'>TioX</a></div>
-	
-<div class="tab">
-		<span id="animationsButton" class="tablinks" 
-				onclick="openTab(event, 'animations')">
-			Animations</span>
-		<span id="futureButton" class="tablinks" 
-				onclick="openTab(event, 'future')">
-			Future Additions</span>
-		<span id="instructorsButton" class="tablinks" 
-				onclick="openTab(event, 'instructors')">
-			Information for Instructors</span>
-		
-		<span id="contactButton" class="tablinks" 
-				onclick="openTab(event, 'contact')">
-			Contact Me</span>
+<body >
+<div class='displayNone'>
+<div id='genericPlayResetBox'>
+	<div class='rowAroundEnd' id="playButtons">
+		<div id='pauseButton' class='displayNone'>
+		<i class="material-icons font35vw" 
+		   title="pause the animation">pause_circle_outline</i>
+		</div>
+		<div id='playButton'>
+		<i class="material-icons font35vw" 
+		   title="play the animation">play_circle_outline</i>
+		</div>
+		<div id='resetButton'>
+		<i class="material-icons font35vw"
+		   title ="reset the animation">replay</i>
+		</div>
+	</div>
 </div>
-</div> <!-- end of header-->
+	
+	
+	
+	
+	
+	</div>
+<div class="wrapper2by1 displayNone" id='whole'>
+	<div class='exportBoxOuter displayNone' id='exportBoxOuter' b>
+		<div class="exportBox"  id="exportBox" style="display:block">
+		<div id="exportOption1">
+			<h2 style='margin:20px'>Export Options</h2>
+			<p> 1) Copy the URL below and use it to access the animation.</p>
+			<p class="blueBox" id="urlDisplay"></p>
+			<p class="belowBlueBox">
+				<button id="copyURLToClipboard">Copy to Clipboard</button>
+		</div>
+		<div id="exportOption2">
 
-<div id="allcontent">
-	<!-- Tab content -->
-	<div id="animations" class="tabcontent" style='display:none'>
-		<h2> <a class='simulink' href='app/index.html' 
-				title='open the applications'>
-			The Animations:</a></h2>
-		<h3><span class='simulink' >
-		Queueing</span></h3>
-		<p> An animation of a single server queue, e.g., the scanner at airport security.  Individual, average, and predicted waiting time are graphed.  </p>
-	<h3><span class='simulink'>
-		Little's Law</span></h3>
-		<p> An animation of a room where people enter and leave.  Average inventory, the product of average system time and average throughput, and predicted inventory are graphed.  </p>
-	<h3><span class='simulink' >
-		News-vendor</span></h3>
-		<p> An animation of the clasic news-vendor problem.  Each period the total overage or the total underage cost is graphed.  The average over time of the sum of overage and underage costs is also graphed.</p>
-	<h3><span class='simulink'>
-		Inventory</span></h3>
-		<p> An animation of customers coming to a store and buying a good.  Two rules for reordering goods can be applied: a reorder point level with a fixed reorder quantity, or a periodic reorder with the quantity based on order-up-to rule.  On hand inventory, inventory position, and predicted average on hand inventory are graphed.  </p>
+			<p> 2) Copy the text below into a file, say 'scenarios.json', and place it on a server and add ?file=http://...your server.../scenarios.json to the search portion of url to access the animation. </p>
+			<p class="blueBox" id="jsonDisplay"></p>
+			<p class="belowBlueBox"><button id="copyJSONToClipboard">Copy to Clipboard</button> </p>
+			<br>
+			<button class="closeExportBox" id="closeExportBox"> X </button>
+		</div>
+		</div>
 	</div>
 	
-	<div id="future" class="tabcontent" style='display:none'>
-	<h2>Plans for further animations:</h2>
-	<h3> The Face Game: </h3>
-		<p>  An animation based on a simple 3 stage process that can be done in class with 4 people, drawing a simple face on a 3x5 index card.  It involves the concepts of flowtime, throughput, inventory, quality, and Little's Law.  I've found the physical demonstation quite useful in an early class. Students then make suggestions for improvments.  The animation is useful to allow the class to see whether the suggested improvement affects the intended performance measure.</p>
-		<h3>Batching Animations:</h3>
-		<p>  There are three distinct ones that involve producing batches of product on a series of machines that require both setup and unit processing times. The goal is to understand how batching affects throughput and flowtime.  There is one where the machines are bottlenecks, one where the machines are not bottlenecks, and a third where the machines operate in parallel to do the same step. </p>
-		<h3>The Funnel Game:</h3>
-		<p>  An animation that allows you to simulate a combination of Deming's red bead experiment and funnel experiment so everyone in the class can participate on their laptops</p>
-		<h3>Economies of Scale in Queueing: </h3>
-		<p>  There are two pieces.  First, an animation that allows one to compare two separate queueing systems (with separate queues) operating in parallel (receiving half the demand each) to a pair of machines operating with a single (joint) queue.   Second, an animation that allows one to compare a pair of queueing systems in series where each machine does half the job (at twice the pace) to a pair of machines operating with a single (joint) queue.  Flow time and throughput are compared.</p>
-		<h3>Other Ideas?</h3>
-		<p>    Do you have other ideas?  <a href="mailto:c751dobson@gmail.com?Subject=TioX%20new%20idea" target="_top">Contact me</a> and make your pitch.  :)</p>
-	
+	<div class='leftHandSideBox'>	
+		<div class='stageWrapper' id="stageWrapper" >
+			<canvas class="theStage foreground" id="foreground" width=1000 height=300></canvas>
+			<canvas class="theStage background" id="background" width=1000 height=300></canvas>
+			<div id='coverAnimation' class='coverAnimation1' ></div>
+		</div>
+		<div class='statsWrapper'  id='statsWrapper' ></div>
+		<div class='chartWrapper' id="chartWrapper">
+			<div class='chartTitle' id='chartTitle'> title </div>
+			<div class='chart' id='chart'> 
+				<canvas  class="chartCanvas" id="chartCanvas" width='2000' height='600'></canvas>
+			</div>
+			<div class='chartLegend rowAroundCenter' id='chartLegend'></div>
+		</div>
 	</div>
+
+	<div class='rightHandSideBox'>
+		<div class='slidersWrapper' id='slidersWrapper'>	</div>
+		<div class='scenariosWrapper' id='scenariosWrapper'>
+			<div class="scenariosTop" id="scenariosTop">Scenarios</div>
+			<div class="scenariosMid" id="scenariosMid">
+				<ul id="ULScenarioList"></ul>
+			</div>
+			<div class="scenariosBot displayNone" id="scenariosBot" > 
+				<i id="addButton" class="material-icons font15vw"> add</i>
+				<i id="deleteButton" class="material-icons font15vw"> remove</i>
+			</div>
+		</div>
+		<div class='editWrapper' id='editWrapper'>
+			<div id="editBox">
+				<button id='editButton' 
+				title="add, delete, edit, or export scenarios" >Edit</button>				
+			</div>
+			<div id="menuBox" class='displayNone'>
+				<button id='cancelButton'>Cancel </button>
+				<button id='saveButton' 
+				title="save scenarios to local storage" >Save </button>
+				<button id='exportButton' 
+				title="options for exporting scenarios" >Export </button>
+				<button id='clear' onclick='localStorage.clear()'
+				title="clear local storage">
+					Clear</button>
+			</div>
+		</div>
+	</div> 	<!-- end of rightHandSideBox  -->
+</div>	<!-- end of wrapper2to1 -->
 	
-	
-	<div id="instructors" class="tabcontent" style='display:none'>
-		<h2>Information for Instructors</h2>
-		<h3>1. What is TioX?  </h3>
-	<p>TioX (/taɪ ɑːks/) is a set of animations for demonstrating some of the main ideas in Operations Management.   These include queueing, bottlenecks, Little's Law, the newsvendor problem, inventory management, economies of scale in queueing, and batching (the impact of batching decisions on flow time and throughput).  </p>
-	<p>Each animation shows people and/or packages moving through a system and is designed as an aid to students' first exposure to these concepts.  Let's take queueing as an example to start. Although one can observe people coming to a store or a bank and see that sometimes people wait to be served, one has no knowledge of or control over the rates of arrivals or the rates of service. The animation provides the student with the opportunity to observe a system knowing the arrival rate of customers and the service rate of the server and see how the system performs.  Crucially, it is then possible to adjust these rates and the variability in these rates and observe how the system performance (waiting time for customers in this case) changes.</p>
-		
-	<p>Many basic concepts in Operations Management involve understanding how sequences of events, such as a customers arriving at store, being served, and being checked out, will interact.  Although many ideas are straightforward, such as the rate a system can handle customers is driven by the slowest stage of a process, it is helpful to actually see this a few times first.</p>
-		
-	<p>These animations are designed to act as a bridge for the students, to allow them to see the phenomenon of a bottleneck of a system limiting throughput, variability causing a queue to form, or inventory in a store allowing customers to be served immediately.
-		
-	<p> These animations are not designed to replace the mathematics Operations Managers use to understand systems. They are not designed to be used to model real systems.  There are plenty of sophisticated commercial simulation systems for modeling real systems.  These animations are meant simply to be a bridge for the first time student.  To understand inventory systems, traditionally one draws a graph of on-hand inventory over time to show customers buying product and delivery of orders from a supplier.  One might say "Inventory is on the y-axis and time is on the x-axis."  Yet, to some first time Operations' students the notion of customers arriving over time and drawing a graph of inventory going down to represent this may be a challenge.  It was that idea, "Time Is On the X-axis" that led to the acronym for these simulations (TioX).  We hope that watching the inventory animation will help students expeditiously understand the connection between the events of customers and orders arriving and the inventory curves we all draw.</p>
-	<h3 id='techingNotes'>2. Short teaching notes for each animation</h3>
-		<p>Below is a set of short teaching notes you may use as a starting point for planning how to incorporate the animations into your teaching plan.  Each is designed to take just a few minutes of class time and be used early on in the introduction of each of the topics.</p>
-		<p> Each of the plans below runs the animation for perhaps a minute or so in each of a set of scenarios.  In each of the animations, you will see the scenarios on the right hand side of the screen typically labeled A, B, C.</p>
-		
-		<h4>Queueing</h4>
-		<p>Students new to Operations Management are not at ease with rates (of arrival or of service) or with variability in rates.  The most common misconception is that if "people are coming to a server at a rate that is less than the service rate then no queue should form."  Thus, I start with Scenario A: no variability, where customers are arriving at a rate of 5/minute and being served at a rate of 6/minute with no variability in either the interarrival times or the service times.  They see that no one waits and the graph shows zero wait for all customers as then enter service.  
-		</p>
-		<p> Next I switch to Scenario B: arrival variability, in which the CV of arrivals is raised to 1. The key point here is that the average arrival rate has not changed and is still less than the service rate, yet people are arriving in a more clumped fashion and so some of them wait for service.</p>
-		<p> Next I switch to Scenario C: arrival and service variability, so now the CV of service times is 1 as well.  Explain what that means and then run it long enough to observe that waiting times are longer than in the previous scenario.</p>
-		<p>At this point the students should have a sense of what is going on in the animation and what the graph means.  The number of people the server has processed is small so it seems reasonable to speed up time, so I run Scenario D: speed it up, for another minute.</p>
-		<p>I then weave into the story that our TSA agent has been working hard and needs a coffee break.  As I start Scenario E: coffee break, I draw their attention to the statistic showing the number of people in queue, because the number of people waiting soon fills the screen and the rest are off screen to the left.</p>
-		<p>After probably less than a minute of real time, and the simulation operating at speed 5, roughly 100 people have queued, so when I switch to Scenario F: return to work, it takes some time for the queue to return to zero. I ask them, "Why does is it taking so long?  Didn't we just say that the server is operating at a rate faster than the arrivals?  Didn't we see some people waiting no time before in this situation?"  I wait for the class to explain that it is the large queue that built up that must be worked down.  Next I ask them to estimate how long it will take to deplete that queue.</p>
-		<p>Perhaps you end this segment suggesting that highly utilized systems can't afford much downtime without causing significant delays.</p>
-		<p>As described in more detail below, you can switch the scenarios using a "presentation remote" allowing you to roam the class as you discuss the different scenarios.</p>
-		<h4>Little's Law</h4>
-		<p>In the deterministic case in which the arrival rate and the service time (or time in system) has no variability then Little's Law is fairly clear.  So, I start with this situation with Scenario A: no variability, and arrival rate of 1, service time is 6, so there are 1 * 6 = 6 people in the system at any one time on average. Mention to the students that the number on each person is the time they have spent in the room.</p> 
-		<p>To make the example a bit more interesting I increase the arrival rate to 2 and the service time to 10.  So, now average inventory <i>I</i> is 20 = 2 * 10.  Here people will spend some of their time waiting at a particular spot in the room.</p>
-		<p>Next I add variability with Scenario C. This adds variability in the arrival rate as well as the service time. Even though some people will zip through the system and others wait much longer in the system, and the arrival pattern is variable the average inventory over time and the average throughput times the average stay in the room are both converging to 20.  Next, I switch to Senario D: speed it up, to run the simulation faster so the students can see that there is convergence of these two average performance measures.  The actual numbers tend to be below the predicted value because the system always starts empty. </p>
-		<h4>News Vendor Problem</h4>
-		<p>This animation shows a number of "days" in which the newsvendor orders a given number of parcels which are seen in the "store".  A random number of customers come, one by one, to pick up the parcels.  If there are parcels left over at the end of the day the parcels turn dark before disappearing, to visually indicate these units are waste, incurring a cost of overage.  If there are too many customers then the unsatisfied customers turn "pale" as they leave the store emptyhanded, to visually indicate the underage costs being incurred.  For each day both the underage and the overage costs are plotted.  The blue line represents the average across the days of the two costs.</p>
-		<p>Although to us as instructors it is obvious that each day there is either an overage cost or an underage cost, I feel it is worthwhile pointing this out.  Each day there is either a red dot or a green dot above the x-axis and the other dot is on the x-axis.</p>
-		<p> To someone not comfortable with variability the most common misconception is that setting the order quantity to the averge daily demand is the best choice. Thus I start with Scenario A: At the Start, which has the order quantity equal to the average daily demand. </p>
-		<p>After a few "days" of animation, students are getting bored watching the it so I move to Scenario B: Speed it up, so we can get more data on to the graph.  I typically run it long enough so we feel we have a reasonable estimate of the average cost.  The average cost is about 40.  I then continue to let it run and ask them to suggest what we might do to improve (reduce) the average cost.  Usually several students immediately suggest ordering more but none is quite sure how much more to order.</p>
-		<p>Scenario C: Increase Order Quantity, moves the order quantity from 20 to 30. It also Resets the animation so the graph starts empty and will not be contaminated by the early data points. So, make sure the class knows the average cost in Scenario B was about 40.   With a higher order quantity, you should see an average cost of about 20.  Now the question is how do we determine the optimal quantity.</p>
-		<p>The actual percentage of days that demand was met from inventory is shown above the graph.  The expected percentage and the desired percentage of days is also shown. Thus, if you derive the optimal fractile for the newsvendor problem, you could return here as an empirical observation that setting the expected percentage to the desired percentage seems to minimize costs. If you are curious, for this animation the demand random variable with mean r and variability v is a uniform random variable with range [r(1-v),r(1+v)].</p>
-		<h4>Inventory</h4>
-		<p>The inventory simulation is really two simulations for the two ordering systems: ROP and Order-up-to.  This animation is the source of the name I picked for these apps, TioX, time is on the x-axis.  Although a plot of saw-tooth curve of inventory going up and down over time is familiar to all of us, I feel operations students have an easier time connecting the reality of customer purchases and store replenishments to the the sawtooth graph by watching the customers come and take away their parcels, and watching the truck coming with replenishment orders.  The ROP simulation has a horizontal line showing that as inventory crosses this line an order is placed.  The Order-up-to simulation has vertical lines showing which days inventory is reviewed and an order is placed. </p>
-		<p>Scenarios 1A,1B, 2A, 2B, and 2C are for the ROP model.  The students should probably have a bit of understanding about the two costs of holding and setup/ordering before running 1A and 1B.  Scenario 1A: small truck load, has less inventory and more frequent orders.  Scenario 1B: large truck load, has more inventory on average and less frequent orders. The objective is merely to introduce the EOQ trade-off.  Demand is deterministic for these two cases.  The "predicted on-hand inventory" curve, should you decide to click this on, is for the determinisitic demand case. </p>
-		<p> Scenarios 2A and 2B show that one may have two trucks coming at the same time, thus introducing the notion of ordering based on inventory position rather than just on-hand inventory.  Scenario 2C: Add variability, is for showing that once there is some demand variability some customers will be disappointed.  I usually ask them what we should adjust to deal with this. Someone is usually quickly able to articulate that adjusting the order quantity, <i>Q</i> will not help, whereas adjusting the reorder point, <i>ROP</i> will.  Then you can adjust this and the class can see that fewer customers are "lost."</p>
-		<p>I have used Scenarios 3A and 3B to introduce the Order-up-to Model, usually after I have introduced the safety stock decision for ROP.  I have found the graphs, even in the essentially deterministic case, a useful prop for explaining that in the order-up-to model the period of "uncertainty" on which you should decide the order-up-to quantity is based on the period between orders, P, plus the lead time, L.  Pausing the simulation at one ordering time, (note, space-bar on your keyboard is a play-pause toggle) and then talking about having to wait P+L for more inventory, and finally running the simulation for P+L time, helps make this period of "uncertainty" more clear.</p>
-		<h4>Note</h4><p>These scenario collections are just suggestions and you are welcome to customize the scenarios in all the animations, to collections you find useful for your presentation. See below how to customize, save, and share scenarios.</p>
-		
-		<h3>3. Background and History:</h3>
-	<p>In a 2006 article entitled <a href="https://pubsonline.informs.org/doi/10.1287/ited.7.1.106">"Web-based Simulations for Teaching Queueing, Little's Law, and Inventory Management,"</a> published in <a href="https://pubsonline.informs.org/journal/ited">INFORMS Transactions on Education</a>,  Robert Shumsky and I introduced earlier versions of three of these simulations.  The Flash and Shock-Wave versions of these at some point became unavailable and the link at the publisher no longer worked.   Robert Shumsky and Chris Huston produced an <a href="http://www.bizsimz.com/queuesim/queuesim.html">updated Flash version of the animation for Queueing,</a> and I and my sons produced a Java version for all three and several others.</p>
-		
-		<p>Adobe has announced that December 2020 is the <a href="https://www.adobe.com/products/flashplayer/end-of-life.html">End-of-Life for Flash</a>.  Java became <a href="https://java.com/en/download/help/enable_browser.xml">problematic for use via a web browser</a> much earlier. <a href="https://tiox.simonnet.rochester.edu/">The Java version is still available</a> and still runs fine on a laptop if you are willing to install the Jave Runtime System. Yet, the Java version was designed around a fixed screen size. It can appear small on a modern laptop, and thus small on the projector for class, and adjusting system settings to workaround this difficulty is awkward. </p>
-		
-		<p>  For these reasons among others, I am in the process of rewriting the animations in Javascript. About half are completed and on this site.  The rest are in progress. They run in most modern browsers (Chrome, Safari, FireFox, Opera, and Edge, although Chrome is suggested).</p>
-	
-	<p>The animations that have been reproduced are Queueing, Little's Law, News Vendor, and Inventory (handling both the standard Reorder Point/Reorder Quantity model and the Periodic Ordering and Order-up-to model.  Others will follow including, "Face Game," an easy to run game for an early class to demonstrate the notions of flow time and throughput, several that deal with batching issues (showing the implications of batching to flow time and throughput), and finally "The Funnel Game" which demonstrates <a href="https://deming.org/">  W. Edward Deming's</a> red bead and funnel experiment.</p>
-	
-	<h3>4. What if you have ideas for additions or extensions:</h3>
-	<p>If you have other ideas for an animation that would introduce a basic Operations Management concept feel free to <a href="mailto:c751dobson@gmail.com?Subject=TioX%20new%20idea" target="_top">contact me</a>.  Perhaps we can design one together. Again my goal is to provide a bridge for first time students from what they see in the real world to the models we use in Operations Management.  The animations that I have used here have been intentially simple, for example, people and trucks. Stick figures are not intended to look like real people and the trucks here don't move and act like real trucks but provide the bridge to aid a student's first understanding of these concepts.  A (mathematical) model represents only a few salient aspects, ignoring much of the detail of the real situation.  Likewise these animations crudely represent some salient features and ignore much of the detail.  Thus, people queueing up in a straight line for a TSA agent is not realistic but may allow the student to imagine another situation such as requesting an appointment at a doctor's office and being placed in the scheduling system for the day of the appointment, as a queueing system. </p>
-	
-	
-	
-	
-	<h3>5. Scenarios:</h3>
-	<p>If you have used these animations/simulations for a bit you may recognise that to demonstrate some system behaviors in class it is useful to show the animation running for a first set of parameter settings and then switch to a second or third and compare the performance across the various scenarios.  To facilite this use in a class, a faculty member can predefine a set of scenarios for each animation.</p>
-	<p>Once a collection of scenarios is setup, say for a demonstration in class, then the instructor can switch between the scenarios.  This switching can of course be done by clicking on the different ones in the list.  Alternatively, the web page will move to the next scenario by pushing the downarrow or pagedown key.  These were picked because presentation remotes often use these keyboard codes to move to the next slide in a presentation.  </p>
-	<p>More details:  Of course the uparrow and pageup keys work as well.  Further, each scenario can be set to 1) pause the animation if it is playing, play the animation if it is paused, or "none" meaning leave it in the mode it was currently in: paused or playing.  When a new scenario is picked it can force the animation to reset (as if the reset button were pushed).  A reset causes the animation to begin again from an empty system, and clears the chart of any old data. Play/Pause and Reset can be controlled from the keyboard or a presentation remote as well.</p>
-		
-	<h4>How to create your own sequence of scenarios:</h4>
-	<p>The sequence of scenarios can be customized by each instructor.  Hopefully the interface is largely self-explanitory.  Click Edit.  The animation will pause. Pick an existing scenario and then changing any of the parameters in the sliders will affect that scenario.  Double-clicking the name (or typing Return when one is selected) will allow you to change the name of the scenario.  Scenarios are kept in alpha-numeric order.  You will see this once you Save.  Use a numbering system to put your scenarios in the order you want for your presentation.  Don't forget to hit save when you are done.  Adding and deleting scenarios should be a familiar interface with +/- keys at the bottom of the list.  Although only a few will display, you are not limited to the number of scenarios you can create.</p>
-		
-	<h4>So where are they stored and how do I retrieve them?</h4>
-	<p>The mechanism for storing the scenarios is called "Local Storage" for your browser.  It is stored on your machine and for the browser (say Chrome) with which you created them.  If you return to that machine and that browser then it will all be there. This mechanism is simple, and requires no passwords or cloud storage.  Admittedly it does not make sharing them easy. </p>
-		
-	<h4>OK, so how do I share them with my colleague or my students?</h4>
-	<p> If you need to share a collection of scenarios for one animation, you can create a URL that references the animation and contains all the scenarios encoded in the URL.  Once you are ready, click Edit and then click Export.  Copy the URL and pass it to a colleague or post the URL in your learning managment system in an assignment for example. If you are sending them to a colleage you should probably hit the "Allow Edit" check box so your colleague can save them and make further changes. If your colleague wants to keep these scenarios as his/her own in his/her "Local Storage" then he/she needs only hit the Edit and then the Save buttons.  For passing a collection of scenarios to students you may chose to not "Allow Edit" so they will not tamper with the scenarios.
-	</p>
-		<h4>You need something more?</h4>
-	<p>  Let me know what you think you need and if demand is there (there are others like you with a similar request) I will try to generate something to meet your needs.  Of course if you find bugs please let me know.  You can submit an issue to me directly or to <a href="https://github.com/tioxaxis/tioxaxis.github.io/issues" target="_blank">GitHub</a></p>
-		<p>-Greg</p>
+	<div id='mainPage' class='wrapper2by1 displayNone'>
+		<div id='topofpage'>TioX </div>
+		<div class='appButton' >
+			<div id="queLink" class='verticalCenter'>Queueing</div>
+		</div>
+		<div class='appButton' >
+			<div id="litLink" class='verticalCenter'>Little's Law</div></div>
+		<div class='appButton' >
+			<div id="nvpLink" class='verticalCenter'>News Vendor Problem</div>
+		</div>
+		<div class='appButton' >
+			<div id="invLink" class='verticalCenter'>Inventory</div>
+		</div>
+		<div class='appButton'>
+			<div id='docLink' class='verticalCenter'>Documentation</div>
+		</div>
 	</div>
-	
-	
-	<div id="contact" class="tabcontent" style='display:none'>
-		<h2>Contact Information</h2>
-		<p>Gregory (Greg) Dobson</p>
-		<p>Email: <a href="mailto:c751dobson@gmail.com?Subject=TioX" target="_top">c751dobson@gmail.com</a></p>
-	</div>
-	</div>
-</div> <!-- end of main page -->
-	<div id='tableOfContents'>
-	<div>What is TioX</div>
-	
-	<a href='#teachingNotes'>Teaching Notes</a>
-	<div>Background and History</div>
-	<div>Have Other Ideas?</div>
-	<div>Scenarios</div>
-</div>
+	<div id='que' class='wrapper2by1 displayNone'></div>
+	<div id='lit' class='wrapper2by1 displayNone'></div>
+	<div id='nvp' class='wrapper2by1 displayNone'></div>
+	<div id='inv' class='wrapper2by1 displayNone'></div>
 </body>
-<script defer>
-function openTab(evt, tabName) {
-	// remove the old
-	currentButton.className = 'tablinks';
-	currentTab.style.display = "none";
-	// add the new
-	currentTab = document.getElementById(tabName);
-	currentTab.style.display = "block";
-	currentButton = evt.currentTarget;
-	currentButton.className += " active";
-	window.history.pushState({tabName:tabName},'','#'+tabName)
-}
-	
-function switchTo(which){
-	if( currentButton ) currentButton.className = 'tablinks';
-	if( currentTab ) currentTab.style.display = 'none';
-	const possibles = ["animations","future","instructors","contact"];
-	if (possibles.findIndex(str => str == which) >= 0 ){
-		currentButton = document.getElementById(which+"Button");
-		currentTab = document.getElementById(which);
-	} else {
-		currentTab = document.getElementById('animations');
-		currentButton = document.getElementById('animationsButton');
-	}
-	currentTab.style.display = "block";
-	currentButton.className += " active";
-};
-
-window.onpopstate = function(event) {
-	const s = event.state;
-	switchTo(s ? s.tabName : '');
-};
-
-
-var currentTab = null;
-var currentButton = null;
-switchTo(location.hash.slice(1));
-
-
-</script>
-
 </html>
+
+

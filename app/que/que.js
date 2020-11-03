@@ -21,21 +21,21 @@
 import {
 	GammaRV, Heap
 }
-from "./util.js";
+from "../mod/util.js";
 import {
 	OmConcept
 }
-from './rhs.js';
+from '../mod/rhs.js';
 import {
 	Queue, WalkAndDestroy, MachineCenter,
 	InfiniteMachineCenter, Item, 
 	GStickFigure, NStickFigure
 }
-from "./stepitem.js";
+from "../mod/stepitem.js";
 import {
 	TioxGraph
 }
-from "./graph.js";
+from "../mod/graph.js";
 class QueueGraph extends TioxGraph {
 	constructor(omConcept){	
 		super(omConcept, .3, {width:10, step:2}, d=>d.t);
@@ -525,7 +525,7 @@ export class Person extends Item {
 import {
 	genPlayResetBox, genSlider, copyMainPage
 }
-from './genHTML.js';
+from '../mod/genHTML.js';
 
 function queHTML(){	
 	copyMainPage('que');

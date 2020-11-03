@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */		
-"use strict";
+
 // declaration of Globals
 const disappointed = {
 	color: 'rgb(235, 230, 230)',
@@ -28,28 +28,25 @@ const tioxTimeConv = 10000; //time are in milliseconds/10
 import {
 	GammaRV, UniformRV, DeterministicRV, Heap
 }
-from '../modules/utility.js';
+from '../mod/util.js';
 import {
-	sliders, presets
+	displayToggle, OmConcept
 }
-from '../modules/rhs.js';
-import {
-	animSetup
-}
-from '../modules/setup.js';
+from '../mod/rhs.js';
+
 import {
 	Queue, WalkAndDestroy, MachineCenter,
-	InfiniteMachineCenter, Combine, Item, itemCollection, ItemCollection, BoxStack,
+	InfiniteMachineCenter, Combine, Item, BoxStack,
 	GStickFigure, NStickFigure, GStore, Package, tioxColors
 }
-from '../modules/procsteps.js';
+from "../mod/stepitem.js";
 import {
 	TioxGraph
 }
-from "../modules/graph.js";
+from "../mod/graph.js";
 class InvGraph extends TioxGraph {
-	constructor(){
-		super('chart',.3, {width:12, step:3}, d=>d.t);
+	constructor(omConcept){
+		super(omConcept,.3, {width:24, step:6}, d=>d.t);
 		this.predictedInvValue = null;
 		this.setTitle('Inventory');
 		this.setupLine(0, d => d.i, 'rgba(0,0,220,1)',
@@ -61,11 +58,11 @@ class InvGraph extends TioxGraph {
 		this.setupLine(2, d => d.p, 'rgb(185, 26, 26)',
 					   true, false, 10, 0);
 		this.setLegend(2,'Predicted On Hand Inventory');
-		if( simu.whichRule == 'methRop'){
-			const rop = document.getElementById('rop');
+		if( inv.whichRule == 'methRop'){
+			const rop = document.getElementById('ropinv');
 			this.resetRopLine(Number(rop.value));
 		} else {
-			const period = document.getElementById('period');
+			const period = document.getElementById('periodinv');
 			this.resetPeriodLines(Number(period.value));
 		}
 	};
@@ -81,13 +78,13 @@ class InvGraph extends TioxGraph {
 	
 	reset(){
 		let maxI;
-		if ( simu.whichRule == 'methRop' ){
+		if ( inv.whichRule == 'methRop' ){
 			maxI = theSimulation.rop + theSimulation.quantityOrdered + 1;
 		} else {
 			maxI = theSimulation.upto+1;
 		};
 		super.reset(maxI);
-		const v = document.getElementById('speed').value;
+		const v = document.getElementById('speedinv').value;
 		const f = speeds[v].graph;
 		this.updateForSpeed(f);
 	};
@@ -100,7 +97,7 @@ class InvGraph extends TioxGraph {
 		const P = theSimulation.period;
 		const L = theSimulation.leadtimeRV.mean;
 		const R = theSimulation.arrivalRV.rate;
-		if (simu.whichRule == 'methUpto') {
+		if (inv.whichRule == 'methUpto') {
 			const U = theSimulation.upto;
 			if ( U > R * (P + L) ){
 				avgInv = U - R * (L + P/ 2);
@@ -122,69 +119,152 @@ class InvGraph extends TioxGraph {
 	
 		
 	resetRopLine(y){
-		this.setExtraLines(extraLineColor,10,{min:y},null);
+		this.setExtraLines(extraLineColor,{min:y},null);
 	}
 	resetPeriodLines(x){
-		this.setExtraLines(extraLineColor,10,null, {min:x,step:x});
+		this.setExtraLines(extraLineColor,null, {min:x,step:x});
 	}
 }
-let invGraph;
+const anim = {};
+var inv;
+var gSF;
+
+function animSetup(){
+	anim.stage = { 
+	normalSpeed: .10, //.10 pixels per millisecond
+	width: 1000,
+	height: 300
+	};
+	anim.person =  {
+			width: 40,
+			height: 60
+	};
+
+	anim.box = {space: 20, size: 16, perRow: 10};
+	anim.store = {
+			left: 400,
+			top: 80,
+			stroke: 1,
+			width: anim.box.space * anim.box.perRow,
+	};
+	anim.store.height = anim.store.width;
+	anim.store.right = anim.store.left + anim.store.width;
+	anim.store.bot = anim.store.top + anim.store.width;
+
+	anim.person.path = {
+		left: -100,
+		right: anim.store.left - 20,
+		top: anim.store.top,
+		bot: anim.store.top + anim.box.space * 7,
+		mid: anim.store.top + anim.box.space * 3.5,
+	};
+	anim.truck = {
+		height: anim.box.space *5,
+		
+		bedWidth: anim.box.perRow * anim.box.space,
+		
+		path:{
+			left: anim.store.right,
+			right: 1000,
+			top: anim.store.top - 2 * anim.box.space,
+			bot: anim.store.bot - 5 * anim.box.space,
+		}
+	};
+	anim.truck.cabWidth = anim.truck.height/2;
+	anim.truck.width = anim.truck.bedWidth + anim.truck.cabWidth;
+
+
+};
 
 animSetup();
 
-simu.whichRule = 'methRop';
 
+function invDefine(){
+	inv = new OmConcept('inv', invEncodeURL, invDecodeURL, localReset);
+	document.getElementById('inv').omConcept = inv;
 
-simu.sliderTypes = {
-	ar: 'range',
-	acv: 'range',
-	lt: 'range',
-	ltcv: 'range',
-	quan: 'range',
-	rop: 'range',
-	period: 'range',
-	upto: 'range',
-	speed: 'range',
-	action: 'radio',
-	which: 'radio',
-	reset: 'checkbox'
+	document.getElementById('slidersWrapperinv')
+	.addEventListener('input', captureChangeInSliderS);
+	document.getElementById('ropuptoinv')
+	.addEventListener('input', captureChangeInSliderS);
+	
+	inv.whichRule = 'methRop';
+
+	inv.sliderTypes = {
+		ar: 'range',
+		acv: 'range',
+		lt: 'range',
+		ltcv: 'range',
+		quan: 'range',
+		rop: 'range',
+		period: 'range',
+		upto: 'range',
+		speed: 'range',
+		action: 'radio',
+		which: 'radio',
+		reset: 'checkbox'
+	};
+
+	inv.precision = {
+		ar: 0,
+		acv: 1,
+		lt: 0,
+		ltcv: 1,
+		quan: 0,
+		rop: 0,
+		period: 0,
+		upto: 0,
+		speed: 0
+	};
+	anim.stage.foreContext = document
+		.getElementById('foregroundinv')
+		.getContext('2d');
+	anim.stage.backContext = document
+		.getElementById('backgroundinv')
+		.getContext('2d');
+	inv.stage = anim.stage;
+	gSF = new GStickFigure(anim.stage.foreContext,
+			anim.person.height, anim.box.size);
+	
+	inv.tioxTimeConv = tioxTimeConv;
 };
 
-simu.precision = {
-	ar: 0,
-	acv: 1,
-	lt: 0,
-	ltcv: 1,
-	quan: 0,
-	rop: 0,
-	period: 0,
-	upto: 0,
-	speed: 0
-};
-simu.editMode = false;
+function localReset () {
+	//	inv.itemCollection.reset();
+	//	inv.graph.reset();
+		pickInvSimulation(inv.whichRule);
 
-class ProcessCollection extends Array {
-	constructor() {
-		super();
-	};
-	reset() {
-		this.forEach(aProcess => aProcess.reset());
-	};
-}; // end class processCollection
 
+	//	theProcessCollection.reset();
+		inv.itemCollection.moveDisplayAll(0); //display all at start.
+		
+		// schedule the initial Person to arrive and start the simulation/animation.
+		theSimulation.supply.previous = null;
+		theSimulation.creator.knockFromPrevious();
+		//fudge to get animation started quickly
+		let t = inv.heap.top().time - 1;
+		inv.now = inv.frameNow = t;
+		if (inv.whichRule == 'methUpto') {
+			inv.heap.push({
+				time: 0 + theSimulation.period,
+				type: 'next order',
+				proc: theSimulation.store.orderUpto
+					.bind(theSimulation.store),
+				item: null
+			});
+		}
+		document.getElementById('lostSales').innerHTML = '0';
+		document.getElementById('fillRate').innerHTML = '100';
+		document.getElementById('serviceLevel').innerHTML = '100';
+	};
 
 function pickInvSimulation(which) {
-	const modelUpto = document.getElementById('modelUpto');
-	const modelRop = document.getElementById('modelRop');
-	
 	switch (which) {
 		case 'methRop':
-			modelRop.style = 'display:flex';
-			modelUpto.style = 'display:none';
+			displayToggle(['rop1','rop2'], ['upto1','upto2']);
 			break;
 		case 'methUpto':
-			modelRop.style = 'display:none';
-			modelUpto.style = 'display:flex';
+			displayToggle(['upto1','upto2'], ['rop1','rop2']);
 			break;
 		default:
 			alert('picked inv simulation with ', which);
@@ -192,18 +272,18 @@ function pickInvSimulation(which) {
 	}
 };
 
-document.getElementById('sliderBigBox')
-	.addEventListener('input', captureChangeInSliderS);
+
 const speeds = [{time:1,graph:1,anim:true},
 				{time:2,graph:1,anim:true},
 				{time:5,graph:2,anim:true},
 				{time:10,graph:2,anim:true},
-				{time:25,graph:5,anim:true}];
+				{time:25,graph:5,anim:true},
+			   {time:1000,graph:10,anim:false}];
 //const speeds = [1, 2, 5, 10, 15];
 
 function invDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
-	const resetValue = {T: true, F: false};
+	const resetValue = {T: "true", F: "false"};
 	const whichValue = {R: "methRop", U: "methUpto"}
 	return( 
 	{ar: str.substring(0,4),
@@ -221,35 +301,35 @@ function invDecodeURL(str){
 	 desc: str.substring(28)
 	})
 };
-function invEncodeURL(preset){
+function invEncodeURL(row){
 	const actionValue = {none: "N", play: "G", pause: "S"};
-	return Number(preset.ar).toFixed(1).padStart(4,'0')
-	.concat(Number(preset.acv).toFixed(1).padStart(4,'0'), 
-		Number(preset.lt).toFixed(1).padStart(4,'0'),
-		Number(preset.ltcv).toFixed(1).padStart(4,'0'),
-		preset.quan.padStart(2,'0'),
-		preset.rop.padStart(2,'0'),
-		preset.period.padStart(2,'0'),
-		preset.upto.padStart(2,'0'),
-		preset.speed,
-		actionValue[preset.action],
-		(preset.which == "methRop" ? "R" : "U"),
-		(preset.reset == "true" ? "T" : "F" ),
-		preset.desc);
+	return Number(row.ar).toFixed(1).padStart(4,'0')
+	.concat(Number(row.acv).toFixed(1).padStart(4,'0'), 
+		Number(row.lt).toFixed(1).padStart(4,'0'),
+		Number(row.ltcv).toFixed(1).padStart(4,'0'),
+		row.quan.padStart(2,'0'),
+		row.rop.padStart(2,'0'),
+		row.period.padStart(2,'0'),
+		row.upto.padStart(2,'0'),
+		row.speed,
+		actionValue[row.action],
+		(row.which == "methRop" ? "R" : "U"),
+		(row.reset == "true" ? "T" : "F" ),
+		row.desc);
 }
 
 function captureChangeInSliderS(event) {
 	let inputElem = event.target.closest('input');
 	if (!inputElem) return
 
-	var id = inputElem.id;
+	var idShort = inputElem.id.slice(0,-3);
 	if (inputElem.type == 'range') {
 		var v = Number(inputElem.value)
-			.toFixed(simu.precision[id]);
-		document.getElementById(id + 'Display')
+			.toFixed(inv.precision[idShort]);
+		document.getElementById(idShort + 'invDisplay')
 			.innerHTML = v;
 	}
-	switch (id) {
+	switch (idShort) {
 		case 'ar':
 			theSimulation.arrivalRV.setRate(Number(v) / tioxTimeConv);
 			break;
@@ -267,37 +347,38 @@ function captureChangeInSliderS(event) {
 			break;
 		case 'rop':
 			theSimulation.rop = Number(v);
-			invGraph.resetRopLine(Number(v));
-			invGraph.setupThenRedraw();
+			if( inv.whichRule == 'methRop'){
+				inv.graph.resetRopLine(Number(v));
+				inv.graph.setupThenRedraw();
+			}
 			break;
 		case 'period':
 			theSimulation.period = Number(v) * tioxTimeConv;
-			invGraph.resetPeriodLines(Number(v));
-			invGraph.setupThenRedraw();
+			if( inv.whichRule == 'methUpto'){
+				inv.graph.resetPeriodLines(Number(v));
+				inv.graph.setupThenRedraw();
+			}
 			break;
 		case 'upto':
 			theSimulation.upto = Number(v);
 			break;
 		case 'methRop':
 		case 'methUpto':
-			simu.whichRule = id;
-			if( simu.whichRule == 'methRop'){
-				const rop = document.getElementById('rop');
-				invGraph.resetRopLine(Number(rop.value));
+			if( inv.whichRule == idShort )break
+			inv.whichRule = idShort;
+			if( inv.whichRule == 'methRop'){
+				const rop = document.getElementById('ropinv');
+				inv.graph.resetRopLine(Number(rop.value));
 			} else {
-				const period = document.getElementById('period');
-				invGraph.resetPeriodLines(Number(period.value));
+				const period = document.getElementById('periodinv');
+				inv.graph.resetPeriodLines(Number(period.value));
 			}
-			pickInvSimulation(simu.whichRule);
-			simu.reset();
+			pickInvSimulation(inv.whichRule);
+			inv.reset();
 			
 			break;
 		case 'speed':
-			simu.frameSpeed = speeds[v].time;
-			invGraph.updateForSpeed(speeds[v].graph);
-			itemCollection.updateForSpeed();
-			document.getElementById(id + 'Display')
-				.innerHTML = speeds[v].time;
+			inv.adjustSpeed(idShort,v,speeds);
 			break;
 		case 'none':
 		case 'pause':
@@ -311,36 +392,6 @@ function captureChangeInSliderS(event) {
 	}
 }
 
-simu.reset2 = function () {
-	itemCollection.reset();
-	invGraph.reset();
-	pickInvSimulation(simu.whichRule);
-								  
-	
-	theProcessCollection.reset();
-	itemCollection.moveDisplayAll(0); //display all at start.
-	gSF = new GStickFigure(anim.stage.foreContext,
-		anim.person.height,
-		anim.box.size);
-	// schedule the initial Person to arrive and start the simulation/animation.
-	theSimulation.supply.previous = null;
-	theSimulation.creator.knockFromPrevious();
-	//fudge to get animation started quickly
-	let t = simu.heap.top().time - 1;
-	simu.now = simu.frameNow = t;
-	if (simu.whichRule == 'methUpto') {
-		simu.heap.push({
-			time: 0 + theSimulation.period,
-			type: 'next order',
-			proc: theSimulation.store.orderUpto
-				.bind(theSimulation.store),
-			item: null
-		});
-	}
-	document.getElementById('lostSales').innerHTML = '0';
-	document.getElementById('fillRate').innerHTML = '100';
-	document.getElementById('serviceLevel').innerHTML = '100';
-};
 
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
@@ -385,19 +436,19 @@ const animForStore = {
 const animForSeller = {
 	start: function (person, pack, walkingTime) {
 		person.addPath({ //walk to bot
-			t: simu.now + walkingTime,
+			t: inv.now + walkingTime,
 			x: anim.person.path.right,
 			y: anim.person.path.bot
 		});
 		const leftTime = walkingTime / 2;
 		if (pack) {
 			pack.addPath({
-				t: simu.now + leftTime,
+				t: inv.now + leftTime,
 				x: anim.person.path.right + person.graphic.gSF.package.x,
 				y: pack.cur.y
 			});
 			pack.addPath({ // move up to arm height in other time
-				t: simu.now + walkingTime,
+				t: inv.now + walkingTime,
 				x: anim.person.path.right + person.graphic.gSF.package.x,
 				y: anim.person.path.bot + person.graphic.gSF.package.y,
 			});
@@ -419,14 +470,14 @@ const animForWalkOffStage = {
 
 	start: function (person) {
 		person.addPath({
-			t: simu.now + this.walkingTime,
+			t: inv.now + this.walkingTime,
 			x: anim.person.path.left,
 			y: anim.person.path.bot
 		});
 	}
 };
 
-var theProcessCollection = new ProcessCollection();
+//var theProcessCollection = new ProcessCollection();
 
 const theSimulation = {
 	arrivalRV: null,
@@ -452,63 +503,60 @@ const theSimulation = {
 		
 
 		// random variables
-		let ar = Number(document.getElementById('ar').value);
-		let acv = Number(document.getElementById('acv').value);
+		let ar = Number(document.getElementById('arinv').value);
+		let acv = Number(document.getElementById('acvinv').value);
 		theSimulation.arrivalRV = new GammaRV(ar / tioxTimeConv, acv);
 		theSimulation.serviceRV =
 			new DeterministicRV(animForQueue.walkingTime2);
-		let lt = Number(document.getElementById('lt').value);
-		let ltcv = Number(document.getElementById('ltcv').value);
+		let lt = Number(document.getElementById('ltinv').value);
+		let ltcv = Number(document.getElementById('ltcvinv').value);
 		theSimulation.leadtimeRV = new GammaRV(1 / (lt * tioxTimeConv), ltcv);
 		
-		invGraph = new InvGraph();
+		inv.graph = new InvGraph(inv);
+		inv.resetCollection.push(inv.graph);
 		
 
 		theSimulation.quantityOrdered = Number(
-			document.getElementById('quan').value);
+			document.getElementById('quaninv').value);
 		theSimulation.rop = Number(
-			document.getElementById('rop').value);
+			document.getElementById('ropinv').value);
 		theSimulation.period = Number(
-			document.getElementById('period').value) * tioxTimeConv;
+			document.getElementById('periodinv').value) * tioxTimeConv;
 		theSimulation.upto = Number(
-			document.getElementById('upto').value);
+			document.getElementById('uptoinv').value);
 
 		//queues
 		this.supply = new Supplier(anim.person.path.left,
 			anim.person.path.top);
 
-		this.queue = new Queue("theQueue", -1,
+		this.queue = new Queue(inv,"theQueue", -1,
 			animForQueue.walkingTime,   
 			animForQueue,
 			null, null);
+		inv.resetCollection.push(this.queue);
 
-		this.walkOffStage = new WalkAndDestroy("walkOff", animForWalkOffStage, true);
+		this.walkOffStage = new WalkAndDestroy(inv, "walkOff", animForWalkOffStage, true);
+		inv.resetCollection.push(this.walkOffStage);
 
-		this.store = new RopStore(anim);
+		this.store = new RopStore(inv,anim);
+		inv.resetCollection.push(this.store);
 
 		//machine centers 
-		this.creator = new MachineCenter("creator",
+		this.creator = new MachineCenter(inv,"creator",
 			1, theSimulation.arrivalRV,
 			this.supply, this.queue,
 			null);
+		inv.resetCollection.push(this.creator);
 
-		this.seller = new Combine('seller',
+		this.seller = new Combine(inv,'seller',
 			theSimulation.serviceRV,
 			this.queue, this.store, this.walkOffStage,
 			animForSeller);
-
+		inv.resetCollection.push(this.seller);
 
 		//link the queue to machine before and after
 		this.queue.setPreviousNext(
 			this.creator, this.seller);
-
-		// put all the process steps with visible people in theProcessCollection
-		//        theProcessCollection.push(this.creator);
-		theProcessCollection.push(this.creator);
-		theProcessCollection.push(this.queue);
-		theProcessCollection.push(this.seller);
-		theProcessCollection.push(this.store);
-		theProcessCollection.push(this.walkOffStage);
 	}, //end of initialize
 };
 
@@ -521,13 +569,13 @@ class Supplier {
 		this.y = y;
 	};
 	pull() {
-		return new Person(this.x, this.y, 30, anim.person.height);
+		return new Person(inv, this.x, this.y		);
 	}
 }; //end class Supplier
 
 class RopStore extends GStore {
-	constructor(anim) {
-		super(anim);
+	constructor(omConcept,anim) {
+		super(omConcept,anim);
 		this.name = 'ropRetail'
 
 		//stats for performance of store
@@ -543,7 +591,7 @@ class RopStore extends GStore {
 	reset() {
 		// start with the store filled in the first round.
 		super.reset();
-		if (simu.whichRule == 'methRop')
+		if (inv.whichRule == 'methRop')
 			this.inv = theSimulation.quantityOrdered;
 		else
 			this.inv = theSimulation.upto;
@@ -595,7 +643,7 @@ class RopStore extends GStore {
 		load.destroy();
 		this.inv += n;
 
-		invGraph.push(simu.now, this.inv,
+		inv.graph.push(inv.now, this.inv,
 			this.invPosition);
 		// keep track stockouts by round
 		this.nRounds++;
@@ -617,7 +665,7 @@ class RopStore extends GStore {
 		} else {
 			this.invPosition--;
 			if (this.invPosition <= theSimulation.rop &&
-				simu.whichRule == 'methRop') {
+				inv.whichRule == 'methRop') {
 				this.orderQuan();
 			}
 			this.invInDoor--;
@@ -627,7 +675,7 @@ class RopStore extends GStore {
 		document.getElementById('fillRate').innerHTML =
 			((1 - this.lostSales / this.totalDemand) * 100).toFixed(0);
 		
-		invGraph.push(simu.now, this.inv,
+		inv.graph.push(inv.now, this.inv,
 			this.invPosition);
 		return pack;
 	};
@@ -636,8 +684,8 @@ class RopStore extends GStore {
 		this.createDelivery(theSimulation.quantityOrdered);
 	};
 	orderUpto() {
-		simu.heap.push({
-			time: simu.now + theSimulation.period,
+		inv.heap.push({
+			time: inv.now + theSimulation.period,
 			type: 'next order',
 			proc: this.orderUpto.bind(this),
 			item: null
@@ -647,11 +695,11 @@ class RopStore extends GStore {
 	};
 
 	createDelivery(quantity) {
-//		console.log('at create a delivery:', simu.now);
+//		console.log('at create a delivery:', inv.now);
 		this.invPosition += quantity;
-		invGraph.push(simu.now, this.inv,
+		inv.graph.push(inv.now, this.inv,
 			this.invPosition);
-		const truck = new Truck(anim);
+		const truck = new Truck(inv, anim);
 		const truckLT = theSimulation.leadtimeRV.observe();
 		const timeMoveDown1 = Math.min(2000, truckLT / 6);
 		const timeMoveDown2 = Math.min(4000, truckLT / 3);
@@ -659,15 +707,15 @@ class RopStore extends GStore {
 
 
 		const delta = truck.deltaPointFlatBed();
-		const load = new LoadOfBoxes(anim.stage.foreContext,
+		const load = new LoadOfBoxes(inv, anim.stage.foreContext,
 			truck.cur.x + delta.dx, truck.cur.y + delta.dy, quantity, anim.box);
 
 		const timeTravel = truckLT - timeMoveDown1 - timeMoveDown2;
-		const atDoorTime = simu.now + timeTravel;
-		const splitTime = simu.now + timeTravel + timeMoveDown1;
-		load.arrivalTime = simu.now + truckLT;
+		const atDoorTime = inv.now + timeTravel;
+		const splitTime = inv.now + timeTravel + timeMoveDown1;
+		load.arrivalTime = inv.now + truckLT;
 
-		simu.heap.push({
+		inv.heap.push({
 			time: atDoorTime,
 			type: 'truck AtDoor',
 			proc: this.truckAtDoor.bind(this),
@@ -676,8 +724,8 @@ class RopStore extends GStore {
 				load: load
 			}
 		});
-		simu.heap.push({
-			time: load.arrivalTime,
+		inv.heap.push({
+			time: load.arrivalTime+1,  //just ensures truck arrives after pull.
 			type: 'truck arrival',
 			proc: this.truckArrival.bind(this),
 			item: {
@@ -685,7 +733,7 @@ class RopStore extends GStore {
 				load: load
 			}
 		});
-		simu.heap.push({
+		inv.heap.push({
 			time: load.arrivalTime + timeTravel,
 			type: 'truck return',
 			proc: this.truckDestroy.bind(this),
@@ -731,9 +779,9 @@ class RopStore extends GStore {
 
 const pi2 = 2 * Math.PI;
 class Truck extends Item {
-	constructor(anim) {
+	constructor(omConcept,anim) {
 		
-		super(anim.truck.path.right, anim.truck.path.top);
+		super(omConcept,anim.truck.path.right, anim.truck.path.top);
 		this.anim = anim;
 		this.graphic = new FlatBed(anim);
 	};
@@ -802,8 +850,8 @@ class FlatBed {
 };
 
 class LoadOfBoxes extends Item {
-	constructor(context, left, bot, quantity, box) {
-		super(left, bot);
+	constructor(omConcept, context, left, bot, quantity, box) {
+		super(omConcept, left, bot);
 		this.graphic = new DisplayBoxes(context, left, bot,
 			quantity, box);
 	};
@@ -820,7 +868,7 @@ class DisplayBoxes {
 
 		for (let k = 0; k < quantity; k++) {
 			let colorIndex = Math.floor(Math.random() * tioxColors.length);
-			let pack = new Package(this.ctxDB,
+			let pack = new Package(inv, this.ctxDB,
 				tioxColors[colorIndex], box.size, 0, 0);
 			this.packages.push(pack);
 			pack.inBatch = true;
@@ -851,40 +899,103 @@ class DisplayBoxes {
 		this.ctxDB.restore();
 	};
 };
-var gSF;
+
 export class Person extends Item {
-	constructor(x, y, w = 30, h = 30) {
-		super(x, y);
-		this.width = w;
+	constructor(omConcept, x, y) {
+		super(omConcept, x, y);
 		this.graphic = new NStickFigure(gSF, x, y);
-	};
-//	moveDisplayWithPath(deltaSimT) {
-//		if (this.updateBadge) {
-//			this.graphic.badgeSet(Math.round((simu.now - this.arrivalTime) / tioxTimeConv).toString())
-//		}
-//		super.moveDisplayWithPath(deltaSimT);
-//	};
-
-
-	setDestWithProcTime(procTime, x, y) {
-		let distance = Math.max(Math.abs(this.cur.x - x),
-			Math.abs(this.cur.y - y));
-		let deltaTime = Math.min(distance / anim.stage.normalSpeed, procTime);
-		this.addPath({
-			t: simu.now + deltaTime,
-			x: x,
-			y: y
-		});
-	};
+	};	
 }; // end class Person
 
-function initializeAll() {
-	Math.seedrandom('this is a Simulation');
-	sliders.initialize();
-	presets.initialize(invEncodeURL,invDecodeURL);
-	simu.initialize(); // the generic
-	theSimulation.initialize(); // the specific to inv
-	document.getElementById('resetButton').click();
+import {
+	genRadio, genPlayResetBox, 
+	genSlider, copyMainPage, hideNode
+}
+from '../mod/genHTML.js';
+
+function invHTML(){	
+	copyMainPage('inv');
+	 
+	//stats line
+	const d = document.getElementById('statsWrapperinv');
+	
+	const d1 = document.createElement('div');
+	d1.className ="statDisplay";
+	const s1 = document.createElement('span');
+	s1.id = 'lostSales'
+	d1.append('Lost Sales: ',s1);
+	
+	const d2 = document.createElement('div');
+	d2.className ="statDisplay";
+	const s2 = document.createElement('span');
+	s2.id = 'fillRate'
+	d2.append('Fill Rate: ',s2,'%');
+	
+	const d3 = document.createElement('div');
+	d3.className ="statDisplay";
+	const s3 = document.createElement('span');
+	s3.id = 'serviceLevel'
+	d3.append('Service Level: ',s3,'%');
+	d.append(d1,d2,d3);
+	
+	 
+	
+	
+	
+	//method radio boxes at top of rhs
+	const e1 = document.createElement('label');
+	e1.append('Rule for Orders:');
+	const e2 = genRadio('whichinv','Reorder Point','methRopinv','methRop',true);
+	const e3 = genRadio('whichinv','Order up to','methUptoinv','methUpto',false);
+	
+	const ewhich = document.createElement('div');
+	ewhich.className = 'ropupto rowAroundCenter';
+	ewhich.id = 'ropuptoinv';
+	ewhich.append(e1,e2,e3);
+	
+	let elem = document.getElementById('slidersWrapperinv');
+	elem.parentNode.prepend(ewhich);
+	
+	//now put in the sliders with the play/reset box	
+	const rop1 = genSlider('quaninv','Order Quantity = ','24','',
+				  24,10,50,1,[10,20,30,40,50]);
+	rop1.id = 'rop1';
+	const rop2 = genSlider('ropinv','Reorder Point = ','10','',
+				  10,5,85,1,[5,25,45,65,85])
+	rop2.id = 'rop2';
+	const upto1 = genSlider('periodinv','Period = ','3','',
+				  3,2,8,1,[2,5,8]);
+	upto1.id = 'upto1';
+	const upto2 = genSlider('uptoinv','Up to Quantity = ','36','',
+				  36,10,90,1,[10,30,50,70,90]);
+	upto2.id = 'upto2';
+	
+	
+	elem.append(
+		genSlider('arinv','Arrival Rate = ','5','',
+				  5,1,9,1,[1,3,5,7,9]),
+		genSlider('acvinv','Arrival CV = ','0.0','',
+				  0,0,2,.5,['0.0','1.0','2.0']),
+		genSlider('ltinv','Lead Time = ','3','',
+				  3,2,8,1,[2,5,8] ), 
+		genSlider('ltcvinv','Lead Time CV = ','0','',
+				  0,0,2,.5,['0.0','1.0','2.0']),
+		rop1, rop2,
+		hideNode(upto1), hideNode(upto2),
+		genPlayResetBox('inv'),
+		genSlider('speedinv','Speed = ','1','x',
+				  0,0,5,1,["slow",' ',' ',' ',"fast ",' full'])
+	);
+	
+	
+	const f = document.getElementById('scenariosMidinv');
+	f.style = "max-height: 18vw";
 };
 
-document.addEventListener("DOMContentLoaded", initializeAll);
+export function invStart() {
+	invHTML();
+	invDefine();
+	theSimulation.initialize(); // the specific to inv
+	inv.reset();
+	return inv;
+};

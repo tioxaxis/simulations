@@ -22,22 +22,22 @@ const tioxTimeConv = 1000; //time are in milliseconds
 import {
 	GammaRV, Heap
 }
-from './util.js';
+from '../mod/util.js';
 import {
 	OmConcept
 }
-from './rhs.js';
+from '../mod/rhs.js';
 import {
 	Queue, WalkAndDestroy, MachineCenter,
 	InfiniteMachineCenter, Item, 
 	GStickFigure, NStickFigure
 }
-from "./stepitem.js";
+from "../mod/stepitem.js";
 
 import {
 	TioxGraph
 }
-from "./graph.js";
+from "../mod/graph.js";
 class LittleGraph extends TioxGraph {
 	constructor(omConcept){
 		super(omConcept,.3, {width:20, step:5}, d=>d.t);
@@ -511,7 +511,7 @@ export class Person extends Item {
 import {
 	genSlider, genPlayResetBox, copyMainPage
 }
-from './genHTML.js'; 
+from '../mod/genHTML.js'; 
 
 function litHTML(){
 	copyMainPage('lit');

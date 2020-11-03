@@ -20,21 +20,21 @@
 import {
 	queStart
 }
-from './que.js';
+from './que/que.js';
 
 import {
 	litStart
 }
-from './lit.js';
+from './lit/lit.js';
 import {
 	nvpStart
 }
-from './nvp.js';
+from './nvp/nvp.js';
 
 import {
 	invStart
 }
-from './inv.js';
+from './inv/inv.js';
 	
 	
 const possibles = ["que", "lit", "nvp", "inv" ];
@@ -42,7 +42,7 @@ const omConcepts ={};
 
 function switchTo(which){
 	if (which == 'doc') 
-		window.location.href = "../index.html";
+		window.location.href = "../doc/doc.html";
 	else if( currentTab ) {
 		currentTab.classList.add('displayNone');
 		if (currentTab.id != 'mainPage')

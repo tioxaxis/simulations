@@ -397,7 +397,7 @@ export class OmConcept {
 			if (scenariosString) {
 				 return JSON.parse(scenariosString);
 			}
-			let response = await fetch(key + '.json');
+			let response = await fetch(`/app/${key}/${key}.json`);
 			if (response.ok) {
 				return await response.json();
 				}

@@ -21,26 +21,25 @@
 import {
 	GammaRV, UniformRV, DeterministicRV, Heap
 }
-from '../modules/utility.js';
+from '../mod/util.js';
 import {
-	sliders, presets
+	OmConcept
 }
-from '../modules/rhs.js';
+from '../mod/rhs.js';
 import {
 	Queue, WalkAndDestroy, MachineCenter,
-	InfiniteMachineCenter, Combine, Item, itemCollection, ItemCollection,
+	InfiniteMachineCenter, Combine, Item,
 	GStickFigure, NStickFigure, GStore, tioxColors
 }
-from '../modules/procsteps.js';
-
+from "../mod/stepitem.js";
 import {
 	TioxGraph
 }
-from "../modules/graph.js";
+from "../mod/graph.js";
 class NVGraph extends TioxGraph {
-	constructor(){
+	constructor(omConcept){
 		
-		super('chart',.3, {width:12, step:3}, d=>d.t);
+		super(omConcept,.3, {width:12, step:3}, d=>d.t);
 		this.totalCost = 0;
 		this.setTitle('$ of cost per day');
 		
@@ -64,7 +63,7 @@ class NVGraph extends TioxGraph {
 	reset(yMax){
 		this.totalCost = 0;
 		super.reset(yMax);
-		const v = document.getElementById('speed').value;
+		const v = document.getElementById('speednvp').value;
 		const f = speeds[v].graph;
 		this.updateForSpeed(f);
 	}
@@ -72,7 +71,10 @@ class NVGraph extends TioxGraph {
 		this.scaleXaxis(factor);
 	}
 }
-let nvGraph;
+const anim = {};
+var nvp;
+var gSF;
+var lastRound;
 
 const disappointed = {
 	color: 'rgb(235, 230, 230)',
@@ -84,12 +86,7 @@ anim.stage = {
 	normalSpeed: 0.10, //.25 pixels per millisecond
 	width: 1000,
 	height: 300,
-	foreContext: document
-		.getElementById('foreground')
-		.getContext('2d'),
-	backContext: document
-		.getElementById('background')
-		.getContext('2d')
+	
 };
 anim.box = {
 	space: 20,
@@ -118,7 +115,14 @@ anim.person.path = {
 }
 anim.person.path.mid = (anim.person.path.top + anim.person.path.bot) / 2;
 
-simu.sliderTypes = {
+function nvpDefine(){
+	nvp = new OmConcept('nvp', nvEncodeURL, nvDecodeURL, localReset);
+	document.getElementById('nvp').omConcept = nvp;
+	
+	document.getElementById('slidersWrappernvp')
+	.addEventListener('input', captureChangeInSliderS);
+	
+	nvp.sliderTypes = {
 		dr: 'range',
 		dcv: 'range',
 		Cu: 'range',
@@ -128,7 +132,7 @@ simu.sliderTypes = {
 		action: 'radio',
 		reset: 'checkbox'
 	},
-simu.precision = {
+		nvp.precision = {
 		dr: 0,
 		dcv: 1,
 		Cu: 0,
@@ -136,30 +140,85 @@ simu.precision = {
 		quan: 0,
 		speed: 0
 	};
-simu.editMode = false;
+	
+	anim.stage.foreContext = document
+		.getElementById('foregroundnvp')
+		.getContext('2d');
+	anim.stage.backContext = document
+		.getElementById('backgroundnvp')
+		.getContext('2d');
+	nvp.stage = anim.stage;
+	gSF = new GStickFigure(anim.stage.foreContext,
+			anim.person.height, anim.box.size);
+	
+	
+	nvp.fullSpeedSim = function(){
+				
+		if (this.nRounds == this.graph.xInfo.max){
+			this.graph.shiftXaxis2();
+		} 
+		lastRound = this.graph.xInfo.max;
+		let theTop;
+		while ((theTop = this.heap.top()) &&
+				this.nRounds < lastRound) {
+			const event = this.heap.pull();
+			// event on heap is {time: ,proc: ,item: }
+			this.now = event.time;
+			event.proc(event.item);
+//			console.log('nRounds, lastRound',this.nRounds,lastRound);
+		}
+		this.frameNow = this.now;
+		this.clearStageForeground();
+	}
+};
 
-class ProcessCollection extends Array {
-	constructor() {
-		super();
-	};
-	reset() {
-		this.forEach(aProcess => aProcess.reset());
-	};
-}; // end class processCollection
+function localReset() {
+		document.getElementById('actualPercnvp').innerHTML ="00.00";
+	//	nvp.itemCollection.reset();
+		let maxUnder = theSimulation.Cu * 
+				((1 + theSimulation.demandRV.variance) * theSimulation.demandRV.mean  
+				 - theSimulation.quantityOrdered + 1);
+		let maxOver = theSimulation.Co * 
+				(theSimulation.quantityOrdered - 
+				(1 - theSimulation.demandRV.variance) * theSimulation.demandRV.mean + 1) ;
+	
+	
+		nvp.totCost = 0;
+		nvp.nRounds = 0;
+		nvp.enough = 0;
+	//	console.log('at reset', maxUnder,maxOver);
+		nvp.graph.reset(Math.max(maxUnder,maxOver));
+	//	theProcessCollection.reset();
+		
+		setDesired(theSimulation.Cu, theSimulation.Co);
+		setExpected(theSimulation.quantityOrdered,
+			theSimulation.demandRV.mean,
+			theSimulation.demandRV.variance);
 
-document.getElementById('sliderBigBox')
-	.addEventListener('input', captureChangeInSliderS);
+		theSimulation.supply.previous = null;
+		nvp.heap.push({
+			time: nvp.now + 500,
+			type: 'new cycle',
+			proc: theSimulation.demand.cycle.bind(theSimulation.demand),
+			item: null
+		});
+		nvp.tioxTimeConv = tioxTimeConv;
+		lastRound = 0;
+
+	};
+
 const speeds = [{time:1,graph:1,anim:true},
 				{time:2,graph:1,anim:true},
 				{time:5,graph:2,anim:true},
 				{time:10,graph:2,anim:true},
-				{time:25,graph:5,anim:true}];
+				{time:25,graph:5,anim:true},
+			{time:1000,graph:20,anim:false}];
 
 //const speeds = [1, 3, 10, 30];
 
 function nvDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
-	const resetValue = {T: true, F: false};
+	const resetValue = {T: 'true', F: 'false'};
 	return( 
 	{dr: str.substring(0,4),
 	dcv: str.substring(4,8),
@@ -172,17 +231,17 @@ function nvDecodeURL(str){
 	desc: str.substring(21)
 	})
 };
-function nvEncodeURL(preset){
+function nvEncodeURL(row){
 	const actionValue = {none: "N", play: "G", pause: "S"};
-	return Number(preset.dr).toFixed(1).padStart(4,'0')
-	 	.concat(Number(preset.dcv).toFixed(1).padStart(4,'0'),
-				Number(preset.Cu).toFixed(1).padStart(4,'0'),
-				Number(preset.Co).toFixed(1).padStart(4,'0'),
-				preset.quan.padStart(2,'0'),
-				preset.speed,
-				actionValue[preset.action],
-				(preset.reset == "true" ? "T" : "F"),
-				preset.desc);
+	return Number(row.dr).toFixed(1).padStart(4,'0')
+	 	.concat(Number(row.dcv).toFixed(1).padStart(4,'0'),
+				Number(row.Cu).toFixed(1).padStart(4,'0'),
+				Number(row.Co).toFixed(1).padStart(4,'0'),
+				row.quan.padStart(2,'0'),
+				row.speed,
+				actionValue[row.action],
+				(row.reset == "true" ? "T" : "F"),
+				row.desc);
 }
 
 function captureChangeInSliderS(event) {
@@ -190,14 +249,14 @@ function captureChangeInSliderS(event) {
 	let inputElem = event.target.closest('input');
 	if (!inputElem) return
 
-	var id = inputElem.id;
+	var idShort = inputElem.id.slice(0,-3);
 	if (inputElem.type == 'range') {
 		var v = Number(inputElem.value)
-			.toFixed(simu.precision[id]);
-		document.getElementById(id + 'Display')
+			.toFixed(nvp.precision[idShort]);
+		document.getElementById(idShort + 'nvpDisplay')
 			.innerHTML = v;
 	}
-	switch (id) {
+	switch (idShort) {
 		case 'dr':
 			theSimulation.demandRV
 				.setMean(Number(v));
@@ -231,21 +290,22 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			simu.frameSpeed = speeds[v].time;
-			nvGraph.updateForSpeed(speeds[v].graph);
-			itemCollection.updateForSpeed();
-			document.getElementById(id + 'Display')
-				.innerHTML = speeds[v].time;
+			nvp.adjustSpeed(idShort,v,speeds);
 			break;
-
+		case 'none':
+		case 'pause':
+		case 'play':
+		case 'reset':
+			break;
 		default:
-			console.log(' reached part for default id=',id);
+			alert(' reached part for default id=',idShort);
+			debugger;
 			break;
 	}
 }
 
 function setDesired(under, over) {
-	document.getElementById('desiredPerc').innerHTML =
+	document.getElementById('desiredPercnvp').innerHTML =
 		(100 * under / (under + over)).toFixed(2);
 }
 
@@ -257,44 +317,16 @@ function setExpected(q, m, v) {
 	if (v != 0) perc = 100 * (modQ - m * (1 - v)) / (2 * m * v);
 	else if (q < m) perc = 0;
 	else perc = 100;
-	document.getElementById('expectedPerc').innerHTML =
+	document.getElementById('expectedPercnvp').innerHTML =
 		(perc).toFixed(2);
 }
 
 function setActual(enough, total) {
-	document.getElementById('actualPerc').innerHTML =
+	document.getElementById('actualPercnvp').innerHTML =
 		(100 * enough / total).toFixed(2);
 }
 
 
-simu.reset2 = function () {
-	document.getElementById('actualPerc').innerHTML ="00.00";
-	itemCollection.reset();
-	let maxUnder = theSimulation.Cu * 
-			((1 + theSimulation.demandRV.variance) * theSimulation.demandRV.mean  
-			 - theSimulation.quantityOrdered + 1);
-	let maxOver = theSimulation.Co * 
-			(theSimulation.quantityOrdered - 
-			(1 - theSimulation.demandRV.variance) * theSimulation.demandRV.mean + 1) ;
-//	console.log('at reset', maxUnder,maxOver);
-	nvGraph.reset(Math.max(maxUnder,maxOver));
-	theProcessCollection.reset();
-	gSF = new GStickFigure(anim.stage.foreContext,
-		anim.person.height, anim.box.size);
-	setDesired(theSimulation.Cu, theSimulation.Co);
-	setExpected(theSimulation.quantityOrdered,
-		theSimulation.demandRV.mean,
-		theSimulation.demandRV.variance);
-
-	theSimulation.supply.previous = null;
-	simu.heap.push({
-		time: simu.now + 500,
-		type: 'new cycle',
-		proc: theSimulation.demand.cycle.bind(theSimulation.demand),
-		item: null
-	});
-
-};
 
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
@@ -333,7 +365,7 @@ const animForWalkOffStage = {
 
 	start: function (person) {
 		person.addPath({
-			t: simu.now +
+			t: nvp.now +
 				this.walkingTime,
 			x: anim.person.path.left,
 			y: anim.person.path.bot
@@ -356,7 +388,7 @@ const animForNewsVendor = {
 	//	walkingTime: animForQueue.walkingTime2;
 	start: function (person, pack, walkingTime) {
 		person.addPath({ //walk to bot
-			t: simu.now + walkingTime,
+			t: nvp.now + walkingTime,
 			x: anim.person.path.right,
 			y: anim.person.path.bot
 		});
@@ -365,12 +397,12 @@ const animForNewsVendor = {
 
 		if (pack) {
 			pack.addPath({
-				t: simu.now + leftTime,
+				t: nvp.now + leftTime,
 				x: anim.person.path.right + person.graphic.gSF.package.x,
 				y: pack.cur.y
 			});
 			pack.addPath({ // move up to arm height in other time
-				t: simu.now + walkingTime,
+				t: nvp.now + walkingTime,
 				x: anim.person.path.right + person.graphic.gSF.package.x,
 				y: anim.person.path.bot + person.graphic.gSF.package.y,
 			});
@@ -388,7 +420,6 @@ const animForNewsVendor = {
 	}
 };
 
-var theProcessCollection = new ProcessCollection();
 
 const theSimulation = {
 	//  the two random variables in the simulation
@@ -408,46 +439,43 @@ const theSimulation = {
 
 	initialize: function () {
 		// random variables
-		let r = Number(document.getElementById('dr').value);
-		let cv = Number(document.getElementById('dcv').value);
+		let r = Number(document.getElementById('drnvp').value);
+		let cv = Number(document.getElementById('dcvnvp').value);
 		theSimulation.demandRV = new UniformRV(r, cv);
 		theSimulation.serviceRV =
 			new DeterministicRV(animForQueue.walkingTime2);
-		theSimulation.Co = Number(document.getElementById('Co').value);
-		theSimulation.Cu = Number(document.getElementById('Cu').value);
-		theSimulation.quantityOrdered = Number(document.getElementById('quan').value);
+		theSimulation.Co = Number(document.getElementById('Convp').value);
+		theSimulation.Cu = Number(document.getElementById('Cunvp').value);
+		theSimulation.quantityOrdered = Number(document.getElementById('quannvp').value);
 
-		nvGraph = new NVGraph();
+		nvp.graph = new NVGraph(nvp);
 		
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 
-		this.queue = new Queue("theQueue", -1, animForQueue.walkingTime,   
-			animForQueue,
+		this.queue = new Queue(nvp, "theQueue", -1,
+			animForQueue.walkingTime, animForQueue,
 			null, null);
-
-		this.store = new RetailStore(anim);
-
-		this.walkOffStage = new WalkAndDestroy("walkOff", animForWalkOffStage, true);
+		nvp.resetCollection.push(this.queue);
+		
+		this.store = new RetailStore(nvp, anim);
+		nvp.resetCollection.push(this.store);
+		
+		this.walkOffStage = new WalkAndDestroy(nvp, "walkOff", animForWalkOffStage, true);
+		nvp.resetCollection.push(this.walkOffStage);
 
 		this.demand = new DemandCreator(20000, theSimulation.demandRV);
+		nvp.resetCollection.push(this.demand);
 
-		this.newsVendor = new Combine('newsVendor',
+		this.newsVendor = new Combine(nvp,'newsVendor',
 			theSimulation.serviceRV,
 			this.queue, this.store, this.walkOffStage,
 			animForNewsVendor);
-
+		nvp.resetCollection.push(this.newsVendor);
 
 		//link the queue to machine before and after
 		this.queue.setPreviousNext(
 			this.creator, this.newsVendor);
-
-		// put all the process steps with visible people in theProcessCollection
-		theProcessCollection.push(this.demand);
-		theProcessCollection.push(this.queue);
-		theProcessCollection.push(this.store);
-		theProcessCollection.push(this.newsVendor);
-		theProcessCollection.push(this.walkOffStage);
 	},
 };
 
@@ -458,9 +486,8 @@ class Supplier {
 		this.y = y;
 	};
 	pull() {
-		return new Person(
-			this.x, this.y,
-			30, anim.person.height);
+		return new Person(nvp,
+			this.x, this.y);
 	}
 }; //end class Supplier
 
@@ -471,54 +498,51 @@ class DemandCreator {
 		this.timeToNV = ((anim.person.path.right - anim.person.path.left) +
 			(anim.person.path.bot - anim.person.path.top)) / anim.stage.normalSpeed;
 		this.demandRV = demandRV;
-		this.totCost = null;
-		this.nRounds = null;
+		
+		
 		this.curDemand = null;
-		this.enough = null;
 		this.overageForDay = null;
 		this.underageForDay = null;
 
 	};
 
 	reset() {
-		this.totCost = 0
-		this.nRounds = 0;
-		this.enough = 0;
 	};
 
 	cycle() {
+//		console.log('start of cycle', nvp.now)
 		theSimulation.store.emptyStore();
 		this.curDemand = Math.floor(theSimulation.demandRV.observe());
 		theSimulation.store.addBox(theSimulation.quantityOrdered);
 		//		this.store.packages.drawAll();
-		this.nRounds++;
+		nvp.nRounds++;
 		let excess = theSimulation.quantityOrdered - this.curDemand;
 		this.overageForDay = theSimulation.Co * Math.max(0, excess);
 		this.underageForDay = theSimulation.Cu * Math.max(0, -excess);
-		this.totCost += this.overageForDay + this.underageForDay;
+		nvp.totCost += this.overageForDay + this.underageForDay;
 		if (this.curDemand <= theSimulation.quantityOrdered)
-			this.enough++;
+			nvp.enough++;
 
-		let t = simu.now;
+		let t = nvp.now;
 		let deltaT = peopleSpacing / anim.stage.normalSpeed;
 
 		for (let i = 0; i < this.curDemand; i++) {
 			t += deltaT
 			let person = theSimulation.supply.pull();
-			simu.heap.push({
+			nvp.heap.push({
 				time: t,
 				type: 'create',
 				proc: theSimulation.queue.push.bind(theSimulation.queue),
 				item: person
 			});
 		}
-		simu.heap.push({
+		nvp.heap.push({
 			time: t + this.timeToNV,
 			type: 'plot',
 			proc: this.graph.bind(theSimulation.demand),
 			item: null
 		})
-		simu.heap.push({
+		nvp.heap.push({
 			time: t + this.cycleLength,
 			type: 'new cycle',
 			proc: this.cycle.bind(this),
@@ -526,8 +550,9 @@ class DemandCreator {
 		});
 	};
 	graph() {
-		nvGraph.push(this.nRounds, this.underageForDay, this.overageForDay);
-		setActual(this.enough, this.nRounds);
+		nvp.graph.push(nvp.nRounds, this.underageForDay, this.overageForDay);
+//		console.log(nvp.nRounds,nvp.now);
+		setActual(nvp.enough, nvp.nRounds);
 
 		theSimulation.store.makeAllGrey();
 	}
@@ -535,8 +560,8 @@ class DemandCreator {
 
 
 class RetailStore extends GStore {
-	constructor(anim) {
-		super(anim);
+	constructor(omConcept, anim) {
+		super(omConcept, anim);
 		this.anim = anim;
 	};
 	addBox(n) {
@@ -546,46 +571,77 @@ class RetailStore extends GStore {
 	};
 };
 
-var gSF;
+
 export class Person extends Item {
 
-	constructor(x, y = 60, w = 30, h = 30) {
-		super(x, y);
-		this.width = w;
+	constructor(omConcept, x, y = 60) {
+		super(omConcept, x, y);
+		
 		this.graphic = new NStickFigure(gSF, x, y);
-//		this.updateBadge = false;
 	};
-
-//	moveDisplayWithPath(deltaSimT) {
-//		if (this.updateBadge) {
-//			this.graphic.badgeSet(Math.round((simu.now - this.arrivalTime) / tioxTimeConv).toString())
-//		}
-//		super.moveDisplayWithPath(deltaSimT);
-//	};
-
-	setDestWithProcTime(procTime, x, y) {
-		let distance = Math.max(Math.abs(this.cur.x - x),
-			Math.abs(this.cur.y - y));
-		let deltaTime = Math.min(distance / anim.stage.normalSpeed, procTime);
-		this.addPath({
-			t: simu.now + deltaTime,
-			x: x,
-			y: y
-		});
-	};
-
 }; // end class Person
 
+import {
+	addKeyForIds, genPlayResetBox, genSlider, copyMainPage
+}
+from '../mod/genHTML.js';
 
-function initializeAll() {
-	Math.seedrandom('this is the Queueing Simulation');
-	sliders.initialize();
-	presets.initialize(nvEncodeURL,nvDecodeURL);
-	simu.initialize(); // the generic
-	theSimulation.initialize(); // the specific to queueing
-	//reset first time to make sure it is ready to play.
-	document.getElementById('resetButton').click();
+function nvpHTML(){	
+	copyMainPage('nvp');
+	 
+	//stats line
+	const d = document.getElementById('statsWrappernvp');
+	
+	const d1 = document.createElement('div');
+	d1.className ="statDisplay";
+	const s1 = document.createElement('span');
+	s1.id = 'expectedPercnvp';
+	d1.append('Expected: ',s1);
+	
+	const d2 = document.createElement('div');
+	d2.className ="statDisplay";
+	const s2 = document.createElement('span');
+	s2.id = 'desiredPercnvp';
+	d2.append('Desired: ',s2);
+	
+	const d3 = document.createElement('div');
+	d3.className ="statDisplay";
+	const s3 = document.createElement('span');
+	s3.id = 'actualPercnvp';
+	d3.append('Actual: ',s3);
+	d.append(d1,d2,d3);
+	
+	const empty = document.createElement('div');
+	empty.className = "sliderBox"
+	 
+	//now put in the sliders with the play/reset box	
+	let elem = document.getElementById('slidersWrappernvp');
+	elem.append(
+		genSlider('drnvp','Demand Rate = ','20','',
+				  20,10,50,1,[10,20,30,40,50]),
+		genSlider('dcvnvp','Demand Variability = ','0.0','',
+				  0,0,1,.2,['0.0','1.0']),
+		genSlider('Cunvp','Underage Cost = ','8','',
+				  8,0,10,1,[0,2,4,6,8,10] ), 
+		genSlider('Convp','Overage Cost = ','1','',
+				  1,0,10,1,[0,2,4,6,8,10]),
+		genSlider('quannvp','Order Quantity = ','20','',
+				  20,10,50,1,[10,20,30,40,50]),
+		empty,
+		genPlayResetBox('nvp'),
+		genSlider('speednvp','Speed = ','1','x',
+				  0,0,5,1,["slow",' ',' ',' ',"fast ",' full'])
+	);
+	
+	const f = document.getElementById('scenariosMidnvp');
+	f.style = "max-height: 18vw";
 };
 
-
-document.addEventListener("DOMContentLoaded", initializeAll);
+export function nvpStart() {
+	nvpHTML();
+	nvpDefine();
+	theSimulation.initialize(); // the specific to queueing
+	//reset first time to make sure it is ready to play.
+	nvp.reset();
+	return nvp;
+};
