@@ -106,21 +106,44 @@ export class OmConcept {
 			.addEventListener('click', this.deleteSelected.bind(this));
 		document.getElementById('editButton' + this.key)
 			.addEventListener('click', this.startEdit.bind(this));
+//		document.getElementById('editButton2' + this.key)
+//			.addEventListener('click', this.startEdit.bind(this));
+		
 		document.getElementById('saveButton' + this.key)
 			.addEventListener('click', this.saveEdit.bind(this));
 		document.getElementById('cancelButton' + this.key)
 			.addEventListener('click', this.cancelEdit.bind(this));
-		document.getElementById('exportButton' + this.key)
-			.addEventListener('click', this.popupExport.bind(this));
-		document.getElementById('allowEditButton' + this.key)
-			.addEventListener('click', this.toggleAllowEdit.bind(this));
-		document.getElementById('copyURLToClipboard' + this.key)
-			.addEventListener('click', this.copyURLToClipboard.bind(this));
-		document.getElementById('copyJSONToClipboard' + this.key)
-			.addEventListener('click', this.copyJSONToClipboard.bind(this));
-		document.getElementById('closeExportBox' + this.key)
-			.addEventListener('click', this.closeExportBox.bind(this));
+		document.getElementById('clearButton' + this.key)
+			.addEventListener('click',
+			this.clearLS.bind(this));
 		
+//		document.getElementById('saveButton2' + this.key)
+//			.addEventListener('click', this.saveEdit.bind(this));
+//		document.getElementById('cancelButton2' + this.key)
+//			.addEventListener('click', this.cancelEdit.bind(this));
+		
+//		document.getElementById('exportButton' + this.key)
+//			.addEventListener('click', this.popupExport.bind(this));
+		
+		document.getElementById('linkButton' + this.key)
+			.addEventListener('click', this.popupExport.bind(this));
+		
+//		document.getElementById('linkMessage' + this.key)
+//			.addEventListener('click', this.hideLinkMessage.bind(this));
+		
+		document.getElementById('scenariosMenu' + this.key)
+			.addEventListener('click', this.selectScenarioSource.bind(this));
+		
+		
+//		document.getElementById('allowEditButton' + this.key)
+//			.addEventListener('click', this.toggleAllowEdit.bind(this));
+//		document.getElementById('copyURLToClipboard' + this.key)
+//			.addEventListener('click', this.copyURLToClipboard.bind(this));
+//		document.getElementById('copyJSONToClipboard' + this.key)
+//			.addEventListener('click', this.copyJSONToClipboard.bind(this));
+//		document.getElementById('closeExportBox' + this.key)
+//			.addEventListener('click', this.closeExportBox.bind(this));
+//		
 		// click on scenario name
 		this.ulPointer.addEventListener('click', this.liClicked.bind(this));
 		this.ulPointer.addEventListener('dblclick', this.liDblClicked.bind(this));
@@ -378,38 +401,64 @@ export class OmConcept {
 		return null;
 	};
 
+	async getScenariosFromDefault(key){
+		let response = await fetch(`app/${key}/${key}.json`);
+		if (response.ok) {
+			return await response.json();
+			}
+		console.log("json file HTTP-Error: " + response.status);
+		return null
+	};
+	
+	
+	
 	/******************* Two Helper Functions for setupScenarios  *********/
 	// try the 4 options in order returning the rows of parameters 
 	async fourCases(key,search,scenariosString ){
-			if ( search.scenarios ){
-				if ( search.edit != "allow" ){
-					displayToggle(null, 'editBox'+this.key);
-				} 
-				return this.parseURLScenariosToRows(search.scenarios)
+		const menuLS = document.getElementById('menuLS'+this.key);
+		const menuURL = document.getElementById('menuURL'+this.key);
+		const menuDefault = document.getElementById('menuDefault'+this.key);
+		if (!scenariosString){
+			menuLS.classList.add('itemDisabled');
+		}
+		if (!search.scenarios){
+			menuURL.classList.add('itemDisabled');
+		}
+		
+		
+		if ( search.scenarios ){
+//				if ( search.edit != "allow" ){
+//					displayToggle(null, 'editBox'+this.key);
+//				} 
+			menuURL.classList.add('itemPicked');
+			return this.parseURLScenariosToRows(search.scenarios)
 			}
 			
-			if ( search.url ) { 
-				let response = await fetch(search.url);
-				if (response.ok) {
-					return await response.json();
-				} 
-			}
-			if (scenariosString) {
-				 return JSON.parse(scenariosString);
-			}
-		console.log(location);
-		
-			let response = await fetch(`app/${key}/${key}.json`);
+		if ( search.url ) { 
+			let response = await fetch(search.url);
 			if (response.ok) {
 				return await response.json();
-				}
-			console.log("json file HTTP-Error: " + response.status);
-			return null
-		};
+			} 
+		}
+		if (scenariosString) {
+			menuLS.classList.add('itemPicked');
+			return JSON.parse(scenariosString);
+		}
+//		console.log(location);
+		menuDefault.classList.add('itemPicked');
+		return this.getScenariosFromDefault(key);
+//		let response = await fetch(`app/${key}/${key}.json`);
+//		if (response.ok) {
+//			menuDefault.classList.add('itemPicked');
+//			return await response.json();
+//			}
+//		console.log("json file HTTP-Error: " + response.status);
+//		return null
+	};
 	
 	// capture the three possible 'search' parameters
 	parseSearchString(str, hashMatchesKey ){
-			let search = {edit: null, url: null, scenarios: null}
+			let search = {url: null, scenarios: null}
 			if (str.length == 0) return search;
 			if (!hashMatchesKey) return search;
 			const terms = str.split('&');
@@ -424,6 +473,45 @@ export class OmConcept {
 			return search
 		}
 	
+	async selectScenarioSource() {
+		let menuElem = event.target.closest('.menuItem');
+		if (!menuElem) return;
+		const menuDefault = document.getElementById('menuDefault'+this.key);
+		const menuLS = document.getElementById('menuLS'+this.key);
+		const menuURL = document.getElementById('menuURL'+this.key);
+		menuDefault.classList.remove('itemPicked');
+		menuLS.classList.remove('itemPicked');
+		menuURL.classList.remove('itemPicked');
+		let rows;
+		switch (menuElem.id.slice(0,-3) ){
+			case 'menuDefault':
+				menuDefault.classList.add('itemPicked');
+				rows = await  this.getScenariosFromDefault(
+					this.key,menuDefault);
+				break;
+			case 'menuLS':
+				rows = JSON.parse(
+					localStorage.getItem(this.keyForLocalStorage));
+				menuLS.classList.add('itemPicked');
+				break;
+			case 'menuURL':
+				let hash = location.hash.slice(1);
+				let search = this.parseSearchString(
+					decodeURI(location.search.slice(1)), hash == this.key)
+				rows = this.parseURLScenariosToRows(search.scenarios)
+				menuURL.classList.add('itemPicked');
+				break;
+			default:
+				alert(' picked a menu item that does not exist');
+				debugger;
+		}
+		this.setUL(rows);
+		
+				
+				
+				
+	};
+	
 	async setupScenarios () {
 		// get the scenarios from 1) the URL, 2) user specified .json
 		// 3) local storage or 4) default .json file in that order
@@ -433,6 +521,7 @@ export class OmConcept {
 		
 		let scenariosString =  localStorage.getItem(this.keyForLocalStorage);
 		this.warningLSandScens = search.scenarios  && scenariosString;
+		
 		let rows = await this.fourCases(this.key,search, scenariosString);
 	
 		// if one thing worked 'rows' has it.
@@ -541,8 +630,10 @@ export class OmConcept {
 
 		//adjust the page for edit mode
 		displayToggle(
-			['scenariosBot'+this.key,'menuBox'+this.key, 'actionOptions'+this.key],
-			['editBox'+this.key,'playButtons'+this.key]);
+			['scenariosBot'+this.key,'menuBox'+this.key,
+			 'actionOptions'+this.key],
+			['editButton'+this.key,
+			 'playButtons'+this.key]);
 		
 		if (this.warningLSandScens){
 			alert('If you Save you will overwrite your current scenarios stored in Local Storage');
@@ -576,32 +667,44 @@ export class OmConcept {
 				container.append(list[i]);
 			}
 		}
-
+		const menuLS = document
+		.getElementById('menuLS'+ this.key);
+		menuLS.classList.add('itemPicked');
+		menuLS.classList.remove('itemDisabled');
 		sortTheUL(this.ulPointer);
 		localStorage.setItem(this.keyForLocalStorage, 
 							 this.createJSONfromUL());
 	};
+	
+	clearLS () {
+		const menuLS = document
+		.getElementById('menuLS'+ this.key);
+		menuLS.classList.remove('itemPicked');
+		menuLS.classList.add('itemDisabled');
+		localStorage.removeItem(this.keyForLocalStorage);
+	}
 
 	exitEdit () {
 		// restore the page to non-edit mode
 		this.editMode = false;
 		this.saveModifiedDesc();
-		displayToggle(['editBox'+this.key,'playButtons'+this.key],
-			['scenariosBot'+this.key, 'menuBox'+this.key, 'actionOptions'+this.key]);
+		displayToggle(['editButton'+this.key, 'playButtons'+this.key],
+			['scenariosBot'+this.key, 'menuBox'+this.key,
+			  'actionOptions'+this.key]);
 	};
 
 	popupExport () {
-		this.exporting = true;
-		this.saveModifiedDesc (); 
-		document.getElementById('exportBoxOuter'+this.key)
-			.style = 'display:block';
-		document.getElementById('jsonDisplay'+this.key)
-			.innerHTML = this.createJSONfromUL();
-		document.getElementById('urlDisplay'+this.key)
-			.innerHTML = this.createURL(false);
-		document.getElementById('allowEditButton'+this.key)
-			.checked = false;
+		copyToClipboard2(this.createURL());
+		const elem = document.getElementById('linkMessage'+this.key);
+		elem.classList.add('linkMessageTrigger');
+    setTimeout(function() {
+        elem.classList.remove('linkMessageTrigger');}, 11000);
 	};
+		
+//	hideLinkMessage(){
+//		document.getElementById('linkMessage'+this.key)
+//		.classList.add('linkMessage');
+//	}
 
 	//  user clicked on an item in the list, 
 	//  possibly changing the selected choice
@@ -672,11 +775,12 @@ export class OmConcept {
 		return rows;
 	};
 
-	createURL(edit) { //from current UL
+	createURL() { //from current UL
 		const result = location.origin + location.pathname +
 			'?scenarios=' +
 			this.createURLScenarioStr(this.createRowsFromUL()) +
-			( edit ? "&edit=allow" : "" ) + '#' + this.key;
+//			( edit ? "&edit=allow" : "" ) +
+			  '#' + this.key;
 		const encResult =  encodeURI(result);
 		//console.log('in createURL',result, encResult);
 		return encResult;
@@ -687,25 +791,34 @@ export class OmConcept {
 	};
 
 
-	toggleAllowEdit(event){
-		document.getElementById('urlDisplay'+this.key)
-			.innerHTML = this.createURL(event.target.checked)
-	};
+//	toggleAllowEdit(event){
+//		document.getElementById('urlDisplay'+this.key)
+//			.innerHTML = this.createURL(event.target.checked)
+//	};
 
-	copyURLToClipboard (event){
-		copyToClipboard('urlDisplay'+this.key)
-	};
-	copyJSONToClipboard (event){
-		copyToClipboard('jsonDisplay'+this.key)
-	};
-	closeExportBox (event){
-		this.exporting = false;
-		document.getElementById('exportBoxOuter'+this.key)
-				.style='display:none';
-	};
+//	copyURLToClipboard (event){
+//		copyToClipboard('urlDisplay'+this.key)
+//	};
+//	copyJSONToClipboard (event){
+//		copyToClipboard('jsonDisplay'+this.key)
+//	};
+//	closeExportBox (event){
+//		this.exporting = false;
+//		document.getElementById('exportBoxOuter'+this.key)
+//				.style='display:none';
+//	};
 };
 
 
+function copyToClipboard2(txt){
+	navigator.clipboard.writeText(txt)
+		.then(  function() {
+			console.log('successful copy to clipboard')
+			}, 
+			function() {
+				alert('failed to copy to clipboard')
+			});
+};
 function copyToClipboard (id){
 	let elem = document.getElementById(id);
 	navigator.clipboard.writeText(elem.innerText)

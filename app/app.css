@@ -57,6 +57,7 @@
 }
 
 /****************  Export Popup formats   *****************/
+/*
 .blueBox {
 	border: var(--borderColor) solid .3vw;
 	margin: 0% 5%;
@@ -103,6 +104,7 @@
 	top: 12%;
 	right: 6.2%;
 }
+*/
 
 /****************  Left Hand Side   *****************/
 .leftHandSideBox {
@@ -259,6 +261,13 @@
 	justify-content: space-around;
 	align-items: flex-end;
 /*	border: solid red;*/
+}
+.rowBetweenCenter{
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
 }
 .rowAroundCenter{
 	display: flex;
@@ -427,6 +436,35 @@ input[type=range]:focus::-ms-fill-upper {
 .material-icons:active {
 	color: blue;
 }
+
+
+/*
+#linkMessage .showMessage{
+	visibility: visible;
+  	-webkit-animation: fadeIn 1s;
+  	animation: fadeIn 1s;
+}
+*/
+#linkMessage {
+	position: absolute;
+  border: red solid 3px;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right:0;
+}
+
+@-webkit-keyframes fadeIn {
+  from {opacity: 0;} 
+  to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity:1 ;}
+}
+
+
 .font35vw{
 	font-size: 3.5vw;  /* min(3.5vw, 7vh) */
 }
@@ -445,6 +483,7 @@ input[type=range]:focus::-ms-fill-upper {
 	
 	/* return to right hand side formats */
 .scenariosWrapper{
+	position: relative;
 	flex: 0 0 auto;
 	margin: auto;
 	border: solid var(--borderColor) 1px; 
@@ -462,11 +501,92 @@ input[type=range]:focus::-ms-fill-upper {
 	font-weight: bold;
 	border-bottom: solid var(--borderColor) 1px
 }
+/*
+#scenariosButton{
+	position:relative;
+}
+*/
+.scenariosButton:hover{
+	background-color: rgb(34, 129, 118);
+	color: white;
+}
+.scenariosMenu{
+	position: absolute;
+	background-color: rgb(34, 129, 118);
+	color: white;
+	z-index: 5;
+	display:none;
+}
+.menuItem{
+	padding: .5vw 2vw .5vw .5vw;
+	height: 1.5vw;
+	font-size: 1vw;
+}
+.menuItem:not(.itemDisabled):hover{
+	background-color: blue;
+}
+.menuItem::before{
+	content: "    ";	
+}
+.menuItem.itemDisabled{
+	color: lightslategrey;
+}
+.menuItem.itemPicked::before{
+	content: "√  ";
+}
+
+
+.scenariosButton:hover .scenariosMenu{
+	
+	display:block
+}
+
 .scenariosMid {
 	overflow-y: auto;
-	flex: 0 1 22vw;
+	flex: 0 1 17vw;
 	color: var(--fontColor);
+	
 }
+#linkButton{
+	position: relative;
+}
+@-webkit-keyframes linkFadingMessage {
+  0%   {display: block;
+	    opacity: 0%}
+  10%  {opacity: 100%}
+  90%  {opacity: 100%}
+  95%  {opacity: 0%}
+}
+@keyframes linkFadingMessage {
+  0%   {z-index:3;
+	    opacity: 0%}
+  10%  {z-index:3;
+	  opacity: 100%}
+  90%  {z-index:3;
+	  opacity: 100%}
+  99%  {opacity: 0%;
+	z-index: 0}
+}
+
+.linkMessage {
+	position: absolute;
+	display:block;
+	opacity: 0%;
+	cursor:pointer;
+	top: 2vw;
+	left: 2vw;
+	right: 2vw;
+	color: var(--fontColor);
+	border: solid rgb(34, 129, 118);
+	padding: 2vw;
+	background: lightblue;
+	z-index: 0;
+}
+.linkMessageTrigger{
+	animation-name: linkFadingMessage;
+	animation-duration: 10s;
+}
+
 .scenariosBot {
 	flex: 0 0 1.5vw;
 	width: 100%;

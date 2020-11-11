@@ -60,6 +60,7 @@
 	
 	</div>
 <div class="wrapper2by1 displayNone" id='whole'>
+<!--
 	<div class='exportBoxOuter displayNone' id='exportBoxOuter' b>
 		<div class="exportBox"  id="exportBox" style="display:block">
 		<div id="exportOption1">
@@ -79,6 +80,7 @@
 		</div>
 		</div>
 	</div>
+-->
 	
 	<div class='leftHandSideBox'>	
 		<div class='stageWrapper' id="stageWrapper" >
@@ -99,8 +101,36 @@
 	<div class='rightHandSideBox'>
 		<div class='slidersWrapper' id='slidersWrapper'>	</div>
 		<div class='scenariosWrapper' id='scenariosWrapper'>
-			<div class="scenariosTop" id="scenariosTop">Scenarios</div>
-			<div class="scenariosMid" id="scenariosMid">
+			<div  id="linkMessage" class='linkMessage'>
+					A link (URL) was copied into the clipboard that
+					has all the current scenarios for this animation encoded in it.
+				</div>
+			<div class="scenariosTop rowBetweenCenter" id="scenariosTop">
+				<div class='scenariosButton'>Scenarios
+				  <div class='scenariosMenu' id=scenariosMenu>
+					<div class='menuItem' id='menuDefault'>default</div>
+					<div class='menuItem' id='menuLS' >from Local Storage</div>
+					<div class='menuItem ' id='menuURL'>from URL</div>
+				  </div>
+				</div>
+				<i id='linkButton' class="material-icons font15vw"
+						title='create link with current scenarios' >link</i>
+				<i id='editButton' 
+				   title="edit, add, or delete scenarios"
+				   class="material-icons font15vw">edit</i>
+				<div id='menuBox' class='displayNone'>
+					<i id='cancelButton' class="material-icons font15vw"
+					   title="cancel and exit editing" >cancel</i>
+					<i id='clearButton' class="material-icons font15vw"
+					   title="clear scenarios from local storage" >unarchive</i>
+					<i id='saveButton' class="material-icons font15vw"
+					   title="save scenarios to local storage" >archive</i>
+					
+				</div>
+				
+			</div>
+			
+			<div class="scenariosMid" id="scenariosMid">	
 				<ul id="ULScenarioList"></ul>
 			</div>
 			<div class="scenariosBot displayNone" id="scenariosBot" > 
@@ -108,6 +138,7 @@
 				<i id="deleteButton" class="material-icons font15vw"> remove</i>
 			</div>
 		</div>
+<!--
 		<div class='editWrapper' id='editWrapper'>
 			<div id="editBox">
 				<button id='editButton' 
@@ -124,6 +155,7 @@
 					Clear</button>
 			</div>
 		</div>
+-->
 	</div> 	<!-- end of rightHandSideBox  -->
 </div>	<!-- end of wrapper2to1 -->
 	
