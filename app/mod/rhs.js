@@ -75,8 +75,9 @@ export class OmConcept {
 
 		this.textMode = false,
 		this.editMode = false,
+		this.fromURL = false;
 
-		this.saveState = null,
+//		this.saveState = null,
 
 		this.now = 0;
 		this.frameNow = 0;
@@ -106,16 +107,18 @@ export class OmConcept {
 			.addEventListener('click', this.deleteSelected.bind(this));
 		document.getElementById('editButton' + this.key)
 			.addEventListener('click', this.startEdit.bind(this));
+		document.getElementById('exitButton' + this.key)
+			.addEventListener('click', this.exitEdit.bind(this));
 //		document.getElementById('editButton2' + this.key)
 //			.addEventListener('click', this.startEdit.bind(this));
 		
-		document.getElementById('saveButton' + this.key)
-			.addEventListener('click', this.saveEdit.bind(this));
-		document.getElementById('cancelButton' + this.key)
-			.addEventListener('click', this.cancelEdit.bind(this));
-		document.getElementById('clearButton' + this.key)
-			.addEventListener('click',
-			this.clearLS.bind(this));
+//		document.getElementById('saveButton' + this.key)
+//			.addEventListener('click', this.saveEdit.bind(this));
+//		document.getElementById('cancelButton' + this.key)
+//			.addEventListener('click', this.cancelEdit.bind(this));
+//		document.getElementById('clearButton' + this.key)
+//			.addEventListener('click',
+//			this.clearLS.bind(this));
 		
 //		document.getElementById('saveButton2' + this.key)
 //			.addEventListener('click', this.saveEdit.bind(this));
@@ -128,11 +131,14 @@ export class OmConcept {
 		document.getElementById('linkButton' + this.key)
 			.addEventListener('click', this.popupExport.bind(this));
 		
+		document.getElementById('resetScenarios' + this.key)
+			.addEventListener('click', this.resetScenarios.bind(this));
+		
 //		document.getElementById('linkMessage' + this.key)
 //			.addEventListener('click', this.hideLinkMessage.bind(this));
 		
-		document.getElementById('scenariosMenu' + this.key)
-			.addEventListener('click', this.selectScenarioSource.bind(this));
+//		document.getElementById('scenariosMenu' + this.key)
+//			.addEventListener('click', this.selectScenarioSource.bind(this));
 		
 		
 //		document.getElementById('allowEditButton' + this.key)
@@ -298,7 +304,9 @@ export class OmConcept {
 						scen[nShort] = iShort;
 						break;
 					default:
+						//////////////
 				}
+				this.saveEdit();
 			} else {
 				// changing a slider in non edit mode just deselects currentLi row.
 				if (this.currentLi) this.currentLi.classList.remove("selected");
@@ -414,38 +422,39 @@ export class OmConcept {
 	
 	/******************* Two Helper Functions for setupScenarios  *********/
 	// try the 4 options in order returning the rows of parameters 
-	async fourCases(key,search,scenariosString ){
-		const menuLS = document.getElementById('menuLS'+this.key);
-		const menuURL = document.getElementById('menuURL'+this.key);
-		const menuDefault = document.getElementById('menuDefault'+this.key);
-		if (!scenariosString){
-			menuLS.classList.add('itemDisabled');
-		}
-		if (!search.scenarios){
-			menuURL.classList.add('itemDisabled');
-		}
+	async threeCases(key,search,scenariosString ){
+//		const menuLS = document.getElementById('menuLS'+this.key);
+//		const menuURL = document.getElementById('menuURL'+this.key);
+//		const menuDefault = document.getElementById('menuDefault'+this.key);
+//		if (!scenariosString){
+//			menuLS.classList.add('itemDisabled');
+//		}
+//		if (!search.scenarios){
+//			menuURL.classList.add('itemDisabled');
+//		}
 		
 		
 		if ( search.scenarios ){
 //				if ( search.edit != "allow" ){
 //					displayToggle(null, 'editBox'+this.key);
 //				} 
-			menuURL.classList.add('itemPicked');
+//			menuURL.classList.add('itemPicked');
+			this.fromURL = true;
 			return this.parseURLScenariosToRows(search.scenarios)
 			}
 			
-		if ( search.url ) { 
-			let response = await fetch(search.url);
-			if (response.ok) {
-				return await response.json();
-			} 
-		}
+//		if ( search.url ) { 
+//			let response = await fetch(search.url);
+//			if (response.ok) {
+//				return await response.json();
+//			} 
+//		}
 		if (scenariosString) {
-			menuLS.classList.add('itemPicked');
+//			menuLS.classList.add('itemPicked');
 			return JSON.parse(scenariosString);
 		}
 //		console.log(location);
-		menuDefault.classList.add('itemPicked');
+//		menuDefault.classList.add('itemPicked');
 		return this.getScenariosFromDefault(key);
 //		let response = await fetch(`app/${key}/${key}.json`);
 //		if (response.ok) {
@@ -473,44 +482,56 @@ export class OmConcept {
 			return search
 		}
 	
-	async selectScenarioSource() {
-		let menuElem = event.target.closest('.menuItem');
-		if (!menuElem) return;
-		const menuDefault = document.getElementById('menuDefault'+this.key);
-		const menuLS = document.getElementById('menuLS'+this.key);
-		const menuURL = document.getElementById('menuURL'+this.key);
-		menuDefault.classList.remove('itemPicked');
-		menuLS.classList.remove('itemPicked');
-		menuURL.classList.remove('itemPicked');
+	async resetScenarios() {
 		let rows;
-		switch (menuElem.id.slice(0,-3) ){
-			case 'menuDefault':
-				menuDefault.classList.add('itemPicked');
-				rows = await  this.getScenariosFromDefault(
-					this.key,menuDefault);
-				break;
-			case 'menuLS':
-				rows = JSON.parse(
-					localStorage.getItem(this.keyForLocalStorage));
-				menuLS.classList.add('itemPicked');
-				break;
-			case 'menuURL':
-				let hash = location.hash.slice(1);
-				let search = this.parseSearchString(
-					decodeURI(location.search.slice(1)), hash == this.key)
-				rows = this.parseURLScenariosToRows(search.scenarios)
-				menuURL.classList.add('itemPicked');
-				break;
-			default:
-				alert(' picked a menu item that does not exist');
-				debugger;
-		}
+		if ( this.fromURL ){
+			let hash = location.hash.slice(1);
+			let search = this.parseSearchString(
+				decodeURI(location.search.slice(1)), hash == this.key)
+			rows = this.parseURLScenariosToRows(search.scenarios)
+		} else {
+			rows = await  this.getScenariosFromDefault(
+					this.key);
+		};
 		this.setUL(rows);
-		
-				
-				
-				
+		this.saveEdit();
 	};
+//		let menuElem = event.target.closest('.menuItem');
+//		if (!menuElem) return;
+////		const menuDefault = document.getElementById('menuDefault'+this.key);
+////		const menuLS = document.getElementById('menuLS'+this.key);
+////		const menuURL = document.getElementById('menuURL'+this.key);
+////		menuDefault.classList.remove('itemPicked');
+////		menuLS.classList.remove('itemPicked');
+////		menuURL.classList.remove('itemPicked');
+			
+//		switch (menuElem.id.slice(0,-3) ){
+//			case 'menuDefault':
+//				menuDefault.classList.add('itemPicked');
+//				rows = await  this.getScenariosFromDefault(
+//					this.key,menuDefault);
+//				break;
+//			case 'menuLS':
+//				rows = JSON.parse(
+//					localStorage.getItem(this.keyForLocalStorage));
+//				menuLS.classList.add('itemPicked');
+//				break;
+//			case 'menuURL':
+//				let hash = location.hash.slice(1);
+//				let search = this.parseSearchString(
+//					decodeURI(location.search.slice(1)), hash == this.key)
+//				rows = this.parseURLScenariosToRows(search.scenarios)
+//				menuURL.classList.add('itemPicked');
+//				break;
+//			default:
+//				alert(' picked a menu item that does not exist');
+//				debugger;
+//		}
+//		this.setUL(rows);
+//		
+//				
+//				
+//				
 	
 	async setupScenarios () {
 		// get the scenarios from 1) the URL, 2) user specified .json
@@ -522,7 +543,7 @@ export class OmConcept {
 		let scenariosString =  localStorage.getItem(this.keyForLocalStorage);
 		this.warningLSandScens = search.scenarios  && scenariosString;
 		
-		let rows = await this.fourCases(this.key,search, scenariosString);
+		let rows = await this.threeCases(this.key,search, scenariosString);
 	
 		// if one thing worked 'rows' has it.
 		this.setUL(rows);
@@ -546,8 +567,12 @@ export class OmConcept {
 		if (this.textMode) {
 			this.textMode = false;
 			this.currentLi.removeChild(this.textInpBox);
-			this.currentLi.innerHTML = this.textInpBox.value;
-			this.currentLi.scenario.desc = this.textInpBox.value;
+			if (this.currentLi.innerHTML != this.textInpBox.value ){
+				this.currentLi.innerHTML = this.textInpBox.value;
+				this.currentLi.scenario.desc = this.textInpBox.value;
+				this.saveEdit();
+			}
+			
 		}
 		return this.currentLi ? this.currentLi.innerHTML : ''; //does this test ever apply?
 	};
@@ -582,6 +607,7 @@ export class OmConcept {
 			const n = reg[3] == '' ? ' 2' : ++reg[3];
 			return reg[1] + ' copy ' + n;
 		};
+		this.saveEdit();
 	};
 
 	nextRow () {   
@@ -598,6 +624,7 @@ export class OmConcept {
 		let save = this.currentLi
 		this.changeCurrentLiTo(this.neighborLi());
 		this.ulPointer.removeChild(save);
+		this.saveEdit();
 	};
 
 	changeCurrentLiTo (newRow) {
@@ -619,40 +646,44 @@ export class OmConcept {
 	// ****** Routines to start, cancel and save an edit    
 	startEdit () {
 		//    save / clone the list ulPointer.
-		this.save = {
-			slidersValues: this.getSliders(),
-			rows: this.createRowsFromUL()
-		};
-		
+//		this.save = {
+//			slidersValues: this.getSliders(),
+//			rows: this.createRowsFromUL()
+//		};
+		this.pause();
+		if (this.warningLSandScens){
+			const response = confirm('Continuing will replace the current scenarios (from the URL) with those you have stored');
+			if (!response) return;
+			this.saveEdit();
+		}
+		this.warningLSandScens = false;
 		this.editMode = true;
 		
-		this.pause();
+		
 
 		//adjust the page for edit mode
 		displayToggle(
-			['scenariosBot'+this.key,'menuBox'+this.key,
+			['scenariosBot'+this.key,'exitButton'+this.key,
 			 'actionOptions'+this.key],
 			['editButton'+this.key,
 			 'playButtons'+this.key]);
 		
-		if (this.warningLSandScens){
-			alert('If you Save you will overwrite your current scenarios stored in Local Storage');
-		}
+		
 	};
 
 
 	// this restores previous state (to what it was at start of edit)
-	cancelEdit () {
-		this.exitEdit();
-		this.setUL(this.save.rows);
-		this.setSlidersFrom(this.save.slidersValues);
-		this.currentLi = null;
-	};
+//	cancelEdit () {
+//		this.exitEdit();
+//		this.setUL(this.save.rows);
+//		this.setSlidersFrom(this.save.slidersValues);
+//		this.currentLi = null;
+//	};
 
 	// sorts and saves the current list to localStorage
 	saveEdit () {
-		this.warningLSandScens= false;
-		this.exitEdit();
+//		this.warningLSandScens= false;
+//		this.exitEdit();
 
 		// sort the Li's in UL;  key is desc
 		function sortTheUL(container) {
@@ -667,29 +698,29 @@ export class OmConcept {
 				container.append(list[i]);
 			}
 		}
-		const menuLS = document
-		.getElementById('menuLS'+ this.key);
-		menuLS.classList.add('itemPicked');
-		menuLS.classList.remove('itemDisabled');
+//		const menuLS = document
+//		.getElementById('menuLS'+ this.key);
+//		menuLS.classList.add('itemPicked');
+//		menuLS.classList.remove('itemDisabled');
 		sortTheUL(this.ulPointer);
 		localStorage.setItem(this.keyForLocalStorage, 
 							 this.createJSONfromUL());
 	};
 	
-	clearLS () {
-		const menuLS = document
-		.getElementById('menuLS'+ this.key);
-		menuLS.classList.remove('itemPicked');
-		menuLS.classList.add('itemDisabled');
-		localStorage.removeItem(this.keyForLocalStorage);
-	}
+//	clearLS () {
+//		const menuLS = document
+//		.getElementById('menuLS'+ this.key);
+////		menuLS.classList.remove('itemPicked');
+////		menuLS.classList.add('itemDisabled');
+//		localStorage.removeItem(this.keyForLocalStorage);
+//	}
 
 	exitEdit () {
 		// restore the page to non-edit mode
 		this.editMode = false;
 		this.saveModifiedDesc();
 		displayToggle(['editButton'+this.key, 'playButtons'+this.key],
-			['scenariosBot'+this.key, 'menuBox'+this.key,
+			['scenariosBot'+this.key, 'exitButton'+this.key,
 			  'actionOptions'+this.key]);
 	};
 

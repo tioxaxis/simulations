@@ -130,6 +130,29 @@
 		background-color: blue;
 		color:white;
 	}
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/s/materialicons/v55/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2) format('woff2');
+}
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  
+  color: rgb(34, 129, 118);
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  cursor: pointer;	
+}
 </style>
 
 </head>
@@ -256,13 +279,16 @@
 	<p>More details:  Of course the uparrow and pageup keys work as well.  Further, each scenario can be set to 1) pause the animation if it is playing, play the animation if it is paused, or "none" meaning leave it in the mode it was currently in: paused or playing.  When a new scenario is picked it can force the animation to reset (as if the reset button were pushed).  A reset causes the animation to begin again from an empty system, and clears the chart of any old data. Play/Pause and Reset can be controlled from the keyboard or a presentation remote as well.</p>
 		
 	<h4>How to create your own sequence of scenarios:</h4>
-	<p>The sequence of scenarios can be customized by each instructor.  Hopefully the interface is largely self-explanitory.  Click Edit.  The animation will pause. Pick an existing scenario and then changing any of the parameters in the sliders will affect that scenario.  Double-clicking the name (or typing Return when one is selected) will allow you to change the name of the scenario.  Scenarios are kept in alpha-numeric order.  You will see this once you Save.  Use a numbering system to put your scenarios in the order you want for your presentation.  Don't forget to hit save when you are done.  Adding and deleting scenarios should be a familiar interface with +/- keys at the bottom of the list.  Although only a few will display, you are not limited to the number of scenarios you can create.</p>
+	<p>The sequence of scenarios can be customized by each instructor.  Hopefully the interface is largely self-explanitory.  Click <i 
+				   class="material-icons font15vw">edit</i> to edit. 
+		The animation will pause. Pick an existing scenario and then changing any of the parameters in the sliders will change that scenario.  All changes are saved immediately.  Double-clicking the name (or typing Return when one is selected) will allow you to change the name of the scenario.  Scenarios are kept in alpha-numeric order, so use a numbering system to put your scenarios in the order you want for your presentation. Adding and deleting scenarios should be a familiar interface with <i class="material-icons font15vw"> add</i> and
+				<i  class="material-icons font15vw" disabled> remove</i> icons at the bottom of the list.  Although only a few will display, you are not limited to the number of scenarios you can create.</p>
 		
 	<h4>So where are they stored and how do I retrieve them?</h4>
-	<p>The mechanism for storing the scenarios is called "Local Storage" for your browser.  It is stored on your machine and for the browser (say Chrome) with which you created them.  If you return to that machine and that browser then it will all be there. This mechanism is simple, and requires no passwords or cloud storage.  Admittedly it does not make sharing them easy. </p>
+	<p>The mechanism for storing the scenarios is called "Local Storage" for your browser.  It is stored on your machine and for the browser (say Chrome) with which you created them.  If you return to that machine and that browser then leading an animation will load the scenarios you saved previously. This mechanism is simple, and requires no passwords or cloud storage.  Admittedly it does not make sharing them easy. </p>
 		
 	<h4>OK, so how do I share them with my colleague or my students?</h4>
-	<p> If you need to share a collection of scenarios for one animation, you can create a URL that references the animation and contains all the scenarios encoded in the URL.  Once you are ready, click Edit and then click Export.  Copy the URL and pass it to a colleague or post the URL in your learning managment system in an assignment for example. If you are sending them to a colleage you should probably hit the "Allow Edit" check box so your colleague can save them and make further changes. If your colleague wants to keep these scenarios as his/her own in his/her "Local Storage" then he/she needs only hit the Edit and then the Save buttons.  For passing a collection of scenarios to students you may chose to not "Allow Edit" so they will not tamper with the scenarios.
+	<p> If you need to share a collection of scenarios that you have created for one animation, you can create a URL that references the animation and contains all the scenarios encoded in the URL.  Once you are ready, click the <i  class="material-icons font15vw" >link</i> icon.  The URL will be copied to the clipboard so you can pass it to a colleague or post the URL in your learning managment system in an assignment for example. If your colleague wants to keep these scenarios as his/her own in his/her "Local Storage" then he/she needs only to load the URL you sent and then hit the <i  class="material-icons font15vw">edit</i> icon and they will be saved (although they will replace any scenarios she/he currently has saved for that animation).
 	</p>
 	<h3>6. Speeds:</h3>
 		<p> Each of the animations will run at 5 standard speeds: 1x, 2x, 5x, 10x, and 25x.  At the slowest speed the people should look like they are walking.  Yet, this is probably too slow to observe the animation because so little happens at this speed.  So the apps provide four faster speeds.  These speeds are simply labeled from 'slow' to 'fast'.  At the fastest speed the movement of the people is largely a blur and even the movement of the trucks is perhaps too fast to watch but the results in the graph accumulate much faster.  At the faster speeds a longer duration is plotted along the x-axis so more events can be observed.  </p><p>Yet, even so this may seem too slow and too little data so a final speed labeled 'full' is provided.  At 'full' speed the animation is no longer shown, a curtain is pulled over this area of the screen, and the x-axis is expanded further so one can observe more events.  In the queuing animation the x-axis shows 200 units of time.  If you hit 'play' now or you were playing when you hit 'full' speed the graph will fill with 200 units of time and the simulation will pause.  If you hit 'play' again you will get another 200 units of time, from 200 to 400. You can continue this as long as you like.  When you switch back to a slower speed, say 'slow', the graph will show only 10 units time, the curtain will raise so you can see the animation, and the animation will run again when you hit 'play.'</p>

@@ -107,17 +107,25 @@
 				</div>
 			<div class="scenariosTop rowBetweenCenter" id="scenariosTop">
 				<div class='scenariosButton'>Scenarios
+<!--
 				  <div class='scenariosMenu' id=scenariosMenu>
 					<div class='menuItem' id='menuDefault'>default</div>
 					<div class='menuItem' id='menuLS' >from Local Storage</div>
 					<div class='menuItem ' id='menuURL'>from URL</div>
 				  </div>
+-->
 				</div>
 				<i id='linkButton' class="material-icons font15vw"
-						title='create link with current scenarios' >link</i>
+						title='copy link to clipboard' >link</i>
+				<i id='resetScenarios' class="material-icons font15vw"
+						title='reset all scenarios' >replay</i>
 				<i id='editButton' 
 				   title="edit, add, or delete scenarios"
 				   class="material-icons font15vw">edit</i>
+				<i id='exitButton'
+				   title='exit edit mode'
+				   class="material-icons font15vw displayNone">done_outline</i>
+<!--
 				<div id='menuBox' class='displayNone'>
 					<i id='cancelButton' class="material-icons font15vw"
 					   title="cancel and exit editing" >cancel</i>
@@ -127,6 +135,7 @@
 					   title="save scenarios to local storage" >archive</i>
 					
 				</div>
+-->
 				
 			</div>
 			
@@ -135,7 +144,7 @@
 			</div>
 			<div class="scenariosBot displayNone" id="scenariosBot" > 
 				<i id="addButton" class="material-icons font15vw"> add</i>
-				<i id="deleteButton" class="material-icons font15vw"> remove</i>
+				<i id="deleteButton" class="material-icons font15vw" disabled> remove</i>
 			</div>
 		</div>
 <!--
