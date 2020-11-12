@@ -109,47 +109,11 @@ export class OmConcept {
 			.addEventListener('click', this.startEdit.bind(this));
 		document.getElementById('exitButton' + this.key)
 			.addEventListener('click', this.exitEdit.bind(this));
-//		document.getElementById('editButton2' + this.key)
-//			.addEventListener('click', this.startEdit.bind(this));
-		
-//		document.getElementById('saveButton' + this.key)
-//			.addEventListener('click', this.saveEdit.bind(this));
-//		document.getElementById('cancelButton' + this.key)
-//			.addEventListener('click', this.cancelEdit.bind(this));
-//		document.getElementById('clearButton' + this.key)
-//			.addEventListener('click',
-//			this.clearLS.bind(this));
-		
-//		document.getElementById('saveButton2' + this.key)
-//			.addEventListener('click', this.saveEdit.bind(this));
-//		document.getElementById('cancelButton2' + this.key)
-//			.addEventListener('click', this.cancelEdit.bind(this));
-		
-//		document.getElementById('exportButton' + this.key)
-//			.addEventListener('click', this.popupExport.bind(this));
-		
 		document.getElementById('linkButton' + this.key)
-			.addEventListener('click', this.popupExport.bind(this));
-		
+			.addEventListener('click', this.exportWithLink.bind(this));
 		document.getElementById('resetScenarios' + this.key)
 			.addEventListener('click', this.resetScenarios.bind(this));
-		
-//		document.getElementById('linkMessage' + this.key)
-//			.addEventListener('click', this.hideLinkMessage.bind(this));
-		
-//		document.getElementById('scenariosMenu' + this.key)
-//			.addEventListener('click', this.selectScenarioSource.bind(this));
-		
-		
-//		document.getElementById('allowEditButton' + this.key)
-//			.addEventListener('click', this.toggleAllowEdit.bind(this));
-//		document.getElementById('copyURLToClipboard' + this.key)
-//			.addEventListener('click', this.copyURLToClipboard.bind(this));
-//		document.getElementById('copyJSONToClipboard' + this.key)
-//			.addEventListener('click', this.copyJSONToClipboard.bind(this));
-//		document.getElementById('closeExportBox' + this.key)
-//			.addEventListener('click', this.closeExportBox.bind(this));
-//		
+
 		// click on scenario name
 		this.ulPointer.addEventListener('click', this.liClicked.bind(this));
 		this.ulPointer.addEventListener('dblclick', this.liDblClicked.bind(this));
@@ -200,9 +164,6 @@ export class OmConcept {
 		if (this.isRunning) this.pause();
 		else this.play();
 	};
-
-
-
 	
 	eachFrame() {
 		let perfNow = performance.now();
@@ -221,10 +182,8 @@ export class OmConcept {
 		}
 		this.now = this.frameNow;
 		this.clearStageForeground();
-//		this.itemCollection.updatePositionAll();
 		this.itemCollection.moveDisplayAll(deltaSimuTime);
 		this.requestAFId = window.requestAnimationFrame(this.eachFrame.bind(this));
-//		console.log(this.now);
 	};
 	
 	adjustSpeed(idShort,v,speeds){
@@ -273,13 +232,6 @@ export class OmConcept {
 		this.now = this.frameNow;
 		this.clearStageForeground();
 		this.itemCollection.updatePositionAll();
-//		console.log(this.now);
-//		for( let p of this.itemCollection){
-//			console.log(p.which,p.cur.x)
-//			for (let path of p.pathList){
-//				console.log('    pathlist =' ,path.x,path.speedX);
-//			}
-//		}
 	}
 
 	
@@ -304,7 +256,6 @@ export class OmConcept {
 						scen[nShort] = iShort;
 						break;
 					default:
-						//////////////
 				}
 				this.saveEdit();
 			} else {
@@ -415,7 +366,7 @@ export class OmConcept {
 			return await response.json();
 			}
 		console.log("json file HTTP-Error: " + response.status);
-		return null
+		return null;
 	};
 	
 	
@@ -423,46 +374,15 @@ export class OmConcept {
 	/******************* Two Helper Functions for setupScenarios  *********/
 	// try the 4 options in order returning the rows of parameters 
 	async threeCases(key,search,scenariosString ){
-//		const menuLS = document.getElementById('menuLS'+this.key);
-//		const menuURL = document.getElementById('menuURL'+this.key);
-//		const menuDefault = document.getElementById('menuDefault'+this.key);
-//		if (!scenariosString){
-//			menuLS.classList.add('itemDisabled');
-//		}
-//		if (!search.scenarios){
-//			menuURL.classList.add('itemDisabled');
-//		}
-		
-		
 		if ( search.scenarios ){
-//				if ( search.edit != "allow" ){
-//					displayToggle(null, 'editBox'+this.key);
-//				} 
-//			menuURL.classList.add('itemPicked');
 			this.fromURL = true;
 			return this.parseURLScenariosToRows(search.scenarios)
 			}
 			
-//		if ( search.url ) { 
-//			let response = await fetch(search.url);
-//			if (response.ok) {
-//				return await response.json();
-//			} 
-//		}
 		if (scenariosString) {
-//			menuLS.classList.add('itemPicked');
 			return JSON.parse(scenariosString);
 		}
-//		console.log(location);
-//		menuDefault.classList.add('itemPicked');
 		return this.getScenariosFromDefault(key);
-//		let response = await fetch(`app/${key}/${key}.json`);
-//		if (response.ok) {
-//			menuDefault.classList.add('itemPicked');
-//			return await response.json();
-//			}
-//		console.log("json file HTTP-Error: " + response.status);
-//		return null
 	};
 	
 	// capture the three possible 'search' parameters
@@ -496,42 +416,6 @@ export class OmConcept {
 		this.setUL(rows);
 		this.saveEdit();
 	};
-//		let menuElem = event.target.closest('.menuItem');
-//		if (!menuElem) return;
-////		const menuDefault = document.getElementById('menuDefault'+this.key);
-////		const menuLS = document.getElementById('menuLS'+this.key);
-////		const menuURL = document.getElementById('menuURL'+this.key);
-////		menuDefault.classList.remove('itemPicked');
-////		menuLS.classList.remove('itemPicked');
-////		menuURL.classList.remove('itemPicked');
-			
-//		switch (menuElem.id.slice(0,-3) ){
-//			case 'menuDefault':
-//				menuDefault.classList.add('itemPicked');
-//				rows = await  this.getScenariosFromDefault(
-//					this.key,menuDefault);
-//				break;
-//			case 'menuLS':
-//				rows = JSON.parse(
-//					localStorage.getItem(this.keyForLocalStorage));
-//				menuLS.classList.add('itemPicked');
-//				break;
-//			case 'menuURL':
-//				let hash = location.hash.slice(1);
-//				let search = this.parseSearchString(
-//					decodeURI(location.search.slice(1)), hash == this.key)
-//				rows = this.parseURLScenariosToRows(search.scenarios)
-//				menuURL.classList.add('itemPicked');
-//				break;
-//			default:
-//				alert(' picked a menu item that does not exist');
-//				debugger;
-//		}
-//		this.setUL(rows);
-//		
-//				
-//				
-//				
 	
 	async setupScenarios () {
 		// get the scenarios from 1) the URL, 2) user specified .json
@@ -554,7 +438,7 @@ export class OmConcept {
 		//console.log(this.ulPointer);
 	};
 
-	// ***** Utilities for the text box:  
+	// ***** Utilities for the text box:    *********** 
 	//  Delete, Save, Add  from the CurrentLi row.
 	deleteTextInpBox () {
 		if (this.textMode) {
@@ -643,13 +527,9 @@ export class OmConcept {
 	};
 
 
-	// ****** Routines to start, cancel and save an edit    
+	// ****** Routines to start and exit an edit 
+	//  also save each change to local storage
 	startEdit () {
-		//    save / clone the list ulPointer.
-//		this.save = {
-//			slidersValues: this.getSliders(),
-//			rows: this.createRowsFromUL()
-//		};
 		this.pause();
 		if (this.warningLSandScens){
 			const response = confirm('Continuing will replace the current scenarios (from the URL) with those you have stored');
@@ -659,32 +539,17 @@ export class OmConcept {
 		this.warningLSandScens = false;
 		this.editMode = true;
 		
-		
-
 		//adjust the page for edit mode
 		displayToggle(
 			['scenariosBot'+this.key,'exitButton'+this.key,
 			 'actionOptions'+this.key],
 			['editButton'+this.key,
-			 'playButtons'+this.key]);
-		
-		
+			 'playButtons'+this.key]);	
 	};
 
 
-	// this restores previous state (to what it was at start of edit)
-//	cancelEdit () {
-//		this.exitEdit();
-//		this.setUL(this.save.rows);
-//		this.setSlidersFrom(this.save.slidersValues);
-//		this.currentLi = null;
-//	};
-
 	// sorts and saves the current list to localStorage
 	saveEdit () {
-//		this.warningLSandScens= false;
-//		this.exitEdit();
-
 		// sort the Li's in UL;  key is desc
 		function sortTheUL(container) {
 			let contents = container.querySelectorAll("li");
@@ -698,23 +563,11 @@ export class OmConcept {
 				container.append(list[i]);
 			}
 		}
-//		const menuLS = document
-//		.getElementById('menuLS'+ this.key);
-//		menuLS.classList.add('itemPicked');
-//		menuLS.classList.remove('itemDisabled');
 		sortTheUL(this.ulPointer);
 		localStorage.setItem(this.keyForLocalStorage, 
 							 this.createJSONfromUL());
 	};
 	
-//	clearLS () {
-//		const menuLS = document
-//		.getElementById('menuLS'+ this.key);
-////		menuLS.classList.remove('itemPicked');
-////		menuLS.classList.add('itemDisabled');
-//		localStorage.removeItem(this.keyForLocalStorage);
-//	}
-
 	exitEdit () {
 		// restore the page to non-edit mode
 		this.editMode = false;
@@ -724,22 +577,14 @@ export class OmConcept {
 			  'actionOptions'+this.key]);
 	};
 
-	popupExport () {
+	exportWithLink () {
 		copyToClipboard2(this.createURL());
 		const elem = document.getElementById('linkMessage'+this.key);
 		elem.classList.add('linkMessageTrigger');
-    setTimeout(function() {
-        elem.classList.remove('linkMessageTrigger');}, 11000);
+    	setTimeout(function() {
+        	elem.classList.remove('linkMessageTrigger');}, 11000);
 	};
 		
-//	hideLinkMessage(){
-//		document.getElementById('linkMessage'+this.key)
-//		.classList.add('linkMessage');
-//	}
-
-	//  user clicked on an item in the list, 
-	//  possibly changing the selected choice
-	//  and if textMode save the last entered name into the selected row
 	liClicked (ev) {
 		if (ev.target == this.currentLi || 
 			ev.target.parentNode == this.currentLi) return;
@@ -776,7 +621,6 @@ export class OmConcept {
 		}
 		return rows;
 	};
-
 
 	setUL(rows){ 
 		this.ulPointer.innerHTML = '';
@@ -820,24 +664,6 @@ export class OmConcept {
 	createJSONfromUL() { //from curreent UL
 		return JSON.stringify(this.createRowsFromUL());
 	};
-
-
-//	toggleAllowEdit(event){
-//		document.getElementById('urlDisplay'+this.key)
-//			.innerHTML = this.createURL(event.target.checked)
-//	};
-
-//	copyURLToClipboard (event){
-//		copyToClipboard('urlDisplay'+this.key)
-//	};
-//	copyJSONToClipboard (event){
-//		copyToClipboard('jsonDisplay'+this.key)
-//	};
-//	closeExportBox (event){
-//		this.exporting = false;
-//		document.getElementById('exportBoxOuter'+this.key)
-//				.style='display:none';
-//	};
 };
 
 

@@ -134,9 +134,7 @@ anim.pathway = {
 	height: anim.person.height + 4
 };
 
-
 var totInv, totTime, totPeople, firstArr, lastArrDep, LBRFcount;
-
 
 function litDefine(){
 	lit = new OmConcept('lit',littleEncodeURL,littleDecodeURL, localReset);
@@ -208,8 +206,6 @@ function setBackground() {
 	c.closePath();
 };
 
-
-
 function littleDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
 	const resetValue = {T: 'true', F: 'false'};
@@ -235,8 +231,6 @@ function littleEncodeURL(row){
 		(row.reset == "true" ? "T" : "F"),
 		row.desc);
 }
-
-
 
 function captureChangeInSliderS(event) {
 	let inputElem = event.target.closest('input');
@@ -283,9 +277,6 @@ function captureChangeInSliderS(event) {
 	}
 }
 
-
-
-
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
 //  animation for that process step
@@ -295,7 +286,6 @@ const animForQueue = {
 	walkingTime: (anim.person.path.entry - anim.person.path.left) / anim.stage.normalSpeed,
 
 	reset: function () {},
-
 	join: function (nInQueue, arrivalTime, person) {
 		person.addPath({
 			t: arrivalTime,
@@ -303,9 +293,7 @@ const animForQueue = {
 			y: animForQueue.loc.y
 		});
 	},
-
 	arrive: function (nSeatsUsed, person) {},
-
 	leave: function (procTime, nSeatsUsed) {}
 };
 
@@ -327,12 +315,10 @@ const animForCreator = {
 	dontOverlap: false,
 
 	reset: function () {},
-
 	start: function (theProcTime, person, m) { // only 1 machine for creator m=1
 		person.setDestWithProcTime(theProcTime,
 			anim.person.path.left, anim.person.path.top);
 	},
-
 	finish: function () {},
 };
 
@@ -453,23 +439,14 @@ const theSimulation = {
 			lastArrDep = lit.now;
 			totPeople++;
 			totTime += lit.now - person.arrivalTime;
-//			LBRFcount = (LBRFcount + 1) % lit.frameSpeed;
-//			if (!LBRFcount) {
-				lit.graph.push(lit.now, 
-								 totInv / (lit.now - firstArr),
-								 totTime / (lit.now - firstArr) );
-//			};
+			lit.graph.push(lit.now, 
+					 totInv / (lit.now - firstArr),
+					 totTime / (lit.now - firstArr) );
 		};
 
 		//link the queue to machine before and after
 		this.queue.setPreviousNext(
 			this.creator, this.LittlesBox);
-
-		// put all the process steps with visible people in theProcessCollection
-//		theProcessCollection.push(this.creator);
-//		theProcessCollection.push(this.queue);
-//		theProcessCollection.push(this.LittlesBox);
-//		theProcessCollection.push(this.walkOffStage);
 	},
 };
 
@@ -483,8 +460,6 @@ class Supplier {
 		return new Person(lit, this.x, this.y);
 	}
 }; //end class Supplier
-
-
 
 export class Person extends Item {
 	constructor(omConcept, x, y = 60) {

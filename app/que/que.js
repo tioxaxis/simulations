@@ -285,8 +285,6 @@ function captureChangeInSliderS(event) {
 	}
 }
 
-
-
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
 //  animation for that process step
@@ -513,7 +511,6 @@ export class Person extends Item {
 		let pPath = p.pathList[0];
 		let aPath = a.pathList[0];
 		if (!aPath) return false;
-		//       console.log ( 'persons ',p.which,a.which, ' time ', pPath.t,pPath.x, aPath.t + a.width/aPath.speedX, aPath.x);
 		return false;
 //		return (pPath.t < aPath.t + a.width / aPath.speedX)
 			//        if (  p.cur.x + p.width > a.cur.x ) return true;
