@@ -131,7 +131,7 @@ export class TioxGraph {
 	};
 	
 	setLegend(k,name){
-		let id = this.omConcept.key + 'legitem' + k;
+		let id =  'leg' + k + this.omConcept.key;
 		let elem = document.getElementById(id);
 		if (!elem){
 			elem = document.createElement('div');
@@ -152,9 +152,20 @@ export class TioxGraph {
 		let k = Number(/[0-9]+/.exec(elem.id)[0]);
 		let info = this.lineInfo[k];
 		info.visible = !info.visible;
+		const li = this.omConcept.currentLi;
+		if (li) li.scenario['leg'+k] = info.visible.toString();
+		this.omConcept.saveEdit();
 		this.setLegendText(elem,info);
 		this.setupThenRedraw();
 	};
+	
+	setVisible(k,b){
+		if( b == this.lineInfo[k].visible ) return;
+		this.lineInfo[k].visible = b;
+		const elem = document.getElementById('leg'+k+this.omConcept.key)
+		this.setLegendText(elem,this.lineInfo[k]);
+		this.setupThenRedraw();
+	}
 	
 	xScale (x){
 		return ( (x-this.xInfo.min) / (this.xInfo.max - this.xInfo.min) ) 

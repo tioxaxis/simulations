@@ -208,7 +208,7 @@ function setBackground() {
 
 function littleDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
-	const resetValue = {T: 'true', F: 'false'};
+	const boolValue = {T: 'true', F: 'false'};
 	return( 
 	{ar: str.substring(0,4),
 	acv: str.substring(4,8),
@@ -216,8 +216,11 @@ function littleDecodeURL(str){
 	scv: str.substring(12,16),
 	speed: str.substring(16,17),
 	action: actionValue[str.substring(17,18)],
-	reset: resetValue[str.substring(18,19)],
-	desc: str.substring(19)
+	reset: boolValue[str.substring(18,19)],
+	leg0:  boolValue[str.substring(19,20)],
+	leg1:  boolValue[str.substring(20,21)],
+	leg2:  boolValue[str.substring(21,22)],
+	desc: str.substring(22)
 	})
 };
 function littleEncodeURL(row){
@@ -229,6 +232,9 @@ function littleEncodeURL(row){
 		row.speed,
 		actionValue[row.action] +
 		(row.reset == "true" ? "T" : "F"),
+		(row.leg0 == "true" ? "T" : "F"),
+		(row.leg1 == "true" ? "T" : "F"),
+		(row.leg2 == "true" ? "T" : "F"),
 		row.desc);
 }
 

@@ -277,7 +277,7 @@ const speeds = [{time:1,graph:1,anim:true},
 
 function invDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
-	const resetValue = {T: "true", F: "false"};
+	const boolValue = {T: "true", F: "false"};
 	const whichValue = {R: "methRop", U: "methUpto"}
 	return( 
 	{ar: str.substring(0,4),
@@ -291,8 +291,11 @@ function invDecodeURL(str){
 	 speed: str.substring(24,25),
 	 action: actionValue[str.substring(25,26)],
 	 which: whichValue[str.substring(26,27)],
-	 reset: resetValue[str.substring(27,28)],
-	 desc: str.substring(28)
+	 reset: boolValue[str.substring(27,28)],
+	 leg0:  boolValue[str.substring(28,29)],
+	 leg1:  boolValue[str.substring(29,30)],
+	 leg2:  boolValue[str.substring(30,31)],
+	 desc: str.substring(31)
 	})
 };
 function invEncodeURL(row){
@@ -309,6 +312,9 @@ function invEncodeURL(row){
 		actionValue[row.action],
 		(row.which == "methRop" ? "R" : "U"),
 		(row.reset == "true" ? "T" : "F" ),
+		(row.leg0 == "true" ? "T" : "F"),
+		(row.leg1 == "true" ? "T" : "F"),
+		(row.leg2 == "true" ? "T" : "F"),	
 		row.desc);
 }
 

@@ -211,7 +211,7 @@ const speeds = [{time:1,graph:1,anim:true},
 
 function nvDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
-	const resetValue = {T: 'true', F: 'false'};
+	const boolValue = {T: 'true', F: 'false'};
 	return( 
 	{dr: str.substring(0,4),
 	dcv: str.substring(4,8),
@@ -220,8 +220,11 @@ function nvDecodeURL(str){
 	quan: str.substring(16,18),
 	speed: str.substring(18,19),
 	action: actionValue[str.substring(19,20)],
-	reset: resetValue[str.substring(20,21)],
-	desc: str.substring(21)
+	reset: boolValue[str.substring(20,21)],
+	leg0:  boolValue[str.substring(21,22)],
+	leg1:  boolValue[str.substring(22,23)],
+	leg2:  boolValue[str.substring(23,24)],
+	desc: str.substring(24)
 	})
 };
 function nvEncodeURL(row){
@@ -234,6 +237,9 @@ function nvEncodeURL(row){
 				row.speed,
 				actionValue[row.action],
 				(row.reset == "true" ? "T" : "F"),
+				(row.leg0 == "true" ? "T" : "F"),
+				(row.leg1 == "true" ? "T" : "F"),
+				(row.leg2 == "true" ? "T" : "F"),
 				row.desc);
 }
 

@@ -287,6 +287,9 @@ export class OmConcept {
 					}
 					theNodeList[j].checked = true;
 					break;
+				case 'legend':
+					this.graph.setVisible(key.slice(3), v == 'true');
+					break;
 			}
 			inputBox.dispatchEvent(this.inputEvent);
 		}
@@ -317,6 +320,11 @@ export class OmConcept {
 					let theNodeList = document.getElementsByName(key+this.key);
 					row[key] = theNodeList[getChecked(theNodeList)].value;
 					break;
+				case 'legend':
+					const k = key.slice(3);
+					row[key] = this.graph.lineInfo[k].visible.toString();
+					break;
+					
 				default:
 			}
 		}
@@ -414,6 +422,7 @@ export class OmConcept {
 					this.key);
 		};
 		this.setUL(rows);
+		this.currentLi = null;
 		this.saveEdit();
 	};
 	
@@ -452,8 +461,10 @@ export class OmConcept {
 			this.textMode = false;
 			this.currentLi.removeChild(this.textInpBox);
 			if (this.currentLi.innerHTML != this.textInpBox.value ){
-				this.currentLi.innerHTML = this.textInpBox.value;
-				this.currentLi.scenario.desc = this.textInpBox.value;
+				const name = this.textInpBoc.value;
+				const adjustedName = (name=''?'(no name)':name);
+				this.currentLi.innerHTML = adjustedName;
+				this.currentLi.scenario.desc = adjustedName;
 				this.saveEdit();
 			}
 			
@@ -470,7 +481,8 @@ export class OmConcept {
 
 	// for adding an new scenario row
 	addRow () {
-		let desc = ''
+		const noName = '(no name)';
+		let desc = noName;
 		if (this.currentLi) {
 			desc = createCopyName(this.saveModifiedDesc());
 			this.currentLi.classList.remove("selected");
@@ -483,7 +495,7 @@ export class OmConcept {
 		li.classList.add("selected");
 		this.ulPointer.append(li);
 		this.currentLi = li;
-		this.addTextBox(this.currentLi.innerHTML);
+		this.addTextBox(desc==noName ? '' : desc);
 
 		function createCopyName(str) {
 			let reg = str.match(/(.*) (copy) *(\d*)/);
@@ -578,7 +590,7 @@ export class OmConcept {
 	};
 
 	exportWithLink () {
-		copyToClipboard2(this.createURL());
+		copyToClipboard(this.createURL());
 		const elem = document.getElementById('linkMessage'+this.key);
 		elem.classList.add('linkMessageTrigger');
     	setTimeout(function() {
@@ -667,7 +679,7 @@ export class OmConcept {
 };
 
 
-function copyToClipboard2(txt){
+function copyToClipboard(txt){
 	navigator.clipboard.writeText(txt)
 		.then(  function() {
 			console.log('successful copy to clipboard')
@@ -676,16 +688,7 @@ function copyToClipboard2(txt){
 				alert('failed to copy to clipboard')
 			});
 };
-function copyToClipboard (id){
-	let elem = document.getElementById(id);
-	navigator.clipboard.writeText(elem.innerText)
-		.then(  function() {
-			/* clipboard successfully set */
-			}, 
-			function() {
-				alert('failed to copy to clipboard')
-			});
-};
+
 
 // three Nodelist routines;
 function getChecked(nodelist) {
