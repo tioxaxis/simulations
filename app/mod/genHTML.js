@@ -126,9 +126,4 @@ export function addKeyForIds(key,node){
 		addKeyForIds(key, page);
 		let keyPage = document.getElementById(key);
 		keyPage.innerHTML = page.innerHTML;
-
-	 	//export: insert the allow edit checkbox
-//	 	const d1 = document.getElementById('copyURLToClipboard'+ key);
-//	 	d1.parentNode.append( genCheckbox('Allow Edit',
-//				'allowEditButton'+ key));	
 	}

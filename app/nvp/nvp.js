@@ -165,7 +165,6 @@ function nvpDefine(){
 			// event on heap is {time: ,proc: ,item: }
 			this.now = event.time;
 			event.proc(event.item);
-//			console.log('nRounds, lastRound',this.nRounds,lastRound);
 		}
 		this.frameNow = this.now;
 		this.clearStageForeground();
@@ -174,7 +173,6 @@ function nvpDefine(){
 
 function localReset() {
 		document.getElementById('actualPercnvp').innerHTML ="00.00";
-	//	nvp.itemCollection.reset();
 		let maxUnder = theSimulation.Cu * 
 				((1 + theSimulation.demandRV.variance) * theSimulation.demandRV.mean  
 				 - theSimulation.quantityOrdered + 1);
@@ -186,10 +184,7 @@ function localReset() {
 		nvp.totCost = 0;
 		nvp.nRounds = 0;
 		nvp.enough = 0;
-	//	console.log('at reset', maxUnder,maxOver);
 		nvp.graph.reset(Math.max(maxUnder,maxOver));
-	//	theProcessCollection.reset();
-		
 		setDesired(theSimulation.Cu, theSimulation.Co);
 		setExpected(theSimulation.quantityOrdered,
 			theSimulation.demandRV.mean,
@@ -213,8 +208,6 @@ const speeds = [{time:1,graph:1,anim:true},
 				{time:10,graph:2,anim:true},
 				{time:25,graph:5,anim:true},
 			{time:1000,graph:20,anim:false}];
-
-//const speeds = [1, 3, 10, 30];
 
 function nvDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
@@ -326,8 +319,6 @@ function setActual(enough, total) {
 		(100 * enough / total).toFixed(2);
 }
 
-
-
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
 //  animation for that process step
@@ -339,7 +330,6 @@ const animForQueue = {
 		(anim.person.path.mid - anim.person.path.top)) / anim.stage.normalSpeed,
 
 	reset: function () {},
-
 	join: function (qLength, arrivalTime, person) {
 		person.addPath({
 			t: arrivalTime - this.walkingTime2,
@@ -352,11 +342,7 @@ const animForQueue = {
 			y: anim.person.path.mid
 		});
 	},
-
-	arrive: function (nSeatsUsed, person) {
-
-	},
-
+	arrive: function (nSeatsUsed, person) {	},
 	leave: function (procTime, nSeatsUsed) {}
 };
 
@@ -375,12 +361,10 @@ const animForWalkOffStage = {
 
 const animForCreator = {
 	reset: function () {},
-
 	start: function (theProcTime, person, m) { // only 1 machine for creator m=1
 		person.setDestWithProcTime(theProcTime,
 			anim.person.path.left, anim.person.path.top);
 	},
-
 	finish: function () {},
 };
 
@@ -499,15 +483,12 @@ class DemandCreator {
 			(anim.person.path.bot - anim.person.path.top)) / anim.stage.normalSpeed;
 		this.demandRV = demandRV;
 		
-		
 		this.curDemand = null;
 		this.overageForDay = null;
 		this.underageForDay = null;
-
 	};
 
-	reset() {
-	};
+	reset() {};
 
 	cycle() {
 //		console.log('start of cycle', nvp.now)
@@ -558,7 +539,6 @@ class DemandCreator {
 	}
 };
 
-
 class RetailStore extends GStore {
 	constructor(omConcept, anim) {
 		super(omConcept, anim);
@@ -570,7 +550,6 @@ class RetailStore extends GStore {
 		};
 	};
 };
-
 
 export class Person extends Item {
 

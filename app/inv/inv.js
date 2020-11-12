@@ -230,33 +230,29 @@ function invDefine(){
 };
 
 function localReset () {
-	//	inv.itemCollection.reset();
-	//	inv.graph.reset();
-		pickInvSimulation(inv.whichRule);
-
-
-	//	theProcessCollection.reset();
-		inv.itemCollection.moveDisplayAll(0); //display all at start.
-		
-		// schedule the initial Person to arrive and start the simulation/animation.
-		theSimulation.supply.previous = null;
-		theSimulation.creator.knockFromPrevious();
-		//fudge to get animation started quickly
-		let t = inv.heap.top().time - 1;
-		inv.now = inv.frameNow = t;
-		if (inv.whichRule == 'methUpto') {
-			inv.heap.push({
-				time: 0 + theSimulation.period,
-				type: 'next order',
-				proc: theSimulation.store.orderUpto
-					.bind(theSimulation.store),
-				item: null
-			});
-		}
-		document.getElementById('lostSales').innerHTML = '0';
-		document.getElementById('fillRate').innerHTML = '100';
-		document.getElementById('serviceLevel').innerHTML = '100';
-	};
+	pickInvSimulation(inv.whichRule);
+	inv.itemCollection.moveDisplayAll(0); 
+	
+	// schedule the initial Person to arrive and start the simulation/animation.
+	theSimulation.supply.previous = null;
+	theSimulation.creator.knockFromPrevious();
+	
+	//fudge to get animation started quickly
+	let t = inv.heap.top().time - 1;
+	inv.now = inv.frameNow = t;
+	if (inv.whichRule == 'methUpto') {
+		inv.heap.push({
+			time: 0 + theSimulation.period,
+			type: 'next order',
+			proc: theSimulation.store.orderUpto
+				.bind(theSimulation.store),
+			item: null
+		});
+	}
+	document.getElementById('lostSales').innerHTML = '0';
+	document.getElementById('fillRate').innerHTML = '100';
+	document.getElementById('serviceLevel').innerHTML = '100';
+};
 
 function pickInvSimulation(which) {
 	switch (which) {
@@ -272,14 +268,12 @@ function pickInvSimulation(which) {
 	}
 };
 
-
 const speeds = [{time:1,graph:1,anim:true},
 				{time:2,graph:1,anim:true},
 				{time:5,graph:2,anim:true},
 				{time:10,graph:2,anim:true},
 				{time:25,graph:5,anim:true},
 			   {time:1000,graph:10,anim:false}];
-//const speeds = [1, 2, 5, 10, 15];
 
 function invDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
@@ -404,7 +398,6 @@ const animForQueue = {
 		(anim.person.path.mid - anim.person.path.top)) / anim.stage.normalSpeed,
 
 	reset: function () {},
-
 	join: function (qLength, arrivalTime, person) {
 		person.addPath({
 			t: arrivalTime - this.walkingTime2,
@@ -418,7 +411,6 @@ const animForQueue = {
 		});
 	},
 	arrive: function (nSeatsUsed, person) {},
-
 	leave: function (procTime, nSeatsUsed) {}
 };
 const animForStore = {
@@ -500,8 +492,6 @@ const theSimulation = {
 	upto: null,
 
 	initialize: function () {
-		
-
 		// random variables
 		let ar = Number(document.getElementById('arinv').value);
 		let acv = Number(document.getElementById('acvinv').value);
@@ -515,7 +505,6 @@ const theSimulation = {
 		inv.graph = new InvGraph(inv);
 		inv.resetCollection.push(inv.graph);
 		
-
 		theSimulation.quantityOrdered = Number(
 			document.getElementById('quaninv').value);
 		theSimulation.rop = Number(
@@ -559,7 +548,6 @@ const theSimulation = {
 			this.creator, this.seller);
 	}, //end of initialize
 };
-
 
 
 // SUPPLIER
@@ -648,7 +636,6 @@ class RopStore extends GStore {
 		// keep track stockouts by round
 		this.nRounds++;
 		if (!this.stockout) this.roundsWithEnough++;
-//		console.log( 'delivery', this.stockout, this.nRounds, this.roundsWithEnough);
 		this.stockout = false;
 		document.getElementById('serviceLevel').innerHTML =
 			( 100*(this.roundsWithEnough/this.nRounds) ).toFixed(0);

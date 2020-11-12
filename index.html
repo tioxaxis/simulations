@@ -59,29 +59,7 @@
 	
 	
 	</div>
-<div class="wrapper2by1 displayNone" id='whole'>
-<!--
-	<div class='exportBoxOuter displayNone' id='exportBoxOuter' b>
-		<div class="exportBox"  id="exportBox" style="display:block">
-		<div id="exportOption1">
-			<h2 style='margin:20px'>Export Options</h2>
-			<p> 1) Copy the URL below and use it to access the animation.</p>
-			<p class="blueBox" id="urlDisplay"></p>
-			<p class="belowBlueBox">
-				<button id="copyURLToClipboard">Copy to Clipboard</button>
-		</div>
-		<div id="exportOption2">
-
-			<p> 2) Copy the text below into a file, say 'scenarios.json', and place it on a server and add ?file=http://...your server.../scenarios.json to the search portion of url to access the animation. </p>
-			<p class="blueBox" id="jsonDisplay"></p>
-			<p class="belowBlueBox"><button id="copyJSONToClipboard">Copy to Clipboard</button> </p>
-			<br>
-			<button class="closeExportBox" id="closeExportBox"> X </button>
-		</div>
-		</div>
-	</div>
--->
-	
+<div class="wrapper2by1 displayNone" id='whole'>	
 	<div class='leftHandSideBox'>	
 		<div class='stageWrapper' id="stageWrapper" >
 			<canvas class="theStage foreground" id="foreground" width=1000 height=300></canvas>
@@ -106,15 +84,7 @@
 					has all the current scenarios for this animation encoded in it.
 				</div>
 			<div class="scenariosTop rowBetweenCenter" id="scenariosTop">
-				<div class='scenariosButton'>Scenarios
-<!--
-				  <div class='scenariosMenu' id=scenariosMenu>
-					<div class='menuItem' id='menuDefault'>default</div>
-					<div class='menuItem' id='menuLS' >from Local Storage</div>
-					<div class='menuItem ' id='menuURL'>from URL</div>
-				  </div>
--->
-				</div>
+				<div>Scenarios</div>
 				<i id='linkButton' class="material-icons font15vw"
 						title='copy link to clipboard' >link</i>
 				<i id='resetScenarios' class="material-icons font15vw"
@@ -125,17 +95,6 @@
 				<i id='exitButton'
 				   title='exit edit mode'
 				   class="material-icons font15vw displayNone">done_outline</i>
-<!--
-				<div id='menuBox' class='displayNone'>
-					<i id='cancelButton' class="material-icons font15vw"
-					   title="cancel and exit editing" >cancel</i>
-					<i id='clearButton' class="material-icons font15vw"
-					   title="clear scenarios from local storage" >unarchive</i>
-					<i id='saveButton' class="material-icons font15vw"
-					   title="save scenarios to local storage" >archive</i>
-					
-				</div>
--->
 				
 			</div>
 			
@@ -147,24 +106,6 @@
 				<i id="deleteButton" class="material-icons font15vw" disabled> remove</i>
 			</div>
 		</div>
-<!--
-		<div class='editWrapper' id='editWrapper'>
-			<div id="editBox">
-				<button id='editButton' 
-				title="add, delete, edit, or export scenarios" >Edit</button>				
-			</div>
-			<div id="menuBox" class='displayNone'>
-				<button id='cancelButton'>Cancel </button>
-				<button id='saveButton' 
-				title="save scenarios to local storage" >Save </button>
-				<button id='exportButton' 
-				title="options for exporting scenarios" >Export </button>
-				<button id='clear' onclick='localStorage.clear()'
-				title="clear local storage">
-					Clear</button>
-			</div>
-		</div>
--->
 	</div> 	<!-- end of rightHandSideBox  -->
 </div>	<!-- end of wrapper2to1 -->
 	
