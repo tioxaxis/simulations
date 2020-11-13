@@ -982,7 +982,7 @@ function invHTML(){
 	
 	
 	const f = document.getElementById('scenariosMidinv');
-	f.style = "min-height: 20vw";
+	f.style = "min-height: 17vw";
 };
 
 export function invStart() {

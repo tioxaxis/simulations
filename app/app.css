@@ -192,7 +192,7 @@
 
 }
 .ropupto {
-	height: 3vw;
+	min-height: 3vw;
 	border-bottom: solid var(--fontColor) 1px;
 }
 .sliderBox{
@@ -448,8 +448,7 @@ input[type=range]:focus::-ms-fill-upper {
 	flex: 0 0 2vw;
 }
 .scenariosPost{
-	flex: 0 1 20vw;
-	
+	flex: 0 1 10vw;
 }
 .scenariosTop {
 	flex: 0 0 1.5vw;
