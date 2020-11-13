@@ -461,8 +461,8 @@ export class OmConcept {
 			this.textMode = false;
 			this.currentLi.removeChild(this.textInpBox);
 			if (this.currentLi.innerHTML != this.textInpBox.value ){
-				const name = this.textInpBoc.value;
-				const adjustedName = (name=''?'(no name)':name);
+				const name = this.textInpBox.value;
+				const adjustedName = (name==''?'(no name)':name);
 				this.currentLi.innerHTML = adjustedName;
 				this.currentLi.scenario.desc = adjustedName;
 				this.saveEdit();
