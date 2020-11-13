@@ -93,7 +93,9 @@ function keyDownFunction(evt) {
 		case "Enter":
 			if (!omConc.editMode) return;
 			if (omConc.textMode) omConc.saveModifiedDesc();
-			else omConc.addTextBox(omConc.currentLi.innerHTML);
+			else if (omConc.currentLi){
+				omConc.addTextBox(omConc.currentLi.innerHTML);
+			}
 			break;
 		case "KeyB":
 			if (omConc.editMode) return;

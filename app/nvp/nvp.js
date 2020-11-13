@@ -619,7 +619,7 @@ function nvpHTML(){
 	);
 	
 	const f = document.getElementById('scenariosMidnvp');
-	f.style = "max-height: 18vw";
+	f.style = "min-height: 21vw";
 };
 
 export function nvpStart() {

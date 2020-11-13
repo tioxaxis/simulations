@@ -358,6 +358,7 @@ input[type=range]:focus::-ms-fill-upper {
   font-weight: 400;
   src: url(https://fonts.gstatic.com/s/materialicons/v55/flUhRq6tzZclQEJ-Vdg-IuiaDsNcIhQ8tQ.woff2) format('woff2');
 }
+
 .material-icons {
   font-family: 'Material Icons';
   font-weight: normal;
@@ -373,13 +374,34 @@ input[type=range]:focus::-ms-fill-upper {
   direction: ltr;
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
-  cursor: pointer;	
+  	
 }
-.material-icons:hover {
+.actButton{
+	color: rgb(34, 129, 118);
+	cursor: pointer;
+}
+.actButton:hover {
 	color: rgb(0, 172, 152);
 }
-.material-icons:active {
+.actButton:active {
 	color: blue;
+}
+.disButton{
+	color: grey;
+	cursor: default;
+}
+.revButton{
+	background:rgb(34, 129, 118);
+	color: white;
+	cursor: pointer;
+}
+.revButton:hover{
+	background: rgb(0, 172, 152);
+	color: white;
+}
+.revButton:active{
+	background: blue;
+	color: white;
 }
 
 #linkMessage {
@@ -396,7 +418,10 @@ input[type=range]:focus::-ms-fill-upper {
 }
 .font15vw{
 	font-size: 1.5vw;
+	min-width: 1.5vw;
+	padding: .2vw .5vw 0;
 }
+
 
 .actionBox{
 	display: flex;
@@ -417,6 +442,13 @@ input[type=range]:focus::-ms-fill-upper {
 	display: flex;
 	flex-flow: nowrap;
 	flex-direction: column;
+	
+}
+.scenariosPre{
+	flex: 0 0 2vw;
+}
+.scenariosPost{
+	flex: 0 1 20vw;
 	
 }
 .scenariosTop {
@@ -470,7 +502,7 @@ input[type=range]:focus::-ms-fill-upper {
 }
 .linkMessageTrigger{
 	animation-name: linkFadingMessage;
-	animation-duration: 10s;
+	animation-duration: 5s;
 }
 
 .scenariosBot {

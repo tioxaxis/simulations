@@ -561,7 +561,7 @@ function queHTML(){
 	);
 	
 	const f = document.getElementById('scenariosMidque');
-	f.style = "max-height: 18vw";
+	f.style = "min-height: 26vw";
 };
 
 export function queStart() {

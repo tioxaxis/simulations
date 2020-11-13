@@ -36,6 +36,16 @@ import {
 	ItemCollection
 }
 from "./stepitem.js";
+function enableButtonQ(name,bool){
+	const elem = document.getElementById(name);
+	if (bool) {
+		elem.classList.add('actButton');
+		elem.classList.remove('disButton');
+	} else {
+		elem.classList.add('disButton');
+		elem.classList.remove('actButton');
+	}
+};
 
 export function displayToggle(a,b){
 	if( Array.isArray(a)){
@@ -113,6 +123,8 @@ export class OmConcept {
 			.addEventListener('click', this.exportWithLink.bind(this));
 		document.getElementById('resetScenarios' + this.key)
 			.addEventListener('click', this.resetScenarios.bind(this));
+		document.getElementById(this.key)
+			.addEventListener('click', this.anyClick.bind(this));
 
 		// click on scenario name
 		this.ulPointer.addEventListener('click', this.liClicked.bind(this));
@@ -122,6 +134,11 @@ export class OmConcept {
 		document.getElementById('slidersWrapper'+this.key)
 			.addEventListener('input', this.captureChangeInSliderG.bind(this));
 		this.inputEvent = new Event('input', {bubbles: true});
+	}
+	
+	anyClick (event){
+		if ( this.textInpBox.contains(event.target) )return;
+		if ( this.textMode ) this.saveModifiedDesc();
 	}
 
 	//this reset routine calls all the other reset()'s eventually
@@ -424,6 +441,7 @@ export class OmConcept {
 		this.setUL(rows);
 		this.currentLi = null;
 		this.saveEdit();
+		enableButtonQ('deleteButton'+this.key, false);
 	};
 	
 	async setupScenarios () {
@@ -469,7 +487,7 @@ export class OmConcept {
 			}
 			
 		}
-		return this.currentLi ? this.currentLi.innerHTML : ''; //does this test ever apply?
+		return this.currentLi ? this.currentLi.innerHTML : '';
 	};
 
 	addTextBox (name) {
@@ -484,7 +502,7 @@ export class OmConcept {
 		const noName = '(no name)';
 		let desc = noName;
 		if (this.currentLi) {
-			desc = createCopyName(this.saveModifiedDesc());
+			desc = createCopyName(this.currentLi.innerHTML);
 			this.currentLi.classList.remove("selected");
 		}
 
@@ -504,6 +522,7 @@ export class OmConcept {
 			return reg[1] + ' copy ' + n;
 		};
 		this.saveEdit();
+		enableButtonQ('deleteButton'+this.key, true);
 	};
 
 	nextRow () {   
@@ -532,6 +551,8 @@ export class OmConcept {
 		};
 		this.currentLi = newRow;
 		this.printCurrentLi();
+		enableButtonQ('deleteButton'+this.key,
+					  this.currentLi);
 	};
 
 	printCurrentLi() {
@@ -556,7 +577,9 @@ export class OmConcept {
 			['scenariosBot'+this.key,'exitButton'+this.key,
 			 'actionOptions'+this.key],
 			['editButton'+this.key,
-			 'playButtons'+this.key]);	
+			 'playButtons'+this.key]);
+		enableButtonQ('deleteButton'+this.key,
+					  this.currentLi);
 	};
 
 
@@ -583,7 +606,7 @@ export class OmConcept {
 	exitEdit () {
 		// restore the page to non-edit mode
 		this.editMode = false;
-		this.saveModifiedDesc();
+//		this.saveModifiedDesc();
 		displayToggle(['editButton'+this.key, 'playButtons'+this.key],
 			['scenariosBot'+this.key, 'exitButton'+this.key,
 			  'actionOptions'+this.key]);
@@ -594,14 +617,14 @@ export class OmConcept {
 		const elem = document.getElementById('linkMessage'+this.key);
 		elem.classList.add('linkMessageTrigger');
     	setTimeout(function() {
-        	elem.classList.remove('linkMessageTrigger');}, 11000);
+        	elem.classList.remove('linkMessageTrigger');}, 5100);
 	};
 		
 	liClicked (ev) {
 		if (ev.target == this.currentLi || 
 			ev.target.parentNode == this.currentLi) return;
 
-		this.saveModifiedDesc();
+//		this.saveModifiedDesc();
 		if (ev.target.tagName === 'LI') {
 			this.changeCurrentLiTo(ev.target);
 		};

@@ -40,15 +40,15 @@
 <div id='genericPlayResetBox'>
 	<div class='rowAroundEnd' id="playButtons">
 		<div id='pauseButton' class='displayNone'>
-		<i class="material-icons font35vw" 
+		<i class="material-icons actButton font35vw" 
 		   title="pause the animation">pause_circle_outline</i>
 		</div>
 		<div id='playButton'>
-		<i class="material-icons font35vw" 
+		<i class="material-icons actButton font35vw" 
 		   title="play the animation">play_circle_outline</i>
 		</div>
 		<div id='resetButton'>
-		<i class="material-icons font35vw"
+		<i class="material-icons actButton font35vw"
 		   title ="reset the animation">replay</i>
 		</div>
 	</div>
@@ -78,23 +78,26 @@
 
 	<div class='rightHandSideBox'>
 		<div class='slidersWrapper' id='slidersWrapper'>	</div>
-		<div class='scenariosWrapper' id='scenariosWrapper'>
+		<div class="scenariosPre"></div><div class='scenariosWrapper' id='scenariosWrapper'>
 			<div  id="linkMessage" class='linkMessage'>
 					A link (URL) was copied into the clipboard that
 					has all the current scenarios for this animation encoded in it.
 				</div>
+			
 			<div class="scenariosTop rowBetweenCenter" id="scenariosTop">
 				<div>Scenarios</div>
-				<i id='linkButton' class="material-icons font15vw"
+				<div><i id='linkButton' class="material-icons actButton font15vw"
 						title='copy link to clipboard' >link</i>
-				<i id='resetScenarios' class="material-icons font15vw"
+				<i id='resetScenarios' class="material-icons actButton font15vw"
 						title='reset all scenarios' >replay</i>
 				<i id='editButton' 
 				   title="edit, add, or delete scenarios"
-				   class="material-icons font15vw">edit</i>
+				   class="material-icons actButton font15vw"
+				   >edit</i>
 				<i id='exitButton'
 				   title='exit edit mode'
-				   class="material-icons font15vw displayNone">done_outline</i>
+				   class="material-icons actButton font15vw revButton displayNone">edit</i>
+					</div>
 				
 			</div>
 			
@@ -102,10 +105,12 @@
 				<ul id="ULScenarioList"></ul>
 			</div>
 			<div class="scenariosBot displayNone" id="scenariosBot" > 
-				<i id="addButton" class="material-icons font15vw"> add</i>
-				<i id="deleteButton" class="material-icons font15vw" disabled> remove</i>
+				<i id="addButton" class="material-icons actButton font15vw"> add</i>
+				<i id="deleteButton" class="material-icons disButton font15vw"> remove</i>
 			</div>
+			
 		</div>
+		<div class="scenariosPost"></div>
 	</div> 	<!-- end of rightHandSideBox  -->
 </div>	<!-- end of wrapper2to1 -->
 	

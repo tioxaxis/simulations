@@ -518,7 +518,7 @@ function litHTML(){
 	);
 	
 	const f = document.getElementById('scenariosMidlit');
-	f.style = "max-height: 18vw";
+	f.style = "min-height: 26vw";
 };
 
 export function litStart() {
