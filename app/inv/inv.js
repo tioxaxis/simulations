@@ -23,10 +23,9 @@ const disappointed = {
 	color: 'rgb(235, 230, 230)',
 	border: 'rgb(31, 105, 245)'
 };
-const extraLineColor = 'rgba(138, 84, 171,.5)';
 const tioxTimeConv = 10000; //time are in milliseconds/10
 import {
-	GammaRV, UniformRV, DeterministicRV, Heap
+	GammaRV, UniformRV, DeterministicRV, Heap, cbColors
 }
 from '../mod/util.js';
 import {
@@ -49,13 +48,13 @@ class InvGraph extends TioxGraph {
 		super(omConcept,.3, {width:24, step:6}, d=>d.t);
 		this.predictedInvValue = null;
 		this.setTitle('Inventory');
-		this.setupLine(0, d => d.i, 'rgba(0,0,220,1)',
+		this.setupLine(0, d => d.i, cbColors.blue,
 					   true, true, 3, 0);
 		this.setLegend(0, 'On Hand');
-		this.setupLine(1, d => d.ip, 'rgba(0,150,0,1)',
+		this.setupLine(1, d => d.ip, cbColors.yellow,
 					   true, true, 3, 0);
 		this.setLegend(1,'On Hand and On Order');
-		this.setupLine(2, d => d.p, 'rgb(185, 26, 26)',
+		this.setupLine(2, d => d.p, cbColors.orange,
 					   true, false, 10, 0);
 		this.setLegend(2,'Predicted On Hand Inventory');
 		if( inv.whichRule == 'methRop'){
@@ -119,10 +118,10 @@ class InvGraph extends TioxGraph {
 	
 		
 	resetRopLine(y){
-		this.setExtraLines(extraLineColor,{min:y},null);
+		this.setExtraLines(cbColors.purple,{min:y},null);
 	}
 	resetPeriodLines(x){
-		this.setExtraLines(extraLineColor,null, {min:x,step:x});
+		this.setExtraLines(cbColors.purple,null, {min:x,step:x});
 	}
 }
 const anim = {};

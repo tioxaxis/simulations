@@ -20,6 +20,15 @@
 
 const tioxInfinity = 5000000000000;
 
+export const cbColors = {
+	blue: 'rgb(0,81,178)',
+	yellow: 'rgb(240,228,66)',
+	orange: 'rgb(213,56,0)',
+	purple: 'rgb(204,121,167)'
+};
+
+
+
 export class GammaRV {
 	constructor(rate = 0, CV = 0, minimumTime = 20) {
 		this.rate = rate;

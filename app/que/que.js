@@ -19,7 +19,7 @@
 */		
 
 import {
-	GammaRV, Heap
+	GammaRV, Heap, cbColors
 }
 from "../mod/util.js";
 import {
@@ -40,13 +40,13 @@ class QueueGraph extends TioxGraph {
 	constructor(omConcept){	
 		super(omConcept, .3, {width:10, step:2}, d=>d.t);
 		this.setTitle('Waiting Time');
-		this.setupLine(0, d => d.i, 'rgba(0,0,220,1)',
+		this.setupLine(0, d => d.i, cbColors.blue,
 					   false, true, 5, 10);
 		this.setLegend(0, 'individual wait');
-		this.setupLine(1, d => d.a, 'rgba(0,150,0,1)',
+		this.setupLine(1, d => d.a, cbColors.yellow,
 					   false, true, 5, 10);
 		this.setLegend(1,'average wait');
-		this.setupLine(2, d => d.p, 'rgb(185, 26, 26)',
+		this.setupLine(2, d => d.p, cbColors.orange,
 					   true, false, 10, 0);
 		this.setLegend(2,'predicted wait');	
 		this.predictedWaitValue = this.predictedWait();

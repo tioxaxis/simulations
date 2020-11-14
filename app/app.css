@@ -22,6 +22,11 @@
 :root {
   	--fontColor: #383838;
 	--borderColor: rgb(122, 141, 208);
+	
+	--colorBlue: rgb(0,81,178);
+	--colorYellow: rgb(240,228,66);
+	--colorOrangy: rgb(213,56,0);
+	--colorPurply: rgb(204,121,167);
 	font-family: "Arial";
 	font-size: 1.2vw;
 }
@@ -495,13 +500,13 @@ input[type=range]:focus::-ms-fill-upper {
 	right: 2vw;
 	color: var(--fontColor);
 	border: solid rgb(34, 129, 118);
-	padding: 2vw;
+	padding: 1vw;
 	background: lightblue;
 	z-index: 0;
 }
 .linkMessageTrigger{
 	animation-name: linkFadingMessage;
-	animation-duration: 5s;
+	animation-duration: 3s;
 }
 
 .scenariosBot {

@@ -20,7 +20,7 @@
 
 const tioxTimeConv = 1000; //time are in milliseconds
 import {
-	GammaRV, Heap
+	GammaRV, Heap, cbColors
 }
 from '../mod/util.js';
 import {
@@ -43,13 +43,13 @@ class LittleGraph extends TioxGraph {
 		super(omConcept,.3, {width:20, step:5}, d=>d.t);
 		this.predictedInvValue = null;
 		this.setTitle('Inventory');
-		this.setupLine(0, d => d.i, 'rgba(0,0,220,1)',
+		this.setupLine(0, d => d.i, cbColors.blue,
 					   false, true, 3, 10);
 		this.setLegend(0, 'avg. inventory');
-		this.setupLine(1, d => d.rt, 'rgba(0,150,0,1)',
+		this.setupLine(1, d => d.rt, cbColors.yellow,
 					   false, true, 3, 10);
 		this.setLegend(1,'avg. time * avg. rate');
-		this.setupLine(2, d => d.p, 'rgb(185, 26, 26)',
+		this.setupLine(2, d => d.p, cbColors.orange,
 					   true, false, 10, 0);
 		this.setLegend(2,'predicted inventory');	
 		this.predictedInvValue = this.predictedInv();

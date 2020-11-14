@@ -79,11 +79,7 @@ function router(event){
 function keyDownFunction(evt) {
 	let omConc = omConcepts[currentTab.id]; 
 	if (!omConc) return;
-	if (omConc.exporting){
-		if (evt.code == "Escape")
-			omConc.closeExportBox();
-		return;
-	}
+	if ( omConc.toastMode ) omConc.removeToastMessage(); 
 	switch (evt.code) {
 		case "Space":
 			if (omConc.editMode) return;

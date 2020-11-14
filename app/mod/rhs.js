@@ -63,6 +63,7 @@ export function displayToggle(a,b){
 	}
 }
 
+
 export class OmConcept {
 	constructor(key, sEncode, sDecode, localReset){
 		this.key = key;
@@ -85,6 +86,7 @@ export class OmConcept {
 
 		this.textMode = false,
 		this.editMode = false,
+		this.toastMode = false,
 		this.fromURL = false;
 
 //		this.saveState = null,
@@ -124,7 +126,7 @@ export class OmConcept {
 		document.getElementById('resetScenarios' + this.key)
 			.addEventListener('click', this.resetScenarios.bind(this));
 		document.getElementById(this.key)
-			.addEventListener('click', this.anyClick.bind(this));
+			.addEventListener('click', this.anyClick.bind(this),true);
 
 		// click on scenario name
 		this.ulPointer.addEventListener('click', this.liClicked.bind(this));
@@ -137,9 +139,16 @@ export class OmConcept {
 	}
 	
 	anyClick (event){
+		if ( this.toastMode ) this.removeToastMessage();
 		if ( this.textInpBox.contains(event.target) )return;
 		if ( this.textMode ) this.saveModifiedDesc();
-	}
+	};
+	
+	removeToastMessage() {
+		this.toastMode = false;
+		document.getElementById('linkMessage'+this.key)
+			.classList.remove('linkMessageTrigger');
+	};
 
 	//this reset routine calls all the other reset()'s eventually
 	reset  () {
@@ -613,11 +622,12 @@ export class OmConcept {
 	};
 
 	exportWithLink () {
+		this.toastMode = true;
 		copyToClipboard(this.createURL());
-		const elem = document.getElementById('linkMessage'+this.key);
-		elem.classList.add('linkMessageTrigger');
-    	setTimeout(function() {
-        	elem.classList.remove('linkMessageTrigger');}, 5100);
+		document.getElementById('linkMessage'+this.key)
+			.classList.add('linkMessageTrigger');
+    	this.toastTimer = setTimeout(
+			this.removeToastMessage.bind(this), 3100);
 	};
 		
 	liClicked (ev) {
@@ -705,7 +715,7 @@ export class OmConcept {
 function copyToClipboard(txt){
 	navigator.clipboard.writeText(txt)
 		.then(  function() {
-			console.log('successful copy to clipboard')
+//			console.log('successful copy to clipboard')
 			}, 
 			function() {
 				alert('failed to copy to clipboard')

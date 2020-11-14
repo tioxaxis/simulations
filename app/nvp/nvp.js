@@ -19,7 +19,7 @@
 */		
 
 import {
-	GammaRV, UniformRV, DeterministicRV, Heap
+	GammaRV, UniformRV, DeterministicRV, Heap, cbColors
 }
 from '../mod/util.js';
 import {
@@ -43,13 +43,13 @@ class NVGraph extends TioxGraph {
 		this.totalCost = 0;
 		this.setTitle('$ of cost per day');
 		
-		this.setupLine(0, d => d.u, 'rgb(185, 26, 26)',
+		this.setupLine(0, d => d.u, cbColors.orange,
 					   false, true, 5, 16);
 		this.setLegend(0, 'underage cost');
-		this.setupLine(1, d => d.o, 'rgba(0,150,0,1)',
+		this.setupLine(1, d => d.o, cbColors.yellow,
 					   false, true, 5, 16);
 		this.setLegend(1,'overage cost');
-		this.setupLine(2, d => d.a, 'rgba(0,0,220,1)',
+		this.setupLine(2, d => d.a, cbColors.blue,
 					   false, true, 8, 0);
 		this.setLegend(2,'average cost');			 
 	};
