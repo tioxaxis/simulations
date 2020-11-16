@@ -901,12 +901,15 @@ export class Person extends Item {
 
 import {
 	genRadio, genPlayResetBox, 
-	genSlider, copyMainPage, hideNode
+	genSlider, addDiv, hideNode
 }
 from '../mod/genHTML.js';
 
 function invHTML(){	
-	copyMainPage('inv');
+	addDiv('inv','inv','whole')
+	addDiv('inv', 'leftHandSideBox'+'inv',
+			   'stageWrapper', 'statsWrapper',
+			   'chartWrapper');
 	 
 	//stats line
 	const d = document.getElementById('statsWrapperinv');

@@ -63,6 +63,17 @@ export function addKeyForIds(key,node){
 		node.classList.add('displayNone');
 		return node;
 	}
+	export function genButton(id,name){
+		const b = document.createElement('span');
+		b.innerHTML = name;
+		b.id = id;
+		
+		const d = document.createElement('div');
+		d.className = "sliderBox columnAroundCenter";
+		d.append(b);
+		return d;
+		
+	};
 
 	export function genSlider( id, before, mid, after,
 								initial, min, max, step, values){	
@@ -121,9 +132,22 @@ export function addKeyForIds(key,node){
 		return d
 	}
 	
+	export function addDiv(key, toId,...fromIds){
+		const d = document.getElementById(toId);
+		for (let from of fromIds){
+			let elem = document.getElementById(from)
+				.cloneNode(true);
+			addKeyForIds(key,elem);
+			d.append(elem);
+		}
+	}
+	
 	export function copyMainPage(key){
-		let page = document.getElementById('whole').cloneNode(true);
+		let page = document.getElementById('whole')
+			.cloneNode(true);
 		addKeyForIds(key, page);
 		let keyPage = document.getElementById(key);
 		keyPage.innerHTML = page.innerHTML;
 	}
+	
+	

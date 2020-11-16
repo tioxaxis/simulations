@@ -567,12 +567,15 @@ export class Person extends Item {
 }; // end class Person
 
 import {
-	addKeyForIds, genPlayResetBox, genSlider, copyMainPage
+	addKeyForIds, genPlayResetBox, genSlider, addDiv
 }
 from '../mod/genHTML.js';
 
 function nvpHTML(){	
-	copyMainPage('nvp');
+	addDiv('nvp','nvp','whole')
+	addDiv('nvp', 'leftHandSideBox'+'nvp',
+			   'stageWrapper', 'statsWrapper',
+			   'chartWrapper');
 	 
 	//stats line
 	const d = document.getElementById('statsWrappernvp');
@@ -625,7 +628,7 @@ function nvpHTML(){
 export function nvpStart() {
 	nvpHTML();
 	nvpDefine();
-	theSimulation.initialize(); // the specific to queueing
+	theSimulation.initialize();
 	//reset first time to make sure it is ready to play.
 	nvp.reset();
 	return nvp;

@@ -490,12 +490,15 @@ export class Person extends Item {
 }; // end class Person
 
 import {
-	genSlider, genPlayResetBox, copyMainPage
+	genSlider, genPlayResetBox, addDiv
 }
 from '../mod/genHTML.js'; 
 
 function litHTML(){
-	copyMainPage('lit');
+	addDiv('lit','lit','whole')
+	addDiv('lit', 'leftHandSideBox'+'lit',
+			   'stageWrapper', 'statsWrapper',
+			   'chartWrapper');
 	 	 
 	//stats line
 	const d2 = document.getElementById('statsWrapperlit');
@@ -524,7 +527,7 @@ function litHTML(){
 export function litStart() {
 	litHTML();
 	litDefine();
-	theSimulation.initialize(); // the specific to queueing
+	theSimulation.initialize();
 	lit.reset();
 	return lit;
 };

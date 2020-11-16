@@ -75,7 +75,7 @@ anim.scannerDelta = {
 	dy: anim.person.height * 1.8
 };
 function facDefine(){
-	fac = new OmConcept('fac', facueEncodeURL, facueDecodeURL, localReset);
+	fac = new OmConcept('fac', facEncodeURL, facDecodeURL, localReset);
 	document.getElementById('fac').omConcept = fac;
 	
 	document.getElementById('slidersWrapperfac')
@@ -119,7 +119,7 @@ function localReset () {
 	document.getElementById('nInQueue').innerHTML = '0';
 };
 
-function facueDecodeURL(str){
+function facDecodeURL(str){
 	const actionValue = {N:"none", G:"play", S:"pause"};
 	const boolValue = {T: 'true', F: 'false'};
 	return( 
@@ -136,7 +136,7 @@ function facueDecodeURL(str){
 	 desc: str.substring(22)
 	})
 };
-function facueEncodeURL(row){
+function facEncodeURL(row){
 	const actionValue = {none: "N", play: "G", pause: "S"};
 	return Number(row.ar).toFixed(1).padStart(4,'0') 
 	.concat(Number(row.acv).toFixed(1).padStart(4,'0'),
@@ -350,7 +350,7 @@ export class Card extends Item {
 }; // end class Person
 
 import {
-	genPlayResetBox, genSlider, copyMainPage
+	genPlayResetBox, genSlider, genButton, copyMainPage
 }
 from '../mod/genHTML.js';
 
@@ -381,7 +381,7 @@ function facHTML(){
 //				  6,0,10,.5,[0,2,4,6,8,10] ), 
 //		genSlider('scvfac','Service CV = ','0.0','',
 //				  0,0,2,.5,['0.0','1.0','2.0']),
-		// code for marker box;
+		genButton('markfac','Mark'),
 		genSlider('qlnfac','Queue Length','3','',
 				 3,3,1000,6,[,'3','6','Infinite']),
 		genPlayResetBox('fac'),

@@ -529,12 +529,15 @@ export class Person extends Item {
 }; // end class Person
 
 import {
-	genPlayResetBox, genSlider, copyMainPage
+	genPlayResetBox, genSlider, copyMainPage, addDiv
 }
 from '../mod/genHTML.js';
 
 function queHTML(){	
-	copyMainPage('que');
+	addDiv('que','que','whole')
+	addDiv('que', 'leftHandSideBox'+'que',
+			   'stageWrapper', 'statsWrapper',
+			   'chartWrapper');
 	 
 	//stats line
 	const d2 = document.getElementById('statsWrapperque');

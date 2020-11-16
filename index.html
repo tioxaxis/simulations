@@ -36,6 +36,7 @@
 
 </head>
 <body >
+<!--	****** beginning of generic sections-->
 <div class='displayNone'>
 <div id='genericPlayResetBox'>
 	<div class='rowAroundEnd' id="playButtons">
@@ -52,33 +53,16 @@
 		   title ="reset the animation">replay</i>
 		</div>
 	</div>
-</div>
+</div>	
 	
-	
-	
-	
-	
-	</div>
-<div class="wrapper2by1 displayNone" id='whole'>	
-	<div class='leftHandSideBox'>	
-		<div class='stageWrapper' id="stageWrapper" >
-			<canvas class="theStage foreground" id="foreground" width=1000 height=300></canvas>
-			<canvas class="theStage background" id="background" width=1000 height=300></canvas>
-			<div id='coverAnimation' class='coverAnimation1' ></div>
-		</div>
-		<div class='statsWrapper'  id='statsWrapper' ></div>
-		<div class='chartWrapper' id="chartWrapper">
-			<div class='chartTitle' id='chartTitle'> title </div>
-			<div class='chart' id='chart'> 
-				<canvas  class="chartCanvas" id="chartCanvas" width='2000' height='600'></canvas>
-			</div>
-			<div class='chartLegend rowAroundCenter' id='chartLegend'></div>
-		</div>
-	</div>
+<!--	****** wrapper for main page-->
+<div class="wrapper2by1" id='whole'>	
+	<div class='leftHandSideBox' id='leftHandSideBox'></div>
 
 	<div class='rightHandSideBox'>
 		<div class='slidersWrapper' id='slidersWrapper'>	</div>
-		<div class="scenariosPre"></div><div class='scenariosWrapper' id='scenariosWrapper'>
+		<div class="scenariosPre"></div>
+		<div class='scenariosWrapper' id='scenariosWrapper'>
 			<div  id="linkMessage" class='linkMessage'>
 					Copied to clipboard:<br>
 					A link (URL) with all the current scenarios.
@@ -114,6 +98,31 @@
 	</div> 	<!-- end of rightHandSideBox  -->
 </div>	<!-- end of wrapper2to1 -->
 	
+	
+<!--	****** wrapper for stage section-->
+<div class='stageWrapper' id="stageWrapper" >
+	<canvas class="theStage foreground" id="foreground" width=1000 height=300></canvas>
+	<canvas class="theStage background" id="background" width=1000 height=300></canvas>
+	<div id='coverAnimation' class='coverAnimation1' ></div>
+</div>
+
+<!--	****** wrapper for stats section-->
+<div class='statsWrapper'  id='statsWrapper' ></div>
+
+<!--	****** wrapper for chart section-->
+<div class='chartWrapper' id="chartWrapper">
+	<div class='chartTitle' id='chartTitle'> title </div>
+	<div class='chart' id='chart'> 
+		<canvas  class="chartCanvas" id="chartCanvas" width='2000' height='600'></canvas>
+	</div>
+	<div class='chartLegend rowAroundCenter' id='chartLegend'></div>
+</div>
+</div>   <!--	****** end of generic pieces-->
+	
+	
+	
+
+	
 	<div id='mainPage' class='wrapper2by1 displayNone'>
 		<div id='topofpage'>TioX </div>
 		<div class='appButton' >
@@ -127,14 +136,18 @@
 		<div class='appButton' >
 			<div id="invLink" class='verticalCenter'>Inventory</div>
 		</div>
+		<div class='appButton' >
+			<div id="facLink" class='verticalCenter'>Face Game</div>
+		</div>
 		<div class='appButton'>
 			<div id='docLink' class='verticalCenter'>Documentation</div>
 		</div>
 	</div>
-	<div id='que' class='wrapper2by1 displayNone'></div>
-	<div id='lit' class='wrapper2by1 displayNone'></div>
-	<div id='nvp' class='wrapper2by1 displayNone'></div>
-	<div id='inv' class='wrapper2by1 displayNone'></div>
+	<div id='que' class='displayNone'></div>
+	<div id='lit' class='displayNone'></div>
+	<div id='nvp' class='displayNone'></div>
+	<div id='inv' class='displayNone'></div>
+	<div id='fac' class='displayNone'></div>
 </body>
 </html>
 

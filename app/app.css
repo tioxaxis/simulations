@@ -38,18 +38,18 @@
 	height: 50vw;
 }
 #topofpage {
-		font-size: 150px;
+		font-size: 15vh;
 		color: #1244ea;
 		text-align: center;
-		padding: 20px;
+		padding: 2vw;
 	}
 .appButton{
 	text-align: center;
-	font-size: 30px;
-	height: 70px;
+	font-size: 3vh;
+	height: 7vh;
 	background-color: var(--borderColor);
-	margin:  20px auto  20px auto;
-	width: 400px;
+	margin:  2vh auto  2vh auto;
+	width: 40vh;
 	color: white;
 		cursor: pointer;
 }
@@ -58,7 +58,7 @@
 	color: white;
 }
 .verticalCenter{
-	padding: 20px 20px 20px 20px;
+	padding: 2vh 2vh 2vh 2vh;
 }
 
 
