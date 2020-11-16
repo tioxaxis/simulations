@@ -624,10 +624,14 @@ export class OmConcept {
 	exportWithLink () {
 		this.toastMode = true;
 		copyToClipboard(this.createURL());
-		document.getElementById('linkMessage'+this.key)
-			.classList.add('linkMessageTrigger');
-    	this.toastTimer = setTimeout(
-			this.removeToastMessage.bind(this), 3100);
+		const message = document.
+			getElementById('linkMessage'+this.key);
+		message.classList.remove('linkMessageTrigger');
+		void message.offsetWidth;
+		message.classList.add('linkMessageTrigger');
+    	clearTimeout(this.toastTimer);
+		this.toastTimer = setTimeout(
+			this.removeToastMessage.bind(this), 4100);
 	};
 		
 	liClicked (ev) {
