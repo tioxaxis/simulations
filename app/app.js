@@ -35,9 +35,13 @@ import {
 	invStart
 }
 from './inv/inv.js';
+import {
+	facStart
+}
+from './fac/fac.js';
 	
 	
-const possibles = ["que", "lit", "nvp", "inv" ];
+const possibles = ["que", "lit", "nvp", "inv","fac" ];
 const omConcepts ={};
 
 function switchTo(which){
@@ -124,6 +128,7 @@ omConcepts['que'] = queStart();
 omConcepts['lit'] = litStart();
 omConcepts['nvp'] = nvpStart();
 omConcepts['inv'] = invStart();
+omConcepts['fac'] = facStart();
 
 
 
