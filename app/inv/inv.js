@@ -51,7 +51,7 @@ class InvGraph extends TioxGraph {
 		this.setupLine(0, d => d.i, cbColors.blue,
 					   true, true, 3, 0);
 		this.setLegend(0, 'On Hand');
-		this.setupLine(1, d => d.ip, cbColors.yellow,
+		this.setupLine(1, d => d.ip, cbColors.red,
 					   true, true, 3, 0);
 		this.setLegend(1,'On Hand and On Order');
 		this.setupLine(2, d => d.p, cbColors.orange,
@@ -118,10 +118,10 @@ class InvGraph extends TioxGraph {
 	
 		
 	resetRopLine(y){
-		this.setExtraLines(cbColors.purple,{min:y},null);
+		this.setExtraLines(cbColors.yellow,{min:y},null);
 	}
 	resetPeriodLines(x){
-		this.setExtraLines(cbColors.purple,null, {min:x,step:x});
+		this.setExtraLines(cbColors.yellow,null, {min:x,step:x});
 	}
 }
 const anim = {};

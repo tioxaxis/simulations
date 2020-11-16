@@ -46,7 +46,7 @@ class QueueGraph extends TioxGraph {
 		this.setupLine(1, d => d.a, cbColors.yellow,
 					   false, true, 5, 10);
 		this.setLegend(1,'average wait');
-		this.setupLine(2, d => d.p, cbColors.orange,
+		this.setupLine(2, d => d.p, cbColors.red,
 					   true, false, 10, 0);
 		this.setLegend(2,'predicted wait');	
 		this.predictedWaitValue = this.predictedWait();

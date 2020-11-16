@@ -21,10 +21,13 @@
 const tioxInfinity = 5000000000000;
 
 export const cbColors = {
-	blue: 'rgb(0,81,178)',
-	yellow: 'rgb(240,228,66)',
-	orange: 'rgb(213,56,0)',
-	purple: 'rgb(204,121,167)'
+	blue: 'rgb(100,143,255)',
+	purple: 'rgb(120,94,240)',
+	red: 'rgb(220,38,127)',
+	orange: 'rgb(254,97,0)',
+	yellow: 'rgb(255,176,0)',
+	
+	
 };
 
 

@@ -43,7 +43,7 @@ class NVGraph extends TioxGraph {
 		this.totalCost = 0;
 		this.setTitle('$ of cost per day');
 		
-		this.setupLine(0, d => d.u, cbColors.orange,
+		this.setupLine(0, d => d.u, cbColors.red,
 					   false, true, 5, 16);
 		this.setLegend(0, 'underage cost');
 		this.setupLine(1, d => d.o, cbColors.yellow,
