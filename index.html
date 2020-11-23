@@ -54,10 +54,28 @@
 		</div>
 	</div>
 </div>
-    
+	
+<img id = "tsaAgent"
+       src = "./app/que/guard.gif"
+       alt = "TSA agent gif" />	
+</div>
 <!--	****** wrapper for main page-->
-<div class="wrapper2by1" id='whole'>	
-	<div class='leftHandSideBox' id='leftHandSideBox'></div>
+    <div class="wrapper2by1 displayNone" id='whole'>	
+	<div class='leftHandSideBox'>	
+		<div class='stageWrapper' id="stageWrapper" >
+			<canvas class="theStage foreground" id="foreground" width=1000 height=300></canvas>
+			<canvas class="theStage background" id="background" width=1000 height=300></canvas>
+			<div id='coverAnimation' class='coverAnimation1' ></div>
+		</div>
+		<div class='statsWrapper'  id='statsWrapper' ></div>
+		<div class='chartWrapper' id="chartWrapper">
+			<div class='chartTitle' id='chartTitle'> title </div>
+			<div class='chart' id='chart'> 
+				<canvas  class="chartCanvas" id="chartCanvas" width='2000' height='600'></canvas>
+			</div>
+			<div class='chartLegend rowAroundCenter' id='chartLegend'></div>
+		</div>
+	</div>
 
 	<div class='rightHandSideBox'>
 		<div class='slidersWrapper' id='slidersWrapper'>	</div>
