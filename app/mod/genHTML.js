@@ -74,6 +74,27 @@ export function addKeyForIds(key,node){
 		return d;
 		
 	};
+	export function genArbSlider( id, name, initial, indivs, values){
+		const sp = document.createElement('span');
+		sp.id = id + 'Display';
+		sp.append(indivs[initial]);
+		const disp = document.createElement('div');
+		disp.append(name,sp);
+				
+		const vals = document.createElement('div');
+		vals.className = 'spreadValues';
+		for( let v of values){
+            let s = document.createElement('span');
+			s.append(v);
+			vals.append(s);
+		}
+		
+		const d = document.createElement('div');
+		d.className = "sliderBox columnAroundCenter";
+		d.append(disp, 
+		  genRange(id,initial,0,indivs.length-1,1), vals);
+		return d;
+	}
 
 	export function genSlider( id, before, mid, after,
 								initial, min, max, step, values){	

@@ -170,8 +170,8 @@ function queDefine(){
 	anim.stage.backContext = document
 			.getElementById('backgroundque')
 			.getContext('2d');
-	que.stage = anim.stage;
-	gSF = new GStickFigure(anim.stage.foreContext,
+    que.stage = anim.stage;
+    gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height);
 };
 function localReset () {
@@ -530,6 +530,7 @@ export class Person extends Item {
 
 import {
 	genPlayResetBox, genSlider, copyMainPage, addDiv
+	
 }
 from '../mod/genHTML.js';
 

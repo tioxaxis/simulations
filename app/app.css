@@ -45,10 +45,11 @@
 	}
 .appButton{
 	text-align: center;
-	font-size: 3vh;
+	font-size: 3.5vh;
 	height: 7vh;
 	background-color: var(--borderColor);
 	margin:  2vh auto  2vh auto;
+	padding: 1vh;
 	width: 40vh;
 	color: white;
 		cursor: pointer;
@@ -83,6 +84,11 @@
 /*********  Left hand side boxes  ***********/
 .stageWrapper {
 	flex: 0 0 41%; 
+	border-bottom:  solid  var(--borderColor) .5vw;
+	
+}
+.facStageWrapper{
+    flex: 0 0 65%;
 	border-bottom:  solid  var(--borderColor) .5vw;
 }
 /*********  stage boxes  **********/
@@ -119,9 +125,7 @@
 /*********  stats boxes  *************/
 .statsWrapper{
 	flex: 0 0 4%;
-	border-bottom:  solid  var(--borderColor);
-	border-bottom-width: .5vw;
-	
+	border-bottom:  solid  var(--borderColor) .5vw;
 	display: flex;
 	flex-flow: nowrap;
 	flex-direction: row;
@@ -133,6 +137,16 @@
 		color: var(--fontColor);
 	}
 
+.facDataWrapper{
+/*
+	position: absolute;
+	bottom: 30%;
+	left: 0;
+	right: 0;
+*/
+	flex: 1 1 20%;
+	z-index: 5;
+}
 /*********  chart boxes  ************/
 .chartWrapper {
 	flex: 1 0 0;
@@ -171,6 +185,18 @@
 	.legitem {
 		cursor: pointer;
 	}
+
+.inputTime{
+    max-width: 16%;
+/*    display: inline;*/
+    
+}
+.inputTime>span{
+    display:inline;
+}
+.inputTime>input{
+    display:inline;
+}
 
 /*    ******  Right Hand Side  *******    */
 .rightHandSideBox {
@@ -243,6 +269,13 @@
 	justify-content: space-around;
 	align-items: center;
 }
+.columnAroundStretch {
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: column;
+	justify-content: space-around;
+	align-items:stretch;
+}
 	
 /*   within slider formats  */
 	/*  spreadValues for #'s on scale and Input formats */
@@ -255,12 +288,13 @@
 	flex-direction: row;
 	justify-content: space-between;
 }
+
 .spreadValues span {
 	min-width: 1.5vw;
 	text-align: center;
 }
 input[type=checkbox],
-input[type=radio],
+/*input[type=radio],*/
 label {
 	height: 1vw;
 	cursor: pointer;
@@ -350,6 +384,23 @@ input[type=range]:focus::-ms-fill-lower {
 }
 input[type=range]:focus::-ms-fill-upper {
 	background: #2497E3;
+}
+input.inputTime{
+	padding: 0 0 0 0;
+/*	line-height: 2vw;*/
+	height: .9vw;
+	font-size: .9vw;
+}
+input[type="radio"]{
+	height: 1vw;
+	width: 1vw;
+}
+
+
+.facepart{
+	font-size: 1.2vw;
+	min-width: 6vw;
+	line-height: 1.1vw;
 }
 
 	
