@@ -134,8 +134,8 @@ anim.person = {
 		right: anim.stage.width * 1.1,
 		headQueue: anim.stage.width * 0.7,
 		scanner: anim.stage.width * 0.75,
-		pastScanner: anim.stage.width * .75,
-		top: 100,
+		pastScanner: anim.stage.width * .80,
+		top: 150,
 	}
 };
 anim.scannerDelta = {
@@ -170,6 +170,14 @@ function queDefine(){
 	anim.stage.backContext = document
 			.getElementById('backgroundque')
 			.getContext('2d');
+    
+    const tsaAgent = document.getElementById("tsaAgent");
+    anim.stage.backContext
+        .drawImage(tsaAgent, anim.person.path.headQueue+10,
+                   30, 80, 100);
+    
+    
+    
 	que.stage = anim.stage;
 	gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height);
@@ -265,22 +273,6 @@ function captureChangeInSliderS(event) {
 
 		case 'speed':
 			que.adjustSpeed(idShort,v,speeds);
-//			const oldFramespeed = que.frameSpeed;
-//			que.frameSpeed = speeds[v].time;
-//			que.graph.updateForSpeed(speeds[v].graph);
-//			que.itemCollection.updateForSpeed();
-//			document.getElementById(idShort + 'queDisplay')
-//				.innerHTML = speeds[v].time;
-//			if (oldFramespeed < 100 && que.frameSpeed > 100 ){
-//				if (que.isRunning){
-//					que.pause();
-//					que.play();
-//				}
-//				que.coverAnimation();
-//			} else if (oldFramespeed > 100 
-//					   && que.frameSpeed < 100){
-//				que.uncoverAnimation();
-//			}
 			break;
 		case 'none':
 		case 'play':
@@ -361,8 +353,8 @@ const animForWalkOffStage = {
 	start: function (person) {
 		person.addPath({
 			t: que.now + 50 / anim.stage.normalSpeed,
-			x: 800,
-			y: 100
+			x: anim.person.path.pastScanner,
+			y: anim.person.path.top
 		});
 		person.addPath({
 			t: que.now + this.walkingTime - 50 / anim.stage.normalSpeed,
@@ -400,7 +392,7 @@ const animForTSA = {
 		c.lineWidth = 5;
 		c.beginPath();
 		for (let k = 0; k < numMachines; k++) {
-			c.strokeRect(locX - 28, locY - 15, 55, 100);
+			c.strokeRect(locX - 28, locY - 15, 55, anim.person.height*1.4);
 			animForTSA.machLoc[k] = {
 				x: locX,
 				y: locY
