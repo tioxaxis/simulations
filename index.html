@@ -64,7 +64,7 @@
 	<div class='leftHandSideBox' id='leftHandSideBox'>	
 	</div>
 
-	<div class='rightHandSideBox'>
+	<div class='rightHandSideBox' id='rightHandSideBox'>
 		<div class='slidersWrapper' id='slidersWrapper'>	</div>
 		<div class="scenariosPre"></div>
 		<div class='scenariosWrapper' id='scenariosWrapper'>
@@ -116,76 +116,90 @@
 	<canvas class="theStage background" id="background" width=1000 height=480></canvas>
 </div>
 
-<div class='facDataWrapper columnAroundStretch' id="facDataWrapper" >
-	<div class='rowBetweenCenter'>
-		<span class='facepart'>Face: </span>
-		<input  type='radio' name='face' id='face0' value='worker0' checked >
-		<input  type='radio' name='face' id='face1' value='worker1'>
-		<input  type='radio' name='face' id='face2' value='worker2'>
+<div class='facDataWrapper' id="facDataWrapper" >
+	   <div class='facepart'><u>Station:</u></div>
+       <div>  <u>1</u> </div>
+    <div>  <u>2</u> </div>
+    <div>  <u>3</u> </div>
+    <div>    <u>Processing Time</u> </div>
+    
+    
+    <div class='facepart'>Face: </div>
+        <div><input  type='radio' name='face' id='face0' value='worker0' checked ></div>
+        <div><input  type='radio' name='face' id='face1' value='worker1'></div>
+        <div><input  type='radio' name='face' id='face2' value='worker2'></div>
         <div class='inputTime'>
-            <span id='faceTimeDisplay'>1</span>
-            <input id='faceTime' aria-controls=""value='1'  type='range' 
+            
+            <input id='faceTime' value='1'  type='range' 
                min='1' max='9' step='1'  >
+            <span id='faceTimeDisplay'>1</span>
         </div>
-	</div>
-	<div class='rowBetweenCenter'>
-		<span class='facepart'>Eyes: </span> 
-		<input  type='radio' name='eyes' id='eyes0' value='worker0' >
-		<input  type='radio' name='eyes' id='eyes1' value='worker1' checked>
-		<input  type='radio' name='eyes' id='eyes2' value='worker2'>
+	
+        <div class='facepart'>Eyes:</div> 
+        <input  type='radio' name='eyes' id='eyes0' value='worker0' >
+        <input  type='radio' name='eyes' id='eyes1' value='worker1' checked>
+        <input  type='radio' name='eyes' id='eyes2' value='worker2'>
         <div class='inputTime'>
-            <span id='eyesTimeDisplay'>2</span>
+            
             <input id='eyesTime' value='2' type='range' 
                min='1' max='9' step='1'  >
+            <span id='eyesTimeDisplay'>2</span>
         </div>
-	</div>
-	<div class='rowBetweenCenter'>
-		<span class='facepart'>Nose: </span> 
-		<input  type='radio' name='nose' id='nose0' value='worker0' >
-		<input  type='radio' name='nose' id='nose1' value='worker1' checked>
-		<input  type='radio' name='nose' id='nose2' value='worker2'>
+	
+        <span class='facepart'>Nose: </span> 
+        <input  type='radio' name='nose' id='nose0' value='worker0' >
+        <input  type='radio' name='nose' id='nose1' value='worker1' checked>
+        <input  type='radio' name='nose' id='nose2' value='worker2'>
         <div class='inputTime'>
-            <span id='noseTimeDisplay'>1</span>
+            
             <input id='noseTime' value='1' type='range' 
                min='1' max='9' step='1'  >
+            <span id='noseTimeDisplay'>1</span>
         </div>
-	</div>
-	<div class='rowBetweenCenter'>
-		<span class='facepart'>Ears: </span>
-		<input  type='radio' name='ears' id='ears0' value='worker0' >
-		<input  type='radio' name='ears' id='ears1' value='worker1' checked>
-		<input  type='radio' name='ears' id='ears2' value='worker2'>
+	
+	    <span class='facepart'>Ears: </span>
+        <input  type='radio' name='ears' id='ears0' value='worker0' >
+        <input  type='radio' name='ears' id='ears1' value='worker1' checked>
+        <input  type='radio' name='ears' id='ears2' value='worker2'>
         <div class='inputTime'>
-            <span id='earsTimeDisplay'>2</span>
+            
             <input id='earsTime' value='2' type='range' 
                min='1' max='9' step='1'  >
+            <span id='earsTimeDisplay'>2</span>
         </div>
-	</div>
-	<div class='rowBetweenCenter'>
-		<span class='facepart'>Mouth: </span> 
-		<input  type='radio' name='mout' id='mout0' value='worker0' >
-		<input  type='radio' name='mout' id='mout1' value='worker1' checked>
-		<input  type='radio' name='mout' id='mout2' value='worker2'>
+	
+        <span class='facepart'>Mouth: </span> 
+        <input  type='radio' name='mout' id='mout0' value='worker0' >
+        <input  type='radio' name='mout' id='mout1' value='worker1' checked>
+        <input  type='radio' name='mout' id='mout2' value='worker2'>
         <div class='inputTime'>
-            <span id='moutTimeDisplay'>1</span>
+            
             <input id='moutTime' value='1' type='range' 
                min='1' max='9' step='1'  >
+            <span id='moutTimeDisplay'>1</span>
         </div>
-	</div>
-	<div  class='rowBetweenCenter'>
+	
 		<span class='facepart'>Hair: </span> 
-		<input  type='radio' name='hair' id='hair0' value='worker0'>
-		<input  type='radio' name='hair' id='hair1' value='worker1'>
-		<input  type='radio' name='hair' id='hair2' value='worker2' checked>
+        <input  type='radio' name='hair' id='hair0' value='worker0'>
+        <input  type='radio' name='hair' id='hair1' value='worker1'>
+        <input  type='radio' name='hair' id='hair2' value='worker2' checked>
         <div class='inputTime'>
-            <span id='hairTimeDisplay'>2</span>
+            
             <input id='hairTime' value='2' type='range' 
                min='1' max='9' step='1'  >
+            <span id='hairTimeDisplay'>2</span>
         </div>
+    
+    <span class='facepart'>Number: </span> 
+        <input  type='number' name='quantity' id='quantity0' value='1'
+               min='1' max='3' step='1'>
+        <input  type='number' name='quantity' id='quantity1' value='1'
+               min='1' max='3' step='1'>
+        <input  type='number' name='quantity' id='quantity2' value='1' 
+               min='1' max='3' step='1'>
 	</div>
 	
-	</div>
-
+	
 
 <!--	****** wrapper for stats section-->
 <div class='statsWrapper'  id='statsWrapper' ></div>
@@ -198,6 +212,14 @@
 	</div>
 	<div class='chartLegend rowAroundCenter' id='chartLegend'></div>
 </div>
+    
+<div class='dualChartWrapper' id='dualChartWrapper'>
+    <div class='dualChartTitle legitem' id='leg0'>Flow Time</div>
+    <div class='dualChart' id='dualChart'>
+        <canvas  class="chartCanvas" id="chart" width='1400' height='500'></canvas>
+    </div>
+    <div class='dualChartTitle legitem' id='leg1'>Throughput</div>
+    </div>
 </div>   <!--	****** end of generic pieces-->
 	
 	

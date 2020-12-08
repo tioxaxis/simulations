@@ -38,7 +38,7 @@ import {
 from "../mod/graph.js";
 class QueueGraph extends TioxGraph {
 	constructor(omConcept){	
-		super(omConcept, .3, {width:10, step:2}, d=>d.t);
+		super(omConcept,'chartCanvasque', 40, {width:10, step:2}, d=>d.t);
 		this.setTitle('Waiting Time');
 		this.setupLine(0, d => d.i, cbColors.blue,
 					   false, true, 5, 10);
@@ -348,7 +348,8 @@ const animForWalkOffStage = {
 	walkingTime: Math.abs(anim.person.path.scanner 
 		- anim.person.path.right) / anim.stage.normalSpeed,
 
-	start: function (person) {
+	reset: function(){},
+    start: function (person) {
 		person.addPath({
 			t: que.now + 50 / anim.stage.normalSpeed,
 			x: anim.person.path.pastScanner,

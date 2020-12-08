@@ -198,14 +198,18 @@ export class OmConcept {
 		let deltaSimuTime = deltaRealTime * this.frameSpeed;
 		this.frameNow += deltaSimuTime;
 
+        
 		let theTop;
 		while ((theTop = this.heap.top()) &&
 				theTop.time <= this.frameNow) {
 			const event = this.heap.pull();
+//            console.log('top',theTop,event);
 			// event on heap is {time: ,proc: ,item: }
 			this.now = event.time;
+//            console.log('eventFrame',event.time);
 			event.proc(event.item);
 		}
+//        console.log('out of while loop', this.frameNow);
 		this.now = this.frameNow;
 		this.clearStageForeground();
 		this.itemCollection.moveDisplayAll(deltaSimuTime);

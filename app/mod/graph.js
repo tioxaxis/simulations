@@ -44,20 +44,22 @@ var dxlcount = 0;
 
 
 export class TioxGraph {
-	constructor (omConcept, ratio, xWidthStep, xAccess ){
+	constructor (omConcept, domElem, fontSize, xWidthStep, xAccess, hasRight = false ){
 		this.omConcept = omConcept;
-		this.ctx = document.getElementById(
-			'chartCanvas' + this.omConcept.key).getContext('2d');
-		this.fontSize = 40;
+		this.ch = document.getElementById(domElem);
+        this.ctx = document.getElementById(domElem).getContext('2d');
+		this.fontSize = fontSize;
 		
 		this.extraLine = {width: 15, origWidth: 15};
 		this.xWidthStep = xWidthStep;
 		this.xAccess= xAccess;
 		this.lineInfo = [];
+        this.hasRight = hasRight;
 		
-		this.outer= {width: 2000, height: 2000*ratio}
+		this.outer= {width: this.ch.width, height: this.ch.height}
 		this.margin = {top: this.fontSize, bot: this.fontSize*3/2,
-					   left: this.fontSize*3, right:this.fontSize}
+					   left: this.fontSize*3, 
+                       right:this.fontSize * (this.hasRight ? 3 : 1)}
 		this.inner = 
 			{top: this.margin.top, 
 			 bot: this.outer.height-this.margin.bot,
@@ -68,50 +70,66 @@ export class TioxGraph {
 		
 	}
 	
-	reset(yMax){
+	reset(yMax, yMaxRight = null){
 		this.data = [];
 		//make copy of table
 		this.table = [...[
 			{
-				max: 1.0,
-				step: 0.2
-			},
-			{
-				max: 1.5,
-				step: 0.5
+				max: 1.2,
+				step: 0.3
 			},
 			{
 				max: 2,
 				step: 0.5
 			},
 			{
-				max: 3,
-				step: 1.0
-			},
-			{
 				max: 4,
 				step: 1
 			},
 			{
-				max: 5,
-				step: 1
-			},
-			{
 				max: 6,
-				step: 2
+				step: 1.5
 			},
 			{
 				max: 8,
 				step: 2
 			}
 		]];
-		this.xInfo = {min: 0, max: this.xWidthStep.width,
+        this.tableRight = [...[
+			{
+				max: 1.2,
+				step: 0.3
+			},
+			{
+				max: 2,
+				step: 0.5
+			},
+			{
+				max: 4,
+				step: 1
+			},
+			{
+				max: 6,
+				step: 1.5
+			},
+			{
+				max: 8,
+				step: 2
+			}
+		]];
+		this.xInfo = {min: 0, 
+                      max: this.xWidthStep.width,
 					  step: this.xWidthStep.step,
 					  width: this.xWidthStep.width,
 					  lastX: 0, scale: 1};
-		this.yInfo = {min:0, max: this.table[0].max,
-					 step: this.table[0].step};
-		this.updateYaxis(yMax);
+		this.yInfo = {min:0, 
+                      max: this.table[0].max,
+					  step: this.table[0].step};
+        this.yInfoRight = {min:0, 
+                      max: this.tableRight[0].max,
+					  step: this.tableRight[0].step};
+		this.updateYaxis(yMax)
+        if( yMaxRight ) this.updateYaxisRight(yMaxRight);
 		for( let info of this.lineInfo ){
 			info.last ={x:null, y: null}
 		}
@@ -171,9 +189,13 @@ export class TioxGraph {
 		return ( (x-this.xInfo.min) / (this.xInfo.max - this.xInfo.min) ) 
 			* (this.inner.right - this.inner.left) + this.inner.left;
 	};
-	yScale (y){
-		return (1- (y-0) / (this.yInfo.max - 0) )  * (this.inner.bot - this.inner.top) + this.inner.top;
+	yScale (y, bool){
+		const max = (bool ? this.yInfoRight.max: this.yInfo.max);
+        return (1- (y-0) / (max - 0) )  * (this.inner.bot - this.inner.top) + this.inner.top;
 	};
+//    yScaleRight (y){
+//		return (1- (y-0) / (this.yInfoRight.max - 0) )  * (this.inner.bot - this.inner.top) + this.inner.top;
+//	};
 	scaleXaxis(scale){
 		if ( scale == this.xInfo.scale ) return false;
 		horizontalScaleAxis(scale, this.xInfo);
@@ -209,6 +231,11 @@ export class TioxGraph {
 		this.yInfo = verticalAxis(y,this.table);
 		return true; 
 	};
+    updateYaxisRight(y){
+		if ( y <= this.yInfoRight.max ) return false;
+		this.yInfoRight = verticalAxis(y,this.tableRight);
+		return true; 
+	};
 	
 		
 	cleargraph(){
@@ -237,16 +264,26 @@ export class TioxGraph {
 			this.ctx.fillText(roundedX, xg, this.inner.bot + delta);
 		}
 		
-		//y-axis
-		this.ctx.textAlign = 'right';
+		//y-axis (if hasRight then also draw the right hand side Yaxis)
+        // loop increments through both y scales
+		
 		this.ctx.textBaseline ='middle';
-		for( let y = this.yInfo.min; y <= this.yInfo.max;
-			y += this.yInfo.step ) {
+        for( let y = this.yInfo.min, yRight = this.yInfoRight.min;
+            y <= this.yInfo.max;  
+            y += this.yInfo.step, yRight += this.yInfoRight.step ) {
 			let yg = this.yScale(y);
 			this.ctx.moveTo(this.inner.left - delta, yg);
-			this.ctx.lineTo( this.inner.right, yg);
+			const xRight =  this.inner.right + (this.hasRight ? delta : 0);
+            this.ctx.lineTo(xRight, yg);
 			let roundedY = Math.round(y*1000)/1000;
-			this.ctx.fillText(roundedY, this.inner.left - delta, yg );
+			this.ctx.textAlign = 'right';
+            this.ctx.fillText(roundedY, this.inner.left - delta, yg );
+            if( this.hasRight) {
+                let roundedYRight = Math.round(yRight*1000)/1000;
+                this.ctx.textAlign = 'left';
+                this.ctx.fillText(roundedYRight, xRight, yg);
+                
+            }
 		}
 		
 		this.ctx.closePath();
@@ -292,12 +329,13 @@ export class TioxGraph {
 	};
 	
 	setupLine (k, yAccess, color, vertical,
-				visible, lineWidth, dotSize) {
+				visible, lineWidth, dotSize, right = false) {
 		this.lineInfo[k] = {
 			yAccess: yAccess, color: color,
 			vertical: vertical, visible: visible, 
 			lineWidth: lineWidth, origLineWidth: lineWidth,
 			dotSize: dotSize, origDotSize: dotSize,
+            right: right,
 			last: {x:null,y:null} };
 	};
 	
@@ -310,44 +348,46 @@ export class TioxGraph {
 
 		for( let info of this.lineInfo ) {
 			if( !info.visible ) continue;
-			this.ctx.lineWidth = info.lineWidth;
-			this.ctx.strokeStyle = 
-					this.ctx.fillStyle = info.color;
+            let ctx = this.ctx;
+			ctx.lineWidth = info.lineWidth;
+			ctx.strokeStyle = 
+					ctx.fillStyle = info.color;
 			let last = {x:null, y: null};
-			this.ctx.beginPath();
+			ctx.beginPath();
 			
 			for (let  p of this.data ){
 				let cur = {x: this.xAccess(p),
-								y: info.yAccess(p)};
+				        y: info.yAccess(p)};
 				if( cur.y == undefined) continue;
-				if( last.y == null ) {  //handles first point.
-					this.ctx.moveTo( 
-							this.xScale(cur.x),
-							this.yScale(cur.y));
 
-				} else {
-					if(info.vertical) {
-						this.ctx.lineTo( 
-								this.xScale(cur.x),
-								this.yScale(last.y));
-					}
-					if( cur.y != null ) {
-						this.ctx.lineTo( 
-								this.xScale(cur.x),
-								this.yScale(cur.y));
-						this.ctx.stroke();
-					}
-				}
+                if( last.y == null ) {  //handles first point.
+                        ctx.moveTo( 
+                            this.xScale(cur.x),
+                            this.yScale(cur.y, info.right));
 
-				if( cur.y != null && info.dotSize > 0) {
-					this.ctx.beginPath();
-					this.ctx.arc(this.xScale(cur.x),
-						this.yScale(cur.y), info.dotSize,
-							0,2*Math.PI, true);
-					this.ctx.fill();
-					this.ctx.stroke();
-				}
-				last = cur;
+                } else {
+                    if(info.vertical) {
+                        ctx.lineTo( 
+                           this.xScale(cur.x),
+                           this.yScale(last.y, info.right));
+                    }
+                    if( cur.y != null ) {
+                        ctx.lineTo( 
+                                this.xScale(cur.x),
+                                this.yScale(cur.y, info.right));
+                        ctx.stroke();
+                    }
+                }
+
+                if( cur.y != null && info.dotSize > 0) {
+                    ctx.beginPath();
+                    ctx.arc(this.xScale(cur.x),
+                        this.yScale(cur.y, info.right), info.dotSize,
+                            0,2*Math.PI, true);
+                    ctx.fill();
+                    ctx.stroke();
+                }
+                last = cur;
 			}
 		}
 		this.ctx.restore();   // removes the clip path
@@ -357,14 +397,18 @@ export class TioxGraph {
 		//either p.x or one of p.y is out of bounds 
 		// update axes and redraw all the graph up to point p
 		let y = 0;
+        let yRight = 0;
 		let x = this.xAccess(p);
 		for( let info of this.lineInfo ){
 			let v = info.yAccess(p);
-			if (v != undefined) y = Math.max(y,v);
+			if (v != undefined)
+                if (info.right) yRight = Math.max(yRight,v);
+                else y = Math.max(y,v);
 		}
 		let bool1 = this.shiftXaxis(x,1);
 		let bool2 = this.updateYaxis(y);
-		if( bool1 || bool2 ) {
+        let bool3 = this.updateYaxisRight(yRight);
+		if( bool1 || bool2 || bool3) {
 			this.setupThenRedraw();
 		};
 	};
@@ -372,48 +416,49 @@ export class TioxGraph {
 	drawOnePoint(p){
 		this.checkBounds(p);
 		this.data.push(p);
+        const ctx = this.ctx;
 //		console.log('in draw one',p);
 		for( let info of this.lineInfo ) {
 //			console.log(' in one draw color=',info.color);
 		  let cur = {x: this.xAccess(p), y: info.yAccess(p)};
 		  if( info.visible ) {
-			this.ctx.lineWidth = info.lineWidth;
-			this.ctx.strokeStyle = 
-				this.ctx.fillStyle = info.color;
+			ctx.lineWidth = info.lineWidth;
+			ctx.strokeStyle = 
+				ctx.fillStyle = info.color;
 			
 			//if no data then skip it and keep last for next data point
 			if( cur.y === undefined) continue;
 			
 			//no previous point then skip drawing line
 			if( info.last.y != null ) {
-				this.ctx.beginPath();
+				ctx.beginPath();
 
-				this.ctx.moveTo( 
+				ctx.moveTo( 
 					this.xScale(info.last.x),
-					this.yScale(info.last.y));
+					this.yScale(info.last.y, info.right));
 
 				if(info.vertical) {
-					this.ctx.lineTo( 
+					ctx.lineTo( 
 						this.xScale(cur.x),
-						this.yScale(info.last.y));
+						this.yScale(info.last.y, info.right));
 				}
 				if( cur.y != null) {
-					this.ctx.lineTo( 
+					ctx.lineTo( 
 						this.xScale(cur.x),
-						this.yScale(cur.y));
-					this.ctx.stroke();
+						this.yScale(cur.y, info.right));
+					ctx.stroke();
 				}
 			}
 
 			if( cur.y != null && info.dotSize > 0 ) {
-				this.ctx.beginPath();
-				this.ctx.arc(this.xScale(cur.x),
-					this.yScale(cur.y), info.dotSize,
+				ctx.beginPath();
+				ctx.arc(this.xScale(cur.x),
+					this.yScale(cur.y, info.right), info.dotSize,
 					0,2*Math.PI, true);
 //				console.log('draw one',info.dotSize,
 //							cur.x,cur.y,this.ctx.lineWidth);
-				this.ctx.fill();
-				this.ctx.stroke();
+				ctx.fill();
+				ctx.stroke();
 			}
 		  }
 		  info.last = cur;

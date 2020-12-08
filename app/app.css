@@ -144,9 +144,14 @@
 	left: 0;
 	right: 0;
 */
-	flex: 1 1 20%;
-	z-index: 5;
-}
+	display: grid;
+    grid-template-columns: 20% 12% 12% 12% 40%; 
+    justify-content:end;
+    border-bottom: solid var(--fontColor) 1px;
+    padding: 1vw;
+    
+    flex: 1 1 20%;
+	}
 /*********  chart boxes  ************/
 .chartWrapper {
 	flex: 1 0 0;
@@ -176,7 +181,6 @@
 		left: 0;
 		width: 100%;
 		z-index: 0;
-	
 }
 	
 	.chartLegend{
@@ -185,17 +189,34 @@
 	.legitem {
 		cursor: pointer;
 	}
+.dualChartWrapper{
+   flex: 1 1 0;
+	
+	display: grid;
+    grid-template-columns: 15% 70% 15%; 
+}
+.dualChartTitle{
+    margin: auto;
+    font-size: 1.3vw;
+}
+.dualChart{
+		position: relative;
+		width: 100%;
+	}
+.dualChartCanvas{
+    border: solid green;
+}
 
 .inputTime{
-    max-width: 16%;
-/*    display: inline;*/
+    display: inline;
     
 }
 .inputTime>span{
-    display:inline;
+/*    display:inline;*/
 }
 .inputTime>input{
-    display:inline;
+/*    display:inline;*/
+    max-width: 8vw;
 }
 
 /*    ******  Right Hand Side  *******    */
@@ -399,7 +420,6 @@ input[type="radio"]{
 
 .facepart{
 	font-size: 1.2vw;
-	min-width: 6vw;
 	line-height: 1.1vw;
 }
 

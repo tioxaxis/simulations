@@ -45,7 +45,7 @@ import {
 from "../mod/graph.js";
 class InvGraph extends TioxGraph {
 	constructor(omConcept){
-		super(omConcept,.3, {width:24, step:6}, d=>d.t);
+		super(omConcept,'chartCanvasinv',40, {width:24, step:6}, d=>d.t);
 		this.predictedInvValue = null;
 		this.setTitle('Inventory');
 		this.setupLine(0, d => d.i, cbColors.blue,
@@ -465,7 +465,8 @@ const animForSeller = {
 const animForWalkOffStage = {
 	walkingTime: (anim.person.path.right - anim.person.path.left) / anim.stage.normalSpeed,
 
-	start: function (person) {
+	reset: function(){},
+    start: function (person) {
 		person.addPath({
 			t: inv.now + this.walkingTime,
 			x: anim.person.path.left,

@@ -26,6 +26,8 @@ export const cbColors = {
 	red: 'rgb(220,38,127)',
 	orange: 'rgb(254,97,0)',
 	yellow: 'rgb(255,176,0)',
+    black: 'rgb(0,0,0)',
+    lightYellow: 'rgb(255, 230, 175)',
 	
 	
 };
@@ -105,6 +107,9 @@ export class DeterministicRV {
 	observe() {
 		return this.mean;
 	}
+    setMean( mean ){
+        this.mean = mean;
+    }
 }
 
 export class Heap {

@@ -39,7 +39,7 @@ from "../mod/graph.js";
 class NVGraph extends TioxGraph {
 	constructor(omConcept){
 		
-		super(omConcept,.3, {width:12, step:3}, d=>d.t);
+		super(omConcept,'chartCanvasnvp',40, {width:12, step:3}, d=>d.t);
 		this.totalCost = 0;
 		this.setTitle('$ of cost per day');
 		
@@ -355,7 +355,8 @@ const animForQueue = {
 const animForWalkOffStage = {
 	walkingTime: (anim.person.path.right - anim.person.path.left) / anim.stage.normalSpeed,
 
-	start: function (person) {
+	reset: function(){},
+    start: function (person) {
 		person.addPath({
 			t: nvp.now +
 				this.walkingTime,

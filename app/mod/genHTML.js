@@ -170,5 +170,75 @@ export function addKeyForIds(key,node){
 		let keyPage = document.getElementById(key);
 		keyPage.innerHTML = page.innerHTML;
 	}
+    
+    class NumSlider{
+        constructor (id, precision, min, max, step, displayNames){
+           this.id = id;
+            this.precision = precision;
+            this.min = min;
+            this.max = max;
+            this.step = step;
+            
+        }
+        userUpdate(event){};
+        get(){
+             return document.getElementById(this.id).value;
+        };
+        set(){
+            const elem = document.getElementById(this.id);
+            elem.value = v;
+            const disp = document.getElementById(this.id+'Display');
+            disp.innerHTML = v.toFixed(this.precision);
+        };
+        
+        
+    };
+    function htmlNumSlider(slider, displayText,initial,sliderValues){};
+
+    export class ArbSlider{
+        constructor (id, displayValues, values ){
+            this.id = id;
+            this.displayValues = diaplayValues;
+            this.values = values;
+            
+        };
+        
+        userUpdate(event){};
+        get() {
+            return this.values[document.getElementById(this.id).value];
+        };
+        set(index){
+            const elem = document.getElementById(this.id);
+            elem.value = index;
+            const disp = document.getElementById(this.id+'Display');
+            disp.innerHTML = this.displayValues[index];
+            
+        };
+
+
+    };
+    export function htmlArbSlider(slider, displayText,
+                                   initial, sliderValues){
+        const sp = document.createElement('span');
+		sp.id = slider.id + 'Display';
+		sp.append(this.displayValues[initial]);
+		const disp = document.createElement('div');
+		disp.append(displayText,sp);
+				
+		const vals = document.createElement('div');
+		vals.className = 'spreadValues';
+		for( let v of sliderValues){
+            let s = document.createElement('span');
+			s.append(v);
+			vals.append(s);
+		}
+		
+		const d = document.createElement('div');
+		d.className = "sliderBox columnAroundCenter";
+		d.append(disp, 
+		  genRange(slider.id,initial,0,slider.values.length-1,1), vals);
+		return d;
+    };
+
 	
 	

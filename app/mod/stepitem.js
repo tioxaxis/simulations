@@ -50,6 +50,10 @@ export class Queue {
 		this.previousMachine = previousMachine;
 		this.nextMachine = nextMachine;
 	};
+    
+    setMaxSeats( n ){
+        this.maxSeats = n;
+    }
 
 	reset() {
 		this.q = [];
@@ -128,7 +132,9 @@ export class WalkAndDestroy {
 		this.lastAdded = null;
 	};
 
-	reset() {};
+	reset() {
+        this.animFunc.reset();
+    };
 
 	push(person) {
 		// insert into end of doubly linked list
@@ -155,7 +161,7 @@ export class WalkAndDestroy {
 //   MACHINE CENTER         
 export class MachineCenter {
 	constructor(omConcept, name, numMachines, procTime,
-		previousQ, nextQ,
+		previousQueue, nextQueue,
 		animFunc,
 		recordStart = null, recordFinish = null) {
 		this.omConcept = omConcept;
@@ -164,11 +170,12 @@ export class MachineCenter {
 		this.numberBusy = 0;
 		this.procTime = procTime;
 
-		this.previousQ = previousQ;
-		this.nextQ = nextQ;
+		this.previousQueue = previousQueue;
+		this.nextQueue = nextQueue;
 		this.animFunc = animFunc;
 		this.recordStart = recordStart;
 		this.recordFinish = recordFinish;
+        this.leaveEarly = null;
 
 		this.machs = [];
 		// setup machines if finite number with positions offset by dx,dy
@@ -188,7 +195,12 @@ export class MachineCenter {
 		this.numberBusy = 0
 	};
 
-	getAverageProcTime() {
+	setNumMachines( numMachines){
+        this.numMachines = numMachines;
+    };
+    
+    
+    getAverageProcTime() {
 		return this.procTime.mean;
 	};
 
@@ -216,10 +228,15 @@ export class MachineCenter {
 
 	start(machine) {
 		let theProcTime = this.procTime.observe();
-		const person = this.previousQ.pull(theProcTime);
+//		console.log('start of machine',this.name,' proctime=',theProcTime,
+//                   'now=',this.omConcept.now);
+        const person = this.previousQueue.pull(theProcTime);
+        
 
 		if (person) {
-			if (this.animFunc) {
+//			console.log('start of machine',this.name,' person ', person.which,
+//                       'person xcoord', person.cur.x);
+            if (this.animFunc) {
 				this.animFunc.start(theProcTime, person, machine.index);
 			}
 			person.machine = machine;
@@ -232,6 +249,15 @@ export class MachineCenter {
 				proc: this.finish.bind(this),
 				item: machine
 			});
+            
+            if( this.leaveEarly ){
+                this.omConcept.heap.push({
+                    time: this.omConcept.now + theProcTime - this.leaveEarly,
+				    type: 'leave/' + this.name,
+				    proc: this.leave.bind(this),
+				    item: machine
+                })
+            }
 
 			if (this.recordStart) this.recordStart(person);
 			this.numberBusy++;
@@ -240,12 +266,27 @@ export class MachineCenter {
 			person.behind = null;
 		};
 	};
+    
+    leave(machine){
+        machine.person.success = this.nextQueue.push(machine.person);
+        this.animFunc.leave(machine.person);
+    }
 
 	finish(machine) {
-		let success = this.nextQ.push(machine.person);
-		if (success) {
-			if (this.recordFinish) this.recordFinish(machine.person);
-			if (this.animFunc) this.animFunc.finish(machine.person);
+		if (this.recordFinish) this.recordFinish(machine.person);
+        if (this.animFunc) this.animFunc.finish(machine.person);
+        
+        //note bene  the two previous steps must happen first for face game
+        // to correctly account for completion time before WalkandDestroy
+        // marks the flow time for process
+        let success;
+        if( !this.leaveEarly ){
+            success = this.nextQueue.push(machine.person);
+        } else {
+            success = machine.person.success;
+        }
+        if (success) {
+			
 			machine.status = 'idle';
 			machine.person = null;
 			this.start(machine);
@@ -254,7 +295,8 @@ export class MachineCenter {
 		}
 		this.numberBusy--;
 	};
-
+    
+    
 }; //end class MachineCenter
 
 // INFINITE MACHINE CENTER
@@ -342,6 +384,7 @@ export class ItemCollection extends Array {
 		this.splice(0, this.length);
 	};
 	moveDisplayAll(deltaSimuTime) {
+//        console.log('movedisplayAll #ofItems=',this.length)
 		this.forEach(p => p.moveDisplayWithPath(deltaSimuTime))
 	}
 	updatePositionAll(){
@@ -395,8 +438,12 @@ export class Item {
 				this.cur.t = path.t;
 				this.cur.x = path.x;
 				this.cur.y = path.y;
+//                console.log('about to delete pathList',path.t,path.x);
 				this.pathList.splice(0, 1);
 				deltaSimuT = Math.max(0, this.omConcept.now - path.t);
+////                console.log('card', this.which, this.omConcept.now, 
+//                            'path t',path.t, 'cur.t', this.cur.t,
+//                           'x=',this.cur.x);
 			} else {
 				this.cur.t = this.omConcept.now;
 				this.cur.x += path.speedX * deltaSimuT;
@@ -413,8 +460,9 @@ export class Item {
 			};
 		};
 
-		this.graphic.moveTo(this.cur.x, this.cur.y);
-		this.graphic.draw();
+//		console.log('drawing one item at ',this.cur.x,this.cur.y);
+        this.graphic.moveTo(this.cur.x, this.cur.y);
+		this.draw();
 	};
 	
 	updatePosition(){
@@ -444,7 +492,7 @@ export class Item {
 		};
 
 		this.graphic.moveTo(this.cur.x, this.cur.y);
-		this.graphic.draw();
+		this.draw();
 	};
 		
 	
@@ -521,7 +569,7 @@ export class Item {
 		if (a) a.behind = b;
 	};
 	draw() {
-		this.graphic.draw();
+		this.graphic.draw(this.omConcept.now);
 	}
 }; // end of class Item
 

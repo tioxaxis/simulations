@@ -40,7 +40,7 @@ import {
 from "../mod/graph.js";
 class LittleGraph extends TioxGraph {
 	constructor(omConcept){
-		super(omConcept,.3, {width:20, step:5}, d=>d.t);
+		super(omConcept,'chartCanvaslit',40, {width:20, step:5}, d=>d.t);
 		this.predictedInvValue = null;
 		this.setTitle('Inventory');
 		this.setupLine(0, d => d.i, cbColors.blue,
@@ -307,7 +307,8 @@ const animForWalkOffStage = {
 	loc: {x: anim.person.path.right, y: anim.person.path.top},
 	walkingTime: Math.abs(anim.person.path.exit - anim.person.path.right) / anim.stage.normalSpeed,
 
-	start: function (person) {
+	reset: function(){},
+    start: function (person) {
 		person.addPath({
 			t: lit.now +
 				theSimulation.walkOffStage.walkingTime,
