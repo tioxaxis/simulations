@@ -106,7 +106,7 @@ const anim = {};
 var gSF;
 
 const tioxTimeConv = 1000; 
-const moveTime = 0.25 * tioxTimeConv;  //.25 seconds;
+const moveTime = 0.50 * tioxTimeConv;  //.25 seconds;
 
 const speeds = [{time:1, display:'1x', graph:1, anim:true},
 				{time:2, display:'2x', graph:1, anim:true},
@@ -120,7 +120,7 @@ const qlengths = [{qlen: 3, display: 3},
                   {qlen: 10, display: 10},
                   {qlen: -1, display: '∞'}];
 anim.stage = {
-	normalSpeed: .5, 
+	normalSpeed: .2, 
 	width: 1000,
 	height: 480
 };
@@ -232,13 +232,9 @@ function localReset () {
 	// schedule the initial Person to arrive and start the simulation/animation.
 	theSimulation.supply.previous = null;
 	theSimulation.creator.knockFromPrevious();
-
-	//fudge to get animation started quickly
-//	let t = fac.heap.top().time - 1;
 	fac.now = fac.frameNow = 0;
     computeStageTimes(fac.stageTimes, fac.features);
 
-    
     //link the queues and machines to only include machines with 
     // procTime > 0.
     let previousMachine = theSimulation.constructor;
@@ -291,47 +287,47 @@ function computeStageTimes(stageTimes,features){
     };
     for(let s = 0; s < 3; s++){
         let total = 0;
-        let firstF = null;
-        let lastF = null;
+        let count = 0;
         for(let f in features){
            
             const c = document.getElementById(f + s).checked;
-           if (c) {
-               if( !firstF ) firstF = f;
-                lastF = f;
+            if (c) {
                features[f].stage = s;
+               count++;
                total += features[f].time;
-           }   
-        }
-        if( firstF ) features[firstF].time -= moveTime;
-        if( lastF ) features[lastF].time -= moveTime;
-//        total -= moveTime ;
+            }   
+        };
         stageTimes[s].setMean(total);
         
-       } 
-    if( stageTimes[0].mean != 0 ){
-        fac.creatorTime.setMean( stageTimes[0].mean /
-            document.getElementById('quantity0').value);
-        animForCreator.left = anim.queue[0].left;
-        animForCreator.top = anim.queue[0].top;
-    }
-    else if ( stageTimes[1].mean != 0 ){
-        fac.creatorTime.setMean( stageTimes[1].mean /
-         document.getElementById('quantity1').value);
-        animForCreator.left = anim.queue[1].left;
-        animForCreator.top = anim.queue[1].top;
-    }
-    else if ( stageTimes[2].mean != 0 ){
-        fac.creatorTime.setMean( stageTimes[2].mean /
-           document.getElementById('quantity2').value);
-        animForCreator.left = anim.queue[2].left;
-        animForCreator.top = anim.queue[2].top;
-    }
-    else { alert ('no positive process times');
-         debugger}
-//   console.log('here are the stageTimes:', fac.creatorTime.mean, stageTimes[0].observe(),
-//              stageTimes[1].observe(),stageTimes[2].observe()) 
+        // adjust the feature time by stage to remove the movetime.
+        let delta =  moveTime/count;
+        for(let f in features){
+            if( features[f].stage == s) features[f].time -= delta;
+        };
+    };
+    
+    //determine the first and last stage with non-zero procTime
+    fac.firstStage = null;
+    for( let i = 0; i < 3; i++)
+        if( fac.stageTimes[i].mean != 0 ){
+            fac.firstStage = i;
+            break;
+        }
+    fac.lastStage = null;
+    for( let i = 2; i >=0; i--)
+        if( fac.stageTimes[i].mean != 0 ){
+            fac.lastStage = i;
+            break;
+        }
+    
+    // set creator rate and movement based on first stage with nonzero proctime
+    const k = fac.firstStage;
+    fac.creatorTime.setMean( stageTimes[k].mean /
+    document.getElementById('quantity'+k).value); 
+    animForCreator.left = anim.queue[k].left;
+    animForCreator.top = anim.queue[k].top;
 }
+
 function captureChangeInFacData(event){
     let inputElem = event.target.closest('input');
 	if (!inputElem) return
@@ -430,7 +426,7 @@ class AnimForQueue  {
     
     join(len, aT, card ) {
 		const point = this.relCoord(this.queue.q.length);
-		const walkingTime = /*(len == 0 ? 250 : */Math.max(
+		const walkingTime = Math.max(
             this.left + point.x - card.cur.x, 
             this.top + point.y - card.cur.y) / anim.stage.normalSpeed;
         const arrivalTime = fac.now + walkingTime;
@@ -439,25 +435,15 @@ class AnimForQueue  {
 			x: this.left + point.x,
 			y: this.top + point.y
 		});
-//         ('setting an arrival at time', arrivalTime);
-//        console.log('for location',this.left + point.x,this.top + point.y )
-//        debugger;
-        
 	};
     
     reset() {};
 
 	arrive (nSeatsUsed, card) {
-//        console.log('card arrived at queue',this.which,
-//                   'now=',fac.now, 'card xcoord',card.cur.x);
-		//		may not need to displau number document.getElementById('nInQueue').innerHTML = 
-        //			theSimulation.nInQueue ;
 	};
 
 	leave (procTime, nSeatsUsed) {
 		if (this.queue.q.length == 0) return null;
-//		let card = this.queue.q.shift();
-
 		let n = this.queue.q.length;
         for (let k = 0; k < n; k++) {
             let card = this.queue.q[k];
@@ -468,32 +454,25 @@ class AnimForQueue  {
                 y: this.top + point.y
             });
         };
-//        return card;
     }
 };
 
 const animForWalkOffStage = {
     walkingTime: 2000,
 	reset: function () {
-        this.count = 0;
-        this.timeFirstThru = null;
+        
+       
     },
 	start: function (card) {
         
-        let thruput = null;
-        if( this.timeFirstThru ){
-            this.count++;
-            thruput = this.count/(fac.now - this.timeFirstThru);
-        } else {
-            this.timeFirstThru = fac.now
-        } 
+        
 //        console.log('now=',fac.now,'about to graph', card.which);
-        fac.graph.push(fac.now, card.flowTime, thruput )
+        
         
         
          card.updatePath({
-                t: fac.now + moveTime,
-                x: card.cur.x+anim.card.width,
+                t: fac.now + anim.card.width*2/anim.stage.normalSpeed,
+                x: card.cur.x+anim.card.width*2,
                 y: card.cur.y
          });
         card.addPath({
@@ -518,85 +497,101 @@ const animForCreator = {
     },
 	finish: function (card) {
         card.arrivalTime = fac.now;
-//        console.log('now', fac.now, 'finished creator', card.which);
-         
     },
 };
 class animForWorker {
-    constructor(which, machineCenter,left,top) {
+    constructor(which) {
         this.which = which;
-        this.machineCenter = machineCenter;
-        this.top = top;
-        this.left = left;
+        this.machineCenter = null;
+        this.top = anim.card.path.top;
+        this.mid = (anim.worker[which].right + anim.worker[which].left)/2;
+        this.left = this.mid - 0.5 * anim.GWorker.width ;
+        this.leftCard = anim.worker[which].left;
         this.deltaY = anim.GWorker.height + 30;
-        this.lastExit = null;
+        this.lastNumber = 0;
+        this.lastStatus = [];
+        
     };
     reset(){
         
-    // clear and redraw workers[this.which] 
-        const ctx = anim.stage.backContext
-        const w = this.which;
-        const lineWidth = 15;
-        const mid = (anim.worker[w].right + anim.worker[w].left)/2;
-        const left = mid - 0.5 * anim.GWorker.width ;
-        ctx.clearRect(left-lineWidth, 0,
-            anim.GWorker.width + lineWidth*2, fac.stage.height);
-        let m = document.getElementById('quantity'+w).value;
-        if( fac.stageTimes[w].mean == 0 ) return;
+//        this.lastExit = null;
+        this.timeFirstThru = null;
+        this.count = 0;
         
-        ctx.fillStyle = cbColors.lightYellow;
-        for( let j = 0; j < m; j++){
-            ctx.beginPath();
-            ctx.strokeStyle = anim.worker[w].color;
-            ctx.lineWidth = lineWidth;
-            ctx.rect(left, anim.GWorker.top + (this.deltaY) * j , anim.GWorker.width,anim.GWorker.height);
-        ctx.stroke();
-        ctx.fill();
-        ctx.closePath();
-        };
+    // clear and redraw workers[this.which] 
+        this.draw();
+        
+        
     };
      start(time,card,machine){
-//         if( this.which == 0 ) card.arrivalTime = fac.now;
+//         console.log('started stage', this.which, 'now=', fac.now, 'card=',card.which);
          card.graphic.startStage(this.which,fac.now);
-//         console.log(' 350 now',fac.now,'started stage',this.which, card.which);
-         
-//         console.log(card.pathList);
          card.updatePath({
-                t: fac.now + 350,
-                x: this.left,
+                t: fac.now + 500,
+                x: this.leftCard,
                 y: this.top+ machine * this.deltaY
          });
          
-         if( this.which == 0 ) card.arrivalTime = fac.now;
          // background should switch to blue - working.  
          // the idle or blocked should go away.
      };
-    leave(card){
-//        console.log('now',fac.now, 'leaving stage',this.which,'card', card.which, )
-    };
+//    leave(card){
+////        console.log('now',fac.now, 'leaving stage',this.which,'card', card.which, )
+//    };
     finish (card){
-        card.flowTime = fac.now - card.arrivalTime;
-//        console.log('now',fac.now, ' finishing stage ', this.which,'card ',card.which, 'flowtime', card.flowTime);
-//        console.log('finished stage',this.which ,card.which, fac.now, 'card flowtime',card.flowTime);
-        
-//        console.log('finished stage',this.which ,card.which, fac.now);
-//        let thruput = null;
-//        if( this.which == 2 ){
-//            console.log('finished stage',this.which ,card.which, fac.now);
-//        }
-////            const flowTime = fac.now - card.arrivalTime;
-//            if( this.lastExit ){
-//                thruput = 1/(fac.now - this.lastExit);
-//                
-//            } 
-//            this.lastExit = fac.now
-//            fac.graph.push(fac.now, flowTime, thruput )
-            //plot (fac.now, flowTime)
-//        }
-             //queue will start moving it
-             // change machine to blocked or idle
-             // let start adjust this
+//        console.log('finished stage', this.which,' now=', fac.now,
+//                    'card=',card.which) 
+        if(this.which == fac.lastStage){
+            let thruput = null;
+            if( this.timeFirstThru ){
+                this.count++;
+                thruput = this.count/(fac.now - this.timeFirstThru);
+            } else {
+                this.timeFirstThru = fac.now
+            } 
+//            console.log('finished now=', fac.now,
+//                    'card=',card.which, fac.now - card.arrivalTime, thruput );
+            fac.graph.push(fac.now, fac.now - card.arrivalTime, thruput );
+        }
     };
+    draw(){
+        const ctx = anim.stage.backContext;
+        const lineWidth = 15;
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = anim.worker[this.which].color;
+        let number = Number(document.getElementById('quantity'+this.which).value);
+        if( fac.stageTimes[this.which].mean == 0 ) number = 0;
+        
+        for( let j = 0; j < 3; j++){
+            if( j < number ){
+                if( j < this.lastNumber ) {
+                    if( this.lastStatus[j] == this.machineCenter.machs[j].status ){
+                        continue;
+                    }
+                }
+                const status = this.machineCenter.machs[j].status;
+                ctx.fillStyle = (status == 'busy' ? 'lightgreen' : 'lightyellow');
+                const label = (status == 'busy' ? '' : status);
+                const top = anim.GWorker.top + (this.deltaY) * j ;
+                ctx.beginPath();
+                ctx.rect(this.left, top, anim.GWorker.width,
+                         anim.GWorker.height);
+                ctx.stroke();
+                ctx.fill();
+                ctx.font = "30 Arial";
+                ctx.fillText("label", 200,300 );
+                ctx.stroke();
+                ctx.closePath();
+                this.lastStatus[j] = status; 
+            } else if( j < this.lastNumber ) {
+                ctx.clearRect(this.left-lineWidth, 
+                          anim.GWorker.top + (this.deltaY) * j - lineWidth ,
+                            anim.GWorker.width + lineWidth*2,
+                              anim.GWorker.height + lineWidth*2);
+            }
+        };
+        this.lastNumber = number;
+    }
 };
 
 const theSimulation = {
@@ -619,27 +614,27 @@ const theSimulation = {
 		
 		//queues
 		this.supply = new Supplier(anim.card.path.left, anim.card.path.top);
-        const shortWalkingTime = 0;//0.25*tioxTimeConv;
+        const shortWalkingTime = 0.25*tioxTimeConv;
 
-		const anim0 = new AnimForQueue(0, 1, anim.queue[0].left,
+		const animQueue0 = new AnimForQueue(0, 1, anim.queue[0].left,
                                        anim.queue[0].top, anim );
-        this.queues[0] = new Queue(fac, "queue0", -1, shortWalkingTime, 
-                                anim0, null,null);
-        anim0.queue = this.queues[0];
+        this.queues[0] = new Queue(fac, "queue0", -1, 0, 
+                                animQueue0, null,null);
+        animQueue0.queue = this.queues[0];
         fac.resetCollection.push(this.queues[0]);
         
-        const anim1 = new AnimForQueue(1, 3, anim.queue[1].left, 
+        const animQueue1 = new AnimForQueue(1, 3, anim.queue[1].left, 
                                        anim.queue[1].top, anim );
-        this.queues[1] = new Queue(fac, "queue1", -1, shortWalkingTime,
-                                anim1,	null,null);
-        anim1.queue = this.queues[1];
+        this.queues[1] = new Queue(fac, "queue1", -1, 0,
+                                animQueue1,	null,null);
+        animQueue1.queue = this.queues[1];
         fac.resetCollection.push(this.queues[1]);
         
-        const anim2 = new AnimForQueue(2, 3, anim.queue[2].left,
+        const animQueue2 = new AnimForQueue(2, 3, anim.queue[2].left,
                                        anim.queue[2].top, anim );
-        this.queues[2] = new Queue(fac, "queue2", -1, shortWalkingTime,
-                                anim2, null, null);
-        anim2.queue = this.queues[2];
+        this.queues[2] = new Queue(fac, "queue2", -1, 0,
+                                animQueue2, null, null);
+        animQueue2.queue = this.queues[2];
         fac.resetCollection.push(this.queues[2]);
 		
 		
@@ -654,28 +649,31 @@ const theSimulation = {
 			animForCreator);
 		fac.resetCollection.push(this.creator);
 
-		this.workers[0] = new MachineCenter(fac, "worker0",
+		const animWorker0 = new animForWorker(0);
+        fac.resourceCollection.push(animWorker0);
+        this.workers[0] = new MachineCenter(fac, "worker0",
 			1, fac.stageTimes[0],
 			this.queues[0], this.queues[1],
-			new animForWorker(0, this.workers[0], 
-                anim.worker[0].left, anim.worker[0].top));
-        this.workers[0].leaveEarly = 250;
+			animWorker0);
+        animWorker0.machineCenter = this.workers[0];
 		fac.resetCollection.push(this.workers[0]);
         
+        const animWorker1 = new animForWorker(1);
+        fac.resourceCollection.push(animWorker1);
         this.workers[1] = new MachineCenter(fac, "worker1",
 			1, fac.stageTimes[1],
 			this.queues[1], this.queues[2],
-			new animForWorker(1, this.workers[1],
-                anim.worker[1].left, anim.worker[1].top));
-        this.workers[1].leaveEarly = 250;
+			animWorker1);
+        animWorker1.machineCenter = this.workers[1];
 		fac.resetCollection.push(this.workers[1]);
         
+        const animWorker2 = new animForWorker(2);
+        fac.resourceCollection.push(animWorker2);
         this.workers[2] = new MachineCenter(fac, "worker2",
 			1, fac.stageTimes[2],
 			this.queues[2], this.walkOffStage,
-			new animForWorker(2, this.workers[2], 
-                anim.worker[2].left, anim.worker[2].top));
-        this.workers[2].leaveEarly = 250;
+			animWorker2);
+        animWorker2.machineCenter = this.workers[2];
 		fac.resetCollection.push(this.workers[2]);
         
         this.queues[0].setPreviousNext(this.creator, this.workers[0]);
@@ -698,6 +696,36 @@ class Supplier {
         return card;
 	}
 }; //end class Supplier
+class Worker {
+    constructor(w){
+        this.color = anim.worker[w].color;
+        this.ctx = anim.stage.backContext;
+        this.left = left;
+        this.top = top;
+        this.lineWidth = 15;
+//        this.width = width;
+//        this.height = height;
+        this.lastStatus = null;
+        
+    }
+    draw(status){
+        if( status == this.lastStatus) return;
+        this.lastStatus = status;
+        this.ctx.fillStyle = 'red';  //depends on status
+        //this.ctx.textFill??
+        this.ctx.strokeStyle = anim.worker[w].color;
+        this.ctx.clearRect(this.left, this.top, 
+                      anim.Gworker.width, anim.GWorker.height);
+        this.ctx.beginPath();
+        
+        this.ctx.lineWidth = this.lineWidth;
+        this.ctx.rect(this.left, this.top , 
+                 anim.GWorker.width, anim.GWorker.height);
+        this.ctx.stroke();
+        this.ctx.fill();
+        this.ctx.closePath();
+
+    }};
 
 
 class Card extends Item {

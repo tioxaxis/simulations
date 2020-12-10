@@ -175,7 +175,7 @@ export class MachineCenter {
 		this.animFunc = animFunc;
 		this.recordStart = recordStart;
 		this.recordFinish = recordFinish;
-        this.leaveEarly = null;
+//        this.leaveEarly = null;
 
 		this.machs = [];
 		// setup machines if finite number with positions offset by dx,dy
@@ -267,10 +267,10 @@ export class MachineCenter {
 		};
 	};
     
-    leave(machine){
-        machine.person.success = this.nextQueue.push(machine.person);
-        this.animFunc.leave(machine.person);
-    }
+//    leave(machine){
+//        machine.person.success = this.nextQueue.push(machine.person);
+//        this.animFunc.leave(machine.person);
+//    }
 
 	finish(machine) {
 		if (this.recordFinish) this.recordFinish(machine.person);
@@ -279,12 +279,7 @@ export class MachineCenter {
         //note bene  the two previous steps must happen first for face game
         // to correctly account for completion time before WalkandDestroy
         // marks the flow time for process
-        let success;
-        if( !this.leaveEarly ){
-            success = this.nextQueue.push(machine.person);
-        } else {
-            success = machine.person.success;
-        }
+        let success = this.nextQueue.push(machine.person);
         if (success) {
 			
 			machine.status = 'idle';
@@ -372,10 +367,32 @@ export class Combine {
 };
 
 
+
+// Resource is something that does not move in simulation
+// but may need to be redrawn at each cycle.
+export class ResourceCollection extends Array{
+   constructor(){
+       super();
+   };
+    reset(){
+        this.splice(0,this.length);
+    };
+    drawAll(){
+        this.forEach(r => r.draw());
+    };
+    remove(resource){
+        let k = this.indexOf(resource);
+        if (k < 0) {
+			alert('failed to find resource in all');
+			debugger;
+		}
+		this.splice(k, 1);
+	};
+};
+
 // Item is something that moves in simulation
 // ItemCollection keeps track of all those things that move
 // with properties only for the simulation, the procsteps
-
 export class ItemCollection extends Array {
 	constructor() {
 		super();

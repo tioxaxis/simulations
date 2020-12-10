@@ -33,7 +33,7 @@ import {
 }
 from "./util.js";
 import {
-	ItemCollection
+	ItemCollection, ResourceCollection
 }
 from "./stepitem.js";
 function enableButtonQ(name,bool){
@@ -102,6 +102,7 @@ export class OmConcept {
 
 		this.setupScenarios();
 		this.itemCollection = new ItemCollection();
+        this.resourceCollection = new ResourceCollection();
 		this.resetCollection.push(this.itemCollection);
 		
 		//***** Set up event listeners for user interface  ********
@@ -213,6 +214,7 @@ export class OmConcept {
 		this.now = this.frameNow;
 		this.clearStageForeground();
 		this.itemCollection.moveDisplayAll(deltaSimuTime);
+        this.resourceCollection.drawAll();
 		this.requestAFId = window.requestAnimationFrame(this.eachFrame.bind(this));
 	};
 	

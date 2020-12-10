@@ -188,12 +188,14 @@
 	}
 	.legitem {
 		cursor: pointer;
+        margin: auto;
+        border: red solid
 	}
 .dualChartWrapper{
    flex: 1 1 0;
 	
 	display: grid;
-    grid-template-columns: 15% 70% 15%; 
+    grid-template-columns: 18% 64% 18%; 
 }
 .dualChartTitle{
     margin: auto;
