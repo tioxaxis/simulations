@@ -304,7 +304,7 @@
 	/*  spreadValues for #'s on scale and Input formats */
 
 .spreadValues {
-	margin: 0% 8% 0% 6%;
+	margin: 0% 10% 0% 8%;
 	width: 84%;
 	display: flex;
 	flex-wrap: nowrap;

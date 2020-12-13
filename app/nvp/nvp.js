@@ -252,7 +252,7 @@ function captureChangeInSliderS(event) {
 	if (inputElem.type == 'range') {
 		var v = Number(inputElem.value)
 			.toFixed(nvp.precision[idShort]);
-		document.getElementById(idShort + 'nvpDisplay')
+		document.getElementById('disp' + inputElem.id)
 			.innerHTML = v;
 	}
 	switch (idShort) {
@@ -289,7 +289,7 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			nvp.adjustSpeed(idShort,v,speeds);
+			nvp.adjustSpeed(inputElem.id,v,speeds);
 			break;
 		case 'none':
 		case 'pause':

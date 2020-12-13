@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="shortcut icon" href="./app/res/tiox3.png">
+	<link rel="stylesheet" type="text/css" href="./app/app.css">
+
+	<!--software for random number generation-->
+	<script src='./app/res/jstat.min.js'></script>
+	
+	<!-- converts Math.random() to be seeded    -->
+	<script src='/app/res/seedrandom.min.js'></script>
+
+<!--	<script type='module' src='./app/app.js'></script>-->
+
+</head>
+<body>
+    <div id='place' style='width: 20%'>
+    
+    </div>
+    
+    
+</body>
+<script type='module'>
+    import {
+        htmlNumSlider, NumRange, htmlArbSlider, ArbRange, genRange,
+        CheckBox, htmlCheckBox, RadioButton, htmlRadioButton 
+    }
+    from "./app/mod/genHTML.js";
+    function numSpecifics(){
+        console.log('called the num specifics routines value is',numRange.get());
+    };
+    function arbSpecifics(){
+        console.log('called the arb specifics routines value is',arbRange.get());
+    };
+    
+    function rbSpecifics(){
+        console.log('called the rb specifics routines value is',rb.get());
+    };
+    
+    function cbSpecifics(){
+        console.log('called the cb specifics routines value is',cb.get());
+    };
+    
+    let spRoutines ={}
+    
+    let place = document.getElementById('place');
+    
+    let numRange = new NumRange('numid',numSpecifics,1,5,9,.5);
+    spRoutines['numid']=numRange;
+    
+    let arbRange = new ArbRange('arbid',arbSpecifics,
+                                ['A','B','C','D','E'],
+                               ['a','b','c','d','e']);
+    spRoutines['arbid'] = arbRange;
+    
+    let numHTML = htmlNumSlider(numRange,'Numeric Range =',6, [5, 7,9]   );
+    let arbHTML = htmlArbSlider(arbRange,'Arbitrary Range =',1,['A','C','E']   );
+    
+    place.append(numHTML,arbHTML);
+    console.log(numRange.get());
+    console.log(arbRange.get());
+    numRange.set(9);
+    arbRange.set(4);
+    console.log(numRange.get());
+    console.log(arbRange.get());
+    
+    
+    let rb = new RadioButton('action',rbSpecifics);
+    spRoutines['action'] = rb;
+    place.append(
+    htmlRadioButton(rb,'play','play',true,'PlayLabel'),
+    htmlRadioButton(rb,'pause','pause',false,'PauseLabel'),
+    htmlRadioButton(rb,'none','none',false,'NoneLabel'));
+    
+    
+    let cb = new CheckBox('ch',cbSpecifics);
+    spRoutines['ch'] = cb;
+    
+    let checkHTML = htmlCheckBox(cb,'here is a checkbox');
+    place.append(checkHTML);
+    console.log('rb and cb=',rb.get(),cb.get() );
+    
+    place.addEventListener('input', captureUserUpdate);
+    
+    function captureUserUpdate(){
+        let inputElem = event.target.closest('input');
+        if (!inputElem) return;
+        let id = event.target.id;
+        let v = inputElem.value;
+        let t = inputElem.type;
+        let name = inputElem.name;
+        console.log('clicked on id=',id,'name=',name,'value=',v);
+        spRoutines
+        switch (t){
+            case 'range':
+            case  'checkbox':
+                spRoutines[id].userUpdate();
+                break;
+            case 'radio':
+                spRoutines[name].userUpdate();
+                break;
+        }
+    
+        };
+    
+    
+    
+    
+    </script>
+</html>

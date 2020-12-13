@@ -234,7 +234,7 @@ function captureChangeInSliderS(event) {
 	if (inputElem.type == 'range') {
 		var v = Number(inputElem.value)
 			.toFixed(precision[idShort]);
-		document.getElementById(idShort + 'queDisplay')
+		document.getElementById('disp' + inputElem.id)
 			.innerHTML = v;
 	}
 	switch (idShort) {
@@ -270,7 +270,7 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			que.adjustSpeed(idShort,v,speeds);
+			que.adjustSpeed(inputElem.id,v,speeds);
 			break;
 		case 'none':
 		case 'play':

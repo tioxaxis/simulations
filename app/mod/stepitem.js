@@ -109,7 +109,7 @@ export class Queue {
 		const person = this.q.shift();
 		this.animFunc.leave(procTime, this.numSeatsUsed); /// this is the right thing but 
 		if (this.q.length < this.maxSeats) {
-			this.previous.knock();
+			this.previousMachine.knockFromNext();
 		}
 		if (this.recordLeave) this.recordLeave(person);
 		this.printQueue();

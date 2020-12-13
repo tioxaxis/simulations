@@ -246,7 +246,7 @@ function captureChangeInSliderS(event) {
 	if (inputElem.type == 'range') {
 		var v = Number(inputElem.value)
 			.toFixed(lit.precision[idShort]);
-		document.getElementById(idShort + 'litDisplay')
+		document.getElementById('disp' + inputElem.id)
 			.innerHTML = v;
 	}
 	switch (idShort) {
@@ -270,7 +270,7 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			lit.adjustSpeed(idShort,v,speeds);
+			lit.adjustSpeed(inputElem.id,v,speeds);
 			break;
 		case 'none':
 		case 'play':

@@ -217,13 +217,13 @@ export class OmConcept {
         this.resourceCollection.drawAll();
 		this.requestAFId = window.requestAnimationFrame(this.eachFrame.bind(this));
 	};
-	
-	adjustSpeed(idShort,v,speeds){
+    
+	adjustSpeed(id,v,speeds){
 		const oldFrameSpeed = this.frameSpeed;
 		this.frameSpeed = speeds[v].time;
 		this.graph.updateForSpeed(speeds[v].graph);
 		this.itemCollection.updateForSpeed();
-		document.getElementById(idShort + this.key + 'Display')
+		document.getElementById('disp' + id)
 				.innerHTML = speeds[v].time;
 		if (oldFrameSpeed < 100 && this.frameSpeed > 100 ){
 			if (this.isRunning){

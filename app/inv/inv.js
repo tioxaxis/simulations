@@ -325,7 +325,7 @@ function captureChangeInSliderS(event) {
 	if (inputElem.type == 'range') {
 		var v = Number(inputElem.value)
 			.toFixed(inv.precision[idShort]);
-		document.getElementById(idShort + 'invDisplay')
+		document.getElementById('disp'+inputElem.id)
 			.innerHTML = v;
 	}
 	switch (idShort) {
@@ -377,7 +377,7 @@ function captureChangeInSliderS(event) {
 			
 			break;
 		case 'speed':
-			inv.adjustSpeed(idShort,v,speeds);
+			inv.adjustSpeed(inputElem.id,v,speeds);
 			break;
 		case 'none':
 		case 'pause':
