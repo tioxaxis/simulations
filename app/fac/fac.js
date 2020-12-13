@@ -49,10 +49,10 @@ class FacGraph extends TioxGraph {
 		super(omConcept, name, 40, {width:100, step:20}, d=>d.t, true);
 		this.setupLine(0, d => d.flow, cbColors.blue,
 					   false, true, 5, 10);
-		this.setLegend(0, 'Flow time');
+		this.setLegend(0, 'Flow time<br>(seconds/card)');
 		this.setupLine(1, d => d.thru, cbColors.yellow,
 					   false, true, 5, 10, true);
-		this.setLegend(1,'Throughput');
+		this.setLegend(1,'Throughput<br>(cards/minute)');
 //		this.setupLine(2, d => d.p, cbColors.red,
 //					   true, false, 10, 0);
 //		this.setLegend(2,'predicted wait');	
@@ -74,7 +74,7 @@ class FacGraph extends TioxGraph {
 //		this.count = 0;
 //		let yMax = (this.predictedWaitValue == Infinity)?
 //			1.5: Math.max(1.5,this.predictedWaitValue * 1.1);
-		super.reset(0);
+		super.reset(12,12);
 //		
 //		const v = document.getElementById('speedfac').value;
 //		const f = speeds[v].graph;
@@ -82,31 +82,8 @@ class FacGraph extends TioxGraph {
 	}
 	updateForSpeed (factor){
 		this.scaleXaxis(factor);
-//		console.log('in graph update for speed',factor)
 	};
-//	predictedWait () {
-//			const sr = theSimulation.serviceRV.rate;
-//			const ir = theSimulation.interarrivalRV.rate;
-//			const iCV = theSimulation.interarrivalRV.CV;
-//			const sCV = theSimulation.serviceRV.CV;
-//			if (sr == 0) return Infinity;
-//			let rho = ir / sr;
-//			if (rho >= 1) return Infinity;
-//			let pW = (rho / (1 - rho) / ir / tioxTimeConv) 
-//					* (iCV * iCV + sCV * sCV) / 2;
-//			return pW;
-//		};
-//	updatePredictedWait () {
-//		let pW = this.predictedWait();
-//		this.drawOnePoint({
-//			t: (que.now / tioxTimeConv),
-//			p: (pW == Infinity)?null:pW
-//		});
-//		this.setLegend(2,'predicted wait' +
-//					   ((pW == Infinity) ? ' = ∞' : ''));
-//
-//		this.predictedWaitValue = pW;
-//	};
+
 }
 let fac;
 let facInputs = {};
@@ -407,7 +384,10 @@ function facEncodeURL(row){
 //  animation for that process step
 
 
-
+function markCurrentCard(){
+    theSimulation.creator.machs[0]
+        .person.graphic.mark = true;
+}
 
 class FaceGame extends OmConcept {
 	constructor(){
@@ -416,6 +396,8 @@ class FaceGame extends OmConcept {
 			.removeEventListener('input', this.captureChangeInSliderG.bind(this));
         document.getElementById('rightHandSideBoxfac')
 			.addEventListener('input', this.captureUserUpdate.bind(this));
+        document.getElementById('markfac')
+            .addEventListener('click', markCurrentCard);
     }
     captureUserUpdate(){
         const e = event.target.closest('input');
@@ -578,7 +560,7 @@ class animForWorker {
             let thruput = null;
             if( this.timeFirstThru ){
                 this.count++;
-                thruput = this.count/(fac.now - this.timeFirstThru);
+                thruput = 60 * this.count/(fac.now - this.timeFirstThru);
             } else {
                 this.timeFirstThru = fac.now
             } 
@@ -795,8 +777,7 @@ class FaceCard {
         this.h = h;
         this.start = {face:null, eyes:null, nose: null, 
                      ears:null, mout:null, hair:null};
-//        this.stage = {face:null, eyes:null, nose: null, 
-//                     ears:null, mout:null, hair:null};
+        this.mark = false;
     }
     startStage (which, now){
         
@@ -827,8 +808,10 @@ class FaceCard {
         ctx.lineWidth = 1;
         
         ctx.rect(0,0,this.w,this.h);
-//        ctx.font="20px Arial";
-//        ctx.fillText(this.which, 0,20);
+        if( this.mark ){
+            ctx.fillStyle = 'pink';
+            ctx.fill();
+        };
         ctx.stroke();
         ctx.closePath();
         

@@ -64,7 +64,7 @@ export function hideNode( node ){
     return node;
 }
 export function genButton(id,name){
-    const b = document.createElement('span');
+    const b = document.createElement('button');
     b.innerHTML = name;
     b.id = id;
 

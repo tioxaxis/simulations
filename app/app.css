@@ -189,7 +189,7 @@
 	.legitem {
 		cursor: pointer;
         margin: auto;
-        border: red solid
+/*        border: red solid*/
 	}
 .dualChartWrapper{
    flex: 1 1 0;
