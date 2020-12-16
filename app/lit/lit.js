@@ -270,7 +270,7 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			lit.adjustSpeed(inputElem.id,v,speeds);
+			lit.adjustSpeed(v,speeds);
 			break;
 		case 'none':
 		case 'play':

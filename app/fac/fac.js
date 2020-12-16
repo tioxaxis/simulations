@@ -38,8 +38,7 @@ import {
 from "../mod/graph.js";
 import {
 	genPlayResetBox, genSlider, genArbSlider, genButton, addDiv,
-    ArbRange, htmlArbSlider, htmlNumSlider, NumRange, genRange,
-        CheckBox, htmlCheckBox, RadioButton, htmlRadioButton,
+    ArbRange,  NumRange, genRange, CheckBox,  RadioButton, 
     IntegerInput, addKeyForIds
 }
 from '../mod/genHTML.js';
@@ -53,6 +52,7 @@ class FacGraph extends TioxGraph {
 		this.setupLine(1, d => d.thru, cbColors.yellow,
 					   false, true, 5, 10, true);
 		this.setLegend(1,'Throughput<br>(cards/minute)');
+        this.doReset = true;
 //		this.setupLine(2, d => d.p, cbColors.red,
 //					   true, false, 10, 0);
 //		this.setLegend(2,'predicted wait');	
@@ -70,15 +70,8 @@ class FacGraph extends TioxGraph {
 		this.drawOnePoint(p);
 	};
 	reset(){
-//		this.total = 0;
-//		this.count = 0;
-//		let yMax = (this.predictedWaitValue == Infinity)?
-//			1.5: Math.max(1.5,this.predictedWaitValue * 1.1);
-		super.reset(12,12);
-//		
-//		const v = document.getElementById('speedfac').value;
-//		const f = speeds[v].graph;
-//		this.updateForSpeed(f);
+		if( this.doReset) super.reset(12,12);
+        this.doReset = true;
 	}
 	updateForSpeed (factor){
 		this.scaleXaxis(factor);
@@ -163,60 +156,70 @@ anim.worker[2] = {left: 16*c,
 
 
 
-function facDefineInputs(){
-    
-    facInputs.qln = new ArbRange('qlnfac',qlnSpecifics, 
+function facDefineUsrInputs(){
+    let usrInputs = new Map();
+    usrInputs.set('qln', new ArbRange('qlnfac',qlnSpecifics, 
                              ['1','3','5','∞'], 
-                             [1,3,5,-1]);
-    facInputs.face = new RadioButton('facefac',featureSpecifics);
-    facInputs.eyes = new RadioButton('eyesfac',featureSpecifics);
-    facInputs.nose = new RadioButton('nosefac',featureSpecifics);
-    facInputs.mout = new RadioButton('moutfac',featureSpecifics);
-    facInputs.ears = new RadioButton('earsfac',featureSpecifics);
-    facInputs.hair = new RadioButton('hairfac',featureSpecifics);
-    facInputs.faceTime = new NumRange('faceTimefac',
-                featureSpecifics, 0,1,9,1);
-    facInputs.eyesTime = new NumRange('eyesTimefac',
-                featureSpecifics, 0,1,9,1);
-    facInputs.noseTime = new NumRange('noseTimefac',
-                featureSpecifics, 0,1,9,1);
-    facInputs.moutTime = new NumRange('moutTimefac',
-                featureSpecifics, 0,1,9,1);
-    facInputs.earsTime = new NumRange('earsTimefac',
-                featureSpecifics, 0,1,9,1);
-    facInputs.hairTime = new NumRange('hairTimefac',
-                featureSpecifics, 0,1,9,1);
-    facInputs.quantity0 = new IntegerInput('quantity0fac',
-                quantitySpecifics, 0,1,3,1);
-    facInputs.quantity1 = new IntegerInput('quantity1fac',
-                quantitySpecifics, 0,1,3,1);
-    facInputs.quantity2 = new IntegerInput('quantity2fac',
-                quantitySpecifics, 0,1,3,1);
-    facInputs.speed = new ArbRange('speedfac',
+                             [1,3,5,-1]) );
+    usrInputs.set('face', new RadioButton('facefac',featureSpecifics,
+                                          ['0','1','2']) );
+    usrInputs.set('eyes', new RadioButton('eyesfac',featureSpecifics,
+                                         ['0','1','2']) );
+    usrInputs.set('nose', new RadioButton('nosefac',featureSpecifics,
+                                         ['0','1','2']) );
+    usrInputs.set('mout', new RadioButton('moutfac',featureSpecifics,
+                                         ['0','1','2']) );
+    usrInputs.set('ears', new RadioButton('earsfac',featureSpecifics,
+                                         ['0','1','2']) );
+    usrInputs.set('hair', new RadioButton('hairfac',featureSpecifics,
+                                         ['0','1','2']) );
+    usrInputs.set('faceTime', new NumRange('faceTimefac',
+                featureSpecifics, 0,1,9,1) );
+    usrInputs.set('eyesTime', new NumRange('eyesTimefac',
+                featureSpecifics, 0,1,9,1) );
+    usrInputs.set('noseTime', new NumRange('noseTimefac',
+                featureSpecifics, 0,1,9,1) );
+    usrInputs.set('moutTime', new NumRange('moutTimefac',
+                featureSpecifics, 0,1,9,1) );
+    usrInputs.set('earsTime', new NumRange('earsTimefac',
+                featureSpecifics, 0,1,9,1) );
+    usrInputs.set('hairTime', new NumRange('hairTimefac',
+                featureSpecifics, 0,1,9,1) );
+    usrInputs.set('quantity0', new IntegerInput('quantity0fac',
+                quantitySpecifics, 0,1,3,1) );
+    usrInputs.set('quantity1', new IntegerInput('quantity1fac',
+                quantitySpecifics, 0,1,3,1) );
+    usrInputs.set('quantity2', new IntegerInput('quantity2fac',
+                quantitySpecifics, 0,1,3,1) );
+    usrInputs.set('speed', new ArbRange('speedfac',
                 speedSpecifics, ['1x','2x','5x','10x','25x'],
-				                [1,2,5,10,25]);
-    facInputs.action = new RadioButton('actionfac',actionSpecifics);
-    facInputs.reset = new CheckBox('resetfac',resetSpecifics);
+				                [1,2,5,10,25]) );
+    usrInputs.set('action', new RadioButton('actionfac',actionSpecifics,
+                                           ['none','play','pause']) );
+    usrInputs.set('reset', new CheckBox('resetfac',resetSpecifics) );
+    return usrInputs;
 };
-function qlnSpecifics(id,i,values){
-    console.log('changed the queue length parameter!! to ', values[i]);
-    const v = values[i];
+function qlnSpecifics(id,i,v){
+//    console.log('changed the queue length parameter!! to ', v);
     theSimulation.queues[1].setMaxSeats(v);
     theSimulation.queues[2].setMaxSeats(v);
-    fac.reset();
+//    fac.graph.doReset = false;
+//    fac.reset();
 }
 
 function featureSpecifics(){
-    computeStageTimes();
-    fac.reset();
+//    computeStageTimes();
+//    fac.graph.doReset = false;
+//    fac.reset();
 };
 function quantitySpecifics(id,v){
     theSimulation.workers[id.slice(-4,-3)].setNumMachines(v);
-    computeStageTimes();
-    fac.reset();
+//    computeStageTimes();
+//    fac.graph.doReset = false;
+//    fac.reset();
 }
 function speedSpecifics(id,v){
-   fac.adjustSpeed(id,v,speeds); 
+   fac.adjustSpeed(v,speeds); 
 }
 const actionSpecifics = null;
 const resetSpecifics = null;
@@ -264,6 +267,14 @@ function computeStageTimes(){
             fac.lastStage = i;
             break;
         }
+//    const qlength = fac.usrInputs.get('qln').getValue();
+//    theSimulation.queues[1].setMaxSeats(qlength);
+//    theSimulation.queues[2].setMaxSeats(qlength);
+//    
+//    for( let k = 0; k < 3; k ++) {
+//        const inp = fac.usrInputs.get('quantity'+k);
+//        theSimulation.workers[k].setNumMachines(inp.get());
+//    }
     
     // set creator rate and movement based on first stage with nonzero proctime
     const k = fac.firstStage;
@@ -271,11 +282,23 @@ function computeStageTimes(){
     document.getElementById('quantity'+k+'fac').value); 
     animForCreator.left = anim.queue[k].left;
     animForCreator.top = anim.queue[k].top;
+    
+    
+    let previousMachine = theSimulation.creator;
+    for( let i = 0; i < 3; i++ ){
+        if( fac.stageTimes[i].mean != 0 ){
+            previousMachine.nextQueue = theSimulation.queues[i];
+            theSimulation.queues[i].previousMachine = previousMachine;
+            previousMachine = theSimulation.workers[i];
+        }
+    };
+    previousMachine.nextQueue = theSimulation.walkOffStage;
+    theSimulation.walkOffStage.previousMachine = previousMachine;
 }
 
 
 function facDefine(){
-	fac = new FaceGame();
+	let fac = new FaceGame();
 	document.getElementById('fac').omConcept = fac;
 	
 //	document.getElementById('slidersWrapperfac')
@@ -325,56 +348,48 @@ function facDefine(){
     
     
 	fac.stage = anim.stage;
+    return fac;
 };
-function localReset () {
-		
-	// schedule the initial Person to arrive and start the simulation/animation.
-	theSimulation.supply.previous = null;
-	theSimulation.creator.knockFromPrevious();
-	fac.now = fac.frameNow = 0;
-    computeStageTimes();
+//function localReset () {
+//		
+//	// schedule the initial Person to arrive and start the simulation/animation.
+//	theSimulation.supply.previous = null;
+//	theSimulation.creator.knockFromPrevious();
+//	fac.now = fac.frameNow = 0;
+//    computeStageTimes();
+//
+//    //link the queues and machines to only include machines with 
+//    // procTime > 0.
+//    
+//};
 
-    //link the queues and machines to only include machines with 
-    // procTime > 0.
-    let previousMachine = theSimulation.creator;
-    for( let i = 0; i < 3; i++ ){
-        if( fac.stageTimes[i].mean != 0 ){
-            previousMachine.nextQueue = theSimulation.queues[i];
-            theSimulation.queues[i].previousMachine = previousMachine;
-            previousMachine = theSimulation.workers[i];
-        }
-    };
-    previousMachine.nextQueue = theSimulation.walkOffStage;
-    theSimulation.walkOffStage.previousMachine = previousMachine;
-};
-
-function facDecodeURL(str){
-	const actionValue = {N:"none", G:"play", S:"pause"};
-	const boolValue = {T: 'true', F: 'false'};
-	return( 
-	{qln: str.substr(0,1),
-     face: str.substring(1,2),
-     eyes: str.substring(2,3),
-     nose: str.substring(3,4),
-     mouth: str.substring(4,5),
-     ears: str.substring(5,6),
-     hair: str.substring(6,7),
-     quantity0: str.substring(7,8),
-     quantity1: str.substring(8,9),
-     quantity2: str.substring(9,10),
-     speed: str.substring(16,17),
-	 action: actionValue[str.substring(17,18)],
-	 reset: boolValue[str.substring(18,19)],
-	 desc: str.substring(22)
-	})
-};
-function facEncodeURL(row){
-	const actionValue = {none: "N", play: "G", pause: "S"};
-	return ('') 
-	.concat(row.qln, row.face, row.eyes, row.nose, row.mouth,
-            row.ears, row.hair, row.quantity0, row.quantity1, row.quantity2,
-            row.speed, actionValue[row.action], row.desc);
-}
+//function facDecodeURL(str){
+//	const actionValue = {N:"none", G:"play", S:"pause"};
+//	const boolValue = {T: 'true', F: 'false'};
+//	return( 
+//	{qln: str.substr(0,1),
+//     face: str.substring(1,2),
+//     eyes: str.substring(2,3),
+//     nose: str.substring(3,4),
+//     mouth: str.substring(4,5),
+//     ears: str.substring(5,6),
+//     hair: str.substring(6,7),
+//     quantity0: str.substring(7,8),
+//     quantity1: str.substring(8,9),
+//     quantity2: str.substring(9,10),
+//     speed: str.substring(16,17),
+//	 action: actionValue[str.substring(17,18)],
+//	 reset: boolValue[str.substring(18,19)],
+//	 desc: str.substring(22)
+//	})
+//};
+//function facEncodeURL(row){markCard
+//	const actionValue = {none: "N", play: "G", pause: "S"};
+//	return ('') 
+//	.concat(row.qln, row.face, row.eyes, row.nose, row.mouth,
+//            row.ears, row.hair, row.quantity0, row.quantity1, row.quantity2,
+//            row.speed, actionValue[row.action], row.desc);
+//}
 
 
 
@@ -384,26 +399,114 @@ function facEncodeURL(row){
 //  animation for that process step
 
 
-function markCurrentCard(){
+function markCard(){
     theSimulation.creator.machs[0]
         .person.graphic.mark = true;
+    theSimulation.supply.bumpCount();
 }
 
 class FaceGame extends OmConcept {
 	constructor(){
-        super('fac',facEncodeURL, facDecodeURL, localReset );
+        super('fac');
         document.getElementById('slidersWrapperfac')
 			.removeEventListener('input', this.captureChangeInSliderG.bind(this));
-        document.getElementById('rightHandSideBoxfac')
+        document.getElementById('facDataWrapperfac')
 			.addEventListener('input', this.captureUserUpdate.bind(this));
-        document.getElementById('markfac')
-            .addEventListener('click', markCurrentCard);
-    }
+        document.getElementById('slidersWrapperfac')
+			.addEventListener('input', this.captureUserUpdate.bind(this));
+        document.getElementById('markButtonfac')
+            .addEventListener('click', markCard);
+    };
+    localReset () {
+        fac.now = fac.frameNow = 0;
+        theSimulation.supply.previous = null;
+        theSimulation.creator.knockFromPrevious();
+        computeStageTimes();
+        this.resourceCollection.drawAll();
+    };
     captureUserUpdate(){
         const e = event.target.closest('input');
         if (!e) return;
         const key = (e.type == 'radio' ? e.name : e.id);
-        facInputs[key.slice(0,-3)].userUpdate();
+        const keyShort = key.slice(0,-3);
+        const inp = fac.usrInputs.get(keyShort);
+        inp.userUpdate();
+        if( this.editMode ){
+            if( this.currentLi ){
+                this.currentLi.scenario[keyShort] = inp.get();
+            }
+        } else {
+            if (this.currentLi) 
+                this.currentLi.classList.remove("selected");
+            this.currentLi = null;
+        }
+        let changed = {};
+        changed[keyShort] = true;
+        this.localUpdate(changed);
+        
+    };
+    // make fac.Inputs = facInputs and adjust code to use this.??inputs
+    setSlidersFrom (row){
+        const changed = {};
+        console.log(' set Sliders row=',row);
+        for( let [key, inp] of fac.usrInputs ){
+          changed[key] = inp.set(row[key]);
+        } 
+        
+        // NEED to handle legend status which are checked and which are not
+        // add a new class of objects to handle these cases
+        
+        
+        if (!this.editMode) {
+            if (row.reset == 'true')
+                document.getElementById('resetButton'+this.key).click();
+            if (row.action == 'play')
+                document.getElementById('playButton'+this.key).click();
+            else if (row.action == 'pause')
+                document.getElementById('pauseButton'+this.key).click();
+        }
+       this.localUpdate(changed);
+    };
+    localUpdate(changed){
+        const needReset = {qln: true, face: true, eyes: true, nose: true,
+		mouth: true, ears: true, hair: true, faceTime: true, eyesTime: true,
+        noseTime: true, earsTime: true, moutTime: true, hairTime: true, quantity0: true, quantity1: true, quantity2: true};
+        for(let key in needReset){
+            if( changed[key] && needReset[key] ){
+                this.reset()
+                break;
+            }
+        }
+//        if (changed['speed']){
+//            const v = fac.usrInputs.get('speed').getValue();
+//            fac.adjustSpeed(v,speeds);
+//        }
+    };
+    
+    getSliders () {
+        let row = {};
+        for( let [key, inp]  of fac.usrInputs ){
+            row[key] = inp.get();
+        };
+        console.log('get sliders row=',row);
+        return row;
+    };
+    sEncode(row){
+        let str = '';
+        for ( let [key, inp] of this.usrInputs ){
+            str += inp.encode(row[key]);
+        }
+        return str;
+    };
+    sDecode(str){
+        let row = '';
+        let p = 0;
+        for ( let [key, inp] of this.usrInputs ){
+            let len = inp.shortLen;
+            row[key] = inp.decode(str.splice(p,p+len));
+            p += len;
+        }
+      
     };
 };
 
@@ -452,22 +555,36 @@ class AnimForQueue  {
 		});
 	};
     
-    reset() {};
+    reset() {
+    
+    };
 
 	arrive (nSeatsUsed, card) {
 	};
 
 	leave (procTime, nSeatsUsed) {
-		if (this.queue.q.length == 0) return null;
+        if (this.queue.q.length == 0) return null;
 		let n = this.queue.q.length;
         for (let k = 0; k < n; k++) {
             let card = this.queue.q[k];
             let point = this.relCoord(k);
-            card.updatePath({
-                t: fac.now + 700,
-                x: this.left + point.x,
-                y: this.top + point.y
-            });
+            if( card.pathList.length == 0){ 
+                card.updatePath({
+                    t: fac.now + 700,
+                    x: this.left + point.x,
+                    y: this.top + point.y
+                });
+            } else{
+                let destTime = Math.max(this.left + point.x - card.cur.x,
+                                       this.top + point.y - card.cur.y) 
+                                / anim.stage.normalSpeed;
+                console.log('destTime',destTime);
+                card.updatePath({
+                    t: fac.now + destTime+700,
+                    x: this.left + point.x,
+                    y: this.top + point.y
+                });
+            }
         };
     }
 };
@@ -634,7 +751,7 @@ const theSimulation = {
 	
 	initialize: function () {
 
-        computeStageTimes();
+//        computeStageTimes();
         
         //graphs
         fac.graph = new FacGraph(fac, 'chartfac');
@@ -716,13 +833,22 @@ class Supplier {
 	constructor(x, y) {
 		this.x = x;
 		this.y = y;
+        this.markCount = 0;
 	};
 	pull() {
         
 		const card = new Card(fac, this.x, this.y);
+        if( this.markCount > 0 ){
+             this.markCount--;
+            if( this.markCount > 0 ) card.graphic.mark = true;
+        }
 //        console.log('in supplier', card.which, card);
         return card;
 	}
+    bumpCount(){
+        this.markCount++;
+        console.log('markCount',this.markCount)
+    }
 }; //end class Supplier
 class Worker {
     constructor(w){
@@ -809,7 +935,9 @@ class FaceCard {
         
         ctx.rect(0,0,this.w,this.h);
         if( this.mark ){
+//            ctx.font = "30px Material-icons";
             ctx.fillStyle = 'pink';
+//            ctx.fillText('\u153',0,0);
             ctx.fill();
         };
         ctx.stroke();
@@ -903,29 +1031,27 @@ class FaceCard {
 
 
 
-function facHTML(){	
+function facHTML(usrInputs){	
 	addDiv('fac','fac','whole')
 	addDiv('fac', 'leftHandSideBox'+'fac',
 			   'facStageWrapper','dualChartWrapper');
-//    document.getElementById('leftHandSideBox'+'fac').append(
-//        document.getElementById('facDataWrapper'));
-//    
-	 
     
     // insert the radio button box first
-    const radioButtons = document.getElementById('facDataWrapper')
-                            .cloneNode(true);
+    const radioButtons = document.getElementById('facDataWrapper');
+                            
     addKeyForIds('fac',radioButtons);
     const rhs = document.getElementById('rightHandSideBoxfac');  
     rhs.insertBefore(radioButtons, rhs.firstChild);
     
     let elem = document.getElementById('slidersWrapperfac');
-	elem.append(
-		genButton('markfac','Mark'),
-		htmlArbSlider(facInputs.qln, 'Queue Length = ', 3,
+	const mark = document.getElementById('markButton').cloneNode(true);
+    addKeyForIds('fac',mark);
+    elem.append(
+		mark,
+		usrInputs.get('qln').htmlArbSlider('Queue Length = ', 3,
                       ['1','3','5','∞']),
 		genPlayResetBox('fac'),
-		htmlArbSlider(facInputs.speed, 'Speed = ', 0,
+		usrInputs.get('speed').htmlArbSlider('Speed = ', 0,
                       ["slow",' ',' ',' ',"fast"])
 	);
 	
@@ -934,9 +1060,12 @@ function facHTML(){
 };
 
 export function facStart() {
-	facDefineInputs();
-    facHTML();
-    facDefine();
+	let usrInputs = facDefineUsrInputs();
+    facHTML(usrInputs);
+    fac = facDefine();
+    fac.usrInputs = usrInputs;
+    
+    
     
 	theSimulation.initialize();
 	fac.reset();

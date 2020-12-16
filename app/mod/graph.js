@@ -170,8 +170,9 @@ export class TioxGraph {
 		let k = Number(/[0-9]+/.exec(elem.id)[0]);
 		let info = this.lineInfo[k];
 		info.visible = !info.visible;
-		const li = this.omConcept.currentLi;
-		if (li) li.scenario['leg'+k] = info.visible.toString();
+		//  omConcept.??inputs.['leg'+k].set(info.visible.??toString());
+        const li = this.omConcept.currentLi;
+        if (li) li.scenario['leg'+k] = info.visible.toString();
 		this.omConcept.saveEdit();
 		this.setLegendText(elem,info);
 		this.setupThenRedraw();

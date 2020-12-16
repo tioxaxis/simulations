@@ -270,7 +270,7 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			que.adjustSpeed(inputElem.id,v,speeds);
+			que.adjustSpeed(v,speeds);
 			break;
 		case 'none':
 		case 'play':

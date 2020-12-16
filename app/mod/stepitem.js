@@ -175,6 +175,7 @@ export class MachineCenter {
 		this.animFunc = animFunc;
 		this.recordStart = recordStart;
 		this.recordFinish = recordFinish;
+        this.machIndex = 0;
 //        this.leaveEarly = null;
 
 		this.machs = [];
@@ -213,7 +214,15 @@ export class MachineCenter {
 	};
 
 	findBlocked() {
-		return this.machs.findIndex(x => x.status == 'blocked')
+        this.machIndex = (this.machIndex + 1) % this.numMachines;
+        for( let i = 0; i < this.numMachines; i++) {
+            if( this.machs[this.machIndex].status == 'blocked'){
+                return this.machIndex;
+            }
+            this.machIndex = (this.machIndex + 1) % this.numMachines;
+        }
+        return -1;
+//		return this.machs.findIndex(x => x.status == 'blocked')
 	};
 
 	knockFromPrevious() {

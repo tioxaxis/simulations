@@ -289,7 +289,7 @@ function captureChangeInSliderS(event) {
 			break;
 
 		case 'speed':
-			nvp.adjustSpeed(inputElem.id,v,speeds);
+			nvp.adjustSpeed(v,speeds);
 			break;
 		case 'none':
 		case 'pause':

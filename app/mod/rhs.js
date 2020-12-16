@@ -65,11 +65,8 @@ export function displayToggle(a,b){
 
 
 export class OmConcept {
-	constructor(key, sEncode, sDecode, localReset){
+	constructor(key){
 		this.key = key;
-		this.sEncode = sEncode;
-		this.sDecode = sDecode;
-		this.localReset = localReset;
 		this.resetCollection = [];
 		
 		
@@ -157,9 +154,13 @@ export class OmConcept {
 		this.now = 0;
 		this.frameNow = 0;
 		this.heap.reset();
-		this.resetCollection.forEach(obj => obj.reset());
+        this.resetCollection.forEach(obj => obj.reset());
 		this.localReset();
 	};
+    localReset(){
+        alert(' this routine should be ovewritten, right?');
+        debugger;
+    }
 
 	clearStageForeground() {
 		this.stage.foreContext.clearRect(0, 0, this.stage.width, this.stage.height);
@@ -218,13 +219,13 @@ export class OmConcept {
 		this.requestAFId = window.requestAnimationFrame(this.eachFrame.bind(this));
 	};
     
-	adjustSpeed(id,v,speeds){
+	adjustSpeed(v,speeds){
 		const oldFrameSpeed = this.frameSpeed;
 		this.frameSpeed = speeds[v].time;
 		this.graph.updateForSpeed(speeds[v].graph);
 		this.itemCollection.updateForSpeed();
-		document.getElementById('disp' + id)
-				.innerHTML = speeds[v].time;
+//		document.getElementById('disp' + id)
+//				.innerHTML = speeds[v].time;
 		if (oldFrameSpeed < 100 && this.frameSpeed > 100 ){
 			if (this.isRunning){
 				this.pause();
@@ -235,12 +236,12 @@ export class OmConcept {
 				   && this.frameSpeed < 100){
 			this.uncoverAnimation();
 		}
-	}
+	};
 	coverAnimation(){
 		const elem = document.getElementById(
 			'coverAnimation'+this.key);
 		elem.classList.add('coverAnimation2');
-	}
+	};
 	uncoverAnimation(){
 		const elem = document.getElementById(
 			'coverAnimation'+this.key);		elem.classList.remove('coverAnimation2');
