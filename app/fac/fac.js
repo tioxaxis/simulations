@@ -158,48 +158,49 @@ anim.worker[2] = {left: 16*c,
 
 function facDefineUsrInputs(){
     let usrInputs = new Map();
-    usrInputs.set('qln', new ArbRange('qlnfac',qlnSpecifics, 
-                             ['1','3','5','∞'], 
+    usrInputs.set('qln', new ArbRange('qlnfac',
+                qlnSpecifics, ['1','3','5','∞'], 
                              [1,3,5,-1]) );
-    usrInputs.set('face', new RadioButton('facefac',featureSpecifics,
-                                          ['0','1','2']) );
-    usrInputs.set('eyes', new RadioButton('eyesfac',featureSpecifics,
-                                         ['0','1','2']) );
-    usrInputs.set('nose', new RadioButton('nosefac',featureSpecifics,
-                                         ['0','1','2']) );
-    usrInputs.set('mout', new RadioButton('moutfac',featureSpecifics,
-                                         ['0','1','2']) );
-    usrInputs.set('ears', new RadioButton('earsfac',featureSpecifics,
-                                         ['0','1','2']) );
-    usrInputs.set('hair', new RadioButton('hairfac',featureSpecifics,
-                                         ['0','1','2']) );
+    usrInputs.set('face', new RadioButton('facefac',
+                featureStageSpecifics, ['0','1','2']) );
+    usrInputs.set('eyes', new RadioButton('eyesfac',
+                featureStageSpecifics, ['0','1','2']) );
+    usrInputs.set('nose', new RadioButton('nosefac',
+                featureStageSpecifics, ['0','1','2']) );
+    usrInputs.set('mout', new RadioButton('moutfac',
+                featureStageSpecifics, ['0','1','2']) );
+    usrInputs.set('ears', new RadioButton('earsfac',
+                featureStageSpecifics, ['0','1','2']) );
+    usrInputs.set('hair', new RadioButton('hairfac',
+                featureStageSpecifics, ['0','1','2']) );
     usrInputs.set('faceTime', new NumRange('faceTimefac',
-                featureSpecifics, 0,1,9,1) );
+                featureTimeSpecifics, 0,1,9,1,1,1) );
     usrInputs.set('eyesTime', new NumRange('eyesTimefac',
-                featureSpecifics, 0,1,9,1) );
+                featureTimeSpecifics, 0,1,9,1,1,1) );
     usrInputs.set('noseTime', new NumRange('noseTimefac',
-                featureSpecifics, 0,1,9,1) );
+                featureTimeSpecifics, 0,1,9,1,1,1) );
     usrInputs.set('moutTime', new NumRange('moutTimefac',
-                featureSpecifics, 0,1,9,1) );
+                featureTimeSpecifics, 0,1,9,1,1,1) );
     usrInputs.set('earsTime', new NumRange('earsTimefac',
-                featureSpecifics, 0,1,9,1) );
+                featureTimeSpecifics, 0,1,9,1,1,1) );
     usrInputs.set('hairTime', new NumRange('hairTimefac',
-                featureSpecifics, 0,1,9,1) );
+                featureTimeSpecifics, 0,1,9,1,1,1) );
     usrInputs.set('quantity0', new IntegerInput('quantity0fac',
-                quantitySpecifics, 0,1,3,1) );
+                quantitySpecifics, 1,3,1,1) );
     usrInputs.set('quantity1', new IntegerInput('quantity1fac',
-                quantitySpecifics, 0,1,3,1) );
+                quantitySpecifics, 1,3,1,1) );
     usrInputs.set('quantity2', new IntegerInput('quantity2fac',
-                quantitySpecifics, 0,1,3,1) );
+                quantitySpecifics, 1,3,1,1) );
     usrInputs.set('speed', new ArbRange('speedfac',
                 speedSpecifics, ['1x','2x','5x','10x','25x'],
 				                [1,2,5,10,25]) );
-    usrInputs.set('action', new RadioButton('actionfac',actionSpecifics,
-                                           ['none','play','pause']) );
-    usrInputs.set('reset', new CheckBox('resetfac',resetSpecifics) );
+    usrInputs.set('action', new RadioButton('actionfac',
+                actionSpecifics, ['none','play','pause']) );
+    usrInputs.set('reset', new CheckBox('resetfac',
+                resetSpecifics) );
     return usrInputs;
 };
-function qlnSpecifics(id,i,v){
+function qlnSpecifics(key,i,v){
 //    console.log('changed the queue length parameter!! to ', v);
     theSimulation.queues[1].setMaxSeats(v);
     theSimulation.queues[2].setMaxSeats(v);
@@ -207,18 +208,19 @@ function qlnSpecifics(id,i,v){
 //    fac.reset();
 }
 
-function featureSpecifics(){
-//    computeStageTimes();
-//    fac.graph.doReset = false;
-//    fac.reset();
+function featureStageSpecifics(key,x){
+    fac.features[key].stage = Number(x);
 };
-function quantitySpecifics(id,v){
-    theSimulation.workers[id.slice(-4,-3)].setNumMachines(v);
+function featureTimeSpecifics(key,x){
+    fac.features[key.slice(0,4)].time = Number(x) * tioxTimeConv;
+};
+function quantitySpecifics(key,v){
+    theSimulation.workers[key.slice(-1)].setNumMachines(v);
 //    computeStageTimes();
 //    fac.graph.doReset = false;
 //    fac.reset();
 }
-function speedSpecifics(id,v){
+function speedSpecifics(key,v){
    fac.adjustSpeed(v,speeds); 
 }
 const actionSpecifics = null;
@@ -227,29 +229,27 @@ const resetSpecifics = null;
 
 
 function computeStageTimes(){
-    for(let f in fac.features){
-        fac.features[f].time = Number(
-            document.getElementById(f+'Timefac').value) * tioxTimeConv;
-    };
+    
     for(let s = 0; s < 3; s++){
         let total = 0;
         let count = 0;
-        for(let f in fac.features){
-           
-            const c = document.getElementById(f + s + 'fac').checked;
-            if (c) {
-               fac.features[f].stage = s;
-               count++;
-               total += fac.features[f].time;
-            }   
-        };
+        for(let key in fac.features){
+            let f = fac.features[key];
+            if( f.stage == s ){
+                count++
+                total += f.time;
+                console.log(key,s, f.time);
+            }
+        }
         fac.stageTimes[s].setMean(total);
+        console.log('stage',s,total);
         
         // adjust the feature time by stage to remove the movetime.
         let delta =  moveTime/count;
-        for(let f in fac.features){
-            if( fac.features[f].stage == s) {
-                fac.features[f].time -= delta;
+        for(let key in fac.features){
+            let f = fac.features[key];
+            if( f.stage == s) {
+                f.adjustedTime = f.time - delta;
                 }
         };
     };
@@ -267,23 +267,16 @@ function computeStageTimes(){
             fac.lastStage = i;
             break;
         }
-//    const qlength = fac.usrInputs.get('qln').getValue();
-//    theSimulation.queues[1].setMaxSeats(qlength);
-//    theSimulation.queues[2].setMaxSeats(qlength);
-//    
-//    for( let k = 0; k < 3; k ++) {
-//        const inp = fac.usrInputs.get('quantity'+k);
-//        theSimulation.workers[k].setNumMachines(inp.get());
-//    }
+
     
     // set creator rate and movement based on first stage with nonzero proctime
     const k = fac.firstStage;
     fac.creatorTime.setMean( fac.stageTimes[k].mean /
-    document.getElementById('quantity'+k+'fac').value); 
+    fac.usrInputs.get('quantity'+k).get()); 
     animForCreator.left = anim.queue[k].left;
     animForCreator.top = anim.queue[k].top;
     
-    
+    //set links between machines and queues in process
     let previousMachine = theSimulation.creator;
     for( let i = 0; i < 3; i++ ){
         if( fac.stageTimes[i].mean != 0 ){
@@ -298,7 +291,7 @@ function computeStageTimes(){
 
 
 function facDefine(){
-	let fac = new FaceGame();
+	
 	document.getElementById('fac').omConcept = fac;
 	
 //	document.getElementById('slidersWrapperfac')
@@ -308,34 +301,33 @@ function facDefine(){
 //			.addEventListener('input', captureChangeInFacData);
 	
 	fac.tioxTimeConv = tioxTimeConv;
-	fac.sliderTypes = {
-		qln: 'range',
-		face: 'radio',
-		eyes: 'radio',
-		nose: 'radio',
-		mouth: 'radio',
-		ears: 'radio',
-		hair: 'radio',
-        faceTime: 'range',
-        eyesTime: 'range',
-        noseTime: 'range',
-        earsTime: 'range',
-        moutTime: 'range',
-        hairTime: 'range',
-        quantity0: 'number',
-        quantity1: 'number',
-        quantity2: 'number',
-        speed: 'range',
-		action: 'radio',
-		reset: 'checkbox'
-	};
+//	fac.sliderTypes = {
+//		qln: 'range',
+//		face: 'radio',
+//		eyes: 'radio',
+//		nose: 'radio',
+//		mouth: 'radio',
+//		ears: 'radio',
+//		hair: 'radio',
+//        faceTime: 'range',
+//        eyesTime: 'range',
+//        noseTime: 'range',
+//        earsTime: 'range',
+//        moutTime: 'range',
+//        hairTime: 'range',
+//        quantity0: 'number',
+//        quantity1: 'number',
+//        quantity2: 'number',
+//        speed: 'range',
+//		action: 'radio',
+//		reset: 'checkbox'
+//	};
     fac.stageTimes = [];
     fac.features = {face: {},eyes:{},nose:{},ears:{},mout:{},hair:{}};
     for( let k = 0; k < 3; k++)
         fac.stageTimes[k] = new DeterministicRV(0);
     fac.creatorTime = new DeterministicRV(0);
     
-
 
 	anim.stage.foreContext = document
 			.getElementById('foregroundfac')
@@ -406,8 +398,9 @@ function markCard(){
 }
 
 class FaceGame extends OmConcept {
-	constructor(){
+	constructor(usrInputs){
         super('fac');
+        this.usrInputs = usrInputs;
         document.getElementById('slidersWrapperfac')
 			.removeEventListener('input', this.captureChangeInSliderG.bind(this));
         document.getElementById('facDataWrapperfac')
@@ -416,6 +409,7 @@ class FaceGame extends OmConcept {
 			.addEventListener('input', this.captureUserUpdate.bind(this));
         document.getElementById('markButtonfac')
             .addEventListener('click', markCard);
+        this.setupScenarios();
     };
     localReset () {
         fac.now = fac.frameNow = 0;
@@ -442,6 +436,7 @@ class FaceGame extends OmConcept {
         }
         let changed = {};
         changed[keyShort] = true;
+        console.log(' in capture user update key=',keyShort);
         this.localUpdate(changed);
         
     };
@@ -468,9 +463,13 @@ class FaceGame extends OmConcept {
        this.localUpdate(changed);
     };
     localUpdate(changed){
-        const needReset = {qln: true, face: true, eyes: true, nose: true,
-		mouth: true, ears: true, hair: true, faceTime: true, eyesTime: true,
-        noseTime: true, earsTime: true, moutTime: true, hairTime: true, quantity0: true, quantity1: true, quantity2: true};
+        const needReset = {qln: true, face: true,
+                           eyes: true, nose: true,
+                           mout: true, ears: true,
+                           hair: true, faceTime: true,
+                           eyesTime: true, noseTime: true,
+                           earsTime: true, moutTime: true,
+                           hairTime: true, quantity0: true, quantity1: true, quantity2: true};
         for(let key in needReset){
             if( changed[key] && needReset[key] ){
                 this.reset()
@@ -494,19 +493,24 @@ class FaceGame extends OmConcept {
     sEncode(row){
         let str = '';
         for ( let [key, inp] of this.usrInputs ){
-            str += inp.encode(row[key]);
+            const x = inp.encode(row[key]);
+            console.log('in Encode', key, row[key],x);
+            str += x;
         }
-        return str;
+        return str + row['desc'];
     };
     sDecode(str){
-        let row = '';
+        let row = {};
         let p = 0;
         for ( let [key, inp] of this.usrInputs ){
             let len = inp.shortLen;
-            row[key] = inp.decode(str.splice(p,p+len));
+            
+            console.log('in Decode', str, str.slice(p,p+len),len, key);
+            row[key] = inp.decode(str.slice(p,p+len));
             p += len;
         }
-      
+        row.desc = str.slice(p);
+        return row;
     };
 };
 
@@ -578,7 +582,7 @@ class AnimForQueue  {
                 let destTime = Math.max(this.left + point.x - card.cur.x,
                                        this.top + point.y - card.cur.y) 
                                 / anim.stage.normalSpeed;
-                console.log('destTime',destTime);
+//                console.log('destTime',destTime);
                 card.updatePath({
                     t: fac.now + destTime+700,
                     x: this.left + point.x,
@@ -759,6 +763,7 @@ const theSimulation = {
 		
 		//queues
 		this.supply = new Supplier(anim.card.path.left, anim.card.path.top);
+        fac.resetCollection.push(this.supply);
         const shortWalkingTime = 0.25*tioxTimeConv;
 
 		const animQueue0 = new AnimForQueue(0, 1, anim.queue[0].left,
@@ -835,6 +840,9 @@ class Supplier {
 		this.y = y;
         this.markCount = 0;
 	};
+    reset(){
+        this.markCount = 0;
+    }
 	pull() {
         
 		const card = new Card(fac, this.x, this.y);
@@ -905,16 +913,16 @@ class FaceCard {
                      ears:null, mout:null, hair:null};
         this.mark = false;
     }
-    startStage (which, now){
-        
-        let t = now +moveTime;
-        for ( let f in fac.features){
-            if( fac.features[f].stage == which){
-                this.start[f] = t;
-                t += fac.features[f].time;
+    startStage (stage, now){
+        //set start time for each feature at stage
+        let t = now + moveTime;
+        for ( let key in fac.features){
+            let f = fac.features[key];
+            if( f.stage == stage){
+                this.start[key] = t;
+                t += f.adjustedTime;
             };
         };
-//        console.log('which', which, this.start);
     };
     moveTo(x, y) {
 		this.x = Math.floor(x);
@@ -943,15 +951,15 @@ class FaceCard {
         ctx.stroke();
         ctx.closePath();
         
-        for( let f in this.start ){
-            const s = this.start[f];
-            if(!s || now < s ) continue;
-            const frac = Math.min(1,(now-s)/fac.features[f].time);
+        for( let key in this.start ){
+            const s = this.start[key];
+            if( !s || now < s ) continue;
+            const frac = Math.min(1,(now-s)/fac.features[key].adjustedTime);
             const frac1 = Math.min(1,frac*2);
             const frac2 = ( frac - 0.5 ) * 2;
-            const sg = fac.features[f].stage
+            const sg = fac.features[key].stage
             ctx.strokeStyle = anim.worker[sg].color;
-            switch (f) {
+            switch (key) {
                 case 'face':
                     ctx.beginPath();
                     ctx.lineWidth = 1;
@@ -1062,12 +1070,12 @@ function facHTML(usrInputs){
 export function facStart() {
 	let usrInputs = facDefineUsrInputs();
     facHTML(usrInputs);
-    fac = facDefine();
-    fac.usrInputs = usrInputs;
-    
-    
-    
-	theSimulation.initialize();
+    fac = new FaceGame(usrInputs);
+    facDefine();
+    theSimulation.initialize();
+    for( let [key, inp] of fac.usrInputs ){
+        inp.userUpdate();
+    };
 	fac.reset();
 	return fac;
 };

@@ -174,10 +174,9 @@ export function copyMainPage(key){
 
 export class NumRange{
     // slider stores a number; receives and returns string
-    constructor (id, specifics, precision, min, max, step,
-                 shortLen, scale){
+    constructor (id, specifics, precision, min, max, step, shortLen, scale){
         this.id = id;
-        this.key = id.slice(-3);
+        this.key = id.slice(0,-3);
         this.specifics = specifics;
         this.precision = precision;
         this.min = min;
@@ -197,12 +196,11 @@ export class NumRange{
         const disp = document.getElementById('disp' + this.id);
         if( disp ) disp.innerHTML = Number(x).toFixed(this.precision);
         return changed;
-        if( this.specifics ) this.specifics(this.id, x);
+        if( this.specifics ) this.specifics(this.key, x);
     };
 
     encode(x){
-       return (x * this.scale)
-           .padStart(this.shortLen,'0'); 
+       return (x * this.scale).toString().padStart(this.shortLen,'0'); 
     };
     decode(x){
         return x;
@@ -211,7 +209,7 @@ export class NumRange{
         let x = this.get();
         const disp = document.getElementById('disp' + this.id);
         if( disp ) disp.innerHTML = Number(x).toFixed(this.precision);
-        if( this.specifics ) this.specifics(this.id, x);
+        if( this.specifics ) this.specifics(this.key, x);
         return x;
     }
     
@@ -242,9 +240,11 @@ export class ArbRange{
     //slider holds the index but otherwise use values[index]
     constructor (id, specifics, displayValues, values ){
         this.id = id;
+        this.key = id.slice(0,-3);
         this.displayValues = displayValues;
         this.values = values;
         this.specifics = specifics;
+        this.shortLen = 1;
     };
 
     get() {
@@ -261,9 +261,8 @@ export class ArbRange{
         document.getElementById(this.id).value = i;
         const disp = document.getElementById('disp' + this.id);
         disp.innerHTML = this.displayValues[i];
+        if( this.specifics ) this.specifics(this.key, i, this.values[i]);
         return changed;
-        if( this.specifics ) this.specifics(this.id, i, this.values[i]);
-
     };
     encode(x){
         return x.toString();;
@@ -276,7 +275,7 @@ export class ArbRange{
         let index = document.getElementById(this.id).value;
         const disp = document.getElementById('disp' + this.id);
         disp.innerHTML = this.displayValues[index];
-        if( this.specifics ) this.specifics(this.id, index, this.values[index]);
+        if( this.specifics ) this.specifics(this.key, index, this.values[index]);
         return index;
     };
     
@@ -310,7 +309,9 @@ export class CheckBox{
     //slider holds "checked" receives and returns string
     constructor(id, specifics){
         this.id = id;
+        this.key = id.slice(0,-3);
         this.specifics = specifics;
+        this.shortLen = 1;
     };
     get() {
         return document.getElementById(this.id).checked.toString();
@@ -321,7 +322,7 @@ export class CheckBox{
         const changed = elem.checked != b;
         elem.checked = x == 'true';
         return changed;
-        if( this.specifics ) this.specifics(this.id, x);
+        if( this.specifics ) this.specifics(this.key, x);
     };
     encode(x){
         return ( x == 'true' ? 'T' : 'F');
@@ -331,7 +332,7 @@ export class CheckBox{
     };
     userUpdate(){
         const b = this.get();
-            if( this.specifics ) this.specifics(this.id, b);
+            if( this.specifics ) this.specifics(this.key, b);
         return b;
     };
     
@@ -350,8 +351,10 @@ export class CheckBox{
 export class RadioButton{
     constructor(name, specifics, values){
         this.name = name;
+        this.key = name.slice(0,-3);
         this.specifics = specifics;
         this.values = values;
+        this.shortLen = 1;
     }
     get(){
         const nodelist = document.getElementsByName(this.name);
@@ -370,7 +373,7 @@ export class RadioButton{
               const changed = !nodelist[j].checked;
               nodelist[j].checked = true;
               if( this.specifics )
-                  this.specifics(this.name, str);
+                  this.specifics(this.key, str);
               return changed;
           }
         }
@@ -378,15 +381,15 @@ export class RadioButton{
         debugger;
     };
     encode(v){
-        return values.findIndex((x) => x == v ).toString();
+        return this.values.findIndex((x) => x == v ).toString();
     };
     decode(k){
-         return values[k];
+         return this.values[k];
     };
     userUpdate(){
         const v = this.get();
         if( this.specifics ) 
-            this.specifics(this.name, v)
+            this.specifics(this.key, v)
     };
     
     htmlRadioButton( id ,value, checked, desc){
@@ -409,6 +412,7 @@ export class IntegerInput{
     //returns and receives number
     constructor (id, specifics, min, max, step, shortLen){
         this.id = id;
+        this.key = id.slice(0,-3);
         this.specifics = specifics;
         this.min = min;
         this.max = max;
@@ -423,14 +427,14 @@ export class IntegerInput{
         const elem = document.getElementById(this.id);
         const changed = elem.value != x;
         elem.value = x;
-        if( this.specifics ) this.specifics(this.id, x);
+        if( this.specifics ) this.specifics(this.key, x);
         return changed;
 //        const disp = document.getElementById('disp' + this.id);
 //        if( disp ) disp.innerHTML = x.toFixed(this.precision);
 //        
     };
     encode(x){
-        return x.padStart(this.shortLen,'0');
+        return x.toString().padStart(this.shortLen,'0');
     };
     decode(x){
        return x; 
@@ -439,7 +443,7 @@ export class IntegerInput{
         let x = this.get();
 //        const disp = document.getElementById('disp' + this.id);
 //        if( disp ) disp.innerHTML = x.toFixed(this.precision);
-        if( this.specifics ) this.specifics(this.id, x);
+        if( this.specifics ) this.specifics(this.key, x);
         return x;
     }
 }
@@ -450,6 +454,7 @@ export class LegendItem{
         this.lineInfo = lineInfo;
         this.index = index;
         this.specifics = specifics;
+        this.shortLen = 1;
     }
     get() {
          return this.lineInfo[index].visible.toString();
@@ -459,7 +464,7 @@ export class LegendItem{
         const b = x == 'true';
         const changed = elem.visible != b;
         elem.visible = b;
-        if( this.specifics ) this.specifics(this.id, x);
+        if( this.specifics ) this.specifics( x);
         return changed;
     };
     encode(x) {

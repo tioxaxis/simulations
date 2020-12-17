@@ -97,7 +97,7 @@ export class OmConcept {
 		this.isRunning = false;
 		this.requestAFId = null; // id for requestAnimationFrame
 
-		this.setupScenarios();
+		
 		this.itemCollection = new ItemCollection();
         this.resourceCollection = new ResourceCollection();
 		this.resetCollection.push(this.itemCollection);
@@ -220,7 +220,8 @@ export class OmConcept {
 	};
     
 	adjustSpeed(v,speeds){
-		const oldFrameSpeed = this.frameSpeed;
+		if( this.frameSpeed = speeds[v].time) return;
+        const oldFrameSpeed = this.frameSpeed;
 		this.frameSpeed = speeds[v].time;
 		this.graph.updateForSpeed(speeds[v].graph);
 		this.itemCollection.updateForSpeed();
