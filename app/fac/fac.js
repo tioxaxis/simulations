@@ -202,26 +202,23 @@ function facDefineUsrInputs(){
 };
 function qlnSpecifics(key,i,v){
 //    console.log('changed the queue length parameter!! to ', v);
-    theSimulation.queues[1].setMaxSeats(v);
-    theSimulation.queues[2].setMaxSeats(v);
+//    theSimulation.queues[1].setMaxSeats(v);
+//    theSimulation.queues[2].setMaxSeats(v);
 //    fac.graph.doReset = false;
 //    fac.reset();
 }
 
 function featureStageSpecifics(key,x){
-    fac.features[key].stage = Number(x);
+//    fac.features[key].stage = Number(x);
 };
 function featureTimeSpecifics(key,x){
-    fac.features[key.slice(0,4)].time = Number(x) * tioxTimeConv;
+//    fac.features[key.slice(0,4)].time = Number(x) * tioxTimeConv;
 };
 function quantitySpecifics(key,v){
-    theSimulation.workers[key.slice(-1)].setNumMachines(v);
-//    computeStageTimes();
-//    fac.graph.doReset = false;
-//    fac.reset();
+//    theSimulation.workers[key.slice(-1)].setNumMachines(v);
 }
-function speedSpecifics(key,v){
-   fac.adjustSpeed(v,speeds); 
+function speedSpecifics(key,index,v){
+//   fac.adjustSpeed(index,speeds); 
 }
 const actionSpecifics = null;
 const resetSpecifics = null;
@@ -230,26 +227,37 @@ const resetSpecifics = null;
 
 function computeStageTimes(){
     
+    let qlength = fac.usrInputs.get('qln').getValue();
+    theSimulation.queues[1].setMaxSeats(qlength);
+    theSimulation.queues[2].setMaxSeats(qlength);
+    
+    for( let m = 0; m < 3; m++ ) {
+        let nMachines = fac.usrInputs.get('quantity'+m).get();
+        theSimulation.workers[m].setNumMachines(nMachines);
+    };
+    
     for(let s = 0; s < 3; s++){
         let total = 0;
         let count = 0;
         for(let key in fac.features){
-            let f = fac.features[key];
-            if( f.stage == s ){
+            let stage = Number(fac.usrInputs.get(key).get());
+            let time = Number(fac.usrInputs.get(key+'Time').get());
+            if( stage == s ){
                 count++
-                total += f.time;
-                console.log(key,s, f.time);
+                total += time;
+                console.log(key,s, time);
             }
         }
-        fac.stageTimes[s].setMean(total);
+        fac.stageTimes[s].setMean(total * tioxTimeConv);
         console.log('stage',s,total);
         
         // adjust the feature time by stage to remove the movetime.
         let delta =  moveTime/count;
         for(let key in fac.features){
-            let f = fac.features[key];
-            if( f.stage == s) {
-                f.adjustedTime = f.time - delta;
+            let stage = fac.usrInputs.get(key).get();
+            let time = fac.usrInputs.get(key+'Time').get()
+            if( stage == s) {
+                fac.features[key].adjustedTime = time * tioxTimeConv - delta;
                 }
         };
     };
@@ -293,35 +301,7 @@ function computeStageTimes(){
 function facDefine(){
 	
 	document.getElementById('fac').omConcept = fac;
-	
-//	document.getElementById('slidersWrapperfac')
-//	.addEventListener('input', captureChangeInSliderS);
-//    
-//    document.getElementById('facDataWrapper')
-//			.addEventListener('input', captureChangeInFacData);
-	
 	fac.tioxTimeConv = tioxTimeConv;
-//	fac.sliderTypes = {
-//		qln: 'range',
-//		face: 'radio',
-//		eyes: 'radio',
-//		nose: 'radio',
-//		mouth: 'radio',
-//		ears: 'radio',
-//		hair: 'radio',
-//        faceTime: 'range',
-//        eyesTime: 'range',
-//        noseTime: 'range',
-//        earsTime: 'range',
-//        moutTime: 'range',
-//        hairTime: 'range',
-//        quantity0: 'number',
-//        quantity1: 'number',
-//        quantity2: 'number',
-//        speed: 'range',
-//		action: 'radio',
-//		reset: 'checkbox'
-//	};
     fac.stageTimes = [];
     fac.features = {face: {},eyes:{},nose:{},ears:{},mout:{},hair:{}};
     for( let k = 0; k < 3; k++)
@@ -342,54 +322,6 @@ function facDefine(){
 	fac.stage = anim.stage;
     return fac;
 };
-//function localReset () {
-//		
-//	// schedule the initial Person to arrive and start the simulation/animation.
-//	theSimulation.supply.previous = null;
-//	theSimulation.creator.knockFromPrevious();
-//	fac.now = fac.frameNow = 0;
-//    computeStageTimes();
-//
-//    //link the queues and machines to only include machines with 
-//    // procTime > 0.
-//    
-//};
-
-//function facDecodeURL(str){
-//	const actionValue = {N:"none", G:"play", S:"pause"};
-//	const boolValue = {T: 'true', F: 'false'};
-//	return( 
-//	{qln: str.substr(0,1),
-//     face: str.substring(1,2),
-//     eyes: str.substring(2,3),
-//     nose: str.substring(3,4),
-//     mouth: str.substring(4,5),
-//     ears: str.substring(5,6),
-//     hair: str.substring(6,7),
-//     quantity0: str.substring(7,8),
-//     quantity1: str.substring(8,9),
-//     quantity2: str.substring(9,10),
-//     speed: str.substring(16,17),
-//	 action: actionValue[str.substring(17,18)],
-//	 reset: boolValue[str.substring(18,19)],
-//	 desc: str.substring(22)
-//	})
-//};
-//function facEncodeURL(row){markCard
-//	const actionValue = {none: "N", play: "G", pause: "S"};
-//	return ('') 
-//	.concat(row.qln, row.face, row.eyes, row.nose, row.mouth,
-//            row.ears, row.hair, row.quantity0, row.quantity1, row.quantity2,
-//            row.speed, actionValue[row.action], row.desc);
-//}
-
-
-
-
-//  One variable for each process step or queue
-//  that contains the functions to do the specific
-//  animation for that process step
-
 
 function markCard(){
     theSimulation.creator.machs[0]
@@ -415,7 +347,7 @@ class FaceGame extends OmConcept {
         fac.now = fac.frameNow = 0;
         theSimulation.supply.previous = null;
         theSimulation.creator.knockFromPrevious();
-        computeStageTimes();
+//        computeStageTimes();
         this.resourceCollection.drawAll();
     };
     captureUserUpdate(){
@@ -469,17 +401,19 @@ class FaceGame extends OmConcept {
                            hair: true, faceTime: true,
                            eyesTime: true, noseTime: true,
                            earsTime: true, moutTime: true,
-                           hairTime: true, quantity0: true, quantity1: true, quantity2: true};
+                           hairTime: true, quantity0: true, 
+                           quantity1: true, quantity2: true};
         for(let key in needReset){
             if( changed[key] && needReset[key] ){
+                computeStageTimes();
                 this.reset()
                 break;
             }
         }
-//        if (changed['speed']){
-//            const v = fac.usrInputs.get('speed').getValue();
-//            fac.adjustSpeed(v,speeds);
-//        }
+        
+        if( changed['speed'] ){
+            fac.adjustSpeed(fac.usrInputs.get('speed').get(),speeds);
+        }
     };
     
     getSliders () {
@@ -487,7 +421,7 @@ class FaceGame extends OmConcept {
         for( let [key, inp]  of fac.usrInputs ){
             row[key] = inp.get();
         };
-        console.log('get sliders row=',row);
+//        console.log('get sliders row=',row);
         return row;
     };
     sEncode(row){
@@ -596,16 +530,8 @@ class AnimForQueue  {
 const animForWalkOffStage = {
     walkingTime: 2000,
 	reset: function () {
-        
-       
     },
 	start: function (card) {
-        
-        
-//        console.log('now=',fac.now,'about to graph', card.which);
-        
-        
-        
          card.updatePath({
                 t: fac.now + anim.card.width*2/anim.stage.normalSpeed,
                 x: card.cur.x+anim.card.width*2,
@@ -625,11 +551,6 @@ const animForCreator = {
     
 	reset: function () {},
 	start: function (theProcTime, card, m) {
-//        card.addPath({
-//           t: fac.now + theProcTime,
-//            x: this.left,
-//            y: this.top
-//        })
     },
 	finish: function (card) {
         card.arrivalTime = fac.now;
@@ -649,34 +570,23 @@ class animForWorker {
         
     };
     reset(){
-        
-//        this.lastExit = null;
         this.timeFirstThru = null;
         this.count = 0;
-        
     // clear and redraw workers[this.which] 
         this.draw();
-        
-        
     };
      start(time,card,machine){
-//         console.log('started stage', this.which, 'now=', fac.now, 'card=',card.which);
          card.graphic.startStage(this.which,fac.now);
          card.updatePath({
                 t: fac.now + 500,
                 x: this.leftCard,
                 y: this.top+ machine * this.deltaY
          });
-         
-         // background should switch to blue - working.  
-         // the idle or blocked should go away.
      };
 //    leave(card){
 ////        console.log('now',fac.now, 'leaving stage',this.which,'card', card.which, )
 //    };
     finish (card){
-//        console.log('finished stage', this.which,' now=', fac.now,
-//                    'card=',card.which) 
         if(this.which == fac.lastStage){
             let thruput = null;
             if( this.timeFirstThru ){
@@ -685,8 +595,6 @@ class animForWorker {
             } else {
                 this.timeFirstThru = fac.now
             } 
-//            console.log('finished now=', fac.now,
-//                    'card=',card.which, fac.now - card.arrivalTime, thruput );
             fac.graph.push(fac.now, fac.now - card.arrivalTime, thruput );
         }
     };
@@ -754,9 +662,6 @@ const theSimulation = {
     walkOffStage: null,
 	
 	initialize: function () {
-
-//        computeStageTimes();
-        
         //graphs
         fac.graph = new FacGraph(fac, 'chartfac');
 		fac.resetCollection.push(fac.graph);
@@ -865,8 +770,6 @@ class Worker {
         this.left = left;
         this.top = top;
         this.lineWidth = 15;
-//        this.width = width;
-//        this.height = height;
         this.lastStatus = null;
         
     }
@@ -903,7 +806,6 @@ const pi2 =2 * 3.14159;
 const pi = 3.14159;
 class FaceCard {
     constructor(ctx,x,y,w,h){
-        
         this.ctx = ctx;
         this.x = x;
         this.y = y;
@@ -917,10 +819,10 @@ class FaceCard {
         //set start time for each feature at stage
         let t = now + moveTime;
         for ( let key in fac.features){
-            let f = fac.features[key];
-            if( f.stage == stage){
+            let s = Number(fac.usrInputs.get(key).get())
+            if( s == stage){
                 this.start[key] = t;
-                t += f.adjustedTime;
+                t += fac.features[key].adjustedTime;
             };
         };
     };
@@ -930,8 +832,6 @@ class FaceCard {
 	};
     
     draw(now){
-//        console.log('drawing one card at ',this.x,this.y,now);
-//        console.log('start',this.start);
         let ctx = this.ctx;
          ctx.save();
         
@@ -957,7 +857,7 @@ class FaceCard {
             const frac = Math.min(1,(now-s)/fac.features[key].adjustedTime);
             const frac1 = Math.min(1,frac*2);
             const frac2 = ( frac - 0.5 ) * 2;
-            const sg = fac.features[key].stage
+            const sg = fac.usrInputs.get(key).get();
             ctx.strokeStyle = anim.worker[sg].color;
             switch (key) {
                 case 'face':
@@ -1076,6 +976,7 @@ export function facStart() {
     for( let [key, inp] of fac.usrInputs ){
         inp.userUpdate();
     };
+    computeStageTimes();
 	fac.reset();
 	return fac;
 };
