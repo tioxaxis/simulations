@@ -131,9 +131,9 @@ export class OmConcept {
 		this.ulPointer.addEventListener('dblclick', this.liDblClicked.bind(this));
 		
 		//adjust slider
-		document.getElementById('slidersWrapper'+this.key)
-			.addEventListener('input', this.captureChangeInSliderG.bind(this));
-		this.inputEvent = new Event('input', {bubbles: true});
+//		document.getElementById('slidersWrapper'+this.key)
+//			.addEventListener('input', this.captureChangeInSliderG.bind(this));
+//		this.inputEvent = new Event('input', {bubbles: true});
 	}
 	
 	anyClick (event){
@@ -157,6 +157,30 @@ export class OmConcept {
         this.resetCollection.forEach(obj => obj.reset());
 		this.localReset();
 	};
+    captureUserUpdate(){
+        const e = event.target.closest('input');
+        if (!e) return;
+        const key = (e.type == 'radio' ? e.name : e.id);
+        const keyShort = key.slice(0,-3);
+        const inp = this.usrInputs.get(keyShort);
+        inp.userUpdate();
+        if( this.editMode ){
+            if( this.currentLi ){
+                this.currentLi.scenario[keyShort] = inp.get();
+            }
+        } else {
+            if (this.currentLi) 
+                this.currentLi.classList.remove("selected");
+            this.currentLi = null;
+        }
+        let changed = {};
+        changed[keyShort] = true;
+        console.log(' in capture user update key=',keyShort);
+        this.localUpdate(changed);
+        
+    };
+    
+    
     localReset(){
         alert(' this routine should be ovewritten, right?');
         debugger;
@@ -221,6 +245,7 @@ export class OmConcept {
     
 	adjustSpeed(v,speeds){
 		if( this.frameSpeed = speeds[v].time) return;
+        
         const oldFrameSpeed = this.frameSpeed;
 		this.frameSpeed = speeds[v].time;
 		this.graph.updateForSpeed(speeds[v].graph);
@@ -268,102 +293,154 @@ export class OmConcept {
 		this.itemCollection.updatePositionAll();
 	}
 
-	
-	 captureChangeInSliderG(event) {
-			let inputElem = event.target.closest('input');
-			if (!inputElem) return
-			if (event.isTrusted && this.editMode && this.currentLi) {
-				let iShort = event.target.id.slice(0,-3);
-				let v = inputElem.value;
-				let t = inputElem.type;
-				let nShort = inputElem.name.slice(0,-3);
-				let scen = this.currentLi.scenario;
-				// pull value into 'scen' or currentLi based on type of input
-				switch (t) {
-					case 'range':
-						scen[iShort] = v;
-						break;
-					case 'checkbox':
-						scen[iShort] = inputElem.checked.toString();
-						break;
-					case 'radio':
-						scen[nShort] = iShort;
-						break;
-					default:
-				}
-				this.saveEdit();
-			} else {
-				// changing a slider in non edit mode just deselects currentLi row.
-				if (this.currentLi) this.currentLi.classList.remove("selected");
-				this.currentLi = null;
-			};
-		};
-	
-	setSlidersFrom (row) {
-		for (let key in this.sliderTypes) {
-			let t = this.sliderTypes[key];
-			let inputBox = document.getElementById(key+this.key);
-			let v = row[key];
-			switch (t){
-				case 'range':
-					inputBox.value = v;
-					break;
-				case 'checkbox':
-					inputBox.checked = (v == 'true');
-					break;
-				case 'radio':
-					inputBox = document.getElementById(v+this.key);
-					let theNodeList = document.getElementsByName(key+this.key);
-					let j = findId(theNodeList, v+this.key);
-					if (j < 0) {
-						alert("can't find the doc elem with name", key, " and value ", v);
-						debugger;
-					}
-					theNodeList[j].checked = true;
-					break;
-				case 'legend':
-					this.graph.setVisible(key.slice(3), v == 'true');
-					break;
-			}
-			inputBox.dispatchEvent(this.inputEvent);
-		}
-		// not in edit mode then may cause a reset, a play, or a pause.
-		if (!this.editMode) {
-			if (row.reset == 'true')
-				document.getElementById('resetButton'+this.key).click();
-			if (row.action == 'play')
-				document.getElementById('playButton'+this.key).click();
-			else if (row.action == 'pause')
-				document.getElementById('pauseButton'+this.key).click();
-		}
-	};
+	setSlidersFrom (row){
+        const changed = {};
+        console.log(' set Sliders row=',row);
+        for( let [key, inp] of this.usrInputs ){
+          changed[key] = inp.set(row[key]);
+        } 
+        
+        // NEED to handle legend status which are checked and which are not
+        // add a new class of objects to handle these cases
+        
+        
+        if (!this.editMode) {
+            if (row.reset == 'true')
+                document.getElementById('resetButton'+this.key).click();
+            if (row.action == 'play')
+                document.getElementById('playButton'+this.key).click();
+            else if (row.action == 'pause')
+                document.getElementById('pauseButton'+this.key).click();
+        }
+       this.localUpdate(changed);
+    };
+    
+    getSliders () {
+        let row = {};
+        for( let [key, inp]  of this.usrInputs ){
+            row[key] = inp.get();
+        };
+//        console.log('get sliders row=',row);
+        return row;
+    };
+    sEncode(row){
+        let str = '';
+        for ( let [key, inp] of this.usrInputs ){
+            const x = inp.encode(row[key]);
+            console.log('in Encode', key, row[key],x);
+            str += x;
+        }
+        return str + row['desc'];
+    };
+    sDecode(str){
+        let row = {};
+        let p = 0;
+        for ( let [key, inp] of this.usrInputs ){
+            let len = inp.shortLen;
+            
+            console.log('in Decode', str, str.slice(p,p+len),len, key);
+            row[key] = inp.decode(str.slice(p,p+len));
+            p += len;
+        }
+        row.desc = str.slice(p);
+        return row;
+    };
 
-	getSliders () {
-		let row = {};
-		for (let key in this.sliderTypes) {
-			let inputElem = document.getElementById(key+this.key);
-			let t = this.sliderTypes[key];
-			switch (t) {
-				case 'range':
-					row[key] = inputElem.value
-					break;
-				case 'checkbox':
-					row[key] = inputElem.checked.toString();
-					break;
-				case 'radio':
-					let theNodeList = document.getElementsByName(key+this.key);
-					row[key] = theNodeList[getChecked(theNodeList)].value;
-					break;
-				case 'legend':
-					const k = key.slice(3);
-					row[key] = this.graph.lineInfo[k].visible.toString();
-					break;
-					
-				default:
-			}
-		}
-		return row;
-	};
+//	 captureChangeInSliderG(event) {
+//			let inputElem = event.target.closest('input');
+//			if (!inputElem) return
+//			if (event.isTrusted && this.editMode && this.currentLi) {
+//				let iShort = event.target.id.slice(0,-3);
+//				let v = inputElem.value;
+//				let t = inputElem.type;
+//				let nShort = inputElem.name.slice(0,-3);
+//				let scen = this.currentLi.scenario;
+//				// pull value into 'scen' or currentLi based on type of input
+//				switch (t) {
+//					case 'range':
+//						scen[iShort] = v;
+//						break;
+//					case 'checkbox':
+//						scen[iShort] = inputElem.checked.toString();
+//						break;
+//					case 'radio':
+//						scen[nShort] = iShort;
+//						break;
+//					default:
+//				}
+//				this.saveEdit();
+//			} else {
+//				// changing a slider in non edit mode just deselects currentLi row.
+//				if (this.currentLi) this.currentLi.classList.remove("selected");
+//				this.currentLi = null;
+//			};
+//		};
+	
+//	setSlidersFrom (row) {
+//		for (let key in this.sliderTypes) {
+//			let t = this.sliderTypes[key];
+//			let inputBox = document.getElementById(key+this.key);
+//			let v = row[key];
+//			switch (t){
+//				case 'range':
+//					inputBox.value = v;
+//					break;
+//				case 'checkbox':
+//					inputBox.checked = (v == 'true');
+//					break;
+//				case 'radio':
+//					inputBox = document.getElementById(v+this.key);
+//					let theNodeList = document.getElementsByName(key+this.key);
+//					let j = findId(theNodeList, v+this.key);
+//					if (j < 0) {
+//						alert("can't find the doc elem with name", key, " and value ", v);
+//						debugger;
+//					}
+//					theNodeList[j].checked = true;
+//					break;
+//				case 'legend':
+//					this.graph.setVisible(key.slice(3), v == 'true');
+//					break;
+//			}
+//			inputBox.dispatchEvent(this.inputEvent);
+//		}
+//		// not in edit mode then may cause a reset, a play, or a pause.
+//		if (!this.editMode) {
+//			if (row.reset == 'true')
+//				document.getElementById('resetButton'+this.key).click();
+//			if (row.action == 'play')
+//				document.getElementById('playButton'+this.key).click();
+//			else if (row.action == 'pause')
+//				document.getElementById('pauseButton'+this.key).click();
+//		}
+//	};
+
+//	getSliders () {
+//		let row = {};
+//		for (let key in this.sliderTypes) {
+//			let inputElem = document.getElementById(key+this.key);
+//			let t = this.sliderTypes[key];
+//			switch (t) {
+//				case 'range':
+//					row[key] = inputElem.value
+//					break;
+//				case 'checkbox':
+//					row[key] = inputElem.checked.toString();
+//					break;
+//				case 'radio':
+//					let theNodeList = document.getElementsByName(key+this.key);
+//					row[key] = theNodeList[getChecked(theNodeList)].value;
+//					break;
+//				case 'legend':
+//					const k = key.slice(3);
+//					row[key] = this.graph.lineInfo[k].visible.toString();
+//					break;
+//					
+//				default:
+//			}
+//		}
+//		return row;
+//	};
 	
 	createLineFromRow(row) {
 		const liElem = document.createElement("LI");

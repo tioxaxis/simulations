@@ -36,6 +36,12 @@ import {
 	TioxGraph
 }
 from "../mod/graph.js";
+import {
+	genPlayResetBox, genSlider, genArbSlider, genButton, addDiv,
+    ArbRange,  NumRange, genRange, CheckBox,  RadioButton, 
+    IntegerInput, addKeyForIds, LegendItem
+}
+from '../mod/genHTML.js';
 class QueueGraph extends TioxGraph {
 	constructor(omConcept){	
 		super(omConcept,'chartCanvasque', 40, {width:10, step:2}, d=>d.t);
@@ -142,26 +148,49 @@ anim.scannerDelta = {
   	dx: 0,
 	dy: anim.person.height * 1.8
 };
+
+function queDefineUsrInputs(){
+    let usrInputs = new Map();
+    usrInputs.set('ar', new NumRange('arque',
+                null, 1,0,10,.1,3,10) );
+    usrInputs.set('acv', new NumRange('acvque',
+                null, 1,0,2,.5,2,10) );
+    usrInputs.set('sr', new NumRange('srque',
+                null, 1,0,10,.1,3,10) );
+    usrInputs.set('scv', new NumRange('scvque',
+                null, 1,0,2,.5,2,10) );
+    usrInputs.set('leg0', new LegendItem('leg0que'));
+    usrInputs.set('leg1', new LegendItem('leg1que'));
+    usrInputs.set('leg2', new LegendItem('leg2que'));
+    
+    usrInputs.set('speed', new ArbRange('speedque',
+                null, ['1x','2x','5x','10x','25x'],
+				                [1,2,5,10,25]) );
+    usrInputs.set('action', new RadioButton('actionque',
+                null, ['none','play','pause']) );
+    usrInputs.set('reset', new CheckBox('resetque',
+                null) );
+    return usrInputs;
+};
 function queDefine(){
-	que = new OmConcept('que', queueEncodeURL, queueDecodeURL, localReset);
 	document.getElementById('que').omConcept = que;
 	
-	document.getElementById('slidersWrapperque')
-	.addEventListener('input', captureChangeInSliderS);
+//	document.getElementById('slidersWrapperque')
+//	.addEventListener('input', captureChangeInSliderS);
 	
 	que.tioxTimeConv = tioxTimeConv;
-	que.sliderTypes = {
-		ar: 'range',
-		acv: 'range',
-		sr: 'range',
-		scv: 'range',
-		speed: 'range',
-		action: 'radio',
-		leg0: 'legend',
-		leg1: 'legend',
-		leg2: 'legend',
-		reset: 'checkbox'
-	};
+//	que.sliderTypes = {
+//		ar: 'range',
+//		acv: 'range',
+//		sr: 'range',
+//		scv: 'range',
+//		speed: 'range',
+//		action: 'radio',
+//		leg0: 'legend',
+//		leg1: 'legend',
+//		leg2: 'legend',
+//		reset: 'checkbox'
+//	};
 
 
 	anim.stage.foreContext = document
@@ -180,6 +209,80 @@ function queDefine(){
 	gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height);
 };
+
+class Queueing extends OmConcept{
+    constructor(usrInputs){
+        super('que');
+        this.usrInputs = usrInputs;
+        document.getElementById('slidersWrapperque')
+			.addEventListener('input', this.captureUserUpdate.bind(this));
+        this.setupScenarios();    
+    }
+    localUpdate(changed){
+        
+        for(let key in changed){
+            if( !changed[key] ) continue;
+            let v = que.usrInputs.get(key).get();
+            switch (key){
+                case 'ar':
+                    theSimulation.interarrivalRV
+                        .setRate(v / tioxTimeConv);
+                    que.heap.modify('finish/creator', que.now, 
+                                    theSimulation.interarrivalRV);
+                    que.graph.updatePredictedWait();
+                    break;
+                case 'acv':
+                    theSimulation.interarrivalRV
+                        .setCV(v);
+                    que.heap.modify('finish/creator', que.now,
+                                    theSimulation.interarrivalRV);
+                    que.graph.updatePredictedWait();
+                    break;
+                case 'sr':
+                    theSimulation.serviceRV
+                        .setRate(v / tioxTimeConv);
+                    que.heap.modify('finish/TSAagent', que.now, 
+                                    theSimulation.serviceRV);
+                    que.graph.updatePredictedWait();
+                    break;
+                case 'scv':
+                    theSimulation.serviceRV
+                        .setCV(v);
+                    que.heap.modify('finish/TSAagent', que.now, 
+                                    theSimulation.serviceRV);
+                    que.graph.updatePredictedWait();
+                    break;
+                case 'speed':
+                    que.adjustSpeed(v,speeds);
+                    break;
+                case 'none':
+                case 'play':
+                case 'pause':
+                case 'reset':
+                    break;
+                default:
+                    alert(' reached part for default, key=',key);
+                    console.log(' reached part for default, key=',key);
+                    break;
+            }
+        }
+
+    };
+    localReset () {
+		
+        // schedule the initial Person to arrive and start the simulation/animation.
+        theSimulation.supply.previous = null;
+        theSimulation.creator.knockFromPrevious();
+
+        //fudge to get animation started quickly
+        let t = que.heap.top().time - 1;
+        que.now = que.frameNow = t;
+        theSimulation.nInQueue = 0;
+        document.getElementById('nInQueue').innerHTML = '0';
+    };
+    
+    
+};
 function localReset () {
 		
 	// schedule the initial Person to arrive and start the simulation/animation.
@@ -193,96 +296,96 @@ function localReset () {
 	document.getElementById('nInQueue').innerHTML = '0';
 };
 
-function queueDecodeURL(str){
-	const actionValue = {N:"none", G:"play", S:"pause"};
-	const boolValue = {T: 'true', F: 'false'};
-	return( 
-	{ar: str.substring(0,4),
-	acv: str.substring(4,8),
-	sr: str.substring(8,12),
-	scv: str.substring(12,16),
-	speed: str.substring(16,17),
-	 action: actionValue[str.substring(17,18)],
-	 reset: boolValue[str.substring(18,19)],
-	 leg0:  boolValue[str.substring(19,20)],
-	 leg1:  boolValue[str.substring(20,21)],
-	 leg2:  boolValue[str.substring(21,22)],
-	 desc: str.substring(22)
-	})
-};
-function queueEncodeURL(row){
-	const actionValue = {none: "N", play: "G", pause: "S"};
-	return Number(row.ar).toFixed(1).padStart(4,'0') 
-	.concat(Number(row.acv).toFixed(1).padStart(4,'0'),
-		Number(row.sr).toFixed(1).padStart(4,'0'),
-		Number(row.scv).toFixed(1).padStart(4,'0'),
-		row.speed,
-		actionValue[row.action],
-		(row.reset == "true" ? "T" : "F"),
-		(row.leg0 == "true" ? "T" : "F"),
-		(row.leg1 == "true" ? "T" : "F"),
-		(row.leg2 == "true" ? "T" : "F"),
-		row.desc);
-}
+//function queueDecodeURL(str){
+//	const actionValue = {N:"none", G:"play", S:"pause"};
+//	const boolValue = {T: 'true', F: 'false'};
+//	return( 
+//	{ar: str.substring(0,4),
+//	acv: str.substring(4,8),
+//	sr: str.substring(8,12),
+//	scv: str.substring(12,16),
+//	speed: str.substring(16,17),
+//	 action: actionValue[str.substring(17,18)],
+//	 reset: boolValue[str.substring(18,19)],
+//	 leg0:  boolValue[str.substring(19,20)],
+//	 leg1:  boolValue[str.substring(20,21)],
+//	 leg2:  boolValue[str.substring(21,22)],
+//	 desc: str.substring(22)
+//	})
+//};
+//function queueEncodeURL(row){
+//	const actionValue = {none: "N", play: "G", pause: "S"};
+//	return Number(row.ar).toFixed(1).padStart(4,'0') 
+//	.concat(Number(row.acv).toFixed(1).padStart(4,'0'),
+//		Number(row.sr).toFixed(1).padStart(4,'0'),
+//		Number(row.scv).toFixed(1).padStart(4,'0'),
+//		row.speed,
+//		actionValue[row.action],
+//		(row.reset == "true" ? "T" : "F"),
+//		(row.leg0 == "true" ? "T" : "F"),
+//		(row.leg1 == "true" ? "T" : "F"),
+//		(row.leg2 == "true" ? "T" : "F"),
+//		row.desc);
+//}
 
-function captureChangeInSliderS(event) {
-	let inputElem = event.target.closest('input');
-	if (!inputElem) return
-
-	var idShort = inputElem.id.slice(0,-3) ;
-	      //need to remove the concept name or
-	if (inputElem.type == 'range') {
-		var v = Number(inputElem.value)
-			.toFixed(precision[idShort]);
-		document.getElementById('disp' + inputElem.id)
-			.innerHTML = v;
-	}
-	switch (idShort) {
-		case 'ar':
-			theSimulation.interarrivalRV
-				.setRate(v / tioxTimeConv);
-			que.heap.modify('finish/creator', que.now, 
-							 theSimulation.interarrivalRV);
-			que.graph.updatePredictedWait();
-			break;
-
-		case 'acv':
-			theSimulation.interarrivalRV.setCV(v);
-			que.heap.modify('finish/creator', que.now,
-							 theSimulation.interarrivalRV);
-			que.graph.updatePredictedWait();
-
-			break;
-
-		case 'sr':
-			theSimulation.serviceRV
-				.setRate(v / tioxTimeConv);
-			que.heap.modify('finish/TSAagent', que.now, 
-							 theSimulation.serviceRV);
-			que.graph.updatePredictedWait();
-			break;
-
-		case 'scv':
-			theSimulation.serviceRV.setCV(v);
-			que.heap.modify('finish/TSAagent', que.now, 
-							 theSimulation.serviceRV);
-			que.graph.updatePredictedWait();
-			break;
-
-		case 'speed':
-			que.adjustSpeed(v,speeds);
-			break;
-		case 'none':
-		case 'play':
-		case 'pause':
-		case 'reset':
-			break;
-		default:
-			alert(' reached part for default, id=',idShort);
-			console.log(' reached part for default, id=',idShort);
-			break;
-	}
-}
+//function captureChangeInSliderS(event) {
+//	let inputElem = event.target.closest('input');
+//	if (!inputElem) return
+//
+//	var idShort = inputElem.id.slice(0,-3) ;
+//	      //need to remove the concept name or
+//	if (inputElem.type == 'range') {
+//		var v = Number(inputElem.value)
+//			.toFixed(precision[idShort]);
+//		document.getElementById('disp' + inputElem.id)
+//			.innerHTML = v;
+//	}
+//	switch (idShort) {
+//		case 'ar':
+//			theSimulation.interarrivalRV
+//				.setRate(v / tioxTimeConv);
+//			que.heap.modify('finish/creator', que.now, 
+//							 theSimulation.interarrivalRV);
+//			que.graph.updatePredictedWait();
+//			break;
+//
+//		case 'acv':
+//			theSimulation.interarrivalRV.setCV(v);
+//			que.heap.modify('finish/creator', que.now,
+//							 theSimulation.interarrivalRV);
+//			que.graph.updatePredictedWait();
+//
+//			break;
+//
+//		case 'sr':
+//			theSimulation.serviceRV
+//				.setRate(v / tioxTimeConv);
+//			que.heap.modify('finish/TSAagent', que.now, 
+//							 theSimulation.serviceRV);
+//			que.graph.updatePredictedWait();
+//			break;
+//
+//		case 'scv':
+//			theSimulation.serviceRV.setCV(v);
+//			que.heap.modify('finish/TSAagent', que.now, 
+//							 theSimulation.serviceRV);
+//			que.graph.updatePredictedWait();
+//			break;
+//
+//		case 'speed':
+//			que.adjustSpeed(v,speeds);
+//			break;
+//		case 'none':
+//		case 'play':
+//		case 'pause':
+//		case 'reset':
+//			break;
+//		default:
+//			alert(' reached part for default, id=',idShort);
+//			console.log(' reached part for default, id=',idShort);
+//			break;
+//	}
+//}
 
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
@@ -366,7 +469,6 @@ const animForWalkOffStage = {
 		}
 	}
 };
-
 const animForCreator = {
 	reset: function () {},
 	start: function (theProcTime, person, m) {},
@@ -433,19 +535,18 @@ const theSimulation = {
 	initialize: function () {
 
 		// random variables
-		let r = document.getElementById('arque').value;
-		let cv = document.getElementById('acvque').value;
-		theSimulation.interarrivalRV = new GammaRV(r / tioxTimeConv, cv);
-		r = document.getElementById('srque').value;
-		cv = document.getElementById('scvque').value;
-		theSimulation.serviceRV = new GammaRV(r / tioxTimeConv, cv);
+		const ar = que.usrInputs.get('ar').get();
+		const acv = que.usrInputs.get('acv').get();
+		theSimulation.interarrivalRV = new GammaRV(ar / tioxTimeConv, acv);
+		const sr = que.usrInputs.get('sr').get();
+		const scv = que.usrInputs.get('scv').get();
+		theSimulation.serviceRV = new GammaRV(sr / tioxTimeConv, scv);
 
 		que.graph = new QueueGraph(que);
 		que.resetCollection.push(que.graph);
 		
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
-
 
 		this.queue = new Queue(que, "theQueue", -1,
 			animForQueue.walkingTime, animForQueue,
@@ -519,13 +620,8 @@ export class Person extends Item {
 	};
 }; // end class Person
 
-import {
-	genPlayResetBox, genSlider, copyMainPage, addDiv
-	
-}
-from '../mod/genHTML.js';
 
-function queHTML(){	
+function queHTML(usrInputs){	
 	addDiv('que','que','whole')
 	addDiv('que', 'leftHandSideBox'+'que',
 			   'stageWrapper', 'statsWrapper',
@@ -542,17 +638,18 @@ function queHTML(){
 	//now put in the sliders with the play/reset box	
 	let elem = document.getElementById('slidersWrapperque');
 	elem.append(
-		genSlider('arque','Arrival Rate = ','5.0','',
-				  5,0,10,.5,[0,2,4,6,8,10]),
-		genSlider('acvque','Arrival CV = ','0.0','',
-				  0,0,2,.5,['0.0','1.0','2.0']),
-		genSlider('srque','Service Rate = ','6.0','',
-				  6,0,10,.5,[0,2,4,6,8,10] ), 
-		genSlider('scvque','Service CV = ','0.0','',
-				  0,0,2,.5,['0.0','1.0','2.0']),
+		usrInputs.get('ar')
+            .htmlNumSlider('Arrival Rate = ', 5,[0,2,4,6,8,10]),
+		usrInputs.get('acv')
+            .htmlNumSlider('Arrival CV = ', 0,['0.0','1.0','2.0']),
+        usrInputs.get('sr')
+            .htmlNumSlider('Service Rate = ', 6,[0,2,4,6,8,10]),
+		usrInputs.get('scv')
+            .htmlNumSlider('Service CV = ', 0,['0.0','1.0','2.0']),
 		genPlayResetBox('que'),
-		genSlider('speedque','Speed = ','1','x',
-				  0,0,5,1,["slow",' ',' ',' ',"fast",'full'])
+        usrInputs.get('speed')
+            .htmlArbSlider('Speed = ', 0,
+                            ["slow",' ',' ',' ',"fast",'full'])
 	);
 	
 	const f = document.getElementById('scenariosMidque');
@@ -560,9 +657,15 @@ function queHTML(){
 };
 
 export function queStart() {
-	queHTML();
-	queDefine();
-	theSimulation.initialize(); // the specific to queueing
+	let usrInputs = queDefineUsrInputs();
+    queHTML(usrInputs);
+    que = new Queueing(usrInputs);
+    queDefine();
+    theSimulation.initialize();
+    for( let [key, inp] of que.usrInputs ){
+        inp.userUpdate();
+    };
+    //computeStageTimes();
 	que.reset();
 	return que;
 };

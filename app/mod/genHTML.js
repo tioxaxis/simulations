@@ -200,10 +200,11 @@ export class NumRange{
     };
 
     encode(x){
-       return (x * this.scale).toString().padStart(this.shortLen,'0'); 
+       return (x * this.scale)
+           .toString().padStart(this.shortLen,'0'); 
     };
     decode(x){
-        return x;
+        return x / this.scale;
     }
     userUpdate(){
         let x = this.get();
@@ -278,7 +279,10 @@ export class ArbRange{
         if( this.specifics ) this.specifics(this.key, index, this.values[index]);
         return index;
     };
-    
+    htmlSetup(){
+        this.elem = document.getElementById(this.id);
+        this.disp = document.getElementById('disp'+this.id);
+    }
     htmlArbSlider(displayText, initial, sliderValues){
         const sp = document.createElement('span');
 		sp.id = 'disp' + this.id;
@@ -449,22 +453,19 @@ export class IntegerInput{
 }
 
 export class LegendItem{
-    //returns and receives string 'true'/'false'
-    constructor (lineInfo, index, specifics){
-        this.lineInfo = lineInfo;
-        this.index = index;
-        this.specifics = specifics;
+    //returns and receives string 'true'/'false' but stores boolean
+    constructor (id){
+        this.id = id;
         this.shortLen = 1;
     }
     get() {
-         return this.lineInfo[index].visible.toString();
+         return document.getElementById(this.id).visible.toString();
     };
     set(x){
-        const elem = this.lineInfo[index]
         const b = x == 'true';
+        const elem = document.getElementById(this.id);
         const changed = elem.visible != b;
         elem.visible = b;
-        if( this.specifics ) this.specifics( x);
         return changed;
     };
     encode(x) {
@@ -479,7 +480,7 @@ export class LegendItem{
         // needs to perform the change by callin setLegendText
         // specifics can be setup and redraw; done internal to object.
         // toggle the visible.     
-        return x;  // so it can reset the currenLi.leg[index]
+//        return x;  // so it can reset the currenLi.leg[index]
     }
 
 

@@ -143,7 +143,7 @@ export class TioxGraph {
 	setLegendText(elem,info) {
 		elem.innerHTML = "<span style='color:" +
 		info.color + "'>&#11044;&nbsp;</span><span " +
-		(info.visible ? 
+		(elem.visible ? 
 		 ">" : "style= 'text-decoration: line-through;' >") +
 		info.name + "</span>&emsp; &emsp;"
 	};
@@ -160,6 +160,7 @@ export class TioxGraph {
 		}
 		let info = this.lineInfo[k]
 		info.name = name;
+        elem.visible = info.visible;
 		this.setLegendText(elem,info);
 		elem.addEventListener('click',this.toggleLegend.bind(this));
 	};
@@ -169,19 +170,21 @@ export class TioxGraph {
 		if (!elem) return
 		let k = Number(/[0-9]+/.exec(elem.id)[0]);
 		let info = this.lineInfo[k];
-		info.visible = !info.visible;
-		//  omConcept.??inputs.['leg'+k].set(info.visible.??toString());
+		elem.visible = !elem.visible;
         const li = this.omConcept.currentLi;
-        if (li) li.scenario['leg'+k] = info.visible.toString();
-		this.omConcept.saveEdit();
-		this.setLegendText(elem,info);
+        if (this.omConcept.editMode && li){
+            li.scenario['leg'+k] = elem.visible.toString();
+            this.omConcept.saveEdit();
+        }
+        this.setLegendText(elem,info);
 		this.setupThenRedraw();
 	};
-	
-	setVisible(k,b){
+	// if user does it then toggle event should handle the display and redraw
+    // if scenario switch does it then this routine should handle display and redraw
+	setVisible(elem,b){
 		if( b == this.lineInfo[k].visible ) return;
 		this.lineInfo[k].visible = b;
-		const elem = document.getElementById('leg'+k+this.omConcept.key)
+//		const elem = document.getElementById('leg'+k+this.omConcept.key)
 		this.setLegendText(elem,this.lineInfo[k]);
 		this.setupThenRedraw();
 	}
@@ -194,9 +197,7 @@ export class TioxGraph {
 		const max = (bool ? this.yInfoRight.max: this.yInfo.max);
         return (1- (y-0) / (max - 0) )  * (this.inner.bot - this.inner.top) + this.inner.top;
 	};
-//    yScaleRight (y){
-//		return (1- (y-0) / (this.yInfoRight.max - 0) )  * (this.inner.bot - this.inner.top) + this.inner.top;
-//	};
+    
 	scaleXaxis(scale){
 		if ( scale == this.xInfo.scale ) return false;
 		horizontalScaleAxis(scale, this.xInfo);
@@ -338,6 +339,7 @@ export class TioxGraph {
 			dotSize: dotSize, origDotSize: dotSize,
             right: right,
 			last: {x:null,y:null} };
+        
 	};
 	
 	drawLines () {

@@ -333,8 +333,8 @@ class FaceGame extends OmConcept {
 	constructor(usrInputs){
         super('fac');
         this.usrInputs = usrInputs;
-        document.getElementById('slidersWrapperfac')
-			.removeEventListener('input', this.captureChangeInSliderG.bind(this));
+//        document.getElementById('slidersWrapperfac')
+//			.removeEventListener('input', this.captureChangeInSliderG.bind(this));
         document.getElementById('facDataWrapperfac')
 			.addEventListener('input', this.captureUserUpdate.bind(this));
         document.getElementById('slidersWrapperfac')
@@ -350,50 +350,50 @@ class FaceGame extends OmConcept {
 //        computeStageTimes();
         this.resourceCollection.drawAll();
     };
-    captureUserUpdate(){
-        const e = event.target.closest('input');
-        if (!e) return;
-        const key = (e.type == 'radio' ? e.name : e.id);
-        const keyShort = key.slice(0,-3);
-        const inp = fac.usrInputs.get(keyShort);
-        inp.userUpdate();
-        if( this.editMode ){
-            if( this.currentLi ){
-                this.currentLi.scenario[keyShort] = inp.get();
-            }
-        } else {
-            if (this.currentLi) 
-                this.currentLi.classList.remove("selected");
-            this.currentLi = null;
-        }
-        let changed = {};
-        changed[keyShort] = true;
-        console.log(' in capture user update key=',keyShort);
-        this.localUpdate(changed);
-        
-    };
+//    captureUserUpdate(){
+//        const e = event.target.closest('input');
+//        if (!e) return;
+//        const key = (e.type == 'radio' ? e.name : e.id);
+//        const keyShort = key.slice(0,-3);
+//        const inp = fac.usrInputs.get(keyShort);
+//        inp.userUpdate();
+//        if( this.editMode ){
+//            if( this.currentLi ){
+//                this.currentLi.scenario[keyShort] = inp.get();
+//            }
+//        } else {
+//            if (this.currentLi) 
+//                this.currentLi.classList.remove("selected");
+//            this.currentLi = null;
+//        }
+//        let changed = {};
+//        changed[keyShort] = true;
+//        console.log(' in capture user update key=',keyShort);
+//        this.localUpdate(changed);
+//        
+//    };
     // make fac.Inputs = facInputs and adjust code to use this.??inputs
-    setSlidersFrom (row){
-        const changed = {};
-        console.log(' set Sliders row=',row);
-        for( let [key, inp] of fac.usrInputs ){
-          changed[key] = inp.set(row[key]);
-        } 
-        
-        // NEED to handle legend status which are checked and which are not
-        // add a new class of objects to handle these cases
-        
-        
-        if (!this.editMode) {
-            if (row.reset == 'true')
-                document.getElementById('resetButton'+this.key).click();
-            if (row.action == 'play')
-                document.getElementById('playButton'+this.key).click();
-            else if (row.action == 'pause')
-                document.getElementById('pauseButton'+this.key).click();
-        }
-       this.localUpdate(changed);
-    };
+//    setSlidersFrom (row){
+//        const changed = {};
+//        console.log(' set Sliders row=',row);
+//        for( let [key, inp] of fac.usrInputs ){
+//          changed[key] = inp.set(row[key]);
+//        } 
+//        
+//        // NEED to handle legend status which are checked and which are not
+//        // add a new class of objects to handle these cases
+//        
+//        
+//        if (!this.editMode) {
+//            if (row.reset == 'true')
+//                document.getElementById('resetButton'+this.key).click();
+//            if (row.action == 'play')
+//                document.getElementById('playButton'+this.key).click();
+//            else if (row.action == 'pause')
+//                document.getElementById('pauseButton'+this.key).click();
+//        }
+//       this.localUpdate(changed);
+//    };
     localUpdate(changed){
         const needReset = {qln: true, face: true,
                            eyes: true, nose: true,
@@ -415,38 +415,39 @@ class FaceGame extends OmConcept {
             fac.adjustSpeed(fac.usrInputs.get('speed').get(),speeds);
         }
     };
-    
-    getSliders () {
-        let row = {};
-        for( let [key, inp]  of fac.usrInputs ){
-            row[key] = inp.get();
-        };
-//        console.log('get sliders row=',row);
-        return row;
-    };
-    sEncode(row){
-        let str = '';
-        for ( let [key, inp] of this.usrInputs ){
-            const x = inp.encode(row[key]);
-            console.log('in Encode', key, row[key],x);
-            str += x;
-        }
-        return str + row['desc'];
-    };
-    sDecode(str){
-        let row = {};
-        let p = 0;
-        for ( let [key, inp] of this.usrInputs ){
-            let len = inp.shortLen;
-            
-            console.log('in Decode', str, str.slice(p,p+len),len, key);
-            row[key] = inp.decode(str.slice(p,p+len));
-            p += len;
-        }
-        row.desc = str.slice(p);
-        return row;
-    };
 };
+    
+//    getSliders () {
+//        let row = {};
+//        for( let [key, inp]  of fac.usrInputs ){
+//            row[key] = inp.get();
+//        };
+////        console.log('get sliders row=',row);
+//        return row;
+//    };
+//    sEncode(row){
+//        let str = '';
+//        for ( let [key, inp] of this.usrInputs ){
+//            const x = inp.encode(row[key]);
+//            console.log('in Encode', key, row[key],x);
+//            str += x;
+//        }
+//        return str + row['desc'];
+//    };
+//    sDecode(str){
+//        let row = {};
+//        let p = 0;
+//        for ( let [key, inp] of this.usrInputs ){
+//            let len = inp.shortLen;
+//            
+//            console.log('in Decode', str, str.slice(p,p+len),len, key);
+//            row[key] = inp.decode(str.slice(p,p+len));
+//            p += len;
+//        }
+//        row.desc = str.slice(p);
+//        return row;
+//    };
+//};
 
 
 

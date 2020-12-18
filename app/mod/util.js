@@ -23,7 +23,7 @@ const tioxInfinity = 5000000000000;
 export const cbColors = {
 	blue: 'rgb(100,143,255)',
 	purple: 'rgb(120,94,240)',
-	red: 'rgb(220,38,127)',
+	red: 'rgb(220, 38, 127)',
 	orange: 'rgb(254,97,0)',
 	yellow: 'rgb(255,176,0)',
     black: 'rgb(0,0,0)',
@@ -109,6 +109,21 @@ export class DeterministicRV {
 	}
     setMean( mean ){
         this.mean = mean;
+    }
+}
+
+export class Average{
+    constructor(){
+        this.count = 0;
+        this.total = 0;
+    };
+    getAverage(){
+        return count > 0 ? total/count : undefined;
+    }
+    addItem(x){
+        count++;
+        total += x;
+        return this.getAverage();
     }
 }
 
