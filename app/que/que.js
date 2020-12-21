@@ -19,7 +19,7 @@
 */		
 
 import {
-	GammaRV, Heap, cbColors
+	GammaRV, Heap, cbColors, Average
 }
 from "../mod/util.js";
 import {
@@ -47,13 +47,13 @@ class QueueGraph extends TioxGraph {
 		super(omConcept,'chartCanvasque', 40, {width:10, step:2}, d=>d.t);
 		this.setTitle('Waiting Time');
 		this.setupLine(0, d => d.i, cbColors.blue,
-					   false, true, 5, 10);
+					   false, true, false, 5, 10);
 		this.setLegend(0, 'individual wait');
 		this.setupLine(1, d => d.a, cbColors.yellow,
-					   false, true, 5, 10);
+					   false, true, true, 5, 10);
 		this.setLegend(1,'average wait');
 		this.setupLine(2, d => d.p, cbColors.red,
-					   true, false, 10, 0);
+					   true, false, false, 10, 0);
 		this.setLegend(2,'predicted wait');	
 		this.predictedWaitValue = this.predictedWait();
 	};
@@ -61,17 +61,15 @@ class QueueGraph extends TioxGraph {
 	push (t,w){
 		t /= tioxTimeConv;
 		w /= tioxTimeConv;
-		this.total += w;
-		this.count++;
-		let pW = this.predictedWaitValue == Infinity ? null : this.predictedWaitValue;
+		const a = this.averageWait.addItem(w);
+        let pW = this.predictedWaitValue == Infinity ? null : this.predictedWaitValue;
 		let p = {t: t, i: w,
-				 a: this.total/this.count,
+				 a: a,
 				 p: pW};
 		this.drawOnePoint(p);
 	};
 	reset(){
-		this.total = 0;
-		this.count = 0;
+		this.averageWait = new Average();
 		let yMax = (this.predictedWaitValue == Infinity)?
 			1.5: Math.max(1.5,this.predictedWaitValue * 1.1);
 		super.reset(yMax);
@@ -113,13 +111,7 @@ const anim = {};
 var gSF;
 
 const tioxTimeConv = 10000; //rates in tiox are k/10 seconds
-const precision = {
-	ar: 1,
-	acv: 1,
-	sr: 1,
-	scv: 1,
-	speed: 0
-}
+
 const speeds = [{time:1,graph:1,anim:true},
 				{time:2,graph:1,anim:true},
 				{time:5,graph:2,anim:true},
@@ -164,8 +156,8 @@ function queDefineUsrInputs(){
     usrInputs.set('leg2', new LegendItem('leg2que'));
     
     usrInputs.set('speed', new ArbRange('speedque',
-                null, ['1x','2x','5x','10x','25x'],
-				                [1,2,5,10,25]) );
+                null, ['1x','2x','5x','10x','25x','∞'],
+				                [1,2,5,10,25,1000]) );
     usrInputs.set('action', new RadioButton('actionque',
                 null, ['none','play','pause']) );
     usrInputs.set('reset', new CheckBox('resetque',
@@ -253,6 +245,7 @@ class Queueing extends OmConcept{
                     que.graph.updatePredictedWait();
                     break;
                 case 'speed':
+                    console.log('at speed adjust',v,speeds);
                     que.adjustSpeed(v,speeds);
                     break;
                 case 'none':
@@ -283,18 +276,18 @@ class Queueing extends OmConcept{
     
     
 };
-function localReset () {
-		
-	// schedule the initial Person to arrive and start the simulation/animation.
-	theSimulation.supply.previous = null;
-	theSimulation.creator.knockFromPrevious();
-
-	//fudge to get animation started quickly
-	let t = que.heap.top().time - 1;
-	que.now = que.frameNow = t;
-	theSimulation.nInQueue = 0;
-	document.getElementById('nInQueue').innerHTML = '0';
-};
+//function localReset () {
+//		
+//	// schedule the initial Person to arrive and start the simulation/animation.
+//	theSimulation.supply.previous = null;
+//	theSimulation.creator.knockFromPrevious();
+//
+//	//fudge to get animation started quickly
+//	let t = que.heap.top().time - 1;
+//	que.now = que.frameNow = t;
+//	theSimulation.nInQueue = 0;
+//	document.getElementById('nInQueue').innerHTML = '0';
+//};
 
 //function queueDecodeURL(str){
 //	const actionValue = {N:"none", G:"play", S:"pause"};
@@ -649,7 +642,7 @@ function queHTML(usrInputs){
 		genPlayResetBox('que'),
         usrInputs.get('speed')
             .htmlArbSlider('Speed = ', 0,
-                            ["slow",' ',' ',' ',"fast",'full'])
+                            ["slow",' ',' ',' ',"fast",'∞'])
 	);
 	
 	const f = document.getElementById('scenariosMidque');

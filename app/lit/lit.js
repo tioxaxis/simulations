@@ -20,7 +20,7 @@
 
 const tioxTimeConv = 1000; //time are in milliseconds
 import {
-	GammaRV, Heap, cbColors
+	GammaRV, Heap, cbColors, Average
 }
 from '../mod/util.js';
 import {
@@ -38,19 +38,26 @@ import {
 	TioxGraph
 }
 from "../mod/graph.js";
+import {
+	genPlayResetBox, genSlider, genArbSlider, genButton, addDiv,
+    ArbRange,  NumRange, genRange, CheckBox,  RadioButton, 
+    IntegerInput, addKeyForIds, LegendItem
+}
+from '../mod/genHTML.js';
+
 class LittleGraph extends TioxGraph {
 	constructor(omConcept){
 		super(omConcept,'chartCanvaslit',40, {width:20, step:5}, d=>d.t);
 		this.predictedInvValue = null;
 		this.setTitle('Inventory');
 		this.setupLine(0, d => d.i, cbColors.blue,
-					   false, true, 3, 10);
+					   false, true, true, 3, 10);
 		this.setLegend(0, 'avg. inventory');
 		this.setupLine(1, d => d.rt, cbColors.yellow,
-					   false, true, 3, 10);
+					   false, true, true, 3, 10);
 		this.setLegend(1,'avg. time * avg. rate');
 		this.setupLine(2, d => d.p, cbColors.red,
-					   true, false, 10, 0);
+					   true, false, false, 10, 0);
 		this.setLegend(2,'predicted inventory');	
 		this.predictedInvValue = this.predictedInv();
 	};
@@ -65,6 +72,9 @@ class LittleGraph extends TioxGraph {
 	
 	reset(){
 		super.reset(this.predictedInvValue * 1.2);
+        this.averageInventory = new Average();
+        this.averageRateTime = new Average();
+        
 		const v = document.getElementById('speedlit').value;
 		const f = speeds[v].graph;
 		this.updateForSpeed(f);
@@ -136,30 +146,53 @@ anim.pathway = {
 
 var totInv, totTime, totPeople, firstArr, lastArrDep, LBRFcount;
 
+function litDefineUsrInputs(){
+    let usrInputs = new Map();
+    usrInputs.set('ar', new NumRange('arlit',
+                null, 1,1,6,1,1,1) );
+    usrInputs.set('acv', new NumRange('acvlit',
+                null, 1,0,2,.5,2,10) );
+    usrInputs.set('sr', new NumRange('srlit',
+                null, 1,5,25,1,2,1) );
+    usrInputs.set('scv', new NumRange('scvlit',
+                null, 1,0,2,.5,2,10) );
+    usrInputs.set('leg0', new LegendItem('leg0lit'));
+    usrInputs.set('leg1', new LegendItem('leg1lit'));
+    usrInputs.set('leg2', new LegendItem('leg2lit'));
+    
+    usrInputs.set('speed', new ArbRange('speedlit',
+                null, ['1x','2x','5x','10x','25x','∞'],
+				                [1,2,5,10,25,1000]) );
+    usrInputs.set('action', new RadioButton('actionlit',
+                null, ['none','play','pause']) );
+    usrInputs.set('reset', new CheckBox('resetlit',
+                null) );
+    return usrInputs;
+};
+
 function litDefine(){
-	lit = new OmConcept('lit',littleEncodeURL,littleDecodeURL, localReset);
 	document.getElementById('lit').omConcept = lit;
 	
-	document.getElementById('slidersWrapperlit')
-	.addEventListener('input', captureChangeInSliderS);
+//	document.getElementById('slidersWrapperlit')
+//	.addEventListener('input', captureChangeInSliderS);
 	
 	lit.tioxTimeConv = tioxTimeConv;
-	lit.sliderTypes = {
-		ar: 'range',
-		acv: 'range',
-		sr: 'range',
-		scv: 'range',
-		speed: 'range',
-		action: 'radio',
-		reset: 'checkbox'
-	};
-	lit.precision = {
-		ar: 1,
-		acv: 1,
-		sr: 1,
-		scv: 1,
-		speed: 0
-	};
+//	lit.sliderTypes = {
+//		ar: 'range',
+//		acv: 'range',
+//		sr: 'range',
+//		scv: 'range',
+//		speed: 'range',
+//		action: 'radio',
+//		reset: 'checkbox'
+//	};
+//	lit.precision = {
+//		ar: 1,
+//		acv: 1,
+//		sr: 1,
+//		scv: 1,
+//		speed: 0
+//	};
 	anim.stage.foreContext = document
 		.getElementById('foregroundlit')
 		.getContext('2d');
@@ -171,24 +204,68 @@ function litDefine(){
 	gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height,0);
 };
+class LittlesLaw extends OmConcept{
+    constructor(usrInputs){
+        super('lit');
+        this.usrInputs = usrInputs;
+        document.getElementById('slidersWrapperlit')
+			.addEventListener('input', this.captureUserUpdate.bind(this));
+        this.setupScenarios();    
+    }
+    localUpdate(changed){
+        
+        for(let key in changed){
+            if( !changed[key] ) continue;
+            let v = lit.usrInputs.get(key).get();
+            switch (key){
+                case 'ar':
+			         theSimulation.interarrivalRV
+				        .setRate(v / tioxTimeConv);
+			         lit.graph.updatePredictedInv();
+			         break;
 
-function localReset () {
-	//	lit.itemCollection.reset();
-	//	lit.graph.reset();
-	//	theProcessCollection.reset();
+                case 'acv':
+                    theSimulation.interarrivalRV.setCV(v);
+                    break;
+
+                case 'sr':
+                    theSimulation.serviceRV.setTime(v * tioxTimeConv);
+                    lit.graph.updatePredictedInv();
+                    break;
+
+                case 'scv':
+                    theSimulation.serviceRV.setCV(v);
+                    break;
+
+                case 'speed':
+                    lit.adjustSpeed(v,speeds);
+                    break;
+                case 'none':
+                case 'play':
+                case 'pause':
+                case 'reset':
+                    break;
+                default:
+                    console.log(' reached part for default');
+                    break;
+                }
+        }
+
+    };
+    localReset () {
 		totInv = totTime = totPeople =  LBRFcount = 0;
 		firstArr = lastArrDep = 3500;
-		
+        // schedule the initial Person to arrive and start the simulation/animation.
+        theSimulation.supply.previous = null;
+        theSimulation.creator.knockFromPrevious();
 
-		// schedule the initial Person to arrive and start the simulation/animation.
-		theSimulation.supply.previous = null;
-		theSimulation.creator.knockFromPrevious();
-
-		//fudge to get animation started quickly
-		let t = lit.heap.top().time - 1;
-		lit.now = lit.frameNow = t;
-
-	};
+        //fudge to get animation started quickly
+        let t = lit.heap.top().time - 1;
+        lit.now = lit.frameNow = t;
+    };
+    
+    
+};
 
 function setBackground() {
 	const c = anim.stage.backContext;
@@ -206,82 +283,82 @@ function setBackground() {
 	c.closePath();
 };
 
-function littleDecodeURL(str){
-	const actionValue = {N:"none", G:"play", S:"pause"};
-	const boolValue = {T: 'true', F: 'false'};
-	return( 
-	{ar: str.substring(0,4),
-	acv: str.substring(4,8),
-	sr: str.substring(8,12),
-	scv: str.substring(12,16),
-	speed: str.substring(16,17),
-	action: actionValue[str.substring(17,18)],
-	reset: boolValue[str.substring(18,19)],
-	leg0:  boolValue[str.substring(19,20)],
-	leg1:  boolValue[str.substring(20,21)],
-	leg2:  boolValue[str.substring(21,22)],
-	desc: str.substring(22)
-	})
-};
-function littleEncodeURL(row){
-	const actionValue = {none: "N", play: "G", pause: "S"};
-	return Number(row.ar).toFixed(1).padStart(4,'0')
-		.concat(Number(row.acv).toFixed(1).padStart(4,'0'), 
-		Number(row.sr).toFixed(1).padStart(4,'0'),
-		Number(row.scv).toFixed(1).padStart(4,'0'),
-		row.speed,
-		actionValue[row.action] +
-		(row.reset == "true" ? "T" : "F"),
-		(row.leg0 == "true" ? "T" : "F"),
-		(row.leg1 == "true" ? "T" : "F"),
-		(row.leg2 == "true" ? "T" : "F"),
-		row.desc);
-}
+//function littleDecodeURL(str){
+//	const actionValue = {N:"none", G:"play", S:"pause"};
+//	const boolValue = {T: 'true', F: 'false'};
+//	return( 
+//	{ar: str.substring(0,4),
+//	acv: str.substring(4,8),
+//	sr: str.substring(8,12),
+//	scv: str.substring(12,16),
+//	speed: str.substring(16,17),
+//	action: actionValue[str.substring(17,18)],
+//	reset: boolValue[str.substring(18,19)],
+//	leg0:  boolValue[str.substring(19,20)],
+//	leg1:  boolValue[str.substring(20,21)],
+//	leg2:  boolValue[str.substring(21,22)],
+//	desc: str.substring(22)
+//	})
+//};
+//function littleEncodeURL(row){
+//	const actionValue = {none: "N", play: "G", pause: "S"};
+//	return Number(row.ar).toFixed(1).padStart(4,'0')
+//		.concat(Number(row.acv).toFixed(1).padStart(4,'0'), 
+//		Number(row.sr).toFixed(1).padStart(4,'0'),
+//		Number(row.scv).toFixed(1).padStart(4,'0'),
+//		row.speed,
+//		actionValue[row.action] +
+//		(row.reset == "true" ? "T" : "F"),
+//		(row.leg0 == "true" ? "T" : "F"),
+//		(row.leg1 == "true" ? "T" : "F"),
+//		(row.leg2 == "true" ? "T" : "F"),
+//		row.desc);
+//}
 
-function captureChangeInSliderS(event) {
-	let inputElem = event.target.closest('input');
-	if (!inputElem) return
-
-	var idShort = inputElem.id.slice(0,-3);
-	if (inputElem.type == 'range') {
-		var v = Number(inputElem.value)
-			.toFixed(lit.precision[idShort]);
-		document.getElementById('disp' + inputElem.id)
-			.innerHTML = v;
-	}
-	switch (idShort) {
-		case 'ar':
-			theSimulation.interarrivalRV
-				.setRate(v / tioxTimeConv);
-			lit.graph.updatePredictedInv();
-			break;
-
-		case 'acv':
-			theSimulation.interarrivalRV.setCV(v);
-			break;
-
-		case 'sr':
-			theSimulation.serviceRV.setTime(v * tioxTimeConv);
-			lit.graph.updatePredictedInv();
-			break;
-
-		case 'scv':
-			theSimulation.serviceRV.setCV(v);
-			break;
-
-		case 'speed':
-			lit.adjustSpeed(v,speeds);
-			break;
-		case 'none':
-		case 'play':
-		case 'pause':
-		case 'reset':
-			break;
-		default:
-			console.log(' reached part for default');
-			break;
-	}
-}
+//function captureChangeInSliderS(event) {
+//	let inputElem = event.target.closest('input');
+//	if (!inputElem) return
+//
+//	var idShort = inputElem.id.slice(0,-3);
+//	if (inputElem.type == 'range') {
+//		var v = Number(inputElem.value)
+//			.toFixed(lit.precision[idShort]);
+//		document.getElementById('disp' + inputElem.id)
+//			.innerHTML = v;
+//	}
+//	switch (idShort) {
+//		case 'ar':
+//			theSimulation.interarrivalRV
+//				.setRate(v / tioxTimeConv);
+//			lit.graph.updatePredictedInv();
+//			break;
+//
+//		case 'acv':
+//			theSimulation.interarrivalRV.setCV(v);
+//			break;
+//
+//		case 'sr':
+//			theSimulation.serviceRV.setTime(v * tioxTimeConv);
+//			lit.graph.updatePredictedInv();
+//			break;
+//
+//		case 'scv':
+//			theSimulation.serviceRV.setCV(v);
+//			break;
+//
+//		case 'speed':
+//			lit.adjustSpeed(v,speeds);
+//			break;
+//		case 'none':
+//		case 'play':
+//		case 'pause':
+//		case 'reset':
+//			break;
+//		default:
+//			console.log(' reached part for default');
+//			break;
+//	}
+//}
 
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
@@ -394,12 +471,12 @@ const theSimulation = {
 		setBackground();
 
 		// random variables
-		let r = document.getElementById('arlit').value;
-		let cv = document.getElementById('acvlit').value;
-		theSimulation.interarrivalRV = new GammaRV(r / tioxTimeConv, cv);
-		let t = document.getElementById('srlit').value;
-		cv = document.getElementById('scvlit').value;
-		theSimulation.serviceRV = new GammaRV(1 / t / tioxTimeConv, cv);
+		const ar = lit.usrInputs.get('ar').get();
+		const acv = lit.usrInputs.get('acv').get();
+		theSimulation.interarrivalRV = new GammaRV(ar / tioxTimeConv, acv);
+		const st = lit.usrInputs.get('sr').get();
+		const scv = lit.usrInputs.get('scv').get();
+		theSimulation.serviceRV = new GammaRV(1 / st / tioxTimeConv, scv);
 
 		lit.graph = new LittleGraph(lit);
 		lit.resetCollection.push(lit.graph);
@@ -490,12 +567,8 @@ export class Person extends Item {
 	};
 }; // end class Person
 
-import {
-	genSlider, genPlayResetBox, addDiv
-}
-from '../mod/genHTML.js'; 
 
-function litHTML(){
+function litHTML(usrInputs){
 	addDiv('lit','lit','whole')
 	addDiv('lit', 'leftHandSideBox'+'lit',
 			   'stageWrapper', 'statsWrapper',
@@ -508,17 +581,18 @@ function litHTML(){
 	//now put in the sliders with the play/reset box	
 	let elem = document.getElementById('slidersWrapperlit');
 	elem.append(
-		genSlider('arlit', 'Arrival Rate = ','1.0','',
-				  1,1,6,1,[1,2,3,4,5,6]),
-		genSlider('acvlit','Arrival CV = ','0.0','',
-				  0,0,2,.5,['0.0','1.0','2.0']),
-		genSlider('srlit','Service Time = ','5.0','',
-				  5,5,25,1,[5,15,25] ), 
-		genSlider('scvlit','Service CV = ','0.0','',
-				  0,0,2,.5,['0.0','1.0','2.0']),
+		usrInputs.get('ar')
+            .htmlNumSlider('Arrival Rate = ', 3,[1, 2, 3, 4, 5, 6]),
+		usrInputs.get('acv')
+            .htmlNumSlider('Arrival CV = ', 0,['0.0','1.0','2.0']),
+        usrInputs.get('sr')
+            .htmlNumSlider('Service Time = ', 5,[5, 15, 25]),
+		usrInputs.get('scv')
+            .htmlNumSlider('Service CV = ', 0,['0.0','1.0','2.0']),
 		genPlayResetBox('lit'),
-		genSlider('speedlit','Speed = ','1','x', 0,0,5,1,
-				  ["slow",' ',' ',' ',"fast "," full"])
+        usrInputs.get('speed')
+            .htmlArbSlider('Speed = ', 0,
+                            ["slow",' ',' ',' ',"fast",'∞'])
 	);
 	
 	const f = document.getElementById('scenariosMidlit');
@@ -526,9 +600,15 @@ function litHTML(){
 };
 
 export function litStart() {
-	litHTML();
-	litDefine();
-	theSimulation.initialize();
+	let usrInputs = litDefineUsrInputs();
+    litHTML(usrInputs);
+    lit = new LittlesLaw(usrInputs);
+    litDefine();
+    theSimulation.initialize();
+    for( let [key, inp] of lit.usrInputs ){
+        inp.userUpdate();
+    };
+    //computeStageTimes();
 	lit.reset();
 	return lit;
 };

@@ -17,7 +17,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */	
-
+import {
+	Average
+}
+from "./util.js";
 function verticalAxis(y,table) {
 	while( y > table[0].max ){
 		table.push({max: table[0].max * 10,
@@ -141,11 +144,16 @@ export class TioxGraph {
 	
 	//Legend routines
 	setLegendText(elem,info) {
-		elem.innerHTML = "<span style='color:" +
+		const resetButton = (info.isAnAverage ? 
+        '<i class="material-icons actButton font15vw"'+
+        ' id="avgGraphButton" title ="reset the average">replay</i>' : '');
+              
+        elem.innerHTML = resetButton +  "<span style='color:" +
 		info.color + "'>&#11044;&nbsp;</span><span " +
 		(elem.visible ? 
 		 ">" : "style= 'text-decoration: line-through;' >") +
 		info.name + "</span>&emsp; &emsp;"
+        if( info.isAnAverage ) document.getElementById('avgGraphButton').addEventListener('click',()=> this.averageWait = new Average());
 	};
 	
 	setLegend(k,name){
@@ -171,20 +179,30 @@ export class TioxGraph {
 		let k = Number(/[0-9]+/.exec(elem.id)[0]);
 		let info = this.lineInfo[k];
 		elem.visible = !elem.visible;
+        info.visible = elem.visible;
         const li = this.omConcept.currentLi;
-        if (this.omConcept.editMode && li){
+        
+        if (this.omConcept.editMode){
+            if( li ) {
             li.scenario['leg'+k] = elem.visible.toString();
             this.omConcept.saveEdit();
+            }
+        }  else {
+            if ( li ) 
+                li.classList.remove("selected");
+            li.currentLi = null;
         }
         this.setLegendText(elem,info);
 		this.setupThenRedraw();
 	};
 	// if user does it then toggle event should handle the display and redraw
     // if scenario switch does it then this routine should handle display and redraw
-	setVisible(elem,b){
-		if( b == this.lineInfo[k].visible ) return;
-		this.lineInfo[k].visible = b;
+	setVisible(k,elem,b){
+//		const elem = document.getElementById(id);
+//        if( (b == 'true') == elem.visible ) return;
+//		elem.visible = b == 'true';
 //		const elem = document.getElementById('leg'+k+this.omConcept.key)
+        this.lineInfo[k].visible = b == 'true';
 		this.setLegendText(elem,this.lineInfo[k]);
 		this.setupThenRedraw();
 	}
@@ -331,10 +349,10 @@ export class TioxGraph {
 	};
 	
 	setupLine (k, yAccess, color, vertical,
-				visible, lineWidth, dotSize, right = false) {
+				visible, isAnAverage, lineWidth, dotSize, right = false) {
 		this.lineInfo[k] = {
 			yAccess: yAccess, color: color,
-			vertical: vertical, visible: visible, 
+			vertical: vertical, visible: visible, isAnAverage: isAnAverage, 
 			lineWidth: lineWidth, origLineWidth: lineWidth,
 			dotSize: dotSize, origDotSize: dotSize,
             right: right,

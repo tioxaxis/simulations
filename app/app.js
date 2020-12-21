@@ -125,9 +125,9 @@ var currentTab = null;
 switchTo(location.hash.slice(1));
 
 omConcepts['que'] = queStart();
-//omConcepts['lit'] = litStart();
-//omConcepts['nvp'] = nvpStart();
-//omConcepts['inv'] = invStart();
+omConcepts['lit'] = litStart();
+omConcepts['nvp'] = nvpStart();
+omConcepts['inv'] = invStart();
 omConcepts['fac'] = facStart();
 
 

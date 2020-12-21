@@ -47,10 +47,10 @@ class FacGraph extends TioxGraph {
 	constructor(omConcept,name){	
 		super(omConcept, name, 40, {width:100, step:20}, d=>d.t, true);
 		this.setupLine(0, d => d.flow, cbColors.blue,
-					   false, true, 5, 10);
+					   false, true, false, 5, 10);
 		this.setLegend(0, 'Flow time<br>(seconds/card)');
 		this.setupLine(1, d => d.thru, cbColors.yellow,
-					   false, true, 5, 10, true);
+					   false, true, true, 5, 10, true);
 		this.setLegend(1,'Throughput<br>(cards/minute)');
         this.doReset = true;
 //		this.setupLine(2, d => d.p, cbColors.red,
@@ -860,6 +860,7 @@ class FaceCard {
             const frac2 = ( frac - 0.5 ) * 2;
             const sg = fac.usrInputs.get(key).get();
             ctx.strokeStyle = anim.worker[sg].color;
+//            console.log('in draw',this.x,key)
             switch (key) {
                 case 'face':
                     ctx.beginPath();
@@ -890,6 +891,7 @@ class FaceCard {
                     ctx.closePath();
                     break;
                 case 'nose':
+                    ctx.beginPath();
                     ctx.moveTo(.5*this.w,.4*this.h);
                     ctx.lineTo((.5 -.1*frac1)*this.w,(.4 +.2*frac1)*this.h);
                     if( frac > .5 )  
@@ -958,7 +960,7 @@ function facHTML(usrInputs){
     elem.append(
 		mark,
 		usrInputs.get('qln').htmlArbSlider('Queue Length = ', 3,
-                      ['1','3','5','∞']),
+                      ['1x','3x','5x','∞']),
 		genPlayResetBox('fac'),
 		usrInputs.get('speed').htmlArbSlider('Speed = ', 0,
                       ["slow",' ',' ',' ',"fast"])

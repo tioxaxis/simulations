@@ -167,6 +167,7 @@ export class OmConcept {
         if( this.editMode ){
             if( this.currentLi ){
                 this.currentLi.scenario[keyShort] = inp.get();
+                this.saveEdit();
             }
         } else {
             if (this.currentLi) 
@@ -244,7 +245,7 @@ export class OmConcept {
 	};
     
 	adjustSpeed(v,speeds){
-		if( this.frameSpeed = speeds[v].time) return;
+		if( this.frameSpeed == speeds[v].time) return;
         
         const oldFrameSpeed = this.frameSpeed;
 		this.frameSpeed = speeds[v].time;

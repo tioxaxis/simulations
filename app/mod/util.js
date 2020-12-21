@@ -36,25 +36,25 @@ export const cbColors = {
 
 export class GammaRV {
 	constructor(rate = 0, CV = 0, minimumTime = 20) {
-		this.rate = rate;
-		this.CV = CV;
-		this.minimumTime = minimumTime;
+		this.rate = Number(rate);
+		this.CV = Number(CV);;
+		this.minimumTime = Number(minimumTime);
 
-		this.setParams(rate, CV);
+		this.setParams(this.rate, this.CV);
 	};
 
 	setRate(rate) {
-		this.rate = rate;
+		this.rate = Number(rate);
 		this.setParams(this.rate, this.CV);
 	};
 
 	setTime(time) {
-		this.rate = 1 / time;
+		this.rate = 1 / Number(time);
 		this.setParams(this.rate, this.CV);
 	}
 
 	setCV(CV) {
-		this.CV = CV;
+		this.CV = Number(CV);
 		this.setParams(this.rate, this.CV);
 	};
 
@@ -83,14 +83,14 @@ export class UniformRV {
 		this.setParams(mean, variance);
 	};
 	setParams(mean, variance) {
-		this.mean = mean;
-		this.variance = variance;
+		this.mean = Number(mean);
+		this.variance = Number(variance);
 	};
 	setMean(m) {
-		this.mean = m;
+		this.mean = Number(m);
 	}
 	setVariance(variance) {
-		this.variance = variance;
+		this.variance = Number(variance);
 	}
 	observe() {
 		let v = this.variance * this.mean;
@@ -102,13 +102,13 @@ export class UniformRV {
 
 export class DeterministicRV {
 	constructor(mean) {
-		this.mean = mean;
+		this.mean = Number(mean);
 	}
 	observe() {
 		return this.mean;
 	}
     setMean( mean ){
-        this.mean = mean;
+        this.mean = Number(mean);
     }
 }
 
@@ -118,13 +118,47 @@ export class Average{
         this.total = 0;
     };
     getAverage(){
-        return count > 0 ? total/count : undefined;
+        return this.count > 1 ? this.total/this.count : null;
     }
     addItem(x){
-        count++;
-        total += x;
+        this.count++;
+        this.total += x;
         return this.getAverage();
     }
+}
+export class IRT{
+    constructor(t,i){
+        this.inSys = 0;
+        this.restart(t);
+    }
+    restart(t){  //but keep current inventory
+        this.firstT = t;
+        this.lastT = t;
+        this.totFlow = 0;
+        this.totInv = 0;
+        this.completed = 0;
+    };
+    in(t){  //arrival at time t
+        this.totInv += (t - this.lastT) * this.inSys;
+        this.inSys++;
+        this.lastT = t;
+    };
+    out(t,f){  //departure at time t with flow time of f
+        this.totInv += (t - this.lastT) * this.inSys;
+        this.totFlow += f;
+        this.inSys--;
+        this.completed++;
+        this.lastT = t;
+    };
+    avgI(){  //inventory or in system
+        return this.totInv / (this.lastT - this.firstT);
+    };
+    avgR(){   // throughput
+        return this.completed / (this.lastT - this.firstT);
+    };
+    avgT(){    // flow time
+        return this.totFlow / this.completed
+    };
 }
 
 export class Heap {

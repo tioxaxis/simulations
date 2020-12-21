@@ -43,19 +43,27 @@ import {
 	TioxGraph
 }
 from "../mod/graph.js";
+
+import {
+	genPlayResetBox, genSlider, genRadio, genArbSlider, genButton, addDiv,
+    ArbRange,  NumRange, genRange, CheckBox,  RadioButton, hideNode, 
+    IntegerInput, addKeyForIds, LegendItem
+}
+from '../mod/genHTML.js';
+
 class InvGraph extends TioxGraph {
 	constructor(omConcept){
 		super(omConcept,'chartCanvasinv',40, {width:24, step:6}, d=>d.t);
 		this.predictedInvValue = null;
 		this.setTitle('Inventory');
 		this.setupLine(0, d => d.i, cbColors.blue,
-					   true, true, 3, 0);
+					   true, true, false, 3, 0);
 		this.setLegend(0, 'On Hand');
 		this.setupLine(1, d => d.ip, cbColors.red,
-					   true, true, 3, 0);
+					   true, true, false, 3, 0);
 		this.setLegend(1,'On Hand and On Order');
 		this.setupLine(2, d => d.p, cbColors.orange,
-					   true, false, 10, 0);
+					   true, false, false, 10, 0);
 		this.setLegend(2,'Predicted On Hand Inventory');
 		if( inv.whichRule == 'methRop'){
 			const rop = document.getElementById('ropinv');
@@ -176,45 +184,71 @@ function animSetup(){
 };
 
 animSetup();
-
+function invDefineUsrInputs(){
+    let usrInputs = new Map();
+    usrInputs.set('method', new RadioButton('methodinv',null, ['methRop','methUpto']) );
+    usrInputs.set('ar', new NumRange('arinv',
+                null, 1,1,9,1,1,1) );
+    usrInputs.set('acv', new NumRange('acvinv',
+                null, 1,0,2,.5,2,10) );
+    usrInputs.set('lt', new NumRange('ltinv',
+                null, 1,2,8,1,1,1) );
+    usrInputs.set('ltcv', new NumRange('ltcvinv',
+                null, 1,0,2,.5,2,10) );
+    
+    usrInputs.set('quan', new NumRange('quaninv',
+                null, 1,10,50,1,2,1) );
+    usrInputs.set('rop', new NumRange('ropinv',
+                null, 1,5,85,1,2,1) );
+    usrInputs.set('period', new NumRange('periodinv',
+                null, 1,2,8,1,1,1) );
+    usrInputs.set('upto', new NumRange('uptoinv',
+                null, 1,10,90,1,2,1) );
+    usrInputs.set('leg0', new LegendItem('leg0inv'));
+    usrInputs.set('leg1', new LegendItem('leg1inv'));
+    usrInputs.set('leg2', new LegendItem('leg2inv'));
+    usrInputs.set('speed', new ArbRange('speedinv',
+                null, ['1x','2x','5x','10x','25x','∞'],
+				                [1,2,5,10,25,1000]) );
+    usrInputs.set('action', new RadioButton('actioninv',
+                null, ['none','play','pause']) );
+    usrInputs.set('reset', new CheckBox('resetinv',
+                null) );
+    return usrInputs;
+};
 
 function invDefine(){
-	inv = new OmConcept('inv', invEncodeURL, invDecodeURL, localReset);
 	document.getElementById('inv').omConcept = inv;
 
-	document.getElementById('slidersWrapperinv')
-	.addEventListener('input', captureChangeInSliderS);
-	document.getElementById('ropuptoinv')
-	.addEventListener('input', captureChangeInSliderS);
 	
 	inv.whichRule = 'methRop';
 
-	inv.sliderTypes = {
-		ar: 'range',
-		acv: 'range',
-		lt: 'range',
-		ltcv: 'range',
-		quan: 'range',
-		rop: 'range',
-		period: 'range',
-		upto: 'range',
-		speed: 'range',
-		action: 'radio',
-		which: 'radio',
-		reset: 'checkbox'
-	};
+//	inv.sliderTypes = {
+//		ar: 'range',
+//		acv: 'range',
+//		lt: 'range',
+//		ltcv: 'range',
+//		quan: 'range',
+//		rop: 'range',
+//		period: 'range',
+//		upto: 'range',
+//		speed: 'range',
+//		action: 'radio',
+//		which: 'radio',
+//		reset: 'checkbox'
+//	};
 
-	inv.precision = {
-		ar: 0,
-		acv: 1,
-		lt: 0,
-		ltcv: 1,
-		quan: 0,
-		rop: 0,
-		period: 0,
-		upto: 0,
-		speed: 0
-	};
+//	inv.precision = {
+//		ar: 0,
+//		acv: 1,
+//		lt: 0,
+//		ltcv: 1,
+//		quan: 0,
+//		rop: 0,
+//		period: 0,
+//		upto: 0,
+//		speed: 0
+//	};
 	anim.stage.foreContext = document
 		.getElementById('foregroundinv')
 		.getContext('2d');
@@ -228,30 +262,135 @@ function invDefine(){
 	inv.tioxTimeConv = tioxTimeConv;
 };
 
-function localReset () {
-	pickInvSimulation(inv.whichRule);
-	inv.itemCollection.moveDisplayAll(0); 
-	
-	// schedule the initial Person to arrive and start the simulation/animation.
-	theSimulation.supply.previous = null;
-	theSimulation.creator.knockFromPrevious();
-	
-	//fudge to get animation started quickly
-	let t = inv.heap.top().time - 1;
-	inv.now = inv.frameNow = t;
-	if (inv.whichRule == 'methUpto') {
-		inv.heap.push({
-			time: 0 + theSimulation.period,
-			type: 'next order',
-			proc: theSimulation.store.orderUpto
-				.bind(theSimulation.store),
-			item: null
-		});
-	}
-	document.getElementById('lostSales').innerHTML = '0';
-	document.getElementById('fillRate').innerHTML = '100';
-	document.getElementById('serviceLevel').innerHTML = '100';
+
+class Inventory extends OmConcept{
+    constructor(usrInputs){
+        super('inv');
+        this.usrInputs = usrInputs;
+        document.getElementById('slidersWrapperinv')
+			.addEventListener('input', this.captureUserUpdate.bind(this));
+        document.getElementById('ropuptoinv')
+	       .addEventListener('input', this.captureUserUpdate.bind(this));
+        this.setupScenarios();    
+    }
+    localUpdate(changed){
+        
+        for(let key in changed){
+            if( !changed[key] ) continue;
+            let v = inv.usrInputs.get(key).get();
+            switch (key){
+                case 'ar':
+                    theSimulation.arrivalRV.setRate(Number(v) / tioxTimeConv);
+                    break;
+                case 'acv':
+                    theSimulation.arrivalRV.setCV(Number(v));
+                    break;
+                case 'lt':
+                    theSimulation.leadtimeRV.setTime(Number(v) * tioxTimeConv);
+                    break;
+                case 'ltcv':
+                    theSimulation.leadtimeRV.setCV(Number(v));
+                    break;
+                case 'quan':
+                    theSimulation.quantityOrdered = Number(v);
+                    break;
+                case 'rop':
+                    theSimulation.rop = Number(v);
+                    if( inv.whichRule == 'methRop'){
+                        inv.graph.resetRopLine(Number(v));
+                        inv.graph.setupThenRedraw();
+                    }
+                    break;
+                case 'period':
+                    theSimulation.period = Number(v) * tioxTimeConv;
+                    if( inv.whichRule == 'methUpto'){
+                        inv.graph.resetPeriodLines(Number(v));
+                        inv.graph.setupThenRedraw();
+                    }
+                    break;
+                case 'upto':
+                    theSimulation.upto = Number(v);
+                    break;
+                case 'method':
+                    if( v == 'methRop'){
+                        const rop = Number(inv.usrInputs.get('rop').get());
+                        inv.graph.resetRopLine(rop);
+                    } else {
+                        const period = Number(inv.usrInputs.get('period').get());
+                        inv.graph.resetPeriodLines(period);
+                    }
+                    console.log('changing method>'+ v+"<");
+                    pickInvSimulation(v);
+                    inv.reset();
+                    break;
+                case 'speed':
+                    inv.adjustSpeed(v,speeds);
+                    break;
+                case 'action':
+                case 'reset':
+                    break;
+                default:
+                    alert(' captureChangeInSliderS reached part for default');
+                    debugger;
+                    break; 
+                    }
+        }
+
+    };
+    localReset () {
+		
+//       pickInvSimulation(inv.whichRule);
+        inv.itemCollection.moveDisplayAll(0); 
+
+        // schedule the initial Person to arrive and start the simulation/animation.
+        theSimulation.supply.previous = null;
+        theSimulation.creator.knockFromPrevious();
+
+        //fudge to get animation started quickly
+        let t = inv.heap.top().time - 1;
+        inv.now = inv.frameNow = t;
+        if (inv.whichRule == 'methUpto') {
+            inv.heap.push({
+                time: 0 + theSimulation.period,
+                type: 'next order',
+                proc: theSimulation.store.orderUpto
+                    .bind(theSimulation.store),
+                item: null
+            });
+        }
+        document.getElementById('lostSales').innerHTML = '0';
+        document.getElementById('fillRate').innerHTML = '100';
+        document.getElementById('serviceLevel').innerHTML = '100';
+    };
+    
+    
 };
+
+
+//function localReset () {
+//	pickInvSimulation(inv.whichRule);
+//	inv.itemCollection.moveDisplayAll(0); 
+//	
+//	// schedule the initial Person to arrive and start the simulation/animation.
+//	theSimulation.supply.previous = null;
+//	theSimulation.creator.knockFromPrevious();
+//	
+//	//fudge to get animation started quickly
+//	let t = inv.heap.top().time - 1;
+//	inv.now = inv.frameNow = t;
+//	if (inv.whichRule == 'methUpto') {
+//		inv.heap.push({
+//			time: 0 + theSimulation.period,
+//			type: 'next order',
+//			proc: theSimulation.store.orderUpto
+//				.bind(theSimulation.store),
+//			item: null
+//		});
+//	}
+//	document.getElementById('lostSales').innerHTML = '0';
+//	document.getElementById('fillRate').innerHTML = '100';
+//	document.getElementById('serviceLevel').innerHTML = '100';
+//};
 
 function pickInvSimulation(which) {
 	switch (which) {
@@ -274,122 +413,122 @@ const speeds = [{time:1,graph:1,anim:true},
 				{time:25,graph:5,anim:true},
 			   {time:1000,graph:10,anim:false}];
 
-function invDecodeURL(str){
-	const actionValue = {N:"none", G:"play", S:"pause"};
-	const boolValue = {T: "true", F: "false"};
-	const whichValue = {R: "methRop", U: "methUpto"}
-	return( 
-	{ar: str.substring(0,4),
-	acv: str.substring(4,8),
-	lt: str.substring(8,12),
-	ltcv: str.substring(12,16),
-	quan: str.substring(16,18),
-	rop: str.substring(18,20),
-	period: str.substring(20,22),
-	upto: str.substring(22,24),
-	 speed: str.substring(24,25),
-	 action: actionValue[str.substring(25,26)],
-	 which: whichValue[str.substring(26,27)],
-	 reset: boolValue[str.substring(27,28)],
-	 leg0:  boolValue[str.substring(28,29)],
-	 leg1:  boolValue[str.substring(29,30)],
-	 leg2:  boolValue[str.substring(30,31)],
-	 desc: str.substring(31)
-	})
-};
-function invEncodeURL(row){
-	const actionValue = {none: "N", play: "G", pause: "S"};
-	return Number(row.ar).toFixed(1).padStart(4,'0')
-	.concat(Number(row.acv).toFixed(1).padStart(4,'0'), 
-		Number(row.lt).toFixed(1).padStart(4,'0'),
-		Number(row.ltcv).toFixed(1).padStart(4,'0'),
-		row.quan.padStart(2,'0'),
-		row.rop.padStart(2,'0'),
-		row.period.padStart(2,'0'),
-		row.upto.padStart(2,'0'),
-		row.speed,
-		actionValue[row.action],
-		(row.which == "methRop" ? "R" : "U"),
-		(row.reset == "true" ? "T" : "F" ),
-		(row.leg0 == "true" ? "T" : "F"),
-		(row.leg1 == "true" ? "T" : "F"),
-		(row.leg2 == "true" ? "T" : "F"),	
-		row.desc);
-}
+//function invDecodeURL(str){
+//	const actionValue = {N:"none", G:"play", S:"pause"};
+//	const boolValue = {T: "true", F: "false"};
+//	const whichValue = {R: "methRop", U: "methUpto"}
+//	return( 
+//	{ar: str.substring(0,4),
+//	acv: str.substring(4,8),
+//	lt: str.substring(8,12),
+//	ltcv: str.substring(12,16),
+//	quan: str.substring(16,18),
+//	rop: str.substring(18,20),
+//	period: str.substring(20,22),
+//	upto: str.substring(22,24),
+//	 speed: str.substring(24,25),
+//	 action: actionValue[str.substring(25,26)],
+//	 which: whichValue[str.substring(26,27)],
+//	 reset: boolValue[str.substring(27,28)],
+//	 leg0:  boolValue[str.substring(28,29)],
+//	 leg1:  boolValue[str.substring(29,30)],
+//	 leg2:  boolValue[str.substring(30,31)],
+//	 desc: str.substring(31)
+//	})
+//};
+//function invEncodeURL(row){
+//	const actionValue = {none: "N", play: "G", pause: "S"};
+//	return Number(row.ar).toFixed(1).padStart(4,'0')
+//	.concat(Number(row.acv).toFixed(1).padStart(4,'0'), 
+//		Number(row.lt).toFixed(1).padStart(4,'0'),
+//		Number(row.ltcv).toFixed(1).padStart(4,'0'),
+//		row.quan.padStart(2,'0'),
+//		row.rop.padStart(2,'0'),
+//		row.period.padStart(2,'0'),
+//		row.upto.padStart(2,'0'),
+//		row.speed,
+//		actionValue[row.action],
+//		(row.which == "methRop" ? "R" : "U"),
+//		(row.reset == "true" ? "T" : "F" ),
+//		(row.leg0 == "true" ? "T" : "F"),
+//		(row.leg1 == "true" ? "T" : "F"),
+//		(row.leg2 == "true" ? "T" : "F"),	
+//		row.desc);
+//}
 
-function captureChangeInSliderS(event) {
-	let inputElem = event.target.closest('input');
-	if (!inputElem) return
-
-	var idShort = inputElem.id.slice(0,-3);
-	if (inputElem.type == 'range') {
-		var v = Number(inputElem.value)
-			.toFixed(inv.precision[idShort]);
-		document.getElementById('disp'+inputElem.id)
-			.innerHTML = v;
-	}
-	switch (idShort) {
-		case 'ar':
-			theSimulation.arrivalRV.setRate(Number(v) / tioxTimeConv);
-			break;
-		case 'acv':
-			theSimulation.arrivalRV.setCV(Number(v));
-			break;
-		case 'lt':
-			theSimulation.leadtimeRV.setTime(Number(v) * tioxTimeConv);
-			break;
-		case 'ltcv':
-			theSimulation.leadtimeRV.setCV(Number(v));
-			break;
-		case 'quan':
-			theSimulation.quantityOrdered = Number(v);
-			break;
-		case 'rop':
-			theSimulation.rop = Number(v);
-			if( inv.whichRule == 'methRop'){
-				inv.graph.resetRopLine(Number(v));
-				inv.graph.setupThenRedraw();
-			}
-			break;
-		case 'period':
-			theSimulation.period = Number(v) * tioxTimeConv;
-			if( inv.whichRule == 'methUpto'){
-				inv.graph.resetPeriodLines(Number(v));
-				inv.graph.setupThenRedraw();
-			}
-			break;
-		case 'upto':
-			theSimulation.upto = Number(v);
-			break;
-		case 'methRop':
-		case 'methUpto':
-			if( inv.whichRule == idShort )break
-			inv.whichRule = idShort;
-			if( inv.whichRule == 'methRop'){
-				const rop = document.getElementById('ropinv');
-				inv.graph.resetRopLine(Number(rop.value));
-			} else {
-				const period = document.getElementById('periodinv');
-				inv.graph.resetPeriodLines(Number(period.value));
-			}
-			pickInvSimulation(inv.whichRule);
-			inv.reset();
-			
-			break;
-		case 'speed':
-			inv.adjustSpeed(v,speeds);
-			break;
-		case 'none':
-		case 'pause':
-		case 'play':
-		case 'reset':
-			break;
-		default:
-			alert(' captureChangeInSliderS reached part for default');
-			debugger;
-			break;
-	}
-}
+//function captureChangeInSliderS(event) {
+//	let inputElem = event.target.closest('input');
+//	if (!inputElem) return
+//
+//	var idShort = inputElem.id.slice(0,-3);
+//	if (inputElem.type == 'range') {
+//		var v = Number(inputElem.value)
+//			.toFixed(inv.precision[idShort]);
+//		document.getElementById('disp'+inputElem.id)
+//			.innerHTML = v;
+//	}
+//	switch (idShort) {
+//		case 'ar':
+//			theSimulation.arrivalRV.setRate(Number(v) / tioxTimeConv);
+//			break;
+//		case 'acv':
+//			theSimulation.arrivalRV.setCV(Number(v));
+//			break;
+//		case 'lt':
+//			theSimulation.leadtimeRV.setTime(Number(v) * tioxTimeConv);
+//			break;
+//		case 'ltcv':
+//			theSimulation.leadtimeRV.setCV(Number(v));
+//			break;
+//		case 'quan':
+//			theSimulation.quantityOrdered = Number(v);
+//			break;
+//		case 'rop':
+//			theSimulation.rop = Number(v);
+//			if( inv.whichRule == 'methRop'){
+//				inv.graph.resetRopLine(Number(v));
+//				inv.graph.setupThenRedraw();
+//			}
+//			break;
+//		case 'period':
+//			theSimulation.period = Number(v) * tioxTimeConv;
+//			if( inv.whichRule == 'methUpto'){
+//				inv.graph.resetPeriodLines(Number(v));
+//				inv.graph.setupThenRedraw();
+//			}
+//			break;
+//		case 'upto':
+//			theSimulation.upto = Number(v);
+//			break;
+//		case 'methRop':
+//		case 'methUpto':
+//			if( inv.whichRule == idShort )break
+//			inv.whichRule = idShort;
+//			if( inv.whichRule == 'methRop'){
+//				const rop = document.getElementById('ropinv');
+//				inv.graph.resetRopLine(Number(rop.value));
+//			} else {
+//				const period = document.getElementById('periodinv');
+//				inv.graph.resetPeriodLines(Number(period.value));
+//			}
+//			pickInvSimulation(inv.whichRule);
+//			inv.reset();
+//			
+//			break;
+//		case 'speed':
+//			inv.adjustSpeed(v,speeds);
+//			break;
+//		case 'none':
+//		case 'pause':
+//		case 'play':
+//		case 'reset':
+//			break;
+//		default:
+//			alert(' captureChangeInSliderS reached part for default');
+//			debugger;
+//			break;
+//	}
+//}
 
 
 //  One variable for each process step or queue
@@ -900,13 +1039,9 @@ export class Person extends Item {
 	};	
 }; // end class Person
 
-import {
-	genRadio, genPlayResetBox, 
-	genSlider, addDiv, hideNode
-}
-from '../mod/genHTML.js';
 
-function invHTML(){	
+
+function invHTML(usrInputs){	
 	addDiv('inv','inv','whole')
 	addDiv('inv', 'leftHandSideBox'+'inv',
 			   'stageWrapper', 'statsWrapper',
@@ -941,8 +1076,8 @@ function invHTML(){
 	//method radio boxes at top of rhs
 	const e1 = document.createElement('label');
 	e1.append('Rule for Orders:');
-	const e2 = genRadio('whichinv','Reorder Point','methRopinv','methRop',true);
-	const e3 = genRadio('whichinv','Order up to','methUptoinv','methUpto',false);
+	const e2 = genRadio('methodinv','Reorder Point','methRopinv','methRop',true);
+	const e3 = genRadio('methodinv','Order up to','methUptoinv','methUpto',false);
 	
 	const ewhich = document.createElement('div');
 	ewhich.className = 'ropupto rowAroundCenter';
@@ -953,34 +1088,35 @@ function invHTML(){
 	elem.parentNode.prepend(ewhich);
 	
 	//now put in the sliders with the play/reset box	
-	const rop1 = genSlider('quaninv','Order Quantity = ','24','',
-				  24,10,50,1,[10,20,30,40,50]);
+	const rop1 = usrInputs.get('quan')
+            .htmlNumSlider('Order Quantity = ', 24, [10,20,30,40,50]);
 	rop1.id = 'rop1';
-	const rop2 = genSlider('ropinv','Reorder Point = ','10','',
-				  10,5,85,1,[5,25,45,65,85])
+	const rop2 = usrInputs.get('rop')
+            .htmlNumSlider('Reorder Point = ', 10, [5,25,45,65,85])
 	rop2.id = 'rop2';
-	const upto1 = genSlider('periodinv','Period = ','3','',
-				  3,2,8,1,[2,5,8]);
+	const upto1 = usrInputs.get('period')
+            .htmlNumSlider('Period = ', 3, [2,5,8]);
 	upto1.id = 'upto1';
-	const upto2 = genSlider('uptoinv','Up to Quantity = ','36','',
-				  36,10,90,1,[10,30,50,70,90]);
+	const upto2 = usrInputs.get('upto')
+            .htmlNumSlider('Up to Quantity = ', 36, [10,30,50,70,90]);
 	upto2.id = 'upto2';
 	
 	
 	elem.append(
-		genSlider('arinv','Arrival Rate = ','5','',
-				  5,1,9,1,[1,3,5,7,9]),
-		genSlider('acvinv','Arrival CV = ','0.0','',
-				  0,0,2,.5,['0.0','1.0','2.0']),
-		genSlider('ltinv','Lead Time = ','3','',
-				  3,2,8,1,[2,5,8] ), 
-		genSlider('ltcvinv','Lead Time CV = ','0','',
-				  0,0,2,.5,['0.0','1.0','2.0']),
+		usrInputs.get('ar')
+            .htmlNumSlider('Arrival Rate = ', 5, [1,3,5,7,9]),
+		usrInputs.get('acv')
+            .htmlNumSlider('Arrival CV = ', 0, ['0.0','1.0','2.0']),
+		usrInputs.get('lt')
+            .htmlNumSlider('Lead Time = ',3,[2,5,8] ), 
+		usrInputs.get('ltcv')
+            .htmlNumSlider('Lead Time CV = ', 0, ['0.0','1.0','2.0']),
 		rop1, rop2,
 		hideNode(upto1), hideNode(upto2),
 		genPlayResetBox('inv'),
-		genSlider('speedinv','Speed = ','1','x',
-				  0,0,5,1,["slow",' ',' ',' ',"fast ",' full'])
+		usrInputs.get('speed')
+            .htmlArbSlider('Speed = ', 0,
+                            ["slow",' ',' ',' ',"fast",'∞'])
 	);
 	
 	
@@ -989,9 +1125,15 @@ function invHTML(){
 };
 
 export function invStart() {
-	invHTML();
-	invDefine();
-	theSimulation.initialize(); // the specific to inv
+	let usrInputs = invDefineUsrInputs();
+    invHTML(usrInputs);
+    inv = new Inventory(usrInputs);
+    invDefine();
+    theSimulation.initialize();
+    for( let [key, inp] of inv.usrInputs ){
+        inp.userUpdate();
+    };
+    //computeStageTimes();
 	inv.reset();
 	return inv;
 };

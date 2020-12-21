@@ -14,7 +14,11 @@
 	<script src='/app/res/seedrandom.min.js'></script>
 
 <!--	<script type='module' src='./app/app.js'></script>-->
-
+    <style>
+    .crossOut{
+        text-decoration-line: line-through;
+        }
+    </style>
 </head>
 <body>
     <div id='place' style='width: 20%'>
@@ -104,6 +108,80 @@
         }
     
         };
+    
+    
+    
+    class LegendElem{
+        constructor(id, isAnAverage, color){
+            this.id = id;
+            this.visible = true;
+            this.elem = null;
+            this.isAnAverage = isAnAverage;
+            this.color = color;
+        };
+        createHTML(nametext){
+            const rB = document.createElement('i');
+            rB.classList.add('material-icons');
+            rB.classList.add('actButton');
+            rB.classList.add('font15vw');
+            rB.title = 'reset the average';
+            rB.innerHTML = 'replay';
+            const dot = document.createElement('span');
+            dot.innerHTML = '&#11044;&nbsp;'
+            dot.style = 'color:'+this.color;
+            this.name = document.createElement('span');
+            this.name.innerHTML = nametext;
+            
+            
+            
+            
+            this.elem = document.createElement('div');
+            this.elem.id = this.id;
+            this.elem.append((this.isAnAverage ? rB : ''),dot, this.name);
+            this.name.addEventListener('click', this.toggleVisible.bind(this));
+            rB.addEventListener('click',this.resetAverage.bind(this));
+            return this.elem;
+        };
+        setVisibility(b){
+            this.visible = b == 'true';
+            if( this.visible )
+                this.name.classList.remove('crossOut');
+            else
+              this.name.classList.add('crossOut');  
+        };
+//        makeVisible(){
+//            this.visible = true;
+//            this.name.classList.remove('crossOut');
+//        };
+//        makeInvisible(){
+//            this.visible = false;
+//            this.name.classList.add('crossOut');
+//        };
+        toggleVisible(){
+            if( this.visible ){
+                this.name.classList.add('crossOut');
+                this.visible = false;
+            } else {
+                this.name.classList.remove('crossOut');
+                this.visible = true;
+            }
+            console.log('Visible',this.visible);
+        };
+        resetAverage(){
+            console.log('clicked on the reset average button');
+        }
+        
+        
+            
+    };
+    
+    const testL = new LegendElem('test', true, 'green');
+    const test2 = new LegendElem('test2',false, 'blue')
+    
+    place.append(testL.createHTML('Average Cost'),test2.createHTML('2nd Legend'));
+    
+    
+    
     
     
     
