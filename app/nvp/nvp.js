@@ -38,7 +38,7 @@ import {
 from "../mod/graph.js";
 import {
 	genPlayResetBox, genSlider, genArbSlider, genButton, addDiv,
-    ArbRange,  NumRange, genRange, CheckBox,  RadioButton,
+    ArbSlider,  NumSlider, genRange, CheckBox,  RadioButton,
     IntegerInput, addKeyForIds, LegendItem
 }
 from '../mod/genHTML.js';
@@ -128,20 +128,20 @@ anim.person.path.mid = (anim.person.path.top + anim.person.path.bot) / 2;
 
 function nvpDefineUsrInputs(){
     let usrInputs = new Map();
-    usrInputs.set('dr', new NumRange('drnvp',
+    usrInputs.set('dr', new NumSlider('drnvp',
                 null, 1,10,50,1,2,1) );
-    usrInputs.set('dcv', new NumRange('dcvnvp',
+    usrInputs.set('dcv', new NumSlider('dcvnvp',
                 null, 1,0,1,.1,2,10) );
-    usrInputs.set('Cu', new NumRange('Cunvp',
+    usrInputs.set('Cu', new NumSlider('Cunvp',
                 null, 1,0,10,1,2,1) );
-    usrInputs.set('Co', new NumRange('Convp',
+    usrInputs.set('Co', new NumSlider('Convp',
                 null, 1,0,10,1,2,1) );
-    usrInputs.set('quan', new NumRange('quannvp',null,1,10,50,1,2,1));
+    usrInputs.set('quan', new NumSlider('quannvp',null,1,10,50,1,2,1));
     usrInputs.set('leg0', new LegendItem('leg0nvp'));
     usrInputs.set('leg1', new LegendItem('leg1nvp'));
     usrInputs.set('leg2', new LegendItem('leg2nvp'));
     
-    usrInputs.set('speed', new ArbRange('speednvp',
+    usrInputs.set('speed', new ArbSlider('speednvp',
                 null, ['1x','2x','5x','10x','25x','∞'],
 				                [1,2,5,10,25,1000]) );
     usrInputs.set('action', new RadioButton('actionnvp',
@@ -213,12 +213,11 @@ class NewsVendor extends OmConcept{
 			.addEventListener('input', this.captureUserUpdate.bind(this));
         this.setupScenarios();    
     }
-    localUpdate(changed){
+    localUpdate(...inpsChanged){
         
-        for(let key in changed){
-            if( !changed[key] ) continue;
-            let v = nvp.usrInputs.get(key).get();
-            switch (key){
+        for(let inp of inpsChanged){
+            let v = inp.get();
+            switch (inp.key){
                 case 'dr':
                  theSimulation.demandRV
                     .setMean(Number(v));

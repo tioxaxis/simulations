@@ -191,6 +191,9 @@
         margin: auto;
 /*        border: red solid*/
 	}
+    .crossOut{
+        text-decoration-line: line-through;
+        }
 .dualChartWrapper{
    flex: 1 1 0;
 	

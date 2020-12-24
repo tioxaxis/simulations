@@ -46,7 +46,7 @@ from "../mod/graph.js";
 
 import {
 	genPlayResetBox, genSlider, genRadio, genArbSlider, genButton, addDiv,
-    ArbRange,  NumRange, genRange, CheckBox,  RadioButton, hideNode, 
+    ArbSlider,  NumSlider, genRange, CheckBox,  RadioButton, hideNode, 
     IntegerInput, addKeyForIds, LegendItem
 }
 from '../mod/genHTML.js';
@@ -187,27 +187,27 @@ animSetup();
 function invDefineUsrInputs(){
     let usrInputs = new Map();
     usrInputs.set('method', new RadioButton('methodinv',null, ['methRop','methUpto']) );
-    usrInputs.set('ar', new NumRange('arinv',
+    usrInputs.set('ar', new NumSlider('arinv',
                 null, 1,1,9,1,1,1) );
-    usrInputs.set('acv', new NumRange('acvinv',
+    usrInputs.set('acv', new NumSlider('acvinv',
                 null, 1,0,2,.5,2,10) );
-    usrInputs.set('lt', new NumRange('ltinv',
+    usrInputs.set('lt', new NumSlider('ltinv',
                 null, 1,2,8,1,1,1) );
-    usrInputs.set('ltcv', new NumRange('ltcvinv',
+    usrInputs.set('ltcv', new NumSlider('ltcvinv',
                 null, 1,0,2,.5,2,10) );
     
-    usrInputs.set('quan', new NumRange('quaninv',
+    usrInputs.set('quan', new NumSlider('quaninv',
                 null, 1,10,50,1,2,1) );
-    usrInputs.set('rop', new NumRange('ropinv',
+    usrInputs.set('rop', new NumSlider('ropinv',
                 null, 1,5,85,1,2,1) );
-    usrInputs.set('period', new NumRange('periodinv',
+    usrInputs.set('period', new NumSlider('periodinv',
                 null, 1,2,8,1,1,1) );
-    usrInputs.set('upto', new NumRange('uptoinv',
+    usrInputs.set('upto', new NumSlider('uptoinv',
                 null, 1,10,90,1,2,1) );
     usrInputs.set('leg0', new LegendItem('leg0inv'));
     usrInputs.set('leg1', new LegendItem('leg1inv'));
     usrInputs.set('leg2', new LegendItem('leg2inv'));
-    usrInputs.set('speed', new ArbRange('speedinv',
+    usrInputs.set('speed', new ArbSlider('speedinv',
                 null, ['1x','2x','5x','10x','25x','∞'],
 				                [1,2,5,10,25,1000]) );
     usrInputs.set('action', new RadioButton('actioninv',
@@ -273,12 +273,10 @@ class Inventory extends OmConcept{
 	       .addEventListener('input', this.captureUserUpdate.bind(this));
         this.setupScenarios();    
     }
-    localUpdate(changed){
-        
-        for(let key in changed){
-            if( !changed[key] ) continue;
-            let v = inv.usrInputs.get(key).get();
-            switch (key){
+    localUpdate(...inpsChanged){
+        for(let inp of inpsChanged){
+            let v = inp.get();
+            switch (inp.key){
                 case 'ar':
                     theSimulation.arrivalRV.setRate(Number(v) / tioxTimeConv);
                     break;

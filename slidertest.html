@@ -29,64 +29,102 @@
 </body>
 <script type='module'>
     import {
-         NumRange,  ArbRange, genRange, CheckBox,  RadioButton  
+         genRange,  htmlNumSlider, NumSlider,
+                    htmlArbSlider, ArbSlider,
+        genCheckBox, htmlCheckBox, CheckBox,
+        genRadio , htmlRadioButton, RadioButton ,
+        IntegerInput, 
+        LegendItem
+          
     }
     from "./app/mod/genHTML.js";
-    function numSpecifics(){
-        console.log('called the num specifics routines value is',numRange.get());
-    };
-    function arbSpecifics(){
-        console.log('called the arb specifics routines value is',arbRange.get());
-    };
+//    function numSpecifics(){
+//        console.log('called the num specifics routines value is',NumSlider.get());
+//    };
+//    function arbSpecifics(){
+//        console.log('called the arb specifics routines value is',ArbSlider.get());
+//    };
     
-    function rbSpecifics(){
-        console.log('called the rb specifics routines value is',rb.get());
-    };
-    
-    function cbSpecifics(){
-        console.log('called the cb specifics routines value is',cb.get());
-    };
+//    function rbSpecifics(){
+//        console.log('called the rb specifics routines value is',rb.get());
+//    };
+//    
+//    function cbSpecifics(){
+//        console.log('called the cb specifics routines value is',cb.get());
+//    };
     
     let spRoutines ={}
     
     let place = document.getElementById('place');
     
-    let numRange = new NumRange('numid',numSpecifics,1,5,9,.5);
-    spRoutines['numid']=numRange;
+    let numInput = genRange('numid','6.0',5, 9, 1);
+    let numSliderBox = htmlNumSlider(numInput,
+                        'Numeric Range = ', '6.0', [5, 7, 9] );
+    let numRngObj = new NumSlider('num', numInput, localRoutine,1,2,10);
+    place.append(numSliderBox);
     
-    let arbRange = new ArbRange('arbid',arbSpecifics,
-                                ['A','B','C','D','E'],
-                               ['a','b','c','d','e']);
-    spRoutines['arbid'] = arbRange;
+
+    let arbInput = genRange('arbid',0 ,0, 4, 1);
+    let arbSliderBox = htmlArbSlider(arbInput,
+                        'Arbitrary Range = ', 'A' 
+                        , ['A','C','E']  );
+    let arbRngObj = new ArbSlider(arbInput, localRoutine,
+                                 ['A','B','C','D','E'], ['a','b','c','d','e']);
+    place.append(arbSliderBox);
+        
+    spRoutines['numid']=numRngObj;
     
-    let numHTML = numRange.htmlNumSlider('Numeric Range =',6, [5, 7,9]   );
-    let arbHTML = arbRange.htmlArbSlider('Arbitrary Range =',1,['A','C','E']   );
+//    let ArbSlider = new ArbSlider('arbid',arbSpecifics,
+//                                ['A','B','C','D','E'],
+//                               ['a','b','c','d','e']);
+//    spRoutines['arbid'] = ArbSlider;
     
-    place.append(numHTML,arbHTML);
-    console.log(numRange.get());
-    console.log(arbRange.get());
-    numRange.set(9);
-    arbRange.set(4);
-    console.log(numRange.get());
-    console.log(arbRange.get());
+//    let numHTML = numRngObj.htmlNumSlider('Numeric Range =',6, [5, 7,9]   );
+//    let arbHTML = ArbSlider.htmlArbSlider('Arbitrary Range =',1,['A','C','E']   );
+    
+//    place.append(numSliderBox);
+    console.log(numRngObj.get());
+    console.log(arbRngObj.get());
+    console.log(arbRngObj.getValue());
+    
+    numRngObj.set(9);
+    arbRngObj.set(4);
+    console.log(numRngObj.get());
+    console.log(arbRngObj.get());
+    console.log(arbRngObj.getValue());
+    function localRoutine(key){
+        console.log('reached local rountine with key=>'+key+'<=')
+    }
+    
+    let cbInput = genCheckBox('cbid');
+    let cbElem = htmlCheckBox(cbInput,'here is a checkbox');
+    let cb = new CheckBox('cb', cbInput, localRoutine );
+    place.append(cbElem);
+    console.log(' cb=', cb.get() );
     
     
-    let rb = new RadioButton('action',rbSpecifics,["none","play","pause"]);
-    spRoutines['action'] = rb;
+    
+//    spRoutines['action'] = rb;
     place.append(
-    rb.htmlRadioButton('play','play',true,'PlayLabel'),
-    rb.htmlRadioButton('pause','pause',false,'PauseLabel'),
-    rb.htmlRadioButton('none','none',false,'NoneLabel'));
+    htmlRadioButton('action','play','play',true,'PlayLabel'),
+    htmlRadioButton('action','pause','pause',false,'PauseLabel'),
+    htmlRadioButton('action','none','none',false,'NoneLabel')
+    );
+    let rb = new RadioButton('action',localRoutine, ["none","play","pause"]);
+    
+    rb.set('pause');
+    console.log('radio button output',rb.get()+'>'+rb.encode(rb.get())+'<');
+    
+    rb.set('none');
+    console.log('radio button output',rb.get()+'>'+rb.encode(rb.get())+'<');
     
     
-    let cb = new CheckBox('ch',cbSpecifics);
-    spRoutines['ch'] = cb;
+    let intRange = genRange('intid', 4, 2, 12, 2);
+    let intInput = new IntegerInput(intRange, localRoutine, 2);
+    place.append('here is a integer box',intRange);
     
-    let checkHTML = cb.htmlCheckBox('here is a checkbox');
-    place.append(checkHTML);
-    console.log('rb and cb=',rb.get(),cb.get() );
     
-    place.addEventListener('input', captureUserUpdate);
+//    place.addEventListener('input', captureUserUpdate);
     
     function captureUserUpdate(){
         let inputElem = event.target.closest('input');
@@ -111,13 +149,15 @@
     
     
     
-    class LegendElem{
+    class LegendDomElem{
         constructor(id, isAnAverage, color){
             this.id = id;
             this.visible = true;
             this.elem = null;
             this.isAnAverage = isAnAverage;
             this.color = color;
+            this.name = document.createElement('span');
+            // text filled in with next routine.
         };
         createHTML(nametext){
             const rB = document.createElement('i');
@@ -129,21 +169,24 @@
             const dot = document.createElement('span');
             dot.innerHTML = '&#11044;&nbsp;'
             dot.style = 'color:'+this.color;
-            this.name = document.createElement('span');
+            
             this.name.innerHTML = nametext;
             
+            this.elem = document.getElementById(this.id);
+            if( !this.elem ){
+                this.elem = document.createElement('div');
+                this.elem.id = this.id;   
+            }
             
             
             
-            this.elem = document.createElement('div');
-            this.elem.id = this.id;
             this.elem.append((this.isAnAverage ? rB : ''),dot, this.name);
-            this.name.addEventListener('click', this.toggleVisible.bind(this));
+            
             rB.addEventListener('click',this.resetAverage.bind(this));
             return this.elem;
         };
         setVisibility(b){
-            this.visible = b == 'true';
+            this.visible = b;
             if( this.visible )
                 this.name.classList.remove('crossOut');
             else
@@ -175,14 +218,26 @@
             
     };
     
-    const testL = new LegendElem('test', true, 'green');
-    const test2 = new LegendElem('test2',false, 'blue')
+    const testL = new LegendDomElem('test', true, 'green');
+    const test2 = new LegendDomElem('test2',false, 'blue');
+    let x = document.getElementById('test2');
+    
     
     place.append(testL.createHTML('Average Cost'),test2.createHTML('2nd Legend'));
     
     
+    let testLobj = new LegendItem(testL,localRoutine);
+    let test2obj = new LegendItem(test2,localRoutine);
     
-    
+    console.log('legend 1 ',testLobj.get()+'>'+testLobj.encode(testLobj.get())+'<');
+    testL.setVisibility(false);
+    console.log('legend 1 ',testLobj.get()+'>'+testLobj.encode(testLobj.get())+'<');
+    testL.setVisibility(true);
+    console.log('legend 1 ',testLobj.get()+'>'+testLobj.encode(testLobj.get())+'<');
+    testLobj.set('false');
+    console.log('legend 1 ',testLobj.get()+'>'+testLobj.encode(testLobj.get())+'<');
+    testLobj.set('true');
+    console.log('legend 1 ',testLobj.get()+'>'+testLobj.encode(testLobj.get())+'<');
     
     
     

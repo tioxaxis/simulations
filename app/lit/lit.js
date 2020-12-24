@@ -40,7 +40,7 @@ import {
 from "../mod/graph.js";
 import {
 	genPlayResetBox, genSlider, genArbSlider, genButton, addDiv,
-    ArbRange,  NumRange, genRange, CheckBox,  RadioButton, 
+    ArbSlider,  NumSlider, genRange, CheckBox,  RadioButton, 
     IntegerInput, addKeyForIds, LegendItem
 }
 from '../mod/genHTML.js';
@@ -148,19 +148,19 @@ var totInv, totTime, totPeople, firstArr, lastArrDep, LBRFcount;
 
 function litDefineUsrInputs(){
     let usrInputs = new Map();
-    usrInputs.set('ar', new NumRange('arlit',
+    usrInputs.set('ar', new NumSlider('arlit',
                 null, 1,1,6,1,1,1) );
-    usrInputs.set('acv', new NumRange('acvlit',
+    usrInputs.set('acv', new NumSlider('acvlit',
                 null, 1,0,2,.5,2,10) );
-    usrInputs.set('sr', new NumRange('srlit',
+    usrInputs.set('sr', new NumSlider('srlit',
                 null, 1,5,25,1,2,1) );
-    usrInputs.set('scv', new NumRange('scvlit',
+    usrInputs.set('scv', new NumSlider('scvlit',
                 null, 1,0,2,.5,2,10) );
     usrInputs.set('leg0', new LegendItem('leg0lit'));
     usrInputs.set('leg1', new LegendItem('leg1lit'));
     usrInputs.set('leg2', new LegendItem('leg2lit'));
     
-    usrInputs.set('speed', new ArbRange('speedlit',
+    usrInputs.set('speed', new ArbSlider('speedlit',
                 null, ['1x','2x','5x','10x','25x','∞'],
 				                [1,2,5,10,25,1000]) );
     usrInputs.set('action', new RadioButton('actionlit',
@@ -212,12 +212,10 @@ class LittlesLaw extends OmConcept{
 			.addEventListener('input', this.captureUserUpdate.bind(this));
         this.setupScenarios();    
     }
-    localUpdate(changed){
-        
-        for(let key in changed){
-            if( !changed[key] ) continue;
-            let v = lit.usrInputs.get(key).get();
-            switch (key){
+    localUpdate(...inpsChanged){
+        for(let inp of inpsChanged){
+            let v = inp.get();
+            switch (inp.key){
                 case 'ar':
 			         theSimulation.interarrivalRV
 				        .setRate(v / tioxTimeConv);

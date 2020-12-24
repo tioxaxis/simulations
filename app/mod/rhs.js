@@ -295,10 +295,10 @@ export class OmConcept {
 	}
 
 	setSlidersFrom (row){
-        const changed = {};
+        const inpsChanged = [];
         console.log(' set Sliders row=',row);
         for( let [key, inp] of this.usrInputs ){
-          changed[key] = inp.set(row[key]);
+          if( inp.set(row[key]) ) inpsChanged.push(inp);
         } 
         
         // NEED to handle legend status which are checked and which are not
@@ -313,7 +313,7 @@ export class OmConcept {
             else if (row.action == 'pause')
                 document.getElementById('pauseButton'+this.key).click();
         }
-       this.localUpdate(changed);
+       this.localUpdate(...inpsChanged);
     };
     
     getSliders () {

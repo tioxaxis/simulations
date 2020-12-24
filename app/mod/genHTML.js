@@ -58,7 +58,6 @@ export function genRange(id, initial, min, max, step){
     return inp;
 };
 
-
 export function hideNode( node ){
     node.classList.add('displayNone');
     return node;
@@ -146,10 +145,10 @@ export function genSlider( id, before, mid, after,
     return d;
 };
 
-export function genPlayResetBox(key){
+export function genPlayResetBox(key, cbElem){
     const d = document.createElement('div');
     d.className = 'sliderBox';
-    d.append(genPlayResetButtons(key), genPlayResetOptions(key));
+    d.append(genPlayResetButtons(key), genPlayResetOptions(key, cbElem));
     return d
 }
 
@@ -171,53 +170,10 @@ export function copyMainPage(key){
     keyPage.innerHTML = page.innerHTML;
 }
 
-
-export class NumRange{
-    // slider stores a number; receives and returns string
-    constructor (id, specifics, precision, min, max, step, shortLen, scale){
-        this.id = id;
-        this.key = id.slice(0,-3);
-        this.specifics = specifics;
-        this.precision = precision;
-        this.min = min;
-        this.max = max;
-        this.step = step;
-        this.shortLen = shortLen;
-        this.scale = scale;
-    };
-
-    get() {
-        return document.getElementById(this.id).value;
-    };
-    set(x){
-        const elem = document.getElementById(this.id)
-        const changed = elem.value != x;
-        elem.value = x;
-        const disp = document.getElementById('disp' + this.id);
-        if( disp ) disp.innerHTML = Number(x).toFixed(this.precision);
-        return changed;
-        if( this.specifics ) this.specifics(this.key, x);
-    };
-
-    encode(x){
-       return (x * this.scale)
-           .toString().padStart(this.shortLen,'0'); 
-    };
-    decode(x){
-        return x / this.scale;
-    }
-    userUpdate(){
-        let x = this.get();
-        const disp = document.getElementById('disp' + this.id);
-        if( disp ) disp.innerHTML = Number(x).toFixed(this.precision);
-        if( this.specifics ) this.specifics(this.key, x);
-        return x;
-    }
-    
-    htmlNumSlider(displayText, initial, sliderValues) {
+export function htmlNumSlider( inputElem, displayText, initial, sliderValues) {
         const sp = document.createElement('span');
-        sp.id = 'disp' + this.id;
-        sp.append(initial.toFixed(this.precision));
+        sp.id = 'disp' + inputElem.id;
+        sp.append(initial);
         const disp = document.createElement('div');
         disp.append(displayText,sp);
 
@@ -231,62 +187,58 @@ export class NumRange{
 
         const d = document.createElement('div');
         d.className = "sliderBox columnAroundCenter";
-        d.append(disp, genRange(this.id,initial,
-                    this.min,this.max,this.step),vals);
+        d.append(disp, inputElem, vals);
         return d;
     };
-};
-
-export class ArbRange{
-    //slider holds the index but otherwise use values[index]
-    constructor (id, specifics, displayValues, values ){
-        this.id = id;
-        this.key = id.slice(0,-3);
-        this.displayValues = displayValues;
-        this.values = values;
-        this.specifics = specifics;
-        this.shortLen = 1;
+function domElem(x){
+    if( typeof x == "string" ) 
+        x = document.getElementById(x);
+    return x;
+}
+export class NumSlider{
+    // slider stores a number; receives and returns string
+    constructor (key, inputElem, localUpdate, precision, shortLen, scale){
+        this.key = key;
+        this.inputElem = domElem(inputElem);
+//        this.disp = document.getElementById('disp' + this.inputElem.id);
+        this.localUpdate = localUpdate;
+        this.precision = precision;
+        this.shortLen = shortLen;
+        this.scale = scale;
+        this.inputElem.addEventListener('input', this.userUpdate.bind(this));
     };
 
     get() {
-        return document.getElementById(this.id).value;
+        return this.inputElem.value;
     };
-    getValue() {
-        const index = document.getElementById(this.id).value;
-        return this.values[index];
-    }
-    set(i){
-//        const index = this.values.findIndex( (x) => v == x );
-        const elem = document.getElementById(this.id);
-        const changed = elem.value != i;
-        document.getElementById(this.id).value = i;
-        const disp = document.getElementById('disp' + this.id);
-        disp.innerHTML = this.displayValues[i];
-        if( this.specifics ) this.specifics(this.key, i, this.values[i]);
+    set(x){
+        const changed = this.inputElem.value != x;
+        this.inputElem.value = x;
+        const disp = document.getElementById('disp' + this.inputElem.id);
+        if( disp ) disp.innerHTML = Number(x).toFixed(this.precision);
         return changed;
     };
+
     encode(x){
-        return x.toString();;
+       return (x * this.scale)
+           .toString().padStart(this.shortLen,'0'); 
     };
     decode(x){
-        return x;
-    };
-    
-    userUpdate(){
-        let index = document.getElementById(this.id).value;
-        const disp = document.getElementById('disp' + this.id);
-        disp.innerHTML = this.displayValues[index];
-        if( this.specifics ) this.specifics(this.key, index, this.values[index]);
-        return index;
-    };
-    htmlSetup(){
-        this.elem = document.getElementById(this.id);
-        this.disp = document.getElementById('disp'+this.id);
+        return (x / this.scale).toString();
     }
-    htmlArbSlider(displayText, initial, sliderValues){
+    userUpdate(){
+        let x = this.get();
+        const disp = document.getElementById('disp' + this.inputElem.id);
+        if( disp ) disp.innerHTML = Number(x).toFixed(this.precision);
+        this.localUpdate(this);
+    }
+    
+    
+};
+export function htmlArbSlider(inputElem, displayText, initial, sliderValues){
         const sp = document.createElement('span');
-		sp.id = 'disp' + this.id;
-		sp.append(this.displayValues[initial]);
+		sp.id = 'disp' + inputElem.id;
+		sp.append(initial);
 		const disp = document.createElement('div');
 		disp.append(displayText,sp);
 				
@@ -300,33 +252,83 @@ export class ArbRange{
 		
 		const d = document.createElement('div');
 		d.className = "sliderBox columnAroundCenter";
-		d.append(disp, 
-		  genRange(this.id,initial,0,this.values.length-1,1), vals);
+		d.append(disp, inputElem, vals);
 		return d;
     };
 
-};
+export class ArbSlider{
+    //slider holds the index but otherwise use values[index]
+    constructor (key, inputElem, localUpdate,  displayValues, values ){
+        this.key = key;
+        this.inputElem = domElem(inputElem);
+        this.localUpdate = localUpdate;
+        this.displayValues = displayValues;
+        this.values = values;
+        this.shortLen = 1;
+        this.inputElem.addEventListener('input', this.userUpdate.bind(this));
+    };
+
+    get() {
+        return this.inputElem.value;
+    };
+    getValue() {
+        const index = this.inputElem.value;
+        return this.values[index];
+    }
+    set(i){
+        const changed = this.inputElem.value != i;
+        this.inputElem.value = i;
+        const disp = document.getElementById('disp' + this.inputElem.id);
+        disp.innerHTML = this.displayValues[i];
+        return changed;
+    };
+    encode(x){
+        return x.toString();;
+    };
+    decode(x){
+        return x;
+    };
+    
+    userUpdate(){
+        let index = this.inputElem.value;
+        const disp = document.getElementById('disp' + this.inputElem.id);
+        disp.innerHTML = this.displayValues[index];
+        this.localUpdate(this);
+    };
+    
     
 
+};
+export function genCheckBox(id){
+    const inp = document.createElement('input');
+    inp.type = 'checkbox';
+    inp.id = id;
+    return inp;
+}
+
+export function htmlCheckBox(inp, desc){
+        const label = document.createElement('LABEL');
+        label.append(inp, desc);
+        return label; 
+    };
 
 export class CheckBox{
     //slider holds "checked" receives and returns string
-    constructor(id, specifics){
-        this.id = id;
-        this.key = id.slice(0,-3);
-        this.specifics = specifics;
+    constructor (key, inputElem, localUpdate) {
+        this.key = key;
+        this.inputElem = domElem(inputElem);
+        this.localUpdate = localUpdate;
         this.shortLen = 1;
+        this.inputElem.addEventListener('input', this.userUpdate.bind(this));
     };
     get() {
-        return document.getElementById(this.id).checked.toString();
+        return this.inputElem.checked.toString();
     };
     set(x){
-        const elem = document.getElementById(this.id);
         const b = x == 'true';
-        const changed = elem.checked != b;
-        elem.checked = x == 'true';
+        const changed = this.inputElem.checked != b;
+        this.inputElem.checked = x == 'true';
         return changed;
-        if( this.specifics ) this.specifics(this.key, x);
     };
     encode(x){
         return ( x == 'true' ? 'T' : 'F');
@@ -335,49 +337,53 @@ export class CheckBox{
          return ( x == 'T' ? 'true' : 'false');  
     };
     userUpdate(){
-        const b = this.get();
-            if( this.specifics ) this.specifics(this.key, b);
-        return b;
+        this.localUpdate(this);
     };
     
-    htmlCheckBox(desc){
-        const inp = document.createElement('input');
-            inp.type = 'checkbox';
-            inp.id = this.id;
-
-            const label = document.createElement('LABEL');
-            label.append(inp, desc);
-            return label; 
-    };
+    
 }
+export function htmlRadioButton(id, name, value, checked, desc){
+        const inp = document.createElement('input');
+        inp.type = 'radio';
+        inp.name = name;
+        inp.id = id;
+        inp.setAttribute('value', value);
+        if (checked) inp.setAttribute('checked','');
 
+        const label = document.createElement('LABEL');	
+        label.append(inp, desc);
+        return label;
+    };
 
 export class RadioButton{
-    constructor(name, specifics, values){
+    constructor (key, name, localUpdate, values){
+        this.key = key;
         this.name = name;
-        this.key = name.slice(0,-3);
-        this.specifics = specifics;
+        this.localUpdate = localUpdate;
+        this.nodelist = document.getElementsByName(name); 
         this.values = values;
         this.shortLen = 1;
+        for( let j = 0; j < this.nodelist.length; j++) {
+            this.nodelist[j].addEventListener('click',
+                this.userUpdate.bind(this));
+        }
     }
     get(){
-        const nodelist = document.getElementsByName(this.name);
-        for (let j = 0; j < nodelist.length; j++) {
-          if (nodelist[j].checked) {
-              return nodelist[j].value;
+//        const nodelist = document.getElementsByName(this.name);
+        for (let j = 0; j < this.nodelist.length; j++) {
+          if (this.nodelist[j].checked) {
+              return this.nodelist[j].value;
           }
         }
         return -1;
     }
     set(str){
         // can't be done until html exists!!
-        const nodelist = document.getElementsByName(this.name);
-        for (let j = 0; j < nodelist.length; j++) {
-		  if (nodelist[j].value == str) {
-              const changed = !nodelist[j].checked;
-              nodelist[j].checked = true;
-              if( this.specifics )
-                  this.specifics(this.key, str);
+//        const nodelist = document.getElementsByName(this.name);
+        for (let j = 0; j < this.nodelist.length; j++) {
+		  if (this.nodelist[j].value == str) {
+              const changed = !this.nodelist[j].checked;
+              this.nodelist[j].checked = true;
               return changed;
           }
         }
@@ -391,51 +397,31 @@ export class RadioButton{
          return this.values[k];
     };
     userUpdate(){
-        const v = this.get();
-        if( this.specifics ) 
-            this.specifics(this.key, v)
+        this.localUpdate(this);
     };
     
-    htmlRadioButton( id ,value, checked, desc){
-        const inp = document.createElement('input');
-        inp.type = 'radio';
-        inp.name = this.name;
-        inp.id = id;
-        inp.setAttribute('value', value);
-        if (checked) inp.setAttribute('checked','');
-
-        const label = document.createElement('LABEL');	
-        label.append(inp, desc);
-        return label;
-    };
+    
 
 };
-
+// use genRange(   ) as the inputElem for this.
  
 export class IntegerInput{
     //returns and receives number
-    constructor (id, specifics, min, max, step, shortLen){
-        this.id = id;
-        this.key = id.slice(0,-3);
-        this.specifics = specifics;
-        this.min = min;
-        this.max = max;
-        this.step = step;
+    constructor (key, inputElem, localUpdate, shortLen){
+        this.key = key;
+        this.inputElem = domElem(inputElem);
+        this.localUpdate = localUpdate;
         this.shortLen = shortLen;
+        this.inputElem.addEventListener('input',this.userUpdate.bind(this));
     };
 
     get() {
-        return document.getElementById(this.id).value;
+        return this.inputElem.value;
     };
     set(x){
-        const elem = document.getElementById(this.id);
-        const changed = elem.value != x;
-        elem.value = x;
-        if( this.specifics ) this.specifics(this.key, x);
+        const changed = this.inputElem.value != x;
+        this.inputElem.value = x;
         return changed;
-//        const disp = document.getElementById('disp' + this.id);
-//        if( disp ) disp.innerHTML = x.toFixed(this.precision);
-//        
     };
     encode(x){
         return x.toString().padStart(this.shortLen,'0');
@@ -444,28 +430,27 @@ export class IntegerInput{
        return x; 
     };
     userUpdate(){
-        let x = this.get();
-//        const disp = document.getElementById('disp' + this.id);
-//        if( disp ) disp.innerHTML = x.toFixed(this.precision);
-        if( this.specifics ) this.specifics(this.key, x);
-        return x;
+        this.localUpdate(this);
     }
 }
 
 export class LegendItem{
     //returns and receives string 'true'/'false' but stores boolean
-    constructor (id){
-        this.id = id;
+    constructor (key, legInput, localUpdate){
+        this.key = key;
+        this.legInput = domElem(legInput);
+        this.localUpdate = localUpdate;
         this.shortLen = 1;
+        this.legInput.name.addEventListener('click',
+                this.userUpdate.bind(this));
     }
     get() {
-         return document.getElementById(this.id).visible.toString();
+         return this.legInput.visible.toString();
     };
     set(x){
         const b = x == 'true';
-        const elem = document.getElementById(this.id);
-        const changed = elem.visible != b;
-        elem.visible = b;
+        const changed = this.legInput.visible != b;
+        this.legInput.setVisibility(b);
         return changed;
     };
     encode(x) {
@@ -477,16 +462,83 @@ export class LegendItem{
     };
     
     userUpdate(){
-        // needs to perform the change by callin setLegendText
-        // specifics can be setup and redraw; done internal to object.
-        // toggle the visible.     
-//        return x;  // so it can reset the currenLi.leg[index]
+        this.legInput.toggleVisible();
+        this.localUpdate(this);
     }
+};
 
 
 
+export class LegendDomElem{
+        constructor(id, isAnAverage, color){
+            this.id = id;
+            this.visible = true;
+            this.elem = null;
+            this.isAnAverage = isAnAverage;
+            this.color = color;
+            this.name = document.createElement('span');
+            // text filled in with next routine.
+        };
+        createHTML(nametext){
+            const rB = document.createElement('i');
+            rB.classList.add('material-icons');
+            rB.classList.add('actButton');
+            rB.classList.add('font15vw');
+            rB.title = 'reset the average';
+            rB.innerHTML = 'replay';
+            const dot = document.createElement('span');
+            dot.innerHTML = '&emsp; &emsp; &#11044;&nbsp;'
+            dot.style = 'color:'+this.color;
+            
+            this.name.innerHTML = nametext;
+            
+            this.elem = document.getElementById(this.id);
+            if( !this.elem ){
+                this.elem = document.createElement('div');
+                this.elem.id = this.id;   
+            }
+            
+            
+            
+            this.elem.append((this.isAnAverage ? rB : ''),dot, this.name);
+            
+            rB.addEventListener('click',this.resetAverage.bind(this));
+            return this.elem;
+        };
+        setVisibility(b){
+            this.visible = b;
+            if( this.visible )
+                this.name.classList.remove('crossOut');
+            else
+              this.name.classList.add('crossOut');
+        };
+//        makeVisible(){
+//            this.visible = true;
+//            this.name.classList.remove('crossOut');
+//        };
+//        makeInvisible(){
+//            this.visible = false;
+//            this.name.classList.add('crossOut');
+//        };
+        toggleVisible(){
+//            if( this.visible ){
+//                this.name.classList.add('crossOut');
+//                this.visible = false;
+//            } else {
+//                this.name.classList.remove('crossOut');
+//                this.visible = true;
+//            }
+            this.setVisibility(!this.visible);
+            console.log('Visible',this.visible);
+        };
+        resetAverage(){
+            console.log('clicked on the reset average button');
+        }
+        
+        
+            
+    };
 
-}
 
 
 	

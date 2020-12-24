@@ -38,8 +38,14 @@ import {
 from "../mod/graph.js";
 import {
 	genPlayResetBox, genSlider, genArbSlider, genButton, addDiv,
-    ArbRange,  NumRange, genRange, CheckBox,  RadioButton, 
-    IntegerInput, addKeyForIds, LegendItem
+      NumSlider, htmlNumSlider,
+    ArbSlider, htmlArbSlider,
+    genRange, 
+    genCheckBox, htmlCheckBox, CheckBox, 
+    htmlRadioButton, RadioButton, 
+    IntegerInput, 
+    addKeyForIds, 
+    LegendItem, LegendDomElem
 }
 from '../mod/genHTML.js';
 class QueueGraph extends TioxGraph {
@@ -48,13 +54,13 @@ class QueueGraph extends TioxGraph {
 		this.setTitle('Waiting Time');
 		this.setupLine(0, d => d.i, cbColors.blue,
 					   false, true, false, 5, 10);
-		this.setLegend(0, 'individual wait');
+//		this.setLegend(0, 'individual wait');
 		this.setupLine(1, d => d.a, cbColors.yellow,
 					   false, true, true, 5, 10);
-		this.setLegend(1,'average wait');
+//		this.setLegend(1,'average wait');
 		this.setupLine(2, d => d.p, cbColors.red,
 					   true, false, false, 10, 0);
-		this.setLegend(2,'predicted wait');	
+//		this.setLegend(2,'predicted wait');	
 		this.predictedWaitValue = this.predictedWait();
 	};
 	
@@ -100,8 +106,8 @@ class QueueGraph extends TioxGraph {
 			t: (que.now / tioxTimeConv),
 			p: (pW == Infinity)?null:pW
 		});
-		this.setLegend(2,'predicted wait' +
-					   ((pW == Infinity) ? ' = ∞' : ''));
+		leg2Input.name.innerHTML = 'predicted wait' +
+					   ((pW == Infinity) ? ' = ∞' : '');
 
 		this.predictedWaitValue = pW;
 	};
@@ -109,6 +115,7 @@ class QueueGraph extends TioxGraph {
 let que ;
 const anim = {};
 var gSF;
+var leg2Input ;// allows communication across graph setting up this elem.
 
 const tioxTimeConv = 10000; //rates in tiox are k/10 seconds
 
@@ -141,29 +148,29 @@ anim.scannerDelta = {
 	dy: anim.person.height * 1.8
 };
 
-function queDefineUsrInputs(){
-    let usrInputs = new Map();
-    usrInputs.set('ar', new NumRange('arque',
-                null, 1,0,10,.1,3,10) );
-    usrInputs.set('acv', new NumRange('acvque',
-                null, 1,0,2,.5,2,10) );
-    usrInputs.set('sr', new NumRange('srque',
-                null, 1,0,10,.1,3,10) );
-    usrInputs.set('scv', new NumRange('scvque',
-                null, 1,0,2,.5,2,10) );
-    usrInputs.set('leg0', new LegendItem('leg0que'));
-    usrInputs.set('leg1', new LegendItem('leg1que'));
-    usrInputs.set('leg2', new LegendItem('leg2que'));
-    
-    usrInputs.set('speed', new ArbRange('speedque',
-                null, ['1x','2x','5x','10x','25x','∞'],
-				                [1,2,5,10,25,1000]) );
-    usrInputs.set('action', new RadioButton('actionque',
-                null, ['none','play','pause']) );
-    usrInputs.set('reset', new CheckBox('resetque',
-                null) );
-    return usrInputs;
-};
+//function queDefineUsrInputs(){
+//    let usrInputs = new Map();
+//    usrInputs.set('ar', new NumSlider('ar',arInput,
+//                localUpdate, 1,0,10,.1,3,10) );
+//    usrInputs.set('acv', new NumSlider('acv', acvInput,
+//                localUpdate, 1,0,2,.5,2,10) );
+//    usrInputs.set('sr', new NumSlider('sr',srInput,
+//                localUpdate, 1,0,10,.1,3,10) );
+//    usrInputs.set('scv', new NumSlider('scv', scvInput,
+//                localUpdate, 1,0,2,.5,2,10) );
+//    usrInputs.set('leg0', new LegendItem('leg0', leg0Input, localUpdate));
+//    usrInputs.set('leg1', new LegendItem('leg1', leg1Input, localUpdate));
+//    usrInputs.set('leg2', new LegendItem('leg2', leg2Input, localUpdate));
+//    
+//    usrInputs.set('speed', new ArbSlider('speed', speedInput,
+//                localUpdate, ['1x','2x','5x','10x','25x','∞'],
+//				                [1,2,5,10,25,1000]) );
+//    usrInputs.set('action', new RadioButton('action', actionInput,
+//                localUpdate, ['none','play','pause']) );
+//    usrInputs.set('reset', new CheckBox('reset', resetInput,
+//                localUpdate) );
+//    return usrInputs;
+//};
 function queDefine(){
 	document.getElementById('que').omConcept = que;
 	
@@ -206,16 +213,31 @@ class Queueing extends OmConcept{
     constructor(usrInputs){
         super('que');
         this.usrInputs = usrInputs;
-        document.getElementById('slidersWrapperque')
-			.addEventListener('input', this.captureUserUpdate.bind(this));
+//        document.getElementById('slidersWrapperque')
+//			.addEventListener('input', this.captureUserUpdate.bind(this));
         this.setupScenarios();    
     }
-    localUpdate(changed){
+    
+    localReset () {
+		
+        // schedule the initial Person to arrive and start the simulation/animation.
+        theSimulation.supply.previous = null;
+        theSimulation.creator.knockFromPrevious();
+
+        //fudge to get animation started quickly
+        let t = que.heap.top().time - 1;
+        que.now = que.frameNow = t;
+        theSimulation.nInQueue = 0;
+        document.getElementById('nInQueue').innerHTML = '0';
+    };
+    localUpdate = localUpdate;
+    
+};
+function localUpdate(...inpsChanged){
         
-        for(let key in changed){
-            if( !changed[key] ) continue;
-            let v = que.usrInputs.get(key).get();
-            switch (key){
+        for(let inp of inpsChanged){
+            let v = inp.get();
+            switch (inp.key){
                 case 'ar':
                     theSimulation.interarrivalRV
                         .setRate(v / tioxTimeConv);
@@ -248,33 +270,28 @@ class Queueing extends OmConcept{
                     console.log('at speed adjust',v,speeds);
                     que.adjustSpeed(v,speeds);
                     break;
-                case 'none':
-                case 'play':
-                case 'pause':
+                case 'action':
                 case 'reset':
+                case 'leg0':
+                    que.graph.lineInfo[0].visible = (v == "true");
+                    que.graph.setupThenRedraw();
+                    break;
+                case 'leg1':
+                    que.graph.lineInfo[1].visible = (v == "true");
+                    que.graph.setupThenRedraw();
+                    break;
+                case 'leg2':
+                    que.graph.lineInfo[2].visible = (v == "true");
+                    que.graph.setupThenRedraw();
+                    break;
                     break;
                 default:
-                    alert(' reached part for default, key=',key);
-                    console.log(' reached part for default, key=',key);
+                    alert(' reached part for default, key=',inp.key);
+                    console.log(' reached part for default, key=',inp.key);
                     break;
             }
         }
 
-    };
-    localReset () {
-		
-        // schedule the initial Person to arrive and start the simulation/animation.
-        theSimulation.supply.previous = null;
-        theSimulation.creator.knockFromPrevious();
-
-        //fudge to get animation started quickly
-        let t = que.heap.top().time - 1;
-        que.now = que.frameNow = t;
-        theSimulation.nInQueue = 0;
-        document.getElementById('nInQueue').innerHTML = '0';
-    };
-    
-    
 };
 //function localReset () {
 //		
@@ -614,8 +631,10 @@ export class Person extends Item {
 }; // end class Person
 
 
-function queHTML(usrInputs){	
-	addDiv('que','que','whole')
+function queHTML(){	
+	let usrInputs = new Map();
+    
+    addDiv('que','que','whole')
 	addDiv('que', 'leftHandSideBox'+'que',
 			   'stageWrapper', 'statsWrapper',
 			   'chartWrapper');
@@ -627,37 +646,77 @@ function queHTML(usrInputs){
 	 selem.id = 'nInQueue';
 	 delem.append('Number in Queue: ',selem);
 	 d2.append(delem);
+    
+    //add legend for the chart
+    
+    const leg0Input = new LegendDomElem('leg0que', false, cbColors.blue);
+    const leg1Input = new LegendDomElem('leg1que', false, cbColors.yellow);
+     leg2Input = new LegendDomElem('leg2que', false, cbColors.red);
+    const d3 = document.getElementById('chartLegendque');
+    d3.append(leg0Input.createHTML('individual wait'),
+              leg1Input.createHTML('average wait'),
+              leg2Input.createHTML('predicted wait')
+              );
+    usrInputs.set('leg0', new LegendItem('leg0', leg0Input, localUpdate));
+    usrInputs.set('leg1', new LegendItem('leg1', leg1Input, localUpdate));
+    usrInputs.set('leg2', new LegendItem('leg2', leg2Input, localUpdate));
 	 
 	//now put in the sliders with the play/reset box	
-	let elem = document.getElementById('slidersWrapperque');
-	elem.append(
-		usrInputs.get('ar')
-            .htmlNumSlider('Arrival Rate = ', 5,[0,2,4,6,8,10]),
-		usrInputs.get('acv')
-            .htmlNumSlider('Arrival CV = ', 0,['0.0','1.0','2.0']),
-        usrInputs.get('sr')
-            .htmlNumSlider('Service Rate = ', 6,[0,2,4,6,8,10]),
-		usrInputs.get('scv')
-            .htmlNumSlider('Service CV = ', 0,['0.0','1.0','2.0']),
-		genPlayResetBox('que'),
-        usrInputs.get('speed')
-            .htmlArbSlider('Speed = ', 0,
-                            ["slow",' ',' ',' ',"fast",'∞'])
-	);
 	
+	let elem = document.getElementById('slidersWrapperque');
+    
+    const arInput = genRange('arque', '5.0', 0, 10, .1);
+    elem.append(htmlNumSlider(arInput, 'Arrival Rate = ', '5.0', [0,2,4,6,8,10]) );
+    usrInputs.set('ar', new NumSlider('ar',arInput,
+                localUpdate, 1,0,10,.1,3,10) );
+    
+    const acvInput = genRange('acvque', '0.0', 0, 2, .5);
+    elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', 0,['0.0','1.0','2.0']) );
+    usrInputs.set('acv', new NumSlider('acv', acvInput,
+                localUpdate, 1,0,2,.5,2,10) );
+    
+    
+    const srInput = genRange('srque', '6.0', 0, 10, .1);
+    elem.append(htmlNumSlider(srInput, 'Service Rate = ', 6,[0,2,4,6,8,10]) );
+    usrInputs.set('sr', new NumSlider('sr',srInput,
+                localUpdate, 1,0,10,.1,3,10) );
+    
+    const scvInput = genRange('scvque', '0.0', 0, 2, .5);
+    elem.append(htmlNumSlider(scvInput, 'Service CV = ', 0,['0.0','1.0','2.0']) );
+    usrInputs.set('scv', new NumSlider('scv', scvInput,
+                localUpdate, 1,0,2,.5,2,10) );
+    
+    
+    let prBox = genPlayResetBox('que')
+    elem.append( prBox );
+    usrInputs.set('reset', new CheckBox('reset', 'resetque',
+                localUpdate) );
+    usrInputs.set('action', new RadioButton('action', 'actionque', 
+                localUpdate, ['none','play','pause']) );
+    
+    
+     
+        
+    const speedInput = genRange('speedque',0,0,5,1);
+    elem.append(htmlArbSlider(speedInput, 'Speed = ', 0,
+                            ["slow",' ',' ',' ',"fast",'∞']) );
+    usrInputs.set('speed', new ArbSlider('speed', speedInput, 
+                localUpdate, ["1x",'2x','5x','10x',"25x",'∞']) );   
+    
 	const f = document.getElementById('scenariosMidque');
 	f.style = "min-height: 26vw";
+    
+    return usrInputs;
 };
 
 export function queStart() {
-	let usrInputs = queDefineUsrInputs();
-    queHTML(usrInputs);
+	let usrInputs= queHTML();
     que = new Queueing(usrInputs);
     queDefine();
     theSimulation.initialize();
-    for( let [key, inp] of que.usrInputs ){
-        inp.userUpdate();
-    };
+//    for( let [key, inp] of que.usrInputs ){
+//        inp.userUpdate();
+//    };
     //computeStageTimes();
 	que.reset();
 	return que;

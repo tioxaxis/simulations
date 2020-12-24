@@ -38,7 +38,7 @@ import {
 from "../mod/graph.js";
 import {
 	genPlayResetBox, genSlider, genArbSlider, genButton, addDiv,
-    ArbRange,  NumRange, genRange, CheckBox,  RadioButton, 
+    ArbSlider,  NumSlider, genRange, CheckBox,  RadioButton, 
     IntegerInput, addKeyForIds
 }
 from '../mod/genHTML.js';
@@ -158,7 +158,7 @@ anim.worker[2] = {left: 16*c,
 
 function facDefineUsrInputs(){
     let usrInputs = new Map();
-    usrInputs.set('qln', new ArbRange('qlnfac',
+    usrInputs.set('qln', new ArbSlider('qlnfac',
                 qlnSpecifics, ['1','3','5','∞'], 
                              [1,3,5,-1]) );
     usrInputs.set('face', new RadioButton('facefac',
@@ -173,17 +173,17 @@ function facDefineUsrInputs(){
                 featureStageSpecifics, ['0','1','2']) );
     usrInputs.set('hair', new RadioButton('hairfac',
                 featureStageSpecifics, ['0','1','2']) );
-    usrInputs.set('faceTime', new NumRange('faceTimefac',
+    usrInputs.set('faceTime', new NumSlider('faceTimefac',
                 featureTimeSpecifics, 0,1,9,1,1,1) );
-    usrInputs.set('eyesTime', new NumRange('eyesTimefac',
+    usrInputs.set('eyesTime', new NumSlider('eyesTimefac',
                 featureTimeSpecifics, 0,1,9,1,1,1) );
-    usrInputs.set('noseTime', new NumRange('noseTimefac',
+    usrInputs.set('noseTime', new NumSlider('noseTimefac',
                 featureTimeSpecifics, 0,1,9,1,1,1) );
-    usrInputs.set('moutTime', new NumRange('moutTimefac',
+    usrInputs.set('moutTime', new NumSlider('moutTimefac',
                 featureTimeSpecifics, 0,1,9,1,1,1) );
-    usrInputs.set('earsTime', new NumRange('earsTimefac',
+    usrInputs.set('earsTime', new NumSlider('earsTimefac',
                 featureTimeSpecifics, 0,1,9,1,1,1) );
-    usrInputs.set('hairTime', new NumRange('hairTimefac',
+    usrInputs.set('hairTime', new NumSlider('hairTimefac',
                 featureTimeSpecifics, 0,1,9,1,1,1) );
     usrInputs.set('quantity0', new IntegerInput('quantity0fac',
                 quantitySpecifics, 1,3,1,1) );
@@ -191,7 +191,7 @@ function facDefineUsrInputs(){
                 quantitySpecifics, 1,3,1,1) );
     usrInputs.set('quantity2', new IntegerInput('quantity2fac',
                 quantitySpecifics, 1,3,1,1) );
-    usrInputs.set('speed', new ArbRange('speedfac',
+    usrInputs.set('speed', new ArbSlider('speedfac',
                 speedSpecifics, ['1x','2x','5x','10x','25x'],
 				                [1,2,5,10,25]) );
     usrInputs.set('action', new RadioButton('actionfac',
@@ -394,7 +394,16 @@ class FaceGame extends OmConcept {
 //        }
 //       this.localUpdate(changed);
 //    };
-    localUpdate(changed){
+//    localUpdate(changed){
+//        const needReset = {qln: true, face: true,
+//                           eyes: true, nose: true,
+//                           mout: true, ears: true,
+//                           hair: true, faceTime: true,
+//                           eyesTime: true, noseTime: true,
+//                           earsTime: true, moutTime: true,
+//                           hairTime: true, quantity0: true, 
+//                           quantity1: true, quantity2: true};
+    localUpdate(...inpsChanged){
         const needReset = {qln: true, face: true,
                            eyes: true, nose: true,
                            mout: true, ears: true,
@@ -403,17 +412,23 @@ class FaceGame extends OmConcept {
                            earsTime: true, moutTime: true,
                            hairTime: true, quantity0: true, 
                            quantity1: true, quantity2: true};
-        for(let key in needReset){
-            if( changed[key] && needReset[key] ){
+        for(let inp of inpsChanged){
+            if( needReset[inp.key] ){
                 computeStageTimes();
                 this.reset()
                 break;
             }
         }
         
-        if( changed['speed'] ){
-            fac.adjustSpeed(fac.usrInputs.get('speed').get(),speeds);
-        }
+        for(let inp of inpsChanged){
+            let v = inp.get();
+            switch (inp.key){
+                case 'speed':
+                    fac.adjustSpeed(v,speeds);
+                    break;
+                default:
+            }
+        };
     };
 };
     

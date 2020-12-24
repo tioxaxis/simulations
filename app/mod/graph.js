@@ -143,58 +143,57 @@ export class TioxGraph {
 	};
 	
 	//Legend routines
-	setLegendText(elem,info) {
-		const resetButton = (info.isAnAverage ? 
-        '<i class="material-icons actButton font15vw"'+
-        ' id="avgGraphButton" title ="reset the average">replay</i>' : '');
-              
-        elem.innerHTML = resetButton +  "<span style='color:" +
-		info.color + "'>&#11044;&nbsp;</span><span " +
-		(elem.visible ? 
-		 ">" : "style= 'text-decoration: line-through;' >") +
-		info.name + "</span>&emsp; &emsp;"
-        if( info.isAnAverage ) document.getElementById('avgGraphButton').addEventListener('click',()=> this.averageWait = new Average());
-	};
-	
-	setLegend(k,name){
+//	setLegendText(elem,info) {
+//		const resetButton = (info.isAnAverage ? 
+//        '<i class="material-icons actButton font15vw"'+
+//        ' id="avgGraphButton" title ="reset the average">replay</i>' : '');
+//              
+//        elem.innerHTML = resetButton +  "<span style='color:" +
+//		info.color + "'>&#11044;&nbsp;</span><span " +
+//		(elem.visible ? 
+//		 ">" : "style= 'text-decoration: line-through;' >") +
+//		info.name + "</span>&emsp; &emsp;"
+//        if( info.isAnAverage ) document.getElementById('avgGraphButton').addEventListener('click',()=> this.averageWait = new Average());
+//	};
+//	
+	setLegend(k){
 		let id =  'leg' + k + this.omConcept.key;
 		let elem = document.getElementById(id);
-		if (!elem){
-			elem = document.createElement('div');
-			elem.className = 'legitem';
-			elem.id = id;
-			document.getElementById('chartLegend'+this.omConcept.key)
-			.appendChild(elem);
-		}
+//		if (!elem){
+//			elem = document.createElement('div');
+//			elem.className = 'legitem';
+//			elem.id = id;
+//			document.getElementById('chartLegend'+this.omConcept.key)
+//			.appendChild(elem);
+//		}
 		let info = this.lineInfo[k]
-		info.name = name;
-        elem.visible = info.visible;
-		this.setLegendText(elem,info);
-		elem.addEventListener('click',this.toggleLegend.bind(this));
+		elem.visible = info.visible;
+//		this.setLegendText(elem,info);
+//		elem.addEventListener('click',this.toggleLegend.bind(this));
 	};
 	
-	toggleLegend(event){
-		let elem = event.target.closest('div.legitem');
-		if (!elem) return
-		let k = Number(/[0-9]+/.exec(elem.id)[0]);
-		let info = this.lineInfo[k];
-		elem.visible = !elem.visible;
-        info.visible = elem.visible;
-        const li = this.omConcept.currentLi;
-        
-        if (this.omConcept.editMode){
-            if( li ) {
-            li.scenario['leg'+k] = elem.visible.toString();
-            this.omConcept.saveEdit();
-            }
-        }  else {
-            if ( li ) 
-                li.classList.remove("selected");
-            li.currentLi = null;
-        }
-        this.setLegendText(elem,info);
-		this.setupThenRedraw();
-	};
+//	toggleLegend(event){
+//		let elem = event.target.closest('div.legitem');
+//		if (!elem) return
+//		let k = Number(/[0-9]+/.exec(elem.id)[0]);
+//		let info = this.lineInfo[k];
+//		elem.visible = !elem.visible;
+//        info.visible = elem.visible;
+//        const li = this.omConcept.currentLi;
+//        
+//        if (this.omConcept.editMode){
+//            if( li ) {
+//                li.scenario['leg'+k] = elem.visible.toString();
+//                this.omConcept.saveEdit();
+//            }
+//        }  else {
+//            if ( li ) 
+//                li.classList.remove("selected");
+//            this.omConcept.currentLi = null;
+//        }
+//        this.setLegendText(elem,info);
+//		this.setupThenRedraw();
+//	};
 	// if user does it then toggle event should handle the display and redraw
     // if scenario switch does it then this routine should handle display and redraw
 	setVisible(k,elem,b){
@@ -202,9 +201,9 @@ export class TioxGraph {
 //        if( (b == 'true') == elem.visible ) return;
 //		elem.visible = b == 'true';
 //		const elem = document.getElementById('leg'+k+this.omConcept.key)
-        this.lineInfo[k].visible = b == 'true';
-		this.setLegendText(elem,this.lineInfo[k]);
-		this.setupThenRedraw();
+//        this.lineInfo[k].visible = b == 'true';
+//		this.setLegendText(elem,this.lineInfo[k]);
+//		this.setupThenRedraw();
 	}
 	
 	xScale (x){
