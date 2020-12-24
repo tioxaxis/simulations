@@ -38,8 +38,14 @@ import {
 from "../mod/graph.js";
 import {
 	genPlayResetBox, genSlider, genArbSlider, genButton, addDiv,
-    ArbSlider,  NumSlider, genRange, CheckBox,  RadioButton, 
-    IntegerInput, addKeyForIds
+      NumSlider, htmlNumSlider,
+    ArbSlider, htmlArbSlider,
+    genRange, 
+    genCheckBox, htmlCheckBox, CheckBox, 
+    htmlRadioButton, RadioButton, 
+    IntegerInput, 
+    addKeyForIds, 
+    LegendItem, LegendDomElem
 }
 from '../mod/genHTML.js';
 
@@ -48,10 +54,10 @@ class FacGraph extends TioxGraph {
 		super(omConcept, name, 40, {width:100, step:20}, d=>d.t, true);
 		this.setupLine(0, d => d.flow, cbColors.blue,
 					   false, true, false, 5, 10);
-		this.setLegend(0, 'Flow time<br>(seconds/card)');
+//		this.setLegend(0, 'Flow time<br>(seconds/card)');
 		this.setupLine(1, d => d.thru, cbColors.yellow,
 					   false, true, true, 5, 10, true);
-		this.setLegend(1,'Throughput<br>(cards/minute)');
+//		this.setLegend(1,'Throughput<br>(cards/minute)');
         this.doReset = true;
 //		this.setupLine(2, d => d.p, cbColors.red,
 //					   true, false, 10, 0);
@@ -78,9 +84,9 @@ class FacGraph extends TioxGraph {
 	};
 
 }
+const anim = {};
 let fac;
 let facInputs = {};
-const anim = {};
 var gSF;
 
 const tioxTimeConv = 1000; 
@@ -350,60 +356,10 @@ class FaceGame extends OmConcept {
 //        computeStageTimes();
         this.resourceCollection.drawAll();
     };
-//    captureUserUpdate(){
-//        const e = event.target.closest('input');
-//        if (!e) return;
-//        const key = (e.type == 'radio' ? e.name : e.id);
-//        const keyShort = key.slice(0,-3);
-//        const inp = fac.usrInputs.get(keyShort);
-//        inp.userUpdate();
-//        if( this.editMode ){
-//            if( this.currentLi ){
-//                this.currentLi.scenario[keyShort] = inp.get();
-//            }
-//        } else {
-//            if (this.currentLi) 
-//                this.currentLi.classList.remove("selected");
-//            this.currentLi = null;
-//        }
-//        let changed = {};
-//        changed[keyShort] = true;
-//        console.log(' in capture user update key=',keyShort);
-//        this.localUpdate(changed);
-//        
-//    };
-    // make fac.Inputs = facInputs and adjust code to use this.??inputs
-//    setSlidersFrom (row){
-//        const changed = {};
-//        console.log(' set Sliders row=',row);
-//        for( let [key, inp] of fac.usrInputs ){
-//          changed[key] = inp.set(row[key]);
-//        } 
-//        
-//        // NEED to handle legend status which are checked and which are not
-//        // add a new class of objects to handle these cases
-//        
-//        
-//        if (!this.editMode) {
-//            if (row.reset == 'true')
-//                document.getElementById('resetButton'+this.key).click();
-//            if (row.action == 'play')
-//                document.getElementById('playButton'+this.key).click();
-//            else if (row.action == 'pause')
-//                document.getElementById('pauseButton'+this.key).click();
-//        }
-//       this.localUpdate(changed);
-//    };
-//    localUpdate(changed){
-//        const needReset = {qln: true, face: true,
-//                           eyes: true, nose: true,
-//                           mout: true, ears: true,
-//                           hair: true, faceTime: true,
-//                           eyesTime: true, noseTime: true,
-//                           earsTime: true, moutTime: true,
-//                           hairTime: true, quantity0: true, 
-//                           quantity1: true, quantity2: true};
-    localUpdate(...inpsChanged){
+
+    localUpdate = localUpdate;
+};
+function localUpdate(...inpsChanged){
         const needReset = {qln: true, face: true,
                            eyes: true, nose: true,
                            mout: true, ears: true,
@@ -429,44 +385,8 @@ class FaceGame extends OmConcept {
                 default:
             }
         };
-    };
-};
-    
-//    getSliders () {
-//        let row = {};
-//        for( let [key, inp]  of fac.usrInputs ){
-//            row[key] = inp.get();
-//        };
-////        console.log('get sliders row=',row);
-//        return row;
-//    };
-//    sEncode(row){
-//        let str = '';
-//        for ( let [key, inp] of this.usrInputs ){
-//            const x = inp.encode(row[key]);
-//            console.log('in Encode', key, row[key],x);
-//            str += x;
-//        }
-//        return str + row['desc'];
-//    };
-//    sDecode(str){
-//        let row = {};
-//        let p = 0;
-//        for ( let [key, inp] of this.usrInputs ){
-//            let len = inp.shortLen;
-//            
-//            console.log('in Decode', str, str.slice(p,p+len),len, key);
-//            row[key] = inp.decode(str.slice(p,p+len));
-//            p += len;
-//        }
-//        row.desc = str.slice(p);
-//        return row;
-//    };
-//};
+    };   
 
-
-
-    
 class AnimForQueue  {
 	constructor( which, lanes, left, top, anim) {
         this.which = which;
@@ -957,43 +877,88 @@ class FaceCard {
 
 
 
-function facHTML(usrInputs){	
-	addDiv('fac','fac','whole')
+function facHTML(){	
+	let usrInputs = new Map();
+    
+    addDiv('fac','fac','whole')
 	addDiv('fac', 'leftHandSideBox'+'fac',
 			   'facStageWrapper','dualChartWrapper');
     
     // insert the radio button box first
     const radioButtons = document.getElementById('facDataWrapper');
-                            
     addKeyForIds('fac',radioButtons);
     const rhs = document.getElementById('rightHandSideBoxfac');  
     rhs.insertBefore(radioButtons, rhs.firstChild);
     
+    usrInputs.set('face', new RadioButton('face', 'facefac',
+                localUpdate, ['0','1','2']) );
+    usrInputs.set('eyes', new RadioButton('eyes', 'eyesfac',
+                localUpdate, ['0','1','2']) );
+    usrInputs.set('nose', new RadioButton('nose', 'nosefac',
+                localUpdate, ['0','1','2']) );
+    usrInputs.set('mout', new RadioButton('mout', 'moutfac',
+                localUpdate, ['0','1','2']) );
+    usrInputs.set('ears', new RadioButton('ears', 'earsfac',
+                localUpdate, ['0','1','2']) );
+    usrInputs.set('hair', new RadioButton('hair', 'hairfac',
+                localUpdate, ['0','1','2']) );
+    usrInputs.set('faceTime', new NumSlider('faceTime', 'faceTimefac',
+                localUpdate, 0,1,1) );
+    usrInputs.set('eyesTime', new NumSlider('eyesTime', 'eyesTimefac',
+                localUpdate, 0,1,1) );
+    usrInputs.set('noseTime', new NumSlider('noseTime', 'noseTimefac',
+                localUpdate, 0,1,1) );
+    usrInputs.set('moutTime', new NumSlider('moutTime', 'moutTimefac',
+                localUpdate, 0,1,1) );
+    usrInputs.set('earsTime', new NumSlider('earsTime', 'earsTimefac',
+                localUpdate, 0,1,1) );
+    usrInputs.set('hairTime', new NumSlider('hairTime', 'hairTimefac',
+                localUpdate, 0,1,1) );
+    usrInputs.set('quantity0', new IntegerInput('quantity0', 'quantity0fac',
+                localUpdate, 1) );
+    usrInputs.set('quantity1', new IntegerInput('quantity1', 'quantity1fac',
+                localUpdate, 1) );
+    usrInputs.set('quantity2', new IntegerInput('quantity2', 'quantity2fac',
+                localUpdate, 1) );
+    
+    
     let elem = document.getElementById('slidersWrapperfac');
 	const mark = document.getElementById('markButton').cloneNode(true);
     addKeyForIds('fac',mark);
-    elem.append(
-		mark,
-		usrInputs.get('qln').htmlArbSlider('Queue Length = ', 3,
-                      ['1x','3x','5x','∞']),
-		genPlayResetBox('fac'),
-		usrInputs.get('speed').htmlArbSlider('Speed = ', 0,
-                      ["slow",' ',' ',' ',"fast"])
-	);
-	
+    elem.append(mark);
+    const qlnInput = genRange('qlnfac',3,0,3,1);
+	elem.append(htmlArbSlider(qlnInput, 'Queue Length = ', '∞', ['1x','3x','5x','∞'] ));
+    usrInputs.set('qln', new ArbSlider('qln', qlnInput, 
+                localUpdate, ['1','3','5','∞'],
+                                      [1,3,5,-1]) );
+		
+    elem.append(genPlayResetBox('fac'));
+	usrInputs.set('reset', new CheckBox('reset', 'resetfac',
+                localUpdate) );
+    usrInputs.set('action', new RadioButton('action', 'actionfac', 
+                localUpdate, ['none','play','pause']) );	
+        
+        
+    const speedInput = genRange('speedfac',0,0,4,1);
+    elem.append(htmlArbSlider(speedInput, 'Speed = ', '1x',
+                            ["slow",' ',' ',' ',"fast"]) );
+    usrInputs.set('speed', new ArbSlider('speed', speedInput, 
+                localUpdate, ["1x",'2x','5x','10x',"25x"],
+				                [1,2,5,10,25]) ); 
+    
+    	
 	const f = document.getElementById('scenariosMidfac');
 	f.style = "min-height: 16vw";
+    return usrInputs;
 };
 
 export function facStart() {
-	let usrInputs = facDefineUsrInputs();
-    facHTML(usrInputs);
+//	 facDefineUsrInputs();
+    let usrInputs = facHTML();
     fac = new FaceGame(usrInputs);
     facDefine();
     theSimulation.initialize();
-    for( let [key, inp] of fac.usrInputs ){
-        inp.userUpdate();
-    };
+    
     computeStageTimes();
 	fac.reset();
 	return fac;

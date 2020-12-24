@@ -38,8 +38,14 @@ import {
 from "../mod/graph.js";
 import {
 	genPlayResetBox, genSlider, genArbSlider, genButton, addDiv,
-    ArbSlider,  NumSlider, genRange, CheckBox,  RadioButton,
-    IntegerInput, addKeyForIds, LegendItem
+      NumSlider, htmlNumSlider,
+    ArbSlider, htmlArbSlider,
+    genRange, 
+    genCheckBox, htmlCheckBox, CheckBox, 
+    htmlRadioButton, RadioButton, 
+    IntegerInput, 
+    addKeyForIds, 
+    LegendItem, LegendDomElem
 }
 from '../mod/genHTML.js';
 
@@ -52,13 +58,13 @@ class NVGraph extends TioxGraph {
 		
 		this.setupLine(0, d => d.u, cbColors.red,
 					   false, true, false, 5, 16);
-		this.setLegend(0, 'underage cost');
+//		this.setLegend(0, 'underage cost');
 		this.setupLine(1, d => d.o, cbColors.yellow,
 					   false, true, false, 5, 16);
-		this.setLegend(1,'overage cost');
+//		this.setLegend(1,'overage cost');
 		this.setupLine(2, d => d.a, cbColors.blue,
 					   false, true, true, 8, 0);
-		this.setLegend(2,'average cost');
+//		this.setLegend(2,'average cost');
         this.avgCost = new Average();
 	};
 	
@@ -93,6 +99,14 @@ const disappointed = {
 };
 const tioxTimeConv = 1000; //time are in milliseconds
 
+const speeds = [{time:1,graph:1,anim:true},
+				{time:2,graph:1,anim:true},
+				{time:5,graph:2,anim:true},
+				{time:10,graph:2,anim:true},
+				{time:25,graph:5,anim:true},
+			{time:1000,graph:20,anim:false}];
+
+
 anim.stage = {
 	normalSpeed: 0.10, //.25 pixels per millisecond
 	width: 1000,
@@ -126,54 +140,34 @@ anim.person.path = {
 }
 anim.person.path.mid = (anim.person.path.top + anim.person.path.bot) / 2;
 
-function nvpDefineUsrInputs(){
-    let usrInputs = new Map();
-    usrInputs.set('dr', new NumSlider('drnvp',
-                null, 1,10,50,1,2,1) );
-    usrInputs.set('dcv', new NumSlider('dcvnvp',
-                null, 1,0,1,.1,2,10) );
-    usrInputs.set('Cu', new NumSlider('Cunvp',
-                null, 1,0,10,1,2,1) );
-    usrInputs.set('Co', new NumSlider('Convp',
-                null, 1,0,10,1,2,1) );
-    usrInputs.set('quan', new NumSlider('quannvp',null,1,10,50,1,2,1));
-    usrInputs.set('leg0', new LegendItem('leg0nvp'));
-    usrInputs.set('leg1', new LegendItem('leg1nvp'));
-    usrInputs.set('leg2', new LegendItem('leg2nvp'));
-    
-    usrInputs.set('speed', new ArbSlider('speednvp',
-                null, ['1x','2x','5x','10x','25x','∞'],
-				                [1,2,5,10,25,1000]) );
-    usrInputs.set('action', new RadioButton('actionnvp',
-                null, ['none','play','pause']) );
-    usrInputs.set('reset', new CheckBox('resetnvp',
-                null) );
-    return usrInputs;
-};
+//function nvpDefineUsrInputs(){
+//    let usrInputs = new Map();
+//    usrInputs.set('dr', new NumSlider('drnvp',
+//                null, 1,10,50,1,2,1) );
+//    usrInputs.set('dcv', new NumSlider('dcvnvp',
+//                null, 1,0,1,.1,2,10) );
+//    usrInputs.set('Cu', new NumSlider('Cunvp',
+//                null, 1,0,10,1,2,1) );
+//    usrInputs.set('Co', new NumSlider('Convp',
+//                null, 1,0,10,1,2,1) );
+//    usrInputs.set('quan', new NumSlider('quannvp',null,1,10,50,1,2,1));
+//    usrInputs.set('leg0', new LegendItem('leg0nvp'));
+//    usrInputs.set('leg1', new LegendItem('leg1nvp'));
+//    usrInputs.set('leg2', new LegendItem('leg2nvp'));
+//    
+//    usrInputs.set('speed', new ArbSlider('speednvp',
+//                null, ['1x','2x','5x','10x','25x','∞'],
+//				                [1,2,5,10,25,1000]) );
+//    usrInputs.set('action', new RadioButton('actionnvp',
+//                null, ['none','play','pause']) );
+//    usrInputs.set('reset', new CheckBox('resetnvp',
+//                null) );
+//    return usrInputs;
+//};
 
 function nvpDefine(){
 	
 	document.getElementById('nvp').omConcept = nvp;
-	
-	
-//	nvp.sliderTypes = {
-//		dr: 'range',
-//		dcv: 'range',
-//		Cu: 'range',
-//		Co: 'range',
-//		quan: 'range',
-//		speed: 'range',
-//		action: 'radio',
-//		reset: 'checkbox'
-//	},
-//		nvp.precision = {
-//		dr: 0,
-//		dcv: 1,
-//		Cu: 0,
-//		Co: 0,
-//		quan: 0,
-//		speed: 0
-//	};
 	
 	anim.stage.foreContext = document
 		.getElementById('foregroundnvp')
@@ -209,11 +203,46 @@ class NewsVendor extends OmConcept{
     constructor(usrInputs){
         super('nvp');
         this.usrInputs = usrInputs;
-        document.getElementById('slidersWrappernvp')
-			.addEventListener('input', this.captureUserUpdate.bind(this));
+//        document.getElementById('slidersWrappernvp')
+//			.addEventListener('input', this.captureUserUpdate.bind(this));
         this.setupScenarios();    
-    }
-    localUpdate(...inpsChanged){
+    };
+    localReset () {
+		
+        document.getElementById('actualPercnvp').innerHTML ="00.00";
+		let maxUnder = theSimulation.Cu * 
+				((1 + theSimulation.demandRV.variance) * theSimulation.demandRV.mean  
+				 - theSimulation.quantityOrdered + 1);
+		let maxOver = theSimulation.Co * 
+				(theSimulation.quantityOrdered - 
+				(1 - theSimulation.demandRV.variance) * theSimulation.demandRV.mean + 1) ;
+	
+	
+		nvp.totCost = 0;
+		nvp.nRounds = 0;
+		nvp.enough = 0;
+		nvp.graph.reset(Math.max(maxUnder,maxOver));
+		setDesired(theSimulation.Cu, theSimulation.Co);
+		setExpected(theSimulation.quantityOrdered,
+			theSimulation.demandRV.mean,
+			theSimulation.demandRV.variance);
+
+		theSimulation.supply.previous = null;
+		nvp.heap.push({
+			time: nvp.now + 500,
+			type: 'new cycle',
+			proc: theSimulation.demand.cycle.bind(theSimulation.demand),
+			item: null
+		});
+		nvp.tioxTimeConv = tioxTimeConv;
+		lastRound = 0;
+
+    };
+    localUpdate = localUpdate;
+};
+    
+
+function localUpdate(...inpsChanged){
         
         for(let inp of inpsChanged){
             let v = inp.get();
@@ -249,196 +278,40 @@ class NewsVendor extends OmConcept{
                         theSimulation.demandRV.mean,
                         theSimulation.demandRV.variance);
                     break;
-                case 'leg0':
-                case 'leg1':
-                case 'leg2':
-                    const elem = document.getElementById(key+'nvp');
-                    nvp.graph.setVisible(key.slice(3),elem,v);
-                    break;
+               
 
                 case 'speed':
                     nvp.adjustSpeed(v,speeds);
                     break;
-                case 'none':
-                case 'pause':
-                case 'play':
+                case 'action':
                 case 'reset':
+                    break;
+                    
+                case 'leg0':
+                    nvp.graph.lineInfo[0].visible = (v == "true");
+                    nvp.graph.setupThenRedraw();
+                    break;
+                case 'leg1':
+                    nvp.graph.lineInfo[1].visible = (v == "true");
+                    nvp.graph.setupThenRedraw();
+                    break;
+                case 'leg2':
+                    nvp.graph.lineInfo[2].visible = (v == "true");
+                    nvp.graph.setupThenRedraw();
                     break;
                 default:
                     alert(' reached part for default id=',key);
                     debugger;
                     break;
             }
-        }
+        };
 
-    };
-    localReset () {
-		
-        document.getElementById('actualPercnvp').innerHTML ="00.00";
-		let maxUnder = theSimulation.Cu * 
-				((1 + theSimulation.demandRV.variance) * theSimulation.demandRV.mean  
-				 - theSimulation.quantityOrdered + 1);
-		let maxOver = theSimulation.Co * 
-				(theSimulation.quantityOrdered - 
-				(1 - theSimulation.demandRV.variance) * theSimulation.demandRV.mean + 1) ;
-	
-	
-		nvp.totCost = 0;
-		nvp.nRounds = 0;
-		nvp.enough = 0;
-		nvp.graph.reset(Math.max(maxUnder,maxOver));
-		setDesired(theSimulation.Cu, theSimulation.Co);
-		setExpected(theSimulation.quantityOrdered,
-			theSimulation.demandRV.mean,
-			theSimulation.demandRV.variance);
-
-		theSimulation.supply.previous = null;
-		nvp.heap.push({
-			time: nvp.now + 500,
-			type: 'new cycle',
-			proc: theSimulation.demand.cycle.bind(theSimulation.demand),
-			item: null
-		});
-		nvp.tioxTimeConv = tioxTimeConv;
-		lastRound = 0;
-
-    };
     
     
 };
 
 
-//function localReset() {
-//		document.getElementById('actualPercnvp').innerHTML ="00.00";
-//		let maxUnder = theSimulation.Cu * 
-//				((1 + theSimulation.demandRV.variance) * theSimulation.demandRV.mean  
-//				 - theSimulation.quantityOrdered + 1);
-//		let maxOver = theSimulation.Co * 
-//				(theSimulation.quantityOrdered - 
-//				(1 - theSimulation.demandRV.variance) * theSimulation.demandRV.mean + 1) ;
-//	
-//	
-//		nvp.totCost = 0;
-//		nvp.nRounds = 0;
-//		nvp.enough = 0;
-//		nvp.graph.reset(Math.max(maxUnder,maxOver));
-//		setDesired(theSimulation.Cu, theSimulation.Co);
-//		setExpected(theSimulation.quantityOrdered,
-//			theSimulation.demandRV.mean,
-//			theSimulation.demandRV.variance);
-//
-//		theSimulation.supply.previous = null;
-//		nvp.heap.push({
-//			time: nvp.now + 500,
-//			type: 'new cycle',
-//			proc: theSimulation.demand.cycle.bind(theSimulation.demand),
-//			item: null
-//		});
-//		nvp.tioxTimeConv = tioxTimeConv;
-//		lastRound = 0;
-//
-//	};
 
-const speeds = [{time:1,graph:1,anim:true},
-				{time:2,graph:1,anim:true},
-				{time:5,graph:2,anim:true},
-				{time:10,graph:2,anim:true},
-				{time:25,graph:5,anim:true},
-			{time:1000,graph:20,anim:false}];
-
-//function nvDecodeURL(str){
-//	const actionValue = {N:"none", G:"play", S:"pause"};
-//	const boolValue = {T: 'true', F: 'false'};
-//	return( 
-//	{dr: str.substring(0,4),
-//	dcv: str.substring(4,8),
-//	Cu: str.substring(8,12),
-//	Co: str.substring(12,16),
-//	quan: str.substring(16,18),
-//	speed: str.substring(18,19),
-//	action: actionValue[str.substring(19,20)],
-//	reset: boolValue[str.substring(20,21)],
-//	leg0:  boolValue[str.substring(21,22)],
-//	leg1:  boolValue[str.substring(22,23)],
-//	leg2:  boolValue[str.substring(23,24)],
-//	desc: str.substring(24)
-//	})
-//};
-//function nvEncodeURL(row){
-//	const actionValue = {none: "N", play: "G", pause: "S"};
-//	return Number(row.dr).toFixed(1).padStart(4,'0')
-//	 	.concat(Number(row.dcv).toFixed(1).padStart(4,'0'),
-//				Number(row.Cu).toFixed(1).padStart(4,'0'),
-//				Number(row.Co).toFixed(1).padStart(4,'0'),
-//				row.quan.padStart(2,'0'),
-//				row.speed,
-//				actionValue[row.action],
-//				(row.reset == "true" ? "T" : "F"),
-//				(row.leg0 == "true" ? "T" : "F"),
-//				(row.leg1 == "true" ? "T" : "F"),
-//				(row.leg2 == "true" ? "T" : "F"),
-//				row.desc);
-//}
-
-//function captureChangeInSliderS(event) {
-//	//    console.log('is event '+(event.isTrusted?'real':'scripted'));
-//	let inputElem = event.target.closest('input');
-//	if (!inputElem) return
-//
-//	var idShort = inputElem.id.slice(0,-3);
-//	if (inputElem.type == 'range') {
-//		var v = Number(inputElem.value)
-//			.toFixed(nvp.precision[idShort]);
-//		document.getElementById('disp' + inputElem.id)
-//			.innerHTML = v;
-//	}
-//	switch (idShort) {
-//		case 'dr':
-//			theSimulation.demandRV
-//				.setMean(Number(v));
-//			setExpected(theSimulation.quantityOrdered,
-//				theSimulation.demandRV.mean,
-//				theSimulation.demandRV.variance);
-//			break;
-//
-//		case 'dcv':
-//			theSimulation.demandRV.setVariance(Number(v));
-//			setExpected(theSimulation.quantityOrdered,
-//				theSimulation.demandRV.mean,
-//				theSimulation.demandRV.variance);
-//			break;
-//
-//		case 'Cu':
-//			theSimulation.Cu = Number(v);
-//			setDesired(theSimulation.Cu, theSimulation.Co);
-//			break;
-//
-//		case 'Co':
-//			theSimulation.Co = Number(v);
-//			setDesired(theSimulation.Cu, theSimulation.Co);
-//			break;
-//
-//		case 'quan':
-//			theSimulation.quantityOrdered = Number(v);
-//			setExpected(theSimulation.quantityOrdered,
-//				theSimulation.demandRV.mean,
-//				theSimulation.demandRV.variance);
-//			break;
-//
-//		case 'speed':
-//			nvp.adjustSpeed(v,speeds);
-//			break;
-//		case 'none':
-//		case 'pause':
-//		case 'play':
-//		case 'reset':
-//			break;
-//		default:
-//			alert(' reached part for default id=',idShort);
-//			debugger;
-//			break;
-//	}
-//}
 
 function setDesired(under, over) {
 	document.getElementById('desiredPercnvp')
@@ -697,18 +570,18 @@ class RetailStore extends GStore {
 };
 
 export class Person extends Item {
-
 	constructor(omConcept, x, y = 60) {
 		super(omConcept, x, y);
-		
 		this.graphic = new NStickFigure(gSF, x, y);
 	};
 }; // end class Person
 
 
 
-function nvpHTML(usrInputs){	
-	addDiv('nvp','nvp','whole')
+function nvpHTML(){	
+	let usrInputs = new Map();
+    
+    addDiv('nvp','nvp','whole')
 	addDiv('nvp', 'leftHandSideBox'+'nvp',
 			   'stageWrapper', 'statsWrapper',
 			   'chartWrapper');
@@ -734,44 +607,70 @@ function nvpHTML(usrInputs){
 	s3.id = 'actualPercnvp';
 	d3.append('Actual: ',s3,'%');
 	d.append(d1,d2,d3);
+    
+    //add legend for the chart
+    
+    const leg0Input = new LegendDomElem('leg0nvp', false, cbColors.red);
+    const leg1Input = new LegendDomElem('leg1nvp', false, cbColors.yellow);
+    const leg2Input = new LegendDomElem('leg2nvp', false, cbColors.blue);
+    const d4 = document.getElementById('chartLegendnvp');
+    d4.append(leg0Input.createHTML('underage cost'),
+              leg1Input.createHTML('overage cost'),
+              leg2Input.createHTML('average cost')
+              );
+    usrInputs.set('leg0', new LegendItem('leg0', leg0Input, localUpdate));
+    usrInputs.set('leg1', new LegendItem('leg1', leg1Input, localUpdate));
+    usrInputs.set('leg2', new LegendItem('leg2', leg2Input, localUpdate));
 	
 	const empty = document.createElement('div');
 	empty.className = "sliderBox"
 	 
 	//now put in the sliders with the play/reset box	
 	let elem = document.getElementById('slidersWrappernvp');
-	elem.append(
-		usrInputs.get('dr')
-            .htmlNumSlider('Demand Rate = ',20,[10,20,30,40,50]),
-		usrInputs.get('dcv')
-            .htmlNumSlider('Demand Variability = ',0,['0.0','1.0']),
-		usrInputs.get('Cu')
-            .htmlNumSlider('Underage Cost = ', 8,[0,2,4,6,8,10] ), 
-		usrInputs.get('Co')
-            .htmlNumSlider('Overage Cost = ', 1,[0,2,4,6,8,10]),
-		usrInputs.get('quan')
-            .htmlNumSlider('Order Quantity = ',20,[10,20,30,40,50]),
-		empty,
-		genPlayResetBox('nvp'),
-		usrInputs.get('speed')
-            .htmlArbSlider('Speed = ', 0,
-                            ["slow",' ',' ',' ',"fast",'∞'])
-	);
 	
+    const drInput = genRange('drnvp', '5.0', 10, 50, 1);
+    elem.append(htmlNumSlider(drInput, 'Demand Rate = ', '20', [10,20,30,40,50]) );
+    usrInputs.set('dr', new NumSlider('dr',drInput,
+                localUpdate, 1,2,1) );
+    
+    const dcvInput = genRange('dcvnvp', '0.0', 0, 2, .5);
+    elem.append(htmlNumSlider(dcvInput, 'Demand Variability = ', '0.0',['0.0','1.0','2.0']) );
+    usrInputs.set('dcv', new NumSlider('dcv', dcvInput,
+                localUpdate, 1,2,10) );
+    
+	const cuInput = genRange('cunvp', '8', 0, 10, 1);
+    elem.append( htmlNumSlider(cuInput, 'Underage Cost = ', '8', [0,2,4,6,8,10] )); 
+	usrInputs.set('Cu', new NumSlider('Cu',cuInput, localUpdate, 0, 2, 1));
+    
+    const coInput = genRange('convp', '1', 0, 10, 1);
+    elem.append( htmlNumSlider(coInput, 'Overage Cost = ', '1', [0,2,4,6,8,10] )); 
+	usrInputs.set('Co', new NumSlider('Co',coInput, localUpdate, 0, 2, 1));
+    
+	const quanInput = genRange('quannvp', '20', 10, 50, 1);
+    elem.append( htmlNumSlider(quanInput, 'Order Quantity = ', '20', [10,20,30,40,50] )); 
+	usrInputs.set('quan', new NumSlider('quan',quanInput, localUpdate, 0, 2, 1));
+    
+	elem.append(empty, genPlayResetBox('nvp'));
+    
+	const speedInput = genRange('speednvp',0,0,5,1);
+    elem.append(htmlArbSlider(speedInput, 'Speed = ', '1x',
+                            ["slow",' ',' ',' ',"fast",'∞']) );
+    usrInputs.set('speed', new ArbSlider('speed', speedInput, 
+                localUpdate, ["1x",'2x','5x','10x',"25x",'∞'],
+				                [1,2,5,10,25,1000]) );
+    
+    	
 	const f = document.getElementById('scenariosMidnvp');
 	f.style = "min-height: 21vw";
+    
+    return usrInputs;
 };
 
 export function nvpStart() {
-	let usrInputs = nvpDefineUsrInputs();
-    nvpHTML(usrInputs);
+    let usrInputs = nvpHTML();
     nvp = new NewsVendor(usrInputs);
     nvpDefine();
     theSimulation.initialize();
-    for( let [key, inp] of nvp.usrInputs ){
-        inp.userUpdate();
-    };
-    //computeStageTimes();
-	nvp.reset();
+    nvp.reset();
 	return nvp;
 };
