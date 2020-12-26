@@ -35,38 +35,44 @@ import {
 from "../mod/stepitem.js";
 
 import {
-	TioxGraph
+	TioxGraph, GraphLine
 }
 from "../mod/graph.js";
 import {
-	genPlayResetBox, genSlider, genArbSlider, genButton, addDiv,
+	genPlayResetBox, genArbSlider, genButton, addDiv,
       NumSlider, htmlNumSlider,
     ArbSlider, htmlArbSlider,
     genRange, 
-    genCheckBox, htmlCheckBox, CheckBox, 
+     htmlCheckBox, CheckBox, 
     htmlRadioButton, RadioButton, 
     IntegerInput, 
     addKeyForIds, 
-    LegendItem, LegendDomElem
+    LegendItem
 }
 from '../mod/genHTML.js';
 
 class LittleGraph extends TioxGraph {
-	constructor(omConcept){
-		super(omConcept,'chartCanvaslit',40, {width:20, step:5}, d=>d.t);
+	constructor(){
+		super(lit,'chartCanvaslit',40, {width:20, step:5}, d=>d.t);
 		this.predictedInvValue = null;
 		this.setTitle('Inventory');
-		this.setupLine(0, d => d.i, cbColors.blue,
-					   false, true, true, 3, 10);
-//		this.setLegend(0, 'avg. inventory');
-		this.setupLine(1, d => d.rt, cbColors.yellow,
-					   false, true, true, 3, 10);
-//		this.setLegend(1,'avg. time * avg. rate');
-		this.setupLine(2, d => d.p, cbColors.red,
-					   true, false, false, 10, 0);
-//		this.setLegend(2,'predicted inventory');	
+		const avgInv = new GraphLine(this, d => d.i, cbColors.blue,
+					   false, true,  3, 10);
+		const avgRT = new GraphLine(this, d => d.rt, cbColors.yellow,
+					   false, true,  3, 10);
+		const predInv = new GraphLine(this, d => d.p, cbColors.red,
+					   true, false,  10, 0);
 		this.predictedInvValue = this.predictedInv();
-	};
+         
+        const d3 = document.getElementById('chartLegendlit');
+        d3.append(avgInv.createLegend('avg. inventory'),
+                  avgRT.createLegend('avg time * ave rate'),
+                  predInv.createLegend('predicted inventory')
+                  );
+        lit.usrInputs.set('leg0', new LegendItem('leg0', avgInv, localUpdateFromUser));
+        lit.usrInputs.set('leg1', new LegendItem('leg1', avgRT, localUpdateFromUser));
+        lit.usrInputs.set('leg2', new LegendItem('leg2', predInv, localUpdateFromUser));
+    };
 	
 	push (t, inv, rt){
 		t /= tioxTimeConv;
@@ -155,30 +161,6 @@ anim.pathway = {
 
 var totInv, totTime, totPeople, firstArr, lastArrDep, LBRFcount;
 
-function litDefineUsrInputs(){
-    let usrInputs = new Map();
-    usrInputs.set('ar', new NumSlider('arlit',
-                null, 1,1,6,1,1,1) );
-    usrInputs.set('acv', new NumSlider('acvlit',
-                null, 1,0,2,.5,2,10) );
-    usrInputs.set('sr', new NumSlider('srlit',
-                null, 1,5,25,1,2,1) );
-    usrInputs.set('scv', new NumSlider('scvlit',
-                null, 1,0,2,.5,2,10) );
-    usrInputs.set('leg0', new LegendItem('leg0lit'));
-    usrInputs.set('leg1', new LegendItem('leg1lit'));
-    usrInputs.set('leg2', new LegendItem('leg2lit'));
-    
-    usrInputs.set('speed', new ArbSlider('speedlit',
-                null, ['1x','2x','5x','10x','25x','∞'],
-				                [1,2,5,10,25,1000]) );
-    usrInputs.set('action', new RadioButton('actionlit',
-                null, ['none','play','pause']) );
-    usrInputs.set('reset', new CheckBox('resetlit',
-                null) );
-    return usrInputs;
-};
-
 function litDefine(){
 	document.getElementById('lit').omConcept = lit;
 	
@@ -199,8 +181,6 @@ class LittlesLaw extends OmConcept{
     constructor(usrInputs){
         super('lit');
         this.usrInputs = usrInputs;
-        document.getElementById('slidersWrapperlit')
-			.addEventListener('input', this.captureUserUpdate.bind(this));
         this.setupScenarios();    
     }
     
@@ -216,57 +196,55 @@ class LittlesLaw extends OmConcept{
         lit.now = lit.frameNow = t;
     };
     
-    localUpdate = localUpdate;
-};
-
-function localUpdate(...inpsChanged){
+    localUpdateFromSliders(...inpsChanged){
         for(let inp of inpsChanged){
-            let v = inp.get();
-            switch (inp.key){
-                case 'ar':
-			         theSimulation.interarrivalRV
-				        .setRate(v / tioxTimeConv);
-			         lit.graph.updatePredictedInv();
-			         break;
-
-                case 'acv':
-                    theSimulation.interarrivalRV.setCV(v);
-                    break;
-
-                case 'sr':
-                    theSimulation.serviceRV.setTime(v * tioxTimeConv);
-                    lit.graph.updatePredictedInv();
-                    break;
-
-                case 'scv':
-                    theSimulation.serviceRV.setCV(v);
-                    break;
-
-                case 'speed':
-                    lit.adjustSpeed(v,speeds);
-                    break;
-                case 'action':
-                case 'reset':
-                    break;
-                case 'leg0':
-                    lit.graph.lineInfo[0].visible = (v == "true");
-                    lit.graph.setupThenRedraw();
-                    break;
-                case 'leg1':
-                    lit.graph.lineInfo[1].visible = (v == "true");
-                    lit.graph.setupThenRedraw();
-                    break;
-                case 'leg2':
-                    lit.graph.lineInfo[2].visible = (v == "true");
-                    lit.graph.setupThenRedraw();
-                    break;
-                default:
-                    console.log(' reached part for default');
-                    break;
-                }
-        }
-
+            localUpdate(inp); 
+        };
     };
+};
+function localUpdateFromUser(inp){
+    lit.setOrReleaseCurrentLi(inp);
+    localUpdate(inp);
+};
+        
+        
+ function localUpdate(inp){
+    let v = inp.get();
+    switch (inp.key){
+        case 'ar':
+             theSimulation.interarrivalRV
+                .setRate(v / tioxTimeConv);
+             lit.graph.updatePredictedInv();
+             break;
+
+        case 'acv':
+            theSimulation.interarrivalRV.setCV(v);
+            break;
+
+        case 'sr':
+            theSimulation.serviceRV.setTime(v * tioxTimeConv);
+            lit.graph.updatePredictedInv();
+            break;
+
+        case 'scv':
+            theSimulation.serviceRV.setCV(v);
+            break;
+
+        case 'speed':
+            lit.adjustSpeed(v,speeds);
+            break;
+            
+        case 'action':
+        case 'reset':
+        case 'leg0':
+        case 'leg1':
+        case 'leg2':
+            break;
+        default:
+            console.log(' reached part for default');
+            break;
+    }
+}
 
 function setBackground() {
 	const c = anim.stage.backContext;
@@ -402,7 +380,7 @@ const theSimulation = {
 		const scv = lit.usrInputs.get('scv').get();
 		theSimulation.serviceRV = new GammaRV(1 / st / tioxTimeConv, scv);
 
-		lit.graph = new LittleGraph(lit);
+		lit.graph = new LittleGraph();
 		lit.resetCollection.push(lit.graph);
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
@@ -504,21 +482,7 @@ function litHTML(){
 	const d2 = document.getElementById('statsWrapperlit');
 	d2.parentNode.removeChild(d2);
 	 
-    //add legend for the chart
-    
-    const leg0Input = new LegendDomElem('leg0lit', false, cbColors.blue);
-    const leg1Input = new LegendDomElem('leg1lit', false, cbColors.yellow);
-    /*global needed by graph to set name to predicted wait - infty*/ 
-    const leg2Input = new LegendDomElem('leg2lit', false, cbColors.red);
-    const d3 = document.getElementById('chartLegendlit');
-    d3.append(leg0Input.createHTML('avg. inventory'),
-              leg1Input.createHTML('avg time * ave rate'),
-              leg2Input.createHTML('predicted inventory')
-              );
-    usrInputs.set('leg0', new LegendItem('leg0', leg0Input, localUpdate));
-    usrInputs.set('leg1', new LegendItem('leg1', leg1Input, localUpdate));
-    usrInputs.set('leg2', new LegendItem('leg2', leg2Input, localUpdate));
-    
+       
 	//now put in the sliders with the play/reset box	
 	let elem = document.getElementById('slidersWrapperlit');
 	
@@ -526,35 +490,35 @@ function litHTML(){
     const arInput = genRange('arlit', '1.0', 1, 6, 1);
     elem.append(htmlNumSlider(arInput, 'Arrival Rate = ', '1.0', [1,2,3,4,5,6]) );
     usrInputs.set('ar', new NumSlider('ar',arInput,
-                localUpdate, 1, 3, 10) );
+                localUpdateFromUser, 1, 3, 10) );
     
     const acvInput = genRange('acvlit', '0.0', 0, 2, .5);
     elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', 0,['0.0','1.0','2.0']) );
     usrInputs.set('acv', new NumSlider('acv', acvInput,
-                localUpdate, 1, 2, 10) );
+                localUpdateFromUser, 1, 2, 10) );
     
     
     const srInput = genRange('srlit', '6.0', 0, 10, .1);
     elem.append(htmlNumSlider(srInput, 'Service Rate = ', 5, [5, 15, 25]) );
     usrInputs.set('sr', new NumSlider('sr',srInput,
-                localUpdate, 1, 3, 10) );
+                localUpdateFromUser, 1, 3, 10) );
     
     const scvInput = genRange('scvlit', '0.0', 0, 2, .5);
     elem.append(htmlNumSlider(scvInput, 'Service CV = ', 0,['0.0','1.0','2.0']) );
     usrInputs.set('scv', new NumSlider('scv', scvInput,
-                localUpdate, 1, 2, 10) );
+                localUpdateFromUser, 1, 2, 10) );
 
 	elem.append(genPlayResetBox('lit') );
     usrInputs.set('reset', new CheckBox('reset', 'resetlit',
-                localUpdate) );
+                localUpdateFromUser) );
     usrInputs.set('action', new RadioButton('action', 'actionlit', 
-                localUpdate, ['none','play','pause']) );
+                localUpdateFromUser, ['none','play','pause']) );
     
     const speedInput = genRange('speedlit',0,0,5,1);
     elem.append(htmlArbSlider(speedInput, 'Speed = ', 0,
                             ["slow",' ',' ',' ',"fast",'∞']) );
     usrInputs.set('speed', new ArbSlider('speed', speedInput, 
-                localUpdate, ["1x",'2x','5x','10x',"25x",'∞'],
+                localUpdateFromUser, ["1x",'2x','5x','10x',"25x",'∞'],
 				                [1,2,5,10,25,1000]) );
     
     
@@ -569,8 +533,6 @@ export function litStart() {
     lit = new LittlesLaw(usrInputs);
     litDefine();
     theSimulation.initialize();
-    
-    //computeStageTimes();
 	lit.reset();
 	return lit;
 };

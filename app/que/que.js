@@ -33,36 +33,47 @@ import {
 }
 from "../mod/stepitem.js";
 import {
-	TioxGraph
+	TioxGraph, GraphLine
 }
 from "../mod/graph.js";
 import {
-	genPlayResetBox, genSlider, genArbSlider, genButton, addDiv,
+	genPlayResetBox, genArbSlider, genButton, addDiv,
       NumSlider, htmlNumSlider,
     ArbSlider, htmlArbSlider,
     genRange, 
-    genCheckBox, htmlCheckBox, CheckBox, 
+     htmlCheckBox, CheckBox, 
     htmlRadioButton, RadioButton, 
     IntegerInput, 
     addKeyForIds, 
-    LegendItem, LegendDomElem
+    LegendItem
 }
 from '../mod/genHTML.js';
 
 class QueueGraph extends TioxGraph {
-	constructor(omConcept){	
-		super(omConcept,'chartCanvasque', 40, {width:10, step:2}, d=>d.t);
+	constructor(){	
+		super(que,'chartCanvasque', 40, {width:10, step:2}, d=>d.t);
 		this.setTitle('Waiting Time');
-		this.setupLine(0, d => d.i, cbColors.blue,
-					   false, true, false, 5, 10);
-//		this.setLegend(0, 'individual wait');
-		this.setupLine(1, d => d.a, cbColors.yellow,
-					   false, true, true, 5, 10);
-//		this.setLegend(1,'average wait');
-		this.setupLine(2, d => d.p, cbColors.red,
-					   true, false, false, 10, 0);
-//		this.setLegend(2,'predicted wait');	
+		const indivWait = new GraphLine(this, d => d.i, cbColors.blue,
+					                   false, true,  5, 10);
+		const avgWait = new GraphLine(this, d => d.a, cbColors.yellow,
+					                   false, true,  5, 10);
+		this.predWait = new GraphLine(this, d => d.p, cbColors.red,
+					                   true, false,  10, 0);
+//        this.lines.push(indivWait,avgWait,this.predWait);
 		this.predictedWaitValue = this.predictedWait();
+        
+        const leg0 = indivWait.createLegend('individual wait');
+        const leg1 = avgWait.createLegend('average wait');
+        const leg2 = this.predWait.createLegend('predicted wait');
+        const d3 = document.getElementById('chartLegendque');
+        d3.append(leg0, leg1, leg2);
+        
+        que.usrInputs.set('leg0', 
+            new LegendItem('leg0', indivWait, localUpdateFromUser)); 
+        que.usrInputs.set('leg1', 
+            new LegendItem('leg1', avgWait, localUpdateFromUser));
+        que.usrInputs.set('leg2', 
+            new LegendItem('leg2', this.predWait, localUpdateFromUser));
 	};
 	
 	push (t,w){
@@ -107,8 +118,9 @@ class QueueGraph extends TioxGraph {
 			t: (que.now / tioxTimeConv),
 			p: (pW == Infinity)?null:pW
 		});
-		leg2Input.name.innerHTML = 'predicted wait' +
-					   ((pW == Infinity) ? ' = ∞' : '');
+		//this.omConcept.usrInputs.get('leg2').legInput   will avoid the global!!
+        this.predWait.setLegendText( 'predicted wait' +
+					   ((pW == Infinity) ? ' = ∞' : ''));
 
 		this.predictedWaitValue = pW;
 	};
@@ -191,67 +203,64 @@ class Queueing extends OmConcept{
         theSimulation.nInQueue = 0;
         document.getElementById('nInQueue').innerHTML = '0';
     };
-    localUpdate = localUpdate;
-    
-};
-function localUpdate(...inpsChanged){
-        
+    localUpdateFromSliders(...inpsChanged){
         for(let inp of inpsChanged){
-            let v = inp.get();
-            switch (inp.key){
-                case 'ar':
-                    theSimulation.interarrivalRV
-                        .setRate(v / tioxTimeConv);
-                    que.heap.modify('finish/creator', que.now, 
-                                    theSimulation.interarrivalRV);
-                    que.graph.updatePredictedWait();
-                    break;
-                case 'acv':
-                    theSimulation.interarrivalRV
-                        .setCV(v);
-                    que.heap.modify('finish/creator', que.now,
-                                    theSimulation.interarrivalRV);
-                    que.graph.updatePredictedWait();
-                    break;
-                case 'sr':
-                    theSimulation.serviceRV
-                        .setRate(v / tioxTimeConv);
-                    que.heap.modify('finish/TSAagent', que.now, 
-                                    theSimulation.serviceRV);
-                    que.graph.updatePredictedWait();
-                    break;
-                case 'scv':
-                    theSimulation.serviceRV
-                        .setCV(v);
-                    que.heap.modify('finish/TSAagent', que.now, 
-                                    theSimulation.serviceRV);
-                    que.graph.updatePredictedWait();
-                    break;
-                case 'speed':
-                    console.log('at speed adjust',v,speeds);
-                    que.adjustSpeed(v,speeds);
-                    break;
-                case 'action':
-                case 'reset':
-                case 'leg0':
-                    que.graph.lineInfo[0].visible = (v == "true");
-                    que.graph.setupThenRedraw();
-                    break;
-                case 'leg1':
-                    que.graph.lineInfo[1].visible = (v == "true");
-                    que.graph.setupThenRedraw();
-                    break;
-                case 'leg2':
-                    que.graph.lineInfo[2].visible = (v == "true");
-                    que.graph.setupThenRedraw();
-                    break;
-                default:
-                    alert(' reached part for default, key=',inp.key);
-                    console.log(' reached part for default, key=',inp.key);
-                    break;
-            }
-        }
-
+            localUpdate(inp); 
+        };
+    };
+};
+function localUpdateFromUser(inp){
+    que.setOrReleaseCurrentLi(inp);
+    localUpdate(inp);
+};
+        
+        
+ function localUpdate(inp){
+    let v = inp.get();
+    switch (inp.key){
+        case 'ar':
+            theSimulation.interarrivalRV
+                .setRate(v / tioxTimeConv);
+            que.heap.modify('finish/creator', que.now, 
+                            theSimulation.interarrivalRV);
+            que.graph.updatePredictedWait();
+            break;
+        case 'acv':
+            theSimulation.interarrivalRV
+                .setCV(v);
+            que.heap.modify('finish/creator', que.now,
+                            theSimulation.interarrivalRV);
+            que.graph.updatePredictedWait();
+            break;
+        case 'sr':
+            theSimulation.serviceRV
+                .setRate(v / tioxTimeConv);
+            que.heap.modify('finish/TSAagent', que.now, 
+                            theSimulation.serviceRV);
+            que.graph.updatePredictedWait();
+            break;
+        case 'scv':
+            theSimulation.serviceRV
+                .setCV(v);
+            que.heap.modify('finish/TSAagent', que.now, 
+                            theSimulation.serviceRV);
+            que.graph.updatePredictedWait();
+            break;
+        case 'speed':
+            console.log('at speed adjust',v,speeds);
+            que.adjustSpeed(v,speeds);
+            break;
+        case 'action':
+        case 'reset':
+        case 'leg0':
+        case 'leg1':
+        case 'leg2':
+            break;
+        default:
+            alert(' reached part for default, key=',inp.key);
+            console.log(' reached part for default, key=',inp.key);
+            break;
+    }
 };
 
 const animForQueue = {
@@ -405,7 +414,7 @@ const theSimulation = {
 		const scv = que.usrInputs.get('scv').get();
 		theSimulation.serviceRV = new GammaRV(sr / tioxTimeConv, scv);
 
-		que.graph = new QueueGraph(que);
+		que.graph = new QueueGraph();
 		que.resetCollection.push(que.graph);
 		
 		//queues
@@ -500,21 +509,7 @@ function queHTML(){
 	 delem.append('Number in Queue: ',selem);
 	 d2.append(delem);
     
-    //add legend for the chart
-    
-    const leg0Input = new LegendDomElem('leg0que', false, cbColors.blue);
-    const leg1Input = new LegendDomElem('leg1que', false, cbColors.yellow);
-    /*global needed by graph to set name to predicted wait - infty*/ 
-    leg2Input = new LegendDomElem('leg2que', false, cbColors.red);
-    const d3 = document.getElementById('chartLegendque');
-    d3.append(leg0Input.createHTML('individual wait'),
-              leg1Input.createHTML('average wait'),
-              leg2Input.createHTML('predicted wait')
-              );
-    usrInputs.set('leg0', new LegendItem('leg0', leg0Input, localUpdate));
-    usrInputs.set('leg1', new LegendItem('leg1', leg1Input, localUpdate));
-    usrInputs.set('leg2', new LegendItem('leg2', leg2Input, localUpdate));
-	 
+
 	//now put in the sliders with the play/reset box	
 	
 	let elem = document.getElementById('slidersWrapperque');
@@ -522,35 +517,35 @@ function queHTML(){
     const arInput = genRange('arque', '5.0', 0, 10, .1);
     elem.append(htmlNumSlider(arInput, 'Arrival Rate = ', '5.0', [0,2,4,6,8,10]) );
     usrInputs.set('ar', new NumSlider('ar',arInput,
-                localUpdate, 1,3,10) );
+                localUpdateFromUser, 1,3,10) );
     
     const acvInput = genRange('acvque', '0.0', 0, 2, .5);
     elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', 0,['0.0','1.0','2.0']) );
     usrInputs.set('acv', new NumSlider('acv', acvInput,
-                localUpdate, 1,2,10) );
+                localUpdateFromUser, 1,2,10) );
     
     
     const srInput = genRange('srque', '6.0', 0, 10, .1);
     elem.append(htmlNumSlider(srInput, 'Service Rate = ', 6,[0,2,4,6,8,10]) );
     usrInputs.set('sr', new NumSlider('sr',srInput,
-                localUpdate, 1,3,10) );
+                localUpdateFromUser, 1,3,10) );
     
     const scvInput = genRange('scvque', '0.0', 0, 2, .5);
     elem.append(htmlNumSlider(scvInput, 'Service CV = ', 0,['0.0','1.0','2.0']) );
     usrInputs.set('scv', new NumSlider('scv', scvInput,
-                localUpdate, 1,2,10) );
+                localUpdateFromUser, 1,2,10) );
     
     elem.append( genPlayResetBox('que') );
     usrInputs.set('reset', new CheckBox('reset', 'resetque',
-                localUpdate) );
+                localUpdateFromUser) );
     usrInputs.set('action', new RadioButton('action', 'actionque', 
-                localUpdate, ['none','play','pause']) );
+                localUpdateFromUser, ['none','play','pause']) );
      
     const speedInput = genRange('speedque',0,0,5,1);
     elem.append(htmlArbSlider(speedInput, 'Speed = ', 0,
                             ["slow",' ',' ',' ',"fast",'∞']) );
     usrInputs.set('speed', new ArbSlider('speed', speedInput, 
-                localUpdate, ["1x",'2x','5x','10x',"25x",'∞'],
+                localUpdateFromUser, ["1x",'2x','5x','10x',"25x",'∞'],
 				                [1,2,5,10,25,1000]) );   
     
 	const f = document.getElementById('scenariosMidque');
@@ -564,8 +559,6 @@ export function queStart() {
     que = new Queueing(usrInputs);
     queDefine();
     theSimulation.initialize();
-
-    //computeStageTimes();
 	que.reset();
 	return que;
 };

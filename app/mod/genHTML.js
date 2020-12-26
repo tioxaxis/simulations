@@ -95,27 +95,27 @@ export function genArbSlider( id, name, initial, indivs, values){
     return d;
 }
 
-export function genSlider( id, before, mid, after,
-                            initial, min, max, step, values){	
-    const sp = document.createElement('span');
-    sp.id = 'disp' + id;
-    sp.append(mid);
-    const disp = document.createElement('div');
-    disp.append(before,sp,after);
-
-    const vals = document.createElement('div');
-    vals.className="spreadValues";
-    for( let v of values){
-        let s = document.createElement('span');
-        s.append(v);
-        vals.append(s);
-    }
-
-    const d = document.createElement('div');
-    d.className = "sliderBox columnAroundCenter";
-    d.append(disp, genRange(id,initial,min,max,step), vals);
-    return d;
-}
+//export function genSlider( id, before, mid, after,
+//                            initial, min, max, step, values){	
+//    const sp = document.createElement('span');
+//    sp.id = 'disp' + id;
+//    sp.append(mid);
+//    const disp = document.createElement('div');
+//    disp.append(before,sp,after);
+//
+//    const vals = document.createElement('div');
+//    vals.className="spreadValues";
+//    for( let v of values){
+//        let s = document.createElement('span');
+//        s.append(v);
+//        vals.append(s);
+//    }
+//
+//    const d = document.createElement('div');
+//    d.className = "sliderBox columnAroundCenter";
+//    d.append(disp, genRange(id,initial,min,max,step), vals);
+//    return d;
+//}
 
  function genPlayResetButtons(key){
     const d = document.getElementById('playButtons').cloneNode(true);
@@ -162,13 +162,13 @@ export function addDiv(key, toId,...fromIds){
     }
 }
 
-export function copyMainPage(key){
-    let page = document.getElementById('whole')
-        .cloneNode(true);
-    addKeyForIds(key, page);
-    let keyPage = document.getElementById(key);
-    keyPage.innerHTML = page.innerHTML;
-}
+//export function copyMainPage(key){
+//    let page = document.getElementById('whole')
+//        .cloneNode(true);
+//    addKeyForIds(key, page);
+//    let keyPage = document.getElementById(key);
+//    keyPage.innerHTML = page.innerHTML;
+//}
 
 export function htmlNumSlider( inputElem, displayText, initial, sliderValues) {
         const sp = document.createElement('span');
@@ -232,8 +232,6 @@ export class NumSlider{
         if( disp ) disp.innerHTML = Number(x).toFixed(this.precision);
         this.localUpdate(this);
     }
-    
-    
 };
 export function htmlArbSlider(inputElem, displayText, initial, sliderValues){
         const sp = document.createElement('span');
@@ -255,7 +253,6 @@ export function htmlArbSlider(inputElem, displayText, initial, sliderValues){
 		d.append(disp, inputElem, vals);
 		return d;
     };
-
 export class ArbSlider{
     //slider holds the index but otherwise use values[index]
     constructor (key, inputElem, localUpdate,  displayValues, values ){
@@ -299,19 +296,18 @@ export class ArbSlider{
     
 
 };
-export function genCheckBox(id){
-    const inp = document.createElement('input');
-    inp.type = 'checkbox';
-    inp.id = id;
-    return inp;
-}
+//export function genCheckBox(id){
+//    const inp = document.createElement('input');
+//    inp.type = 'checkbox';
+//    inp.id = id;
+//    return inp;
+//}
 
 export function htmlCheckBox(inp, desc){
         const label = document.createElement('LABEL');
         label.append(inp, desc);
         return label; 
     };
-
 export class CheckBox{
     //slider holds "checked" receives and returns string
     constructor (key, inputElem, localUpdate) {
@@ -343,18 +339,17 @@ export class CheckBox{
     
 }
 export function htmlRadioButton(id, name, value, checked, desc){
-        const inp = document.createElement('input');
-        inp.type = 'radio';
-        inp.name = name;
-        inp.id = id;
-        inp.setAttribute('value', value);
-        if (checked) inp.setAttribute('checked','');
+    const inp = document.createElement('input');
+    inp.type = 'radio';
+    inp.name = name;
+    inp.id = id;
+    inp.setAttribute('value', value);
+    if (checked) inp.setAttribute('checked','');
 
-        const label = document.createElement('LABEL');	
-        label.append(inp, desc);
-        return label;
-    };
-
+    const label = document.createElement('LABEL');	
+    label.append(inp, desc);
+    return label;
+};
 export class RadioButton{
     constructor (key, name, localUpdate, values){
         this.key = key;
@@ -433,24 +428,23 @@ export class IntegerInput{
         this.localUpdate(this);
     }
 }
-
 export class LegendItem{
     //returns and receives string 'true'/'false' but stores boolean
-    constructor (key, legInput, localUpdate){
+    constructor ( key, line, localUpdate){
         this.key = key;
-        this.legInput = domElem(legInput);
+        this.line = line;
         this.localUpdate = localUpdate;
         this.shortLen = 1;
-        this.legInput.name.addEventListener('click',
+        this.line.button.addEventListener('click',
                 this.userUpdate.bind(this));
     }
     get() {
-         return this.legInput.visible.toString();
+         return this.line.visible.toString();
     };
     set(x){
         const b = x == 'true';
-        const changed = this.legInput.visible != b;
-        this.legInput.setVisibility(b);
+        const changed = this.line.visible != b;
+        this.line.setVisibility(b);
         return changed;
     };
     encode(x) {
@@ -462,84 +456,7 @@ export class LegendItem{
     };
     
     userUpdate(){
-        this.legInput.toggleVisible();
-        this.localUpdate(this);
+        if(this.localUpdate) this.localUpdate(this);
     }
+    
 };
-
-
-
-export class LegendDomElem{
-        constructor(id, isAnAverage, color){
-            this.id = id;
-            this.visible = true;
-            this.elem = null;
-            this.isAnAverage = isAnAverage;
-            this.color = color;
-            this.name = document.createElement('span');
-            // text filled in with next routine.
-        };
-        createHTML(nametext){
-            const rB = document.createElement('i');
-            rB.classList.add('material-icons');
-            rB.classList.add('actButton');
-            rB.classList.add('font15vw');
-            rB.title = 'reset the average';
-            rB.innerHTML = 'replay';
-            const dot = document.createElement('span');
-            dot.innerHTML = '&emsp; &emsp; &#11044;&nbsp;'
-            dot.style = 'color:'+this.color;
-            
-            this.name.innerHTML = nametext;
-            
-            this.elem = document.getElementById(this.id);
-            if( !this.elem ){
-                this.elem = document.createElement('div');
-                this.elem.id = this.id;   
-            }
-            
-            
-            
-            this.elem.append((this.isAnAverage ? rB : ''),dot, this.name);
-            
-            rB.addEventListener('click',this.resetAverage.bind(this));
-            return this.elem;
-        };
-        setVisibility(b){
-            this.visible = b;
-            if( this.visible )
-                this.name.classList.remove('crossOut');
-            else
-              this.name.classList.add('crossOut');
-        };
-//        makeVisible(){
-//            this.visible = true;
-//            this.name.classList.remove('crossOut');
-//        };
-//        makeInvisible(){
-//            this.visible = false;
-//            this.name.classList.add('crossOut');
-//        };
-        toggleVisible(){
-//            if( this.visible ){
-//                this.name.classList.add('crossOut');
-//                this.visible = false;
-//            } else {
-//                this.name.classList.remove('crossOut');
-//                this.visible = true;
-//            }
-            this.setVisibility(!this.visible);
-            console.log('Visible',this.visible);
-        };
-        resetAverage(){
-            console.log('clicked on the reset average button');
-        }
-        
-        
-            
-    };
-
-
-
-	
-	

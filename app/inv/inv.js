@@ -40,37 +40,49 @@ import {
 }
 from "../mod/stepitem.js";
 import {
-	TioxGraph
+	TioxGraph, GraphLine
 }
 from "../mod/graph.js";
 
 import {
-	genPlayResetBox, genSlider, genRadio, genArbSlider, genButton, addDiv,
-    ArbSlider,  NumSlider, genRange, CheckBox,  RadioButton, hideNode, 
-    IntegerInput, addKeyForIds, LegendItem
+	genPlayResetBox, genArbSlider, genButton, addDiv,
+      NumSlider, htmlNumSlider,
+    ArbSlider, htmlArbSlider,
+    genRange, genRadio, hideNode,
+     htmlCheckBox, CheckBox, 
+    htmlRadioButton, RadioButton, 
+    IntegerInput, 
+    addKeyForIds, 
+    LegendItem
 }
 from '../mod/genHTML.js';
 
 class InvGraph extends TioxGraph {
-	constructor(omConcept){
-		super(omConcept,'chartCanvasinv',40, {width:24, step:6}, d=>d.t);
+	constructor(){
+		super(inv,'chartCanvasinv',40, {width:24, step:6}, d=>d.t);
 		this.predictedInvValue = null;
 		this.setTitle('Inventory');
-		this.setupLine(0, d => d.i, cbColors.blue,
-					   true, true, false, 3, 0);
-		this.setLegend(0, 'On Hand');
-		this.setupLine(1, d => d.ip, cbColors.red,
-					   true, true, false, 3, 0);
-		this.setLegend(1,'On Hand and On Order');
-		this.setupLine(2, d => d.p, cbColors.orange,
-					   true, false, false, 10, 0);
-		this.setLegend(2,'Predicted On Hand Inventory');
+		const onhandInv = new GraphLine(this, d => d.i, cbColors.blue,
+					   true, true,  3, 0);
+		const bothInv = new GraphLine(this, d => d.ip, cbColors.red,
+					   true, true,  3, 0);
+		const predInv = new GraphLine(this, d => d.p, cbColors.orange,
+					   true, false,  10, 0);
+        
+       
+        const d4 = document.getElementById('chartLegendinv');
+        d4.append(onhandInv.createLegend('On Hand'),
+                  bothInv.createLegend('On Hand and On Order'),
+                  predInv.createLegend('Predicted On Hand')
+                  );
+        inv.usrInputs.set('leg0', new LegendItem('leg0', onhandInv, localUpdateFromUser));
+        inv.usrInputs.set('leg1', new LegendItem('leg1', bothInv, localUpdateFromUser));
+        inv.usrInputs.set('leg2', new LegendItem('leg2', predInv, localUpdateFromUser)); 
+	
 		if( inv.whichRule == 'methRop'){
-			const rop = document.getElementById('ropinv');
-			this.resetRopLine(Number(rop.value));
+			this.resetRopLine(Number(inv.usrInputs.get('rop').get()));
 		} else {
-			const period = document.getElementById('periodinv');
-			this.resetPeriodLines(Number(period.value));
+			this.resetPeriodLines(Number(inv.usrInputs.get('period').get()));
 		}
 	};
 	
@@ -184,38 +196,6 @@ function animSetup(){
 };
 
 animSetup();
-function invDefineUsrInputs(){
-    let usrInputs = new Map();
-    usrInputs.set('method', new RadioButton('methodinv',null, ['methRop','methUpto']) );
-    usrInputs.set('ar', new NumSlider('arinv',
-                null, 1,1,9,1,1,1) );
-    usrInputs.set('acv', new NumSlider('acvinv',
-                null, 1,0,2,.5,2,10) );
-    usrInputs.set('lt', new NumSlider('ltinv',
-                null, 1,2,8,1,1,1) );
-    usrInputs.set('ltcv', new NumSlider('ltcvinv',
-                null, 1,0,2,.5,2,10) );
-    
-    usrInputs.set('quan', new NumSlider('quaninv',
-                null, 1,10,50,1,2,1) );
-    usrInputs.set('rop', new NumSlider('ropinv',
-                null, 1,5,85,1,2,1) );
-    usrInputs.set('period', new NumSlider('periodinv',
-                null, 1,2,8,1,1,1) );
-    usrInputs.set('upto', new NumSlider('uptoinv',
-                null, 1,10,90,1,2,1) );
-    usrInputs.set('leg0', new LegendItem('leg0inv'));
-    usrInputs.set('leg1', new LegendItem('leg1inv'));
-    usrInputs.set('leg2', new LegendItem('leg2inv'));
-    usrInputs.set('speed', new ArbSlider('speedinv',
-                null, ['1x','2x','5x','10x','25x','∞'],
-				                [1,2,5,10,25,1000]) );
-    usrInputs.set('action', new RadioButton('actioninv',
-                null, ['none','play','pause']) );
-    usrInputs.set('reset', new CheckBox('resetinv',
-                null) );
-    return usrInputs;
-};
 
 function invDefine(){
 	document.getElementById('inv').omConcept = inv;
@@ -223,32 +203,6 @@ function invDefine(){
 	
 	inv.whichRule = 'methRop';
 
-//	inv.sliderTypes = {
-//		ar: 'range',
-//		acv: 'range',
-//		lt: 'range',
-//		ltcv: 'range',
-//		quan: 'range',
-//		rop: 'range',
-//		period: 'range',
-//		upto: 'range',
-//		speed: 'range',
-//		action: 'radio',
-//		which: 'radio',
-//		reset: 'checkbox'
-//	};
-
-//	inv.precision = {
-//		ar: 0,
-//		acv: 1,
-//		lt: 0,
-//		ltcv: 1,
-//		quan: 0,
-//		rop: 0,
-//		period: 0,
-//		upto: 0,
-//		speed: 0
-//	};
 	anim.stage.foreContext = document
 		.getElementById('foregroundinv')
 		.getContext('2d');
@@ -267,77 +221,9 @@ class Inventory extends OmConcept{
     constructor(usrInputs){
         super('inv');
         this.usrInputs = usrInputs;
-        document.getElementById('slidersWrapperinv')
-			.addEventListener('input', this.captureUserUpdate.bind(this));
-        document.getElementById('ropuptoinv')
-	       .addEventListener('input', this.captureUserUpdate.bind(this));
         this.setupScenarios();    
     }
-    localUpdate(...inpsChanged){
-        for(let inp of inpsChanged){
-            let v = inp.get();
-            switch (inp.key){
-                case 'ar':
-                    theSimulation.arrivalRV.setRate(Number(v) / tioxTimeConv);
-                    break;
-                case 'acv':
-                    theSimulation.arrivalRV.setCV(Number(v));
-                    break;
-                case 'lt':
-                    theSimulation.leadtimeRV.setTime(Number(v) * tioxTimeConv);
-                    break;
-                case 'ltcv':
-                    theSimulation.leadtimeRV.setCV(Number(v));
-                    break;
-                case 'quan':
-                    theSimulation.quantityOrdered = Number(v);
-                    break;
-                case 'rop':
-                    theSimulation.rop = Number(v);
-                    if( inv.whichRule == 'methRop'){
-                        inv.graph.resetRopLine(Number(v));
-                        inv.graph.setupThenRedraw();
-                    }
-                    break;
-                case 'period':
-                    theSimulation.period = Number(v) * tioxTimeConv;
-                    if( inv.whichRule == 'methUpto'){
-                        inv.graph.resetPeriodLines(Number(v));
-                        inv.graph.setupThenRedraw();
-                    }
-                    break;
-                case 'upto':
-                    theSimulation.upto = Number(v);
-                    break;
-                case 'method':
-                    if( v == 'methRop'){
-                        const rop = Number(inv.usrInputs.get('rop').get());
-                        inv.graph.resetRopLine(rop);
-                    } else {
-                        const period = Number(inv.usrInputs.get('period').get());
-                        inv.graph.resetPeriodLines(period);
-                    }
-                    console.log('changing method>'+ v+"<");
-                    pickInvSimulation(v);
-                    inv.reset();
-                    break;
-                case 'speed':
-                    inv.adjustSpeed(v,speeds);
-                    break;
-                case 'action':
-                case 'reset':
-                    break;
-                default:
-                    alert(' captureChangeInSliderS reached part for default');
-                    debugger;
-                    break; 
-                    }
-        }
-
-    };
     localReset () {
-		
-//       pickInvSimulation(inv.whichRule);
         inv.itemCollection.moveDisplayAll(0); 
 
         // schedule the initial Person to arrive and start the simulation/animation.
@@ -361,34 +247,78 @@ class Inventory extends OmConcept{
         document.getElementById('serviceLevel').innerHTML = '100';
     };
     
-    
+    localUpdateFromSliders(...inpsChanged){
+        for(let inp of inpsChanged){
+            localUpdate(inp); 
+        };
+    };
 };
-
-
-//function localReset () {
-//	pickInvSimulation(inv.whichRule);
-//	inv.itemCollection.moveDisplayAll(0); 
-//	
-//	// schedule the initial Person to arrive and start the simulation/animation.
-//	theSimulation.supply.previous = null;
-//	theSimulation.creator.knockFromPrevious();
-//	
-//	//fudge to get animation started quickly
-//	let t = inv.heap.top().time - 1;
-//	inv.now = inv.frameNow = t;
-//	if (inv.whichRule == 'methUpto') {
-//		inv.heap.push({
-//			time: 0 + theSimulation.period,
-//			type: 'next order',
-//			proc: theSimulation.store.orderUpto
-//				.bind(theSimulation.store),
-//			item: null
-//		});
-//	}
-//	document.getElementById('lostSales').innerHTML = '0';
-//	document.getElementById('fillRate').innerHTML = '100';
-//	document.getElementById('serviceLevel').innerHTML = '100';
-//};
+function localUpdateFromUser(inp){
+    inv.setOrReleaseCurrentLi(inp);
+    localUpdate(inp);
+};    
+function localUpdate(inp){
+    let v = inp.get();
+    switch (inp.key){
+        case 'ar':
+            theSimulation.arrivalRV.setRate(Number(v) / tioxTimeConv);
+            break;
+        case 'acv':
+            theSimulation.arrivalRV.setCV(Number(v));
+            break;
+        case 'lt':
+            theSimulation.leadtimeRV.setTime(Number(v) * tioxTimeConv);
+            break;
+        case 'ltcv':
+            theSimulation.leadtimeRV.setCV(Number(v));
+            break;
+        case 'quan':
+            theSimulation.quantityOrdered = Number(v);
+            break;
+        case 'rop':
+            theSimulation.rop = Number(v);
+            if( inv.whichRule == 'methRop'){
+                inv.graph.resetRopLine(Number(v));
+                inv.graph.setupThenRedraw();
+            }
+            break;
+        case 'period':
+            theSimulation.period = Number(v) * tioxTimeConv;
+            if( inv.whichRule == 'methUpto'){
+                inv.graph.resetPeriodLines(Number(v));
+                inv.graph.setupThenRedraw();
+            }
+            break;
+        case 'upto':
+            theSimulation.upto = Number(v);
+            break;
+        case 'method':
+            if( v == 'methRop'){
+                const rop = Number(inv.usrInputs.get('rop').get());
+                inv.graph.resetRopLine(rop);
+            } else {
+                const period = Number(inv.usrInputs.get('period').get());
+                inv.graph.resetPeriodLines(period);
+            }
+            console.log('changing method>'+ v+"<");
+            pickInvSimulation(v);
+            inv.reset();
+            break;
+        case 'speed':
+            inv.adjustSpeed(v,speeds);
+            break;
+        case 'action':
+        case 'reset':
+        case 'leg0':
+        case 'leg1':
+        case 'leg2':
+            break;
+        default:
+            alert(' captureChangeInSliderS reached part for default');
+            debugger;
+            break; 
+    }
+};
 
 function pickInvSimulation(which) {
 	switch (which) {
@@ -410,123 +340,6 @@ const speeds = [{time:1,graph:1,anim:true},
 				{time:10,graph:2,anim:true},
 				{time:25,graph:5,anim:true},
 			   {time:1000,graph:10,anim:false}];
-
-//function invDecodeURL(str){
-//	const actionValue = {N:"none", G:"play", S:"pause"};
-//	const boolValue = {T: "true", F: "false"};
-//	const whichValue = {R: "methRop", U: "methUpto"}
-//	return( 
-//	{ar: str.substring(0,4),
-//	acv: str.substring(4,8),
-//	lt: str.substring(8,12),
-//	ltcv: str.substring(12,16),
-//	quan: str.substring(16,18),
-//	rop: str.substring(18,20),
-//	period: str.substring(20,22),
-//	upto: str.substring(22,24),
-//	 speed: str.substring(24,25),
-//	 action: actionValue[str.substring(25,26)],
-//	 which: whichValue[str.substring(26,27)],
-//	 reset: boolValue[str.substring(27,28)],
-//	 leg0:  boolValue[str.substring(28,29)],
-//	 leg1:  boolValue[str.substring(29,30)],
-//	 leg2:  boolValue[str.substring(30,31)],
-//	 desc: str.substring(31)
-//	})
-//};
-//function invEncodeURL(row){
-//	const actionValue = {none: "N", play: "G", pause: "S"};
-//	return Number(row.ar).toFixed(1).padStart(4,'0')
-//	.concat(Number(row.acv).toFixed(1).padStart(4,'0'), 
-//		Number(row.lt).toFixed(1).padStart(4,'0'),
-//		Number(row.ltcv).toFixed(1).padStart(4,'0'),
-//		row.quan.padStart(2,'0'),
-//		row.rop.padStart(2,'0'),
-//		row.period.padStart(2,'0'),
-//		row.upto.padStart(2,'0'),
-//		row.speed,
-//		actionValue[row.action],
-//		(row.which == "methRop" ? "R" : "U"),
-//		(row.reset == "true" ? "T" : "F" ),
-//		(row.leg0 == "true" ? "T" : "F"),
-//		(row.leg1 == "true" ? "T" : "F"),
-//		(row.leg2 == "true" ? "T" : "F"),	
-//		row.desc);
-//}
-
-//function captureChangeInSliderS(event) {
-//	let inputElem = event.target.closest('input');
-//	if (!inputElem) return
-//
-//	var idShort = inputElem.id.slice(0,-3);
-//	if (inputElem.type == 'range') {
-//		var v = Number(inputElem.value)
-//			.toFixed(inv.precision[idShort]);
-//		document.getElementById('disp'+inputElem.id)
-//			.innerHTML = v;
-//	}
-//	switch (idShort) {
-//		case 'ar':
-//			theSimulation.arrivalRV.setRate(Number(v) / tioxTimeConv);
-//			break;
-//		case 'acv':
-//			theSimulation.arrivalRV.setCV(Number(v));
-//			break;
-//		case 'lt':
-//			theSimulation.leadtimeRV.setTime(Number(v) * tioxTimeConv);
-//			break;
-//		case 'ltcv':
-//			theSimulation.leadtimeRV.setCV(Number(v));
-//			break;
-//		case 'quan':
-//			theSimulation.quantityOrdered = Number(v);
-//			break;
-//		case 'rop':
-//			theSimulation.rop = Number(v);
-//			if( inv.whichRule == 'methRop'){
-//				inv.graph.resetRopLine(Number(v));
-//				inv.graph.setupThenRedraw();
-//			}
-//			break;
-//		case 'period':
-//			theSimulation.period = Number(v) * tioxTimeConv;
-//			if( inv.whichRule == 'methUpto'){
-//				inv.graph.resetPeriodLines(Number(v));
-//				inv.graph.setupThenRedraw();
-//			}
-//			break;
-//		case 'upto':
-//			theSimulation.upto = Number(v);
-//			break;
-//		case 'methRop':
-//		case 'methUpto':
-//			if( inv.whichRule == idShort )break
-//			inv.whichRule = idShort;
-//			if( inv.whichRule == 'methRop'){
-//				const rop = document.getElementById('ropinv');
-//				inv.graph.resetRopLine(Number(rop.value));
-//			} else {
-//				const period = document.getElementById('periodinv');
-//				inv.graph.resetPeriodLines(Number(period.value));
-//			}
-//			pickInvSimulation(inv.whichRule);
-//			inv.reset();
-//			
-//			break;
-//		case 'speed':
-//			inv.adjustSpeed(v,speeds);
-//			break;
-//		case 'none':
-//		case 'pause':
-//		case 'play':
-//		case 'reset':
-//			break;
-//		default:
-//			alert(' captureChangeInSliderS reached part for default');
-//			debugger;
-//			break;
-//	}
-//}
 
 
 //  One variable for each process step or queue
@@ -612,8 +425,6 @@ const animForWalkOffStage = {
 	}
 };
 
-//var theProcessCollection = new ProcessCollection();
-
 const theSimulation = {
 	arrivalRV: null,
 	serviceRV: null,
@@ -645,17 +456,17 @@ const theSimulation = {
 		let ltcv = Number(document.getElementById('ltcvinv').value);
 		theSimulation.leadtimeRV = new GammaRV(1 / (lt * tioxTimeConv), ltcv);
 		
-		inv.graph = new InvGraph(inv);
+		inv.graph = new InvGraph();
 		inv.resetCollection.push(inv.graph);
 		
 		theSimulation.quantityOrdered = Number(
-			document.getElementById('quaninv').value);
+			inv.usrInputs.get('quan').get());
 		theSimulation.rop = Number(
-			document.getElementById('ropinv').value);
+			inv.usrInputs.get('rop').get());
 		theSimulation.period = Number(
-			document.getElementById('periodinv').value) * tioxTimeConv;
+			inv.usrInputs.get('period').get()) * tioxTimeConv;
 		theSimulation.upto = Number(
-			document.getElementById('uptoinv').value);
+			inv.usrInputs.get('upto').get());
 
 		//queues
 		this.supply = new Supplier(anim.person.path.left,
@@ -1039,8 +850,10 @@ export class Person extends Item {
 
 
 
-function invHTML(usrInputs){	
-	addDiv('inv','inv','whole')
+function invHTML(){	
+    let usrInputs = new Map();
+    
+    addDiv('inv','inv','whole')
 	addDiv('inv', 'leftHandSideBox'+'inv',
 			   'stageWrapper', 'statsWrapper',
 			   'chartWrapper');
@@ -1067,15 +880,12 @@ function invHTML(usrInputs){
 	d3.append('Service Level: ',s3,'%');
 	d.append(d1,d2,d3);
 	
-	 
-	
-	
-	
 	//method radio boxes at top of rhs
 	const e1 = document.createElement('label');
 	e1.append('Rule for Orders:');
-	const e2 = genRadio('methodinv','Reorder Point','methRopinv','methRop',true);
-	const e3 = genRadio('methodinv','Order up to','methUptoinv','methUpto',false);
+	const e2 = genRadio('methodinv','Reorder Point',
+                        'methRopinv','methRop',true);
+	const e3 = genRadio('methodinv','Order up to', 'methUptoinv','methUpto',false);
 	
 	const ewhich = document.createElement('div');
 	ewhich.className = 'ropupto rowAroundCenter';
@@ -1085,53 +895,91 @@ function invHTML(usrInputs){
 	let elem = document.getElementById('slidersWrapperinv');
 	elem.parentNode.prepend(ewhich);
 	
+    //radio buttons have to be in document before running this!!
+    usrInputs.set('method', new RadioButton('method', 'methodinv', 
+                localUpdateFromUser, ['methRop','methUpto']) );
+    
 	//now put in the sliders with the play/reset box	
-	const rop1 = usrInputs.get('quan')
-            .htmlNumSlider('Order Quantity = ', 24, [10,20,30,40,50]);
-	rop1.id = 'rop1';
-	const rop2 = usrInputs.get('rop')
-            .htmlNumSlider('Reorder Point = ', 10, [5,25,45,65,85])
-	rop2.id = 'rop2';
-	const upto1 = usrInputs.get('period')
-            .htmlNumSlider('Period = ', 3, [2,5,8]);
-	upto1.id = 'upto1';
-	const upto2 = usrInputs.get('upto')
-            .htmlNumSlider('Up to Quantity = ', 36, [10,30,50,70,90]);
-	upto2.id = 'upto2';
-	
-	
-	elem.append(
-		usrInputs.get('ar')
-            .htmlNumSlider('Arrival Rate = ', 5, [1,3,5,7,9]),
-		usrInputs.get('acv')
-            .htmlNumSlider('Arrival CV = ', 0, ['0.0','1.0','2.0']),
-		usrInputs.get('lt')
-            .htmlNumSlider('Lead Time = ',3,[2,5,8] ), 
-		usrInputs.get('ltcv')
-            .htmlNumSlider('Lead Time CV = ', 0, ['0.0','1.0','2.0']),
-		rop1, rop2,
-		hideNode(upto1), hideNode(upto2),
-		genPlayResetBox('inv'),
-		usrInputs.get('speed')
-            .htmlArbSlider('Speed = ', 0,
-                            ["slow",' ',' ',' ',"fast",'∞'])
-	);
-	
+	const arInput = genRange('arinv', '5', 1, 9, 1);
+    elem.append(htmlNumSlider(arInput, 'Arrival Rate = ',
+                              '5', [1,3,5,7,9]) );
+    usrInputs.set('ar', new NumSlider('ar',arInput,
+                localUpdateFromUser, 0,2,1) );
+    
+    const acvInput = genRange('acvinv', '0.0', 0, 2, .5);
+    elem.append(htmlNumSlider(acvInput, 'Arrival CV = ',
+                              '0.0', ['0.0','1.0','2.0']) );
+    usrInputs.set('acv', new NumSlider('acv', acvInput,
+                localUpdateFromUser, 1,2,10) );
+    
+    const ltInput = genRange('ltinv', '5', 2, 8, 1);
+    elem.append(htmlNumSlider(ltInput, 'Lead Time = ',
+                              '5', [2,5,8]) );
+    usrInputs.set('lt', new NumSlider('lt',ltInput,
+                localUpdateFromUser, 0,1,1) );
+    
+    const ltcvInput = genRange('ltcvinv', '0.0', 0, 2, .5);
+    elem.append(htmlNumSlider(ltcvInput, 'Lead Time CV = ',
+                              '0.0', ['0.0','1.0','2.0']) );
+    usrInputs.set('ltcv', new NumSlider('ltcv', ltcvInput,
+                localUpdateFromUser, 1,2,10) );
+    
+    const quanInput = genRange('quaninv', 24, 10,50,1);
+    const rop1 = htmlNumSlider(quanInput, 'Order Quantity = ',
+                             24, [10,20,30,40,50]);
+    rop1.id = 'rop1';
+    usrInputs.set('quan', new NumSlider('quan', quanInput,
+               localUpdateFromUser, 0,2,1));
+    
+    const ropInput = genRange('ropinv', 10, 5, 85, 1);
+    const rop2 = htmlNumSlider(ropInput, 'Reorder Point = ',
+                             10, [5,25,45,65,85]);
+    rop2.id ='rop2';
+    usrInputs.set('rop', new NumSlider('rop', ropInput,
+                localUpdateFromUser, 0,2,1));
+    
+    const periodInput = genRange('periodinv', 3, 2, 8, 1);
+    const upto1 = htmlNumSlider(periodInput, 'Period = ',
+                             3, [2,5,8]);
+    upto1.id = 'upto1';
+    usrInputs.set('period', new NumSlider('period', periodInput,
+                localUpdateFromUser, 0,1,1));
+    
+    
+    const uptoInput = genRange('uptoinv', 36, 10, 90, 1);
+    const upto2 = htmlNumSlider(uptoInput, 'Up to Quantity = ',
+                             36, [10,30,50,70,90]);
+    upto2.id = 'upto2';
+    usrInputs.set('upto', new NumSlider('upto', uptoInput,
+                localUpdateFromUser, 0,2,1));
+    elem.append(rop1,rop2,hideNode(upto1),hideNode(upto2));
+    
+    elem.append( genPlayResetBox('inv') );
+    usrInputs.set('reset', new CheckBox('reset', 'resetinv',
+                localUpdateFromUser) );
+    usrInputs.set('action', new RadioButton('action', 'actioninv', 
+                localUpdateFromUser, ['none','play','pause']) );
+    
+    
+	const speedInput = genRange('speedinv',0,0,5,1);
+    elem.append(htmlArbSlider(speedInput, 'Speed = ', '1x',
+                            ["slow",' ',' ',' ',"fast",'∞']) );
+    usrInputs.set('speed', new ArbSlider('speed', speedInput, 
+                localUpdateFromUser, ["1x",'2x','5x','10x',"25x",'∞'],
+				                [1,2,5,10,25,1000]) );  
 	
 	const f = document.getElementById('scenariosMidinv');
 	f.style = "min-height: 17vw";
+    
+    return usrInputs;
 };
 
 export function invStart() {
-	let usrInputs = invDefineUsrInputs();
-    invHTML(usrInputs);
+//	let usrInputs = invDefineUsrInputs();
+    let usrInputs = invHTML();
     inv = new Inventory(usrInputs);
     invDefine();
     theSimulation.initialize();
-    for( let [key, inp] of inv.usrInputs ){
-        inp.userUpdate();
-    };
-    //computeStageTimes();
-	inv.reset();
+    inv.reset();
 	return inv;
 };

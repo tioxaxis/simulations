@@ -86,9 +86,7 @@ export class OmConcept {
 		this.toastMode = false,
 		this.fromURL = false;
 
-//		this.saveState = null,
-
-		this.now = 0;
+        this.now = 0;
 		this.frameNow = 0;
 		this.heap = new Heap((x, y) => x.time < y.time);
 
@@ -129,12 +127,7 @@ export class OmConcept {
 		// click on scenario name
 		this.ulPointer.addEventListener('click', this.liClicked.bind(this));
 		this.ulPointer.addEventListener('dblclick', this.liDblClicked.bind(this));
-		
-		//adjust slider
-//		document.getElementById('slidersWrapper'+this.key)
-//			.addEventListener('input', this.captureChangeInSliderG.bind(this));
-//		this.inputEvent = new Event('input', {bubbles: true});
-	}
+    }
 	
 	anyClick (event){
 		if ( this.toastMode ) this.removeToastMessage();
@@ -157,30 +150,6 @@ export class OmConcept {
         this.resetCollection.forEach(obj => obj.reset());
 		this.localReset();
 	};
-    captureUserUpdate(){
-        const e = event.target.closest('input');
-        if (!e) return;
-        const key = (e.type == 'radio' ? e.name : e.id);
-        const keyShort = key.slice(0,-3);
-        const inp = this.usrInputs.get(keyShort);
-        inp.userUpdate();
-        if( this.editMode ){
-            if( this.currentLi ){
-                this.currentLi.scenario[keyShort] = inp.get();
-                this.saveEdit();
-            }
-        } else {
-            if (this.currentLi) 
-                this.currentLi.classList.remove("selected");
-            this.currentLi = null;
-        }
-        let changed = {};
-        changed[keyShort] = true;
-        console.log(' in capture user update key=',keyShort);
-        this.localUpdate(changed);
-        
-    };
-    
     
     localReset(){
         alert(' this routine should be ovewritten, right?');
@@ -313,7 +282,7 @@ export class OmConcept {
             else if (row.action == 'pause')
                 document.getElementById('pauseButton'+this.key).click();
         }
-       this.localUpdate(...inpsChanged);
+       this.localUpdateFromSliders(...inpsChanged);
     };
     
     getSliders () {
@@ -346,102 +315,6 @@ export class OmConcept {
         row.desc = str.slice(p);
         return row;
     };
-
-//	 captureChangeInSliderG(event) {
-//			let inputElem = event.target.closest('input');
-//			if (!inputElem) return
-//			if (event.isTrusted && this.editMode && this.currentLi) {
-//				let iShort = event.target.id.slice(0,-3);
-//				let v = inputElem.value;
-//				let t = inputElem.type;
-//				let nShort = inputElem.name.slice(0,-3);
-//				let scen = this.currentLi.scenario;
-//				// pull value into 'scen' or currentLi based on type of input
-//				switch (t) {
-//					case 'range':
-//						scen[iShort] = v;
-//						break;
-//					case 'checkbox':
-//						scen[iShort] = inputElem.checked.toString();
-//						break;
-//					case 'radio':
-//						scen[nShort] = iShort;
-//						break;
-//					default:
-//				}
-//				this.saveEdit();
-//			} else {
-//				// changing a slider in non edit mode just deselects currentLi row.
-//				if (this.currentLi) this.currentLi.classList.remove("selected");
-//				this.currentLi = null;
-//			};
-//		};
-	
-//	setSlidersFrom (row) {
-//		for (let key in this.sliderTypes) {
-//			let t = this.sliderTypes[key];
-//			let inputBox = document.getElementById(key+this.key);
-//			let v = row[key];
-//			switch (t){
-//				case 'range':
-//					inputBox.value = v;
-//					break;
-//				case 'checkbox':
-//					inputBox.checked = (v == 'true');
-//					break;
-//				case 'radio':
-//					inputBox = document.getElementById(v+this.key);
-//					let theNodeList = document.getElementsByName(key+this.key);
-//					let j = findId(theNodeList, v+this.key);
-//					if (j < 0) {
-//						alert("can't find the doc elem with name", key, " and value ", v);
-//						debugger;
-//					}
-//					theNodeList[j].checked = true;
-//					break;
-//				case 'legend':
-//					this.graph.setVisible(key.slice(3), v == 'true');
-//					break;
-//			}
-//			inputBox.dispatchEvent(this.inputEvent);
-//		}
-//		// not in edit mode then may cause a reset, a play, or a pause.
-//		if (!this.editMode) {
-//			if (row.reset == 'true')
-//				document.getElementById('resetButton'+this.key).click();
-//			if (row.action == 'play')
-//				document.getElementById('playButton'+this.key).click();
-//			else if (row.action == 'pause')
-//				document.getElementById('pauseButton'+this.key).click();
-//		}
-//	};
-
-//	getSliders () {
-//		let row = {};
-//		for (let key in this.sliderTypes) {
-//			let inputElem = document.getElementById(key+this.key);
-//			let t = this.sliderTypes[key];
-//			switch (t) {
-//				case 'range':
-//					row[key] = inputElem.value
-//					break;
-//				case 'checkbox':
-//					row[key] = inputElem.checked.toString();
-//					break;
-//				case 'radio':
-//					let theNodeList = document.getElementsByName(key+this.key);
-//					row[key] = theNodeList[getChecked(theNodeList)].value;
-//					break;
-//				case 'legend':
-//					const k = key.slice(3);
-//					row[key] = this.graph.lineInfo[k].visible.toString();
-//					break;
-//					
-//				default:
-//			}
-//		}
-//		return row;
-//	};
 	
 	createLineFromRow(row) {
 		const liElem = document.createElement("LI");
@@ -449,6 +322,19 @@ export class OmConcept {
 		liElem.scenario = row;
 		return liElem;
 	}
+    
+    setOrReleaseCurrentLi(inp){
+        if( this.editMode ){
+            if( this.currentLi ){
+                this.currentLi.scenario[inp.key] = inp.get();
+                this.saveEdit();
+            }
+        } else {
+            if (this.currentLi) 
+                this.currentLi.classList.remove("selected");
+            this.currentLi = null;
+        }
+    }
 
 	nextLi() {
 		let cur = this.currentLi;

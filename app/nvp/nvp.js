@@ -33,39 +33,45 @@ import {
 }
 from "../mod/stepitem.js";
 import {
-	TioxGraph
+	TioxGraph, GraphLine
 }
 from "../mod/graph.js";
 import {
-	genPlayResetBox, genSlider, genArbSlider, genButton, addDiv,
+	genPlayResetBox, genArbSlider, genButton, addDiv,
       NumSlider, htmlNumSlider,
     ArbSlider, htmlArbSlider,
     genRange, 
-    genCheckBox, htmlCheckBox, CheckBox, 
+     htmlCheckBox, CheckBox, 
     htmlRadioButton, RadioButton, 
     IntegerInput, 
     addKeyForIds, 
-    LegendItem, LegendDomElem
+    LegendItem
 }
 from '../mod/genHTML.js';
 
 class NVGraph extends TioxGraph {
-	constructor(omConcept){
+	constructor(){
 		
-		super(omConcept,'chartCanvasnvp',40, {width:12, step:3}, d=>d.t);
+		super(nvp,'chartCanvasnvp',40, {width:12, step:3}, d=>d.t);
 		this.totalCost = 0;
 		this.setTitle('$ of cost per day');
 		
-		this.setupLine(0, d => d.u, cbColors.red,
-					   false, true, false, 5, 16);
-//		this.setLegend(0, 'underage cost');
-		this.setupLine(1, d => d.o, cbColors.yellow,
-					   false, true, false, 5, 16);
-//		this.setLegend(1,'overage cost');
-		this.setupLine(2, d => d.a, cbColors.blue,
-					   false, true, true, 8, 0);
-//		this.setLegend(2,'average cost');
+		const under = new GraphLine(this, d => d.u, cbColors.red,
+					   false, true,  5, 16);
+		const over = new GraphLine(this, d => d.o, cbColors.yellow,
+					   false, true,  5, 16);
+		const average = new GraphLine(this, d => d.a, cbColors.blue,
+					   false, true,  8, 0);
         this.avgCost = new Average();
+        
+        const d4 = document.getElementById('chartLegendnvp');
+        d4.append(under.createLegend('underage cost'),
+                  over.createLegend('overage cost'),
+                  average.createLegend('average cost')
+                  );
+        nvp.usrInputs.set('leg0', new LegendItem('leg0', under, localUpdateFromUser));
+        nvp.usrInputs.set('leg1', new LegendItem('leg1', over, localUpdateFromUser));
+        nvp.usrInputs.set('leg2', new LegendItem('leg2', average, localUpdateFromUser));
 	};
 	
 	push (n, under, over){
@@ -140,31 +146,6 @@ anim.person.path = {
 }
 anim.person.path.mid = (anim.person.path.top + anim.person.path.bot) / 2;
 
-//function nvpDefineUsrInputs(){
-//    let usrInputs = new Map();
-//    usrInputs.set('dr', new NumSlider('drnvp',
-//                null, 1,10,50,1,2,1) );
-//    usrInputs.set('dcv', new NumSlider('dcvnvp',
-//                null, 1,0,1,.1,2,10) );
-//    usrInputs.set('Cu', new NumSlider('Cunvp',
-//                null, 1,0,10,1,2,1) );
-//    usrInputs.set('Co', new NumSlider('Convp',
-//                null, 1,0,10,1,2,1) );
-//    usrInputs.set('quan', new NumSlider('quannvp',null,1,10,50,1,2,1));
-//    usrInputs.set('leg0', new LegendItem('leg0nvp'));
-//    usrInputs.set('leg1', new LegendItem('leg1nvp'));
-//    usrInputs.set('leg2', new LegendItem('leg2nvp'));
-//    
-//    usrInputs.set('speed', new ArbSlider('speednvp',
-//                null, ['1x','2x','5x','10x','25x','∞'],
-//				                [1,2,5,10,25,1000]) );
-//    usrInputs.set('action', new RadioButton('actionnvp',
-//                null, ['none','play','pause']) );
-//    usrInputs.set('reset', new CheckBox('resetnvp',
-//                null) );
-//    return usrInputs;
-//};
-
 function nvpDefine(){
 	
 	document.getElementById('nvp').omConcept = nvp;
@@ -238,80 +219,69 @@ class NewsVendor extends OmConcept{
 		lastRound = 0;
 
     };
-    localUpdate = localUpdate;
-};
-    
-
-function localUpdate(...inpsChanged){
-        
+    localUpdateFromSliders(...inpsChanged){
         for(let inp of inpsChanged){
-            let v = inp.get();
-            switch (inp.key){
-                case 'dr':
-                 theSimulation.demandRV
-                    .setMean(Number(v));
-                 setExpected(theSimulation.quantityOrdered,
-                    theSimulation.demandRV.mean,
-                    theSimulation.demandRV.variance);
-			     break;
-
-                case 'dcv':
-                    theSimulation.demandRV.setVariance(Number(v));
-                    setExpected(theSimulation.quantityOrdered,
-                        theSimulation.demandRV.mean,
-                        theSimulation.demandRV.variance);
-                    break;
-
-                case 'Cu':
-                    theSimulation.Cu = Number(v);
-                    setDesired(theSimulation.Cu, theSimulation.Co);
-                    break;
-
-                case 'Co':
-                    theSimulation.Co = Number(v);
-                    setDesired(theSimulation.Cu, theSimulation.Co);
-                    break;
-
-                case 'quan':
-                    theSimulation.quantityOrdered = Number(v);
-                    setExpected(theSimulation.quantityOrdered,
-                        theSimulation.demandRV.mean,
-                        theSimulation.demandRV.variance);
-                    break;
-               
-
-                case 'speed':
-                    nvp.adjustSpeed(v,speeds);
-                    break;
-                case 'action':
-                case 'reset':
-                    break;
-                    
-                case 'leg0':
-                    nvp.graph.lineInfo[0].visible = (v == "true");
-                    nvp.graph.setupThenRedraw();
-                    break;
-                case 'leg1':
-                    nvp.graph.lineInfo[1].visible = (v == "true");
-                    nvp.graph.setupThenRedraw();
-                    break;
-                case 'leg2':
-                    nvp.graph.lineInfo[2].visible = (v == "true");
-                    nvp.graph.setupThenRedraw();
-                    break;
-                default:
-                    alert(' reached part for default id=',key);
-                    debugger;
-                    break;
-            }
+            localUpdate(inp); 
         };
-
-    
-    
+    };
 };
+function localUpdateFromUser(inp){
+    nvp.setOrReleaseCurrentLi(inp);
+    localUpdate(inp);
+};
+        
+        
+ function localUpdate(inp){
+    let v = inp.get();
+    switch (inp.key){
+        case 'dr':
+         theSimulation.demandRV
+            .setMean(Number(v));
+         setExpected(theSimulation.quantityOrdered,
+            theSimulation.demandRV.mean,
+            theSimulation.demandRV.variance);
+         break;
+
+        case 'dcv':
+            theSimulation.demandRV.setVariance(Number(v));
+            setExpected(theSimulation.quantityOrdered,
+                theSimulation.demandRV.mean,
+                theSimulation.demandRV.variance);
+            break;
+
+        case 'Cu':
+            theSimulation.Cu = Number(v);
+            setDesired(theSimulation.Cu, theSimulation.Co);
+            break;
+
+        case 'Co':
+            theSimulation.Co = Number(v);
+            setDesired(theSimulation.Cu, theSimulation.Co);
+            break;
+
+        case 'quan':
+            theSimulation.quantityOrdered = Number(v);
+            setExpected(theSimulation.quantityOrdered,
+                theSimulation.demandRV.mean,
+                theSimulation.demandRV.variance);
+            break;
 
 
-
+        case 'speed':
+            nvp.adjustSpeed(v,speeds);
+            break;
+        case 'action':
+        case 'reset':
+        case 'leg0':
+        case 'leg1':
+        case 'leg2':
+            break;
+        default:
+            alert(' reached part for default id=',key);
+            debugger;
+            break;
+    }
+};
 
 function setDesired(under, over) {
 	document.getElementById('desiredPercnvp')
@@ -450,7 +420,7 @@ const theSimulation = {
 		theSimulation.quantityOrdered = 
             nvp.usrInputs.get('quan').get();
 
-		nvp.graph = new NVGraph(nvp);
+		nvp.graph = new NVGraph();
 		
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
@@ -608,20 +578,7 @@ function nvpHTML(){
 	d3.append('Actual: ',s3,'%');
 	d.append(d1,d2,d3);
     
-    //add legend for the chart
-    
-    const leg0Input = new LegendDomElem('leg0nvp', false, cbColors.red);
-    const leg1Input = new LegendDomElem('leg1nvp', false, cbColors.yellow);
-    const leg2Input = new LegendDomElem('leg2nvp', false, cbColors.blue);
-    const d4 = document.getElementById('chartLegendnvp');
-    d4.append(leg0Input.createHTML('underage cost'),
-              leg1Input.createHTML('overage cost'),
-              leg2Input.createHTML('average cost')
-              );
-    usrInputs.set('leg0', new LegendItem('leg0', leg0Input, localUpdate));
-    usrInputs.set('leg1', new LegendItem('leg1', leg1Input, localUpdate));
-    usrInputs.set('leg2', new LegendItem('leg2', leg2Input, localUpdate));
-	
+    	
 	const empty = document.createElement('div');
 	empty.className = "sliderBox"
 	 
@@ -631,24 +588,24 @@ function nvpHTML(){
     const drInput = genRange('drnvp', '5.0', 10, 50, 1);
     elem.append(htmlNumSlider(drInput, 'Demand Rate = ', '20', [10,20,30,40,50]) );
     usrInputs.set('dr', new NumSlider('dr',drInput,
-                localUpdate, 1,2,1) );
+                localUpdateFromUser, 1,2,1) );
     
     const dcvInput = genRange('dcvnvp', '0.0', 0, 2, .5);
     elem.append(htmlNumSlider(dcvInput, 'Demand Variability = ', '0.0',['0.0','1.0','2.0']) );
     usrInputs.set('dcv', new NumSlider('dcv', dcvInput,
-                localUpdate, 1,2,10) );
+                localUpdateFromUser, 1,2,10) );
     
 	const cuInput = genRange('cunvp', '8', 0, 10, 1);
     elem.append( htmlNumSlider(cuInput, 'Underage Cost = ', '8', [0,2,4,6,8,10] )); 
-	usrInputs.set('Cu', new NumSlider('Cu',cuInput, localUpdate, 0, 2, 1));
+	usrInputs.set('Cu', new NumSlider('Cu',cuInput, localUpdateFromUser, 0, 2, 1));
     
     const coInput = genRange('convp', '1', 0, 10, 1);
     elem.append( htmlNumSlider(coInput, 'Overage Cost = ', '1', [0,2,4,6,8,10] )); 
-	usrInputs.set('Co', new NumSlider('Co',coInput, localUpdate, 0, 2, 1));
+	usrInputs.set('Co', new NumSlider('Co',coInput, localUpdateFromUser, 0, 2, 1));
     
 	const quanInput = genRange('quannvp', '20', 10, 50, 1);
     elem.append( htmlNumSlider(quanInput, 'Order Quantity = ', '20', [10,20,30,40,50] )); 
-	usrInputs.set('quan', new NumSlider('quan',quanInput, localUpdate, 0, 2, 1));
+	usrInputs.set('quan', new NumSlider('quan',quanInput, localUpdateFromUser, 0, 2, 1));
     
 	elem.append(empty, genPlayResetBox('nvp'));
     
@@ -656,7 +613,7 @@ function nvpHTML(){
     elem.append(htmlArbSlider(speedInput, 'Speed = ', '1x',
                             ["slow",' ',' ',' ',"fast",'∞']) );
     usrInputs.set('speed', new ArbSlider('speed', speedInput, 
-                localUpdate, ["1x",'2x','5x','10x',"25x",'∞'],
+                localUpdateFromUser, ["1x",'2x','5x','10x',"25x",'∞'],
 				                [1,2,5,10,25,1000]) );
     
     	

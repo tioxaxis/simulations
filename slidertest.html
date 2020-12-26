@@ -31,7 +31,7 @@
     import {
          genRange,  htmlNumSlider, NumSlider,
                     htmlArbSlider, ArbSlider,
-        genCheckBox, htmlCheckBox, CheckBox,
+         htmlCheckBox, CheckBox,
         genRadio , htmlRadioButton, RadioButton ,
         IntegerInput, 
         LegendItem
@@ -96,11 +96,11 @@
         console.log('reached local rountine with key=>'+key+'<=')
     }
     
-    let cbInput = genCheckBox('cbid');
-    let cbElem = htmlCheckBox(cbInput,'here is a checkbox');
-    let cb = new CheckBox('cb', cbInput, localRoutine );
-    place.append(cbElem);
-    console.log(' cb=', cb.get() );
+//    let cbInput = genCheckBox('cbid');
+//    let cbElem = htmlCheckBox(cbInput,'here is a checkbox');
+//    let cb = new CheckBox('cb', cbInput, localRoutine );
+//    place.append(cbElem);
+//    console.log(' cb=', cb.get() );
     
     
     
@@ -126,118 +126,9 @@
     
 //    place.addEventListener('input', captureUserUpdate);
     
-    function captureUserUpdate(){
-        let inputElem = event.target.closest('input');
-        if (!inputElem) return;
-        let id = event.target.id;
-        let v = inputElem.value;
-        let t = inputElem.type;
-        let name = inputElem.name;
-        console.log('clicked on id=',id,'name=',name,'value=',v);
-        spRoutines
-        switch (t){
-            case 'range':
-            case  'checkbox':
-                spRoutines[id].userUpdate();
-                break;
-            case 'radio':
-                spRoutines[name].userUpdate();
-                break;
-        }
-    
-        };
     
     
     
-    class LegendDomElem{
-        constructor(id, isAnAverage, color){
-            this.id = id;
-            this.visible = true;
-            this.elem = null;
-            this.isAnAverage = isAnAverage;
-            this.color = color;
-            this.name = document.createElement('span');
-            // text filled in with next routine.
-        };
-        createHTML(nametext){
-            const rB = document.createElement('i');
-            rB.classList.add('material-icons');
-            rB.classList.add('actButton');
-            rB.classList.add('font15vw');
-            rB.title = 'reset the average';
-            rB.innerHTML = 'replay';
-            const dot = document.createElement('span');
-            dot.innerHTML = '&#11044;&nbsp;'
-            dot.style = 'color:'+this.color;
-            
-            this.name.innerHTML = nametext;
-            
-            this.elem = document.getElementById(this.id);
-            if( !this.elem ){
-                this.elem = document.createElement('div');
-                this.elem.id = this.id;   
-            }
-            
-            
-            
-            this.elem.append((this.isAnAverage ? rB : ''),dot, this.name);
-            
-            rB.addEventListener('click',this.resetAverage.bind(this));
-            return this.elem;
-        };
-        setVisibility(b){
-            this.visible = b;
-            if( this.visible )
-                this.name.classList.remove('crossOut');
-            else
-              this.name.classList.add('crossOut');  
-        };
-//        makeVisible(){
-//            this.visible = true;
-//            this.name.classList.remove('crossOut');
-//        };
-//        makeInvisible(){
-//            this.visible = false;
-//            this.name.classList.add('crossOut');
-//        };
-        toggleVisible(){
-            if( this.visible ){
-                this.name.classList.add('crossOut');
-                this.visible = false;
-            } else {
-                this.name.classList.remove('crossOut');
-                this.visible = true;
-            }
-            console.log('Visible',this.visible);
-        };
-        resetAverage(){
-            console.log('clicked on the reset average button');
-        }
-        
-        
-            
-    };
-    
-    const testL = new LegendDomElem('test', true, 'green');
-    const test2 = new LegendDomElem('test2',false, 'blue');
-    let x = document.getElementById('test2');
-    
-    
-    place.append(testL.createHTML('Average Cost'),test2.createHTML('2nd Legend'));
-    
-    
-    let testLobj = new LegendItem(testL,localRoutine);
-    let test2obj = new LegendItem(test2,localRoutine);
-    
-    console.log('legend 1 ',testLobj.get()+'>'+testLobj.encode(testLobj.get())+'<');
-    testL.setVisibility(false);
-    console.log('legend 1 ',testLobj.get()+'>'+testLobj.encode(testLobj.get())+'<');
-    testL.setVisibility(true);
-    console.log('legend 1 ',testLobj.get()+'>'+testLobj.encode(testLobj.get())+'<');
-    testLobj.set('false');
-    console.log('legend 1 ',testLobj.get()+'>'+testLobj.encode(testLobj.get())+'<');
-    testLobj.set('true');
-    console.log('legend 1 ',testLobj.get()+'>'+testLobj.encode(testLobj.get())+'<');
     
     
     

@@ -56,7 +56,7 @@ export class TioxGraph {
 		this.extraLine = {width: 15, origWidth: 15};
 		this.xWidthStep = xWidthStep;
 		this.xAccess= xAccess;
-		this.lineInfo = [];
+		this.lines = [];
         this.hasRight = hasRight;
 		
 		this.outer= {width: this.ch.width, height: this.ch.height}
@@ -133,8 +133,8 @@ export class TioxGraph {
 					  step: this.tableRight[0].step};
 		this.updateYaxis(yMax)
         if( yMaxRight ) this.updateYaxisRight(yMaxRight);
-		for( let info of this.lineInfo ){
-			info.last ={x:null, y: null}
+		for( let line of this.lines ){
+			line.last ={x:null, y: null}
 		}
 		this.setupThenRedraw();
 	};
@@ -142,69 +142,6 @@ export class TioxGraph {
 		document.getElementById('chartTitle' + this.omConcept.key).innerHTML = title;
 	};
 	
-	//Legend routines
-//	setLegendText(elem,info) {
-//		const resetButton = (info.isAnAverage ? 
-//        '<i class="material-icons actButton font15vw"'+
-//        ' id="avgGraphButton" title ="reset the average">replay</i>' : '');
-//              
-//        elem.innerHTML = resetButton +  "<span style='color:" +
-//		info.color + "'>&#11044;&nbsp;</span><span " +
-//		(elem.visible ? 
-//		 ">" : "style= 'text-decoration: line-through;' >") +
-//		info.name + "</span>&emsp; &emsp;"
-//        if( info.isAnAverage ) document.getElementById('avgGraphButton').addEventListener('click',()=> this.averageWait = new Average());
-//	};
-//	
-	setLegend(k){
-		let id =  'leg' + k + this.omConcept.key;
-		let elem = document.getElementById(id);
-//		if (!elem){
-//			elem = document.createElement('div');
-//			elem.className = 'legitem';
-//			elem.id = id;
-//			document.getElementById('chartLegend'+this.omConcept.key)
-//			.appendChild(elem);
-//		}
-		let info = this.lineInfo[k]
-		elem.visible = info.visible;
-//		this.setLegendText(elem,info);
-//		elem.addEventListener('click',this.toggleLegend.bind(this));
-	};
-	
-//	toggleLegend(event){
-//		let elem = event.target.closest('div.legitem');
-//		if (!elem) return
-//		let k = Number(/[0-9]+/.exec(elem.id)[0]);
-//		let info = this.lineInfo[k];
-//		elem.visible = !elem.visible;
-//        info.visible = elem.visible;
-//        const li = this.omConcept.currentLi;
-//        
-//        if (this.omConcept.editMode){
-//            if( li ) {
-//                li.scenario['leg'+k] = elem.visible.toString();
-//                this.omConcept.saveEdit();
-//            }
-//        }  else {
-//            if ( li ) 
-//                li.classList.remove("selected");
-//            this.omConcept.currentLi = null;
-//        }
-//        this.setLegendText(elem,info);
-//		this.setupThenRedraw();
-//	};
-	// if user does it then toggle event should handle the display and redraw
-    // if scenario switch does it then this routine should handle display and redraw
-	setVisible(k,elem,b){
-//		const elem = document.getElementById(id);
-//        if( (b == 'true') == elem.visible ) return;
-//		elem.visible = b == 'true';
-//		const elem = document.getElementById('leg'+k+this.omConcept.key)
-//        this.lineInfo[k].visible = b == 'true';
-//		this.setLegendText(elem,this.lineInfo[k]);
-//		this.setupThenRedraw();
-	}
 	
 	xScale (x){
 		return ( (x-this.xInfo.min) / (this.xInfo.max - this.xInfo.min) ) 
@@ -219,9 +156,9 @@ export class TioxGraph {
 		if ( scale == this.xInfo.scale ) return false;
 		horizontalScaleAxis(scale, this.xInfo);
 		
-		for (let info of this.lineInfo ) {
-			info.dotSize = Math.ceil(info.origDotSize / scale);
-			info.lineWidth = Math.ceil(info.origLineWidth / scale);
+		for (let line of this.lines ) {
+			line.dotSize = Math.ceil(line.origDotSize / scale);
+			line.lineWidth = Math.ceil(line.origLineWidth / scale);
 		}
 		this.extraLine.width = Math.ceil(
 			this.extraLine.origWidth/scale);
@@ -346,63 +283,50 @@ export class TioxGraph {
 		this.drawExtraLines();
 		this.drawLines();
 	};
-	
-	setupLine (k, yAccess, color, vertical,
-				visible, isAnAverage, lineWidth, dotSize, right = false) {
-		this.lineInfo[k] = {
-			yAccess: yAccess, color: color,
-			vertical: vertical, visible: visible, isAnAverage: isAnAverage, 
-			lineWidth: lineWidth, origLineWidth: lineWidth,
-			dotSize: dotSize, origDotSize: dotSize,
-            right: right,
-			last: {x:null,y:null} };
-        
-	};
-	
-	drawLines () {
+    drawLines () {
 		this.ctx.save();
 		this.ctx.beginPath();
   		this.ctx.rect(this.inner.left, 0,
 						  this.inner.width, this.outer.height);
   		this.ctx.clip(); // for the first quadrant of graph.
 
-		for( let info of this.lineInfo ) {
-			if( !info.visible ) continue;
+		for( let line of this.lines ) {
+			if( !line.visible ) continue;
             let ctx = this.ctx;
-			ctx.lineWidth = info.lineWidth;
+			ctx.lineWidth = line.lineWidth;
 			ctx.strokeStyle = 
-					ctx.fillStyle = info.color;
+					ctx.fillStyle = line.color;
 			let last = {x:null, y: null};
 			ctx.beginPath();
 			
 			for (let  p of this.data ){
 				let cur = {x: this.xAccess(p),
-				        y: info.yAccess(p)};
+				        y: line.yAccess(p)};
 				if( cur.y == undefined) continue;
 
                 if( last.y == null ) {  //handles first point.
                         ctx.moveTo( 
                             this.xScale(cur.x),
-                            this.yScale(cur.y, info.right));
+                            this.yScale(cur.y, line.right));
 
                 } else {
-                    if(info.vertical) {
+                    if(line.vertical) {
                         ctx.lineTo( 
                            this.xScale(cur.x),
-                           this.yScale(last.y, info.right));
+                           this.yScale(last.y, line.right));
                     }
                     if( cur.y != null ) {
                         ctx.lineTo( 
                                 this.xScale(cur.x),
-                                this.yScale(cur.y, info.right));
+                                this.yScale(cur.y, line.right));
                         ctx.stroke();
                     }
                 }
 
-                if( cur.y != null && info.dotSize > 0) {
+                if( cur.y != null && line.dotSize > 0) {
                     ctx.beginPath();
                     ctx.arc(this.xScale(cur.x),
-                        this.yScale(cur.y, info.right), info.dotSize,
+                        this.yScale(cur.y, line.right), line.dotSize,
                             0,2*Math.PI, true);
                     ctx.fill();
                     ctx.stroke();
@@ -419,10 +343,10 @@ export class TioxGraph {
 		let y = 0;
         let yRight = 0;
 		let x = this.xAccess(p);
-		for( let info of this.lineInfo ){
-			let v = info.yAccess(p);
+		for( let line of this.lines ){
+			let v = line.yAccess(p);
 			if (v != undefined)
-                if (info.right) yRight = Math.max(yRight,v);
+                if (line.right) yRight = Math.max(yRight,v);
                 else y = Math.max(y,v);
 		}
 		let bool1 = this.shiftXaxis(x,1);
@@ -438,53 +362,110 @@ export class TioxGraph {
 		this.data.push(p);
         const ctx = this.ctx;
 //		console.log('in draw one',p);
-		for( let info of this.lineInfo ) {
-//			console.log(' in one draw color=',info.color);
-		  let cur = {x: this.xAccess(p), y: info.yAccess(p)};
-		  if( info.visible ) {
-			ctx.lineWidth = info.lineWidth;
+		for( let line of this.lines ) {
+//			console.log(' in one draw color=',line.color);
+		  let cur = {x: this.xAccess(p), y: line.yAccess(p)};
+		  if( line.visible ) {
+			ctx.lineWidth = line.lineWidth;
 			ctx.strokeStyle = 
-				ctx.fillStyle = info.color;
+				ctx.fillStyle = line.color;
 			
 			//if no data then skip it and keep last for next data point
 			if( cur.y === undefined) continue;
 			
 			//no previous point then skip drawing line
-			if( info.last.y != null ) {
+			if( line.last.y != null ) {
 				ctx.beginPath();
 
 				ctx.moveTo( 
-					this.xScale(info.last.x),
-					this.yScale(info.last.y, info.right));
+					this.xScale(line.last.x),
+					this.yScale(line.last.y, line.right));
 
-				if(info.vertical) {
+				if(line.vertical) {
 					ctx.lineTo( 
 						this.xScale(cur.x),
-						this.yScale(info.last.y, info.right));
+						this.yScale(line.last.y, line.right));
 				}
 				if( cur.y != null) {
 					ctx.lineTo( 
 						this.xScale(cur.x),
-						this.yScale(cur.y, info.right));
+						this.yScale(cur.y, line.right));
 					ctx.stroke();
 				}
 			}
 
-			if( cur.y != null && info.dotSize > 0 ) {
+			if( cur.y != null && line.dotSize > 0 ) {
 				ctx.beginPath();
 				ctx.arc(this.xScale(cur.x),
-					this.yScale(cur.y, info.right), info.dotSize,
+					this.yScale(cur.y, line.right), line.dotSize,
 					0,2*Math.PI, true);
-//				console.log('draw one',info.dotSize,
+//				console.log('draw one',line.dotSize,
 //							cur.x,cur.y,this.ctx.lineWidth);
 				ctx.fill();
 				ctx.stroke();
 			}
 		  }
-		  info.last = cur;
+		  line.last = cur;
 		  this.xInfo.lastX = cur.x;	
 		}
 	};
 	
 };
+    
+export class GraphLine{
+        
+    
+	//line constructor, knows its graph and adds obj to set. or do graph.lines.push(new Line)
+    constructor(graph, yAccess, color, vertical,
+				visible,  lineWidth, dotSize, right = false) {
+		this.graph = graph;
+        this.graph.lines.push(this);
+        this.yAccess = yAccess;
+        this.color = color;
+        this.vertical = vertical;
+        this.visible = visible;
+        this.lineWidth = lineWidth;
+        this.origLineWidth = lineWidth;
+        this.dotSize = dotSize;
+        this.origDotSize = dotSize;
+        this.right = right;
+        this.last = {x:null,y:null};
+    };
+        
+    createLegend(text){
+        const elem = document.createElement('div');
+        
+        const dot = document.createElement('span');
+        dot.innerHTML = '&emsp; &emsp; &#11044;&nbsp;'
+        dot.style = 'color:'+this.color;
+        
+        this.button = document.createElement('span');
+        this.button.innerHTML = text;
+        if( !this.visible ) 
+            this.button.classList.add('crossOut');
+        elem.append(dot, this.button);
+//        this.setVisibility(this.visible);
+        
+        this.button.addEventListener('click',this.clickResponse.bind(this));
+        return elem;
+    };
+	
+    setLegendText(text){
+        this.button.innerHTML = text;
+    };
+    
+	clickResponse(){
+        this.setVisibility(!this.visible);
+        
+    };
+    setVisibility(b){
+        this.visible = b;
+        if( this.visible )
+            this.button.classList.remove('crossOut');
+        else
+          this.button.classList.add('crossOut');
+        this.graph.setupThenRedraw();
+    };
+};
+    	
 	
