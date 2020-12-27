@@ -186,7 +186,7 @@ class NewsVendor extends OmConcept{
         this.usrInputs = usrInputs;
 //        document.getElementById('slidersWrappernvp')
 //			.addEventListener('input', this.captureUserUpdate.bind(this));
-        this.setupScenarios();    
+//        this.setupScenarios();    
     };
     localReset () {
 		
@@ -420,7 +420,7 @@ const theSimulation = {
 		theSimulation.quantityOrdered = 
             nvp.usrInputs.get('quan').get();
 
-		nvp.graph = new NVGraph();
+//		nvp.graph = new NVGraph();
 		
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
@@ -627,6 +627,8 @@ export function nvpStart() {
     let usrInputs = nvpHTML();
     nvp = new NewsVendor(usrInputs);
     nvpDefine();
+    nvp.graph = new NVGraph();
+    nvp.setupScenarios();
     theSimulation.initialize();
     nvp.reset();
 	return nvp;

@@ -62,7 +62,7 @@ class LittleGraph extends TioxGraph {
 					   false, true,  3, 10);
 		const predInv = new GraphLine(this, d => d.p, cbColors.red,
 					   true, false,  10, 0);
-		this.predictedInvValue = this.predictedInv();
+//		this.predictedInvValue = this.predictedInv();
          
         const d3 = document.getElementById('chartLegendlit');
         d3.append(avgInv.createLegend('avg. inventory'),
@@ -83,7 +83,8 @@ class LittleGraph extends TioxGraph {
 	};
 	
 	reset(){
-		super.reset(this.predictedInvValue * 1.2);
+		this.predictedInvValue = this.predictedInv();
+        super.reset(this.predictedInvValue * 1.2);
         this.averageInventory = new Average();
         this.averageRateTime = new Average();
         
@@ -181,7 +182,7 @@ class LittlesLaw extends OmConcept{
     constructor(usrInputs){
         super('lit');
         this.usrInputs = usrInputs;
-        this.setupScenarios();    
+//        this.setupScenarios();    
     }
     
     localReset () {
@@ -380,7 +381,7 @@ const theSimulation = {
 		const scv = lit.usrInputs.get('scv').get();
 		theSimulation.serviceRV = new GammaRV(1 / st / tioxTimeConv, scv);
 
-		lit.graph = new LittleGraph();
+//		lit.graph = new LittleGraph();
 		lit.resetCollection.push(lit.graph);
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
@@ -532,6 +533,8 @@ export function litStart() {
     let usrInputs = litHTML();
     lit = new LittlesLaw(usrInputs);
     litDefine();
+    lit.graph = new LittleGraph();
+    lit.setupScenarios();
     theSimulation.initialize();
 	lit.reset();
 	return lit;

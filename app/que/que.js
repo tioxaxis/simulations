@@ -60,7 +60,7 @@ class QueueGraph extends TioxGraph {
 		this.predWait = new GraphLine(this, d => d.p, cbColors.red,
 					                   true, false,  10, 0);
 //        this.lines.push(indivWait,avgWait,this.predWait);
-		this.predictedWaitValue = this.predictedWait();
+		this.predictedWaitValue = null; /*this.predictedWait();*/
         
         const leg0 = indivWait.createLegend('individual wait');
         const leg1 = avgWait.createLegend('average wait');
@@ -188,7 +188,7 @@ class Queueing extends OmConcept{
     constructor(usrInputs){
         super('que');
         this.usrInputs = usrInputs;
-        this.setupScenarios();    
+//        this.setupScenarios();    
     };
     
     localReset () {
@@ -414,7 +414,7 @@ const theSimulation = {
 		const scv = que.usrInputs.get('scv').get();
 		theSimulation.serviceRV = new GammaRV(sr / tioxTimeConv, scv);
 
-		que.graph = new QueueGraph();
+//		que.graph = new QueueGraph();
 		que.resetCollection.push(que.graph);
 		
 		//queues
@@ -558,7 +558,10 @@ export function queStart() {
 	let usrInputs= queHTML();
     que = new Queueing(usrInputs);
     queDefine();
+    que.graph = new QueueGraph();
+    que.setupScenarios();
     theSimulation.initialize();
+    
 	que.reset();
 	return que;
 };

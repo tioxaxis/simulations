@@ -276,7 +276,7 @@ class FaceGame extends OmConcept {
         this.usrInputs = usrInputs;
         document.getElementById('markButtonfac')
             .addEventListener('click', markCard);
-        this.setupScenarios();
+//        this.setupScenarios();
     };
     localReset () {
         fac.now = fac.frameNow = 0;
@@ -548,7 +548,7 @@ const theSimulation = {
 	
 	initialize: function () {
         //graphs
-        fac.graph = new FacGraph();
+//        fac.graph = new FacGraph();
 		fac.resetCollection.push(fac.graph);
 		
 		//queues
@@ -904,6 +904,8 @@ export function facStart() {
     let usrInputs = facHTML();
     fac = new FaceGame(usrInputs);
     facDefine();
+    fac.graph = new FacGraph();
+    fac.setupScenarios();
     theSimulation.initialize();
     
     computeStageTimes();

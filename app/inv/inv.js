@@ -221,7 +221,7 @@ class Inventory extends OmConcept{
     constructor(usrInputs){
         super('inv');
         this.usrInputs = usrInputs;
-        this.setupScenarios();    
+//        this.setupScenarios();    
     }
     localReset () {
         inv.itemCollection.moveDisplayAll(0); 
@@ -456,7 +456,7 @@ const theSimulation = {
 		let ltcv = Number(document.getElementById('ltcvinv').value);
 		theSimulation.leadtimeRV = new GammaRV(1 / (lt * tioxTimeConv), ltcv);
 		
-		inv.graph = new InvGraph();
+//		inv.graph = new InvGraph();
 		inv.resetCollection.push(inv.graph);
 		
 		theSimulation.quantityOrdered = Number(
@@ -912,11 +912,11 @@ function invHTML(){
     usrInputs.set('acv', new NumSlider('acv', acvInput,
                 localUpdateFromUser, 1,2,10) );
     
-    const ltInput = genRange('ltinv', '5', 2, 8, 1);
+    const ltInput = genRange('ltinv', '5', 2, 10, 1);
     elem.append(htmlNumSlider(ltInput, 'Lead Time = ',
-                              '5', [2,5,8]) );
+                              '5', [2,4,6,8,10]) );
     usrInputs.set('lt', new NumSlider('lt',ltInput,
-                localUpdateFromUser, 0,1,1) );
+                localUpdateFromUser, 0,2,1) );
     
     const ltcvInput = genRange('ltcvinv', '0.0', 0, 2, .5);
     elem.append(htmlNumSlider(ltcvInput, 'Lead Time CV = ',
@@ -979,6 +979,8 @@ export function invStart() {
     let usrInputs = invHTML();
     inv = new Inventory(usrInputs);
     invDefine();
+    inv.graph = new InvGraph();
+    inv.setupScenarios();
     theSimulation.initialize();
     inv.reset();
 	return inv;
