@@ -300,7 +300,11 @@ export class TioxGraph {
 			ctx.beginPath();
 			
 			for (let  p of this.data ){
-				let cur = {x: this.xAccess(p),
+				if( p.restart ){
+                    last.y = null;
+                    continue;
+                };
+                let cur = {x: this.xAccess(p),
 				        y: line.yAccess(p)};
 				if( cur.y == undefined) continue;
 
@@ -362,10 +366,11 @@ export class TioxGraph {
 		this.data.push(p);
         const ctx = this.ctx;
 //		console.log('in draw one',p);
-		for( let line of this.lines ) {
+		
+        for( let line of this.lines ) {
 //			console.log(' in one draw color=',line.color);
 		  let cur = {x: this.xAccess(p), y: line.yAccess(p)};
-		  if( line.visible ) {
+		  if( line.visible && !p.restart ) {
 			ctx.lineWidth = line.lineWidth;
 			ctx.strokeStyle = 
 				ctx.fillStyle = line.color;
@@ -434,6 +439,7 @@ export class GraphLine{
         
     createLegend(text){
         const elem = document.createElement('div');
+//        elem.classList.add('rowAroundCenter');
         
         const dot = document.createElement('span');
         dot.innerHTML = '&emsp; &emsp; &#11044;&nbsp;'

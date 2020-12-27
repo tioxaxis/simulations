@@ -220,8 +220,12 @@ export class NumSlider{
     };
 
     encode(x){
-       return (x * this.scale)
-           .toString().padStart(this.shortLen,'0'); 
+       const y = (x * this.scale)
+           .toString().padStart(this.shortLen,'0');
+        if( y.length > this.shortLen ){
+            alert('data from item='+this.key+'  It should be '+this.shortLen+' characters but is='+y)
+        }
+        return y;
     };
     decode(x){
         return (x / this.scale).toString();
@@ -263,6 +267,8 @@ export class ArbSlider{
         this.values = values;
         this.shortLen = 1;
         this.inputElem.addEventListener('input', this.userUpdate.bind(this));
+        if( values.length > 10 )
+            alert('ArbSlider class intialized with more than 10 values');
     };
 
     get() {
@@ -362,6 +368,8 @@ export class RadioButton{
             this.nodelist[j].addEventListener('click',
                 this.userUpdate.bind(this));
         }
+        if( values.length > 10 )
+            alert('Radio Button class intialized with more than 10 values');
     }
     get(){
 //        const nodelist = document.getElementsByName(this.name);
@@ -419,7 +427,11 @@ export class IntegerInput{
         return changed;
     };
     encode(x){
-        return x.toString().padStart(this.shortLen,'0');
+        const y = x.toString().padStart(this.shortLen,'0');
+        if( y.length > this.shortLen ){
+            alert('data from item='+this.key+' It should be '+this.shortLen+' characters but is='+y)
+        }
+        return y;
     };
     decode(x){
        return x; 

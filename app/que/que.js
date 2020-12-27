@@ -415,7 +415,7 @@ const theSimulation = {
 		theSimulation.serviceRV = new GammaRV(sr / tioxTimeConv, scv);
 
 //		que.graph = new QueueGraph();
-		que.resetCollection.push(que.graph);
+//		que.resetCollection.push(que.graph);
 		
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);

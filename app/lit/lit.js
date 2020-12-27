@@ -382,7 +382,7 @@ const theSimulation = {
 		theSimulation.serviceRV = new GammaRV(1 / st / tioxTimeConv, scv);
 
 //		lit.graph = new LittleGraph();
-		lit.resetCollection.push(lit.graph);
+//		lit.resetCollection.push(lit.graph);
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 

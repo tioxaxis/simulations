@@ -51,11 +51,11 @@ from '../mod/genHTML.js';
 
 class FacGraph extends TioxGraph {
 	constructor(){	
-		super(fac, 'chartfac', 40, {width:100, step:20}, d=>d.t, true);
+		super(fac, 'chartfac', 40, {width:200, step:40}, d=>d.t, true);
 		const flowtime = new GraphLine(this, d => d.flow, cbColors.blue,
-					   false, true,  5, 10);
+					   false, true,  3, 5);
 		const throughput = new GraphLine(this,d => d.thru, cbColors.yellow,
-					   false, true,  5, 10, true);
+					   false, true,  3, 5, true);
         this.doReset = true;
         
         document.getElementById('leftLegendfac').append(
@@ -182,11 +182,11 @@ function computeStageTimes(){
             if( stage == s ){
                 count++
                 total += time;
-                console.log(key,s, time);
+//                console.log(key,s, time);
             }
         }
         fac.stageTimes[s].setMean(total * tioxTimeConv);
-        console.log('stage',s,total);
+//        console.log('stage',s,total);
         
         // adjust the feature time by stage to remove the movetime.
         let delta =  moveTime/count;
@@ -279,7 +279,6 @@ class FaceGame extends OmConcept {
 //        this.setupScenarios();
     };
     localReset () {
-        fac.now = fac.frameNow = 0;
         theSimulation.supply.previous = null;
         theSimulation.creator.knockFromPrevious();
         this.resourceCollection.drawAll();
@@ -289,7 +288,12 @@ class FaceGame extends OmConcept {
         for(let inp of inpsChanged){
             if( needReset[inp.key] ){
                 computeStageTimes();
-                this.reset()
+                this.partialReset();
+                this.localReset();
+                fac.graph.drawOnePoint({
+                    t: fac.now / tioxTimeConv, 
+                    restart: true
+                });
                 break;
             }
         }
@@ -319,7 +323,7 @@ class FaceGame extends OmConcept {
                     break;
                     
                 case 'speed':
-                    console.log('at speed adjust',v,speeds);
+//                    console.log('at speed adjust',v,speeds);
                     fac.adjustSpeed(v,speeds);
                     break;
                 default:
@@ -337,7 +341,12 @@ function localUpdateFromUser(inp){
         fac.adjustSpeed(inp.get(),speeds);
     else if( needReset[inp.key] ){
         computeStageTimes();
-        fac.reset()
+        fac.partialReset()
+        fac.localReset()
+        fac.graph.drawOnePoint({
+                    t: fac.now / tioxTimeConv, 
+                    restart: true
+                });
     }
 }; 
 
@@ -549,7 +558,7 @@ const theSimulation = {
 	initialize: function () {
         //graphs
 //        fac.graph = new FacGraph();
-		fac.resetCollection.push(fac.graph);
+//		fac.resetCollection.push(fac.graph);
 		
 		//queues
 		this.supply = new Supplier(anim.card.path.left, anim.card.path.top);
@@ -876,7 +885,7 @@ function facHTML(){
     addKeyForIds('fac',mark);
     elem.append(mark);
     const qlnInput = genRange('qlnfac',3,0,3,1);
-	elem.append(htmlArbSlider(qlnInput, 'Queue Length = ', '∞', ['1x','3x','5x','∞'] ));
+	elem.append(htmlArbSlider(qlnInput, 'Queue Length = ', '∞', ['1','3','5','∞'] ));
     usrInputs.set('qln', new ArbSlider('qln', qlnInput, 
                 localUpdateFromUser, ['1','3','5','∞'],
                                       [1,3,5,-1]) );

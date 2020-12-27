@@ -457,7 +457,7 @@ const theSimulation = {
 		theSimulation.leadtimeRV = new GammaRV(1 / (lt * tioxTimeConv), ltcv);
 		
 //		inv.graph = new InvGraph();
-		inv.resetCollection.push(inv.graph);
+//		inv.resetCollection.push(inv.graph);
 		
 		theSimulation.quantityOrdered = Number(
 			inv.usrInputs.get('quan').get());

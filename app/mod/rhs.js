@@ -142,14 +142,19 @@ export class OmConcept {
 	};
 
 	//this reset routine calls all the other reset()'s eventually
-	reset  () {
-		this.clearStageForeground();
+	reset () {
+		this.partialReset();
 		this.now = 0;
 		this.frameNow = 0;
-		this.heap.reset();
-        this.resetCollection.forEach(obj => obj.reset());
+		this.graph.reset();
 		this.localReset();
 	};
+    
+    partialReset(){
+        this.clearStageForeground();
+        this.heap.reset();
+        this.resetCollection.forEach(obj => obj.reset());
+    }
     
     localReset(){
         alert(' this routine should be ovewritten, right?');
@@ -265,7 +270,7 @@ export class OmConcept {
 
 	setSlidersFrom (row){
         const inpsChanged = [];
-        console.log(' set Sliders row=',row);
+//        console.log(' set Sliders row=',row);
         for( let [key, inp] of this.usrInputs ){
           if( inp.set(row[key]) ) inpsChanged.push(inp);
         } 
