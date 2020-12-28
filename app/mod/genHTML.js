@@ -448,7 +448,7 @@ export class LegendItem{
         this.localUpdate = localUpdate;
         this.shortLen = 1;
         this.line.button.addEventListener('click',
-                this.userUpdate.bind(this));
+             this.userUpdate.bind(this));
     }
     get() {
          return this.line.visible.toString();
@@ -472,3 +472,17 @@ export class LegendItem{
     }
     
 };
+
+export function match(inps,keys){
+//    console.log('in match',inps,keys);
+    for( let inp of inps ) {
+        for( let key of keys ) {
+            if( key == inp.key ){
+//                console.log('in match and found match');
+                return true;
+            }
+        }
+    }
+//    console.log('in match and NO!!!! match');
+    return false;
+}

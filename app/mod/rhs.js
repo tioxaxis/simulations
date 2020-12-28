@@ -598,8 +598,15 @@ export class OmConcept {
 			  'actionOptions'+this.key]);
 	};
 
-	exportWithLink () {
-		this.toastMode = true;
+	exportWithLink (event) {
+		//my backdoor to get JSON out of current scenarios
+        if( event.altKey && event.shiftKey && event.metaKey ) {            
+            copyToClipboard(this.createJSONfromUL());
+            return;
+        }    
+        
+        //rest of routine to create the URL link
+        this.toastMode = true;
 		copyToClipboard(this.createURL());
 		const message = document.
 			getElementById('linkMessage'+this.key);
@@ -610,6 +617,9 @@ export class OmConcept {
 		this.toastTimer = setTimeout(
 			this.removeToastMessage.bind(this), 4100);
 	};
+    exportWithJSON () {
+        copyToClipboard(this.createJSONfromUL());
+    }
 		
 	liClicked (ev) {
 		if (ev.target == this.currentLi || 

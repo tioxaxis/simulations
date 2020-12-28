@@ -45,7 +45,7 @@ import {
     htmlRadioButton, RadioButton, 
     IntegerInput, 
     addKeyForIds, 
-    LegendItem
+    LegendItem, match
 }
 from '../mod/genHTML.js';
 
@@ -62,8 +62,7 @@ class NVGraph extends TioxGraph {
 					   false, true,  5, 16);
 		const average = new GraphLine(this, d => d.a, cbColors.blue,
 					   false, true,  8, 0);
-        this.avgCost = new Average();
-        
+                
         const d4 = document.getElementById('chartLegendnvp');
         d4.append(under.createLegend('underage cost'),
                   over.createLegend('overage cost'),
@@ -93,6 +92,13 @@ class NVGraph extends TioxGraph {
 	updateForSpeed (factor){
 		this.scaleXaxis(factor);
 	}
+    updateForParamChange(){
+        this.avgCost = new Average();   
+        this.drawOnePoint({
+			t: (nvp.nRounds),
+			restart: true
+		});
+    };
 }
 const anim = {};
 var nvp;
@@ -223,11 +229,17 @@ class NewsVendor extends OmConcept{
         for(let inp of inpsChanged){
             localUpdate(inp); 
         };
+        if( match(inpsChanged,['dr','dcv','Cu','Co','quan'])){
+           nvp.graph.updateForParamChange();
+        };
     };
 };
 function localUpdateFromUser(inp){
     nvp.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
+    if( match([inp],['dr','dcv','Cu','Co','quan'])) {
+            nvp.graph.updateForParamChange();
+        }
 };
         
         
@@ -585,10 +597,10 @@ function nvpHTML(){
 	//now put in the sliders with the play/reset box	
 	let elem = document.getElementById('slidersWrappernvp');
 	
-    const drInput = genRange('drnvp', '5.0', 10, 50, 1);
+    const drInput = genRange('drnvp', '20', 10, 50, 1);
     elem.append(htmlNumSlider(drInput, 'Demand Rate = ', '20', [10,20,30,40,50]) );
     usrInputs.set('dr', new NumSlider('dr',drInput,
-                localUpdateFromUser, 1,2,1) );
+                localUpdateFromUser, 0, 2, 1) );
     
     const dcvInput = genRange('dcvnvp', '0.0', 0, 2, .5);
     elem.append(htmlNumSlider(dcvInput, 'Demand Variability = ', '0.0',['0.0','1.0','2.0']) );

@@ -45,7 +45,7 @@ import {
     htmlRadioButton, RadioButton, 
     IntegerInput, 
     addKeyForIds, 
-    LegendItem
+    LegendItem, match
 }
 from '../mod/genHTML.js';
 
@@ -53,9 +53,9 @@ class FacGraph extends TioxGraph {
 	constructor(){	
 		super(fac, 'chartfac', 40, {width:200, step:40}, d=>d.t, true);
 		const flowtime = new GraphLine(this, d => d.flow, cbColors.blue,
-					   false, true,  3, 5);
+					   false, true,  5, 8);
 		const throughput = new GraphLine(this,d => d.thru, cbColors.yellow,
-					   false, true,  3, 5, true);
+					   false, true,  5, 8, true);
         this.doReset = true;
         
         document.getElementById('leftLegendfac').append(
@@ -261,14 +261,14 @@ function markCard(){
         .person.graphic.mark = true;
     theSimulation.supply.bumpCount();
 }
-const needReset = {qln: true, face: true,
-                   eyes: true, nose: true,
-                   mout: true, ears: true,
-                   hair: true, faceTime: true,
-                   eyesTime: true, noseTime: true,
-                   earsTime: true, moutTime: true,
-                   hairTime: true, quantity0: true, 
-                   quantity1: true, quantity2: true};
+const needReset = ['qln', 'face',
+                   'eyes', 'nose',
+                   'mout', 'ears',
+                   'hair', 'faceTime',
+                   'eyesTime', 'noseTime',
+                   'earsTime', 'moutTime',
+                   'hairTime', 'quantity0', 
+                   'quantity1', 'quantity2'];
 
 class FaceGame extends OmConcept {
 	constructor(usrInputs){
@@ -285,8 +285,7 @@ class FaceGame extends OmConcept {
     };
 
     localUpdateFromSliders(...inpsChanged){
-        for(let inp of inpsChanged){
-            if( needReset[inp.key] ){
+        if( match(inpsChanged,needReset)) {
                 computeStageTimes();
                 this.partialReset();
                 this.localReset();
@@ -294,9 +293,8 @@ class FaceGame extends OmConcept {
                     t: fac.now / tioxTimeConv, 
                     restart: true
                 });
-                break;
-            }
         }
+        
         for(let inp of inpsChanged){
             let v = inp.get();
             switch (inp.key){
@@ -339,7 +337,7 @@ function localUpdateFromUser(inp){
     fac.setOrReleaseCurrentLi(inp);
     if( inp.key =='speed')
         fac.adjustSpeed(inp.get(),speeds);
-    else if( needReset[inp.key] ){
+    else if( match([inp],needReset) ){
         computeStageTimes();
         fac.partialReset()
         fac.localReset()

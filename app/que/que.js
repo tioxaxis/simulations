@@ -45,7 +45,7 @@ import {
     htmlRadioButton, RadioButton, 
     IntegerInput, 
     addKeyForIds, 
-    LegendItem
+    LegendItem, match
 }
 from '../mod/genHTML.js';
 
@@ -124,6 +124,14 @@ class QueueGraph extends TioxGraph {
 
 		this.predictedWaitValue = pW;
 	};
+    updateForParamChange(){
+        que.graph.updatePredictedWait();
+        que.graph.averageWait = new Average();
+        que.graph.drawOnePoint({
+			t: (que.now / tioxTimeConv),
+			restart: true
+		});
+    };
 }
 const anim = {};
 let que ;
@@ -207,11 +215,17 @@ class Queueing extends OmConcept{
         for(let inp of inpsChanged){
             localUpdate(inp); 
         };
+        if( match(inpsChanged,['ar','acv','sr','scv'])) {
+            que.graph.updateForParamChange();
+        }
     };
 };
 function localUpdateFromUser(inp){
     que.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
+    if( match([inp],['ar','acv','sr','scv'])) {
+            que.graph.updateForParamChange();
+        }
 };
         
         
@@ -223,28 +237,24 @@ function localUpdateFromUser(inp){
                 .setRate(v / tioxTimeConv);
             que.heap.modify('finish/creator', que.now, 
                             theSimulation.interarrivalRV);
-            que.graph.updatePredictedWait();
             break;
         case 'acv':
             theSimulation.interarrivalRV
                 .setCV(v);
             que.heap.modify('finish/creator', que.now,
                             theSimulation.interarrivalRV);
-            que.graph.updatePredictedWait();
             break;
         case 'sr':
             theSimulation.serviceRV
                 .setRate(v / tioxTimeConv);
             que.heap.modify('finish/TSAagent', que.now, 
                             theSimulation.serviceRV);
-            que.graph.updatePredictedWait();
-            break;
+           break;
         case 'scv':
             theSimulation.serviceRV
                 .setCV(v);
             que.heap.modify('finish/TSAagent', que.now, 
                             theSimulation.serviceRV);
-            que.graph.updatePredictedWait();
             break;
         case 'speed':
             console.log('at speed adjust',v,speeds);
@@ -526,7 +536,7 @@ function queHTML(){
     
     
     const srInput = genRange('srque', '6.0', 0, 10, .1);
-    elem.append(htmlNumSlider(srInput, 'Service Rate = ', 6,[0,2,4,6,8,10]) );
+    elem.append(htmlNumSlider(srInput, 'Service Rate = ', '6.0',[0,2,4,6,8,10]) );
     usrInputs.set('sr', new NumSlider('sr',srInput,
                 localUpdateFromUser, 1,3,10) );
     

@@ -128,7 +128,7 @@ export class Average{
 }
 export class IRT{
     constructor(t,i){
-        this.inSys = 0;
+        this.inSys = i;
         this.restart(t);
     }
     restart(t){  //but keep current inventory
@@ -140,15 +140,19 @@ export class IRT{
     };
     in(t){  //arrival at time t
         this.totInv += (t - this.lastT) * this.inSys;
+        
         this.inSys++;
         this.lastT = t;
+//        console.log('entry ', this.totInv, this.totFlow, this.avgRT());
     };
-    out(t,f){  //departure at time t with flow time of f
+    out(t,a){  //departure at time t with flow time of f
         this.totInv += (t - this.lastT) * this.inSys;
-        this.totFlow += f;
+        
+        this.totFlow += t - Math.max(this.firstT,a);
         this.inSys--;
         this.completed++;
         this.lastT = t;
+//        console.log('exit ', this.totInv, this.totFlow ,this.avgRT());
     };
     avgI(){  //inventory or in system
         return this.totInv / (this.lastT - this.firstT);
@@ -158,6 +162,9 @@ export class IRT{
     };
     avgT(){    // flow time
         return this.totFlow / this.completed
+    };
+    avgRT(){   //throughput * flowtime
+        return this.totFlow / (this.lastT - this.firstT);
     };
 }
 

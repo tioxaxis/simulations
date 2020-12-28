@@ -20,7 +20,7 @@
 
 
 import {
-	GammaRV, Heap, cbColors, Average
+	GammaRV, Heap, cbColors, Average, IRT
 }
 from '../mod/util.js';
 import {
@@ -47,7 +47,7 @@ import {
     htmlRadioButton, RadioButton, 
     IntegerInput, 
     addKeyForIds, 
-    LegendItem
+    LegendItem, match
 }
 from '../mod/genHTML.js';
 
@@ -66,7 +66,7 @@ class LittleGraph extends TioxGraph {
          
         const d3 = document.getElementById('chartLegendlit');
         d3.append(avgInv.createLegend('avg. inventory'),
-                  avgRT.createLegend('avg time * ave rate'),
+                  avgRT.createLegend('avg. flow time * avg. throughput'),
                   predInv.createLegend('predicted inventory')
                   );
         lit.usrInputs.set('leg0', new LegendItem('leg0', avgInv, localUpdateFromUser));
@@ -85,8 +85,6 @@ class LittleGraph extends TioxGraph {
 	reset(){
 		this.predictedInvValue = this.predictedInv();
         super.reset(this.predictedInvValue * 1.2);
-        this.averageInventory = new Average();
-        this.averageRateTime = new Average();
         
 		const v = document.getElementById('speedlit').value;
 		const f = speeds[v].graph;
@@ -106,11 +104,20 @@ class LittleGraph extends TioxGraph {
 			p: this.predictedInvValue
 		});
 	};
+    updateForParamChange(){
+        lit.graph.updatePredictedInv();
+        irt = new IRT(lit.now, theSimulation.LittlesBox.getNumberBusy());
+        this.drawOnePoint({
+			t: (lit.now / tioxTimeConv),
+			restart: true
+		});
+    };
 }
 
 const anim = {};
 var lit;
 var gSF;
+var irt;
 
 const tioxTimeConv = 1000; //time are in milliseconds
 
@@ -195,17 +202,24 @@ class LittlesLaw extends OmConcept{
         //fudge to get animation started quickly
         let t = lit.heap.top().time - 1;
         lit.now = lit.frameNow = t;
+        irt = new IRT(lit.now, 0);
     };
     
     localUpdateFromSliders(...inpsChanged){
         for(let inp of inpsChanged){
             localUpdate(inp); 
         };
+        if( match(inpsChanged,['ar','acv','st','scv'])) {
+            lit.graph.updateForParamChange();
+        }
     };
 };
 function localUpdateFromUser(inp){
     lit.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
+    if( match([inp],['ar','acv','st','scv'])) {
+            lit.graph.updateForParamChange();
+        }
 };
         
         
@@ -222,7 +236,7 @@ function localUpdateFromUser(inp){
             theSimulation.interarrivalRV.setCV(v);
             break;
 
-        case 'sr':
+        case 'st':
             theSimulation.serviceRV.setTime(v * tioxTimeConv);
             lit.graph.updatePredictedInv();
             break;
@@ -377,7 +391,7 @@ const theSimulation = {
 		const ar = lit.usrInputs.get('ar').get();
 		const acv = lit.usrInputs.get('acv').get();
 		theSimulation.interarrivalRV = new GammaRV(ar / tioxTimeConv, acv);
-		const st = lit.usrInputs.get('sr').get();
+		const st = lit.usrInputs.get('st').get();
 		const scv = lit.usrInputs.get('scv').get();
 		theSimulation.serviceRV = new GammaRV(1 / st / tioxTimeConv, scv);
 
@@ -410,25 +424,29 @@ const theSimulation = {
 		lit.resetCollection.push(this.LittlesBox);
 
 		function LBRecordStart(person) {
-
 			person.arrivalTime = lit.now;
-			totInv += (lit.now - lastArrDep) *
-				(theSimulation.LittlesBox.getNumberBusy());
-			lastArrDep = lit.now;
+            irt.in(lit.now);
+            
+//			totInv += (lit.now - lastArrDep) *
+//				(theSimulation.LittlesBox.getNumberBusy());
+//			lastArrDep = lit.now;
 			//            console.log(' LB start', person);
 			//console.log('LB record start',lit.now,person);
 
 		};
 
 		function LBRecordFinish(person) {
-			totInv += (lit.now - lastArrDep) *
-				(theSimulation.LittlesBox.getNumberBusy());
-			lastArrDep = lit.now;
-			totPeople++;
-			totTime += lit.now - person.arrivalTime;
-			lit.graph.push(lit.now, 
-					 totInv / (lit.now - firstArr),
-					 totTime / (lit.now - firstArr) );
+            irt.out(lit.now,person.arrivalTime);
+            lit.graph.push(lit.now,irt.avgI(),irt.avgRT());
+            
+//			totInv += (lit.now - lastArrDep) *
+//				(theSimulation.LittlesBox.getNumberBusy());
+//			lastArrDep = lit.now;
+//			totPeople++;
+//			totTime += lit.now - person.arrivalTime;
+//			lit.graph.push(lit.now, 
+//					 totInv / (lit.now - firstArr),
+//					 totTime / (lit.now - firstArr) );
 		};
 
 		//link the queue to machine before and after
@@ -488,10 +506,10 @@ function litHTML(){
 	let elem = document.getElementById('slidersWrapperlit');
 	
     
-    const arInput = genRange('arlit', '1.0', 1, 6, 1);
-    elem.append(htmlNumSlider(arInput, 'Arrival Rate = ', '1.0', [1,2,3,4,5,6]) );
+    const arInput = genRange('arlit', '1', 1, 6, 1);
+    elem.append(htmlNumSlider(arInput, 'Arrival Rate = ', '1', [1,2,3,4,5,6]) );
     usrInputs.set('ar', new NumSlider('ar',arInput,
-                localUpdateFromUser, 1, 3, 10) );
+                localUpdateFromUser, 0, 1, 1) );
     
     const acvInput = genRange('acvlit', '0.0', 0, 2, .5);
     elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', 0,['0.0','1.0','2.0']) );
@@ -499,10 +517,10 @@ function litHTML(){
                 localUpdateFromUser, 1, 2, 10) );
     
     
-    const srInput = genRange('srlit', '6.0', 0, 10, .1);
-    elem.append(htmlNumSlider(srInput, 'Service Rate = ', 5, [5, 15, 25]) );
-    usrInputs.set('sr', new NumSlider('sr',srInput,
-                localUpdateFromUser, 1, 3, 10) );
+    const stInput = genRange('stlit', '6', 5, 25, 1);
+    elem.append(htmlNumSlider(stInput, 'Service Time = ', 6, [5, 15, 25]) );
+    usrInputs.set('st', new NumSlider('st',stInput,
+                localUpdateFromUser, 0, 2, 1) );
     
     const scvInput = genRange('scvlit', '0.0', 0, 2, .5);
     elem.append(htmlNumSlider(scvInput, 'Service CV = ', 0,['0.0','1.0','2.0']) );

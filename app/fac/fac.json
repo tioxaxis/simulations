@@ -1,14 +1,4 @@
-
-[{"qln":"3","face":"0","eyes":"1","nose":"1",
-  "mout":"1","ears":"1","hair":"2",
-  "faceTime":"1","eyesTime":"2","noseTime":"1",
-  "moutTime":"2","earsTime":"1","hairTime":"2",
-  "quantity0":"1","quantity1":"1", "quantity2":"1","speed":"0","action":"none","reset":"false","desc":"first fac scenario"},
-
- {"qln":"0","face":"1","eyes":"0","nose":"0",
-  "mout":"0","ears":"0","hair":"2",
-  "faceTime":"3","eyesTime":"4","noseTime":"3",
-  "moutTime":"4","earsTime":"3","hairTime":"4",
-  "quantity0":"2","quantity1":"3", "quantity2":"1","speed":"1","action":"none","reset":"false","desc":"secondfac scenario"}
-
-]
+[{"face":"0","eyes":"1","nose":"1","mout":"1","ears":"1","hair":"2","faceTime":"1","eyesTime":"2","noseTime":"1","moutTime":"1","earsTime":"2","hairTime":"2","quantity0":"1","quantity1":"1","quantity2":"1","qln":"3","reset":"false","action":"none","speed":"0","leg0":"true","leg1":"true","desc":"1) first scenario"},
+ {"face":"0","eyes":"1","nose":"1","mout":"1","ears":"1","hair":"2","faceTime":"1","eyesTime":"2","noseTime":"1","moutTime":"1","earsTime":"2","hairTime":"2","quantity0":"1","quantity1":"2","quantity2":"1","qln":"3","reset":"false","action":"none","speed":"0","leg0":"true","leg1":"true","desc":"2) add a worker"},
+ {"face":"0","eyes":"1","nose":"1","mout":"1","ears":"1","hair":"2","faceTime":"1","eyesTime":"2","noseTime":"1","moutTime":"1","earsTime":"2","hairTime":"2","quantity0":"1","quantity1":"2","quantity2":"1","qln":"1","reset":"false","action":"none","speed":"0","leg0":"true","leg1":"true","desc":"3) limit the inventory"},
+ {"face":"0","eyes":"0","nose":"1","mout":"2","ears":"1","hair":"2","faceTime":"1","eyesTime":"2","noseTime":"1","moutTime":"1","earsTime":"2","hairTime":"2","quantity0":"1","quantity1":"1","quantity2":"1","qln":"3","reset":"false","action":"none","speed":"0","leg0":"true","leg1":"true","desc":"4) even the load across three workers"}]
