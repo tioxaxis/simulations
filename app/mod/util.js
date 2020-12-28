@@ -78,6 +78,20 @@ export class GammaRV {
 	};
 };
 
+export class DiscreteUniformRV {
+    constructor( low, high ) {
+        this.setParams(low,high);
+    };
+    observe() {
+        return Math.floor((this.high - this.low + 1 ) 
+                           * Math.random()) + this.low; 
+    };
+    setParams(low,high){
+        this.low  = low;
+        this.high = high;
+    };
+}
+
 export class UniformRV {
 	constructor(mean, variance) {
 		this.setParams(mean, variance);
@@ -118,7 +132,7 @@ export class Average{
         this.total = 0;
     };
     getAverage(){
-        return this.count > 1 ? this.total/this.count : null;
+        return this.count >= 1 ? this.total/this.count : null;
     }
     addItem(x){
         this.count++;

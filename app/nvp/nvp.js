@@ -19,7 +19,8 @@
 */		
 
 import {
-	GammaRV, UniformRV, DeterministicRV, Heap, cbColors, Average, IRT
+	GammaRV, UniformRV, DiscreteUniformRV, DeterministicRV, 
+    Heap, cbColors, Average, IRT
 }
 from '../mod/util.js';
 import {
@@ -93,7 +94,8 @@ class NVGraph extends TioxGraph {
 		this.scaleXaxis(factor);
 	}
     updateForParamChange(){
-        this.avgCost = new Average();   
+        this.avgCost = new Average();
+        nvp.fracEnough = new Average();
         this.drawOnePoint({
 			t: (nvp.nRounds),
 			restart: true
@@ -207,12 +209,12 @@ class NewsVendor extends OmConcept{
 	
 		nvp.totCost = 0;
 		nvp.nRounds = 0;
-		nvp.enough = 0;
+		nvp.fracEnough = new Average();
 		nvp.graph.reset(Math.max(maxUnder,maxOver));
 		setDesired(theSimulation.Cu, theSimulation.Co);
-		setExpected(theSimulation.quantityOrdered,
-			theSimulation.demandRV.mean,
-			theSimulation.demandRV.variance);
+		setDemandRVandExpected(theSimulation.quantityOrdered,
+                               Number(nvp.usrInputs.get('dr').get()),
+                               Number(nvp.usrInputs.get('dcv').get()));
 
 		theSimulation.supply.previous = null;
 		nvp.heap.push({
@@ -241,24 +243,30 @@ function localUpdateFromUser(inp){
             nvp.graph.updateForParamChange();
         }
 };
-        
+
+// helper function for localUpdate.
+ function setDemandRVandExpected(q, dr, dcv){
+//     console.log('at set D and exp ',q,dr,dcv);
+     const low = Math.floor(dr * (1 - dcv));
+     const high = Math.ceil(dr * (1 + dcv));
+//     console.log('at set D and exp ',q,dr,dcv,'  low/high =',low,high);
+     theSimulation.demandRV.setParams(low, high);
+     setExpected(q, low, high);
+ }      
         
  function localUpdate(inp){
     let v = inp.get();
     switch (inp.key){
         case 'dr':
-         theSimulation.demandRV
-            .setMean(Number(v));
-         setExpected(theSimulation.quantityOrdered,
-            theSimulation.demandRV.mean,
-            theSimulation.demandRV.variance);
+            setDemandRVandExpected(
+                theSimulation.quantityOrdered,
+                Number(v), Number(nvp.usrInputs.get('dcv').get()));
          break;
 
         case 'dcv':
-            theSimulation.demandRV.setVariance(Number(v));
-            setExpected(theSimulation.quantityOrdered,
-                theSimulation.demandRV.mean,
-                theSimulation.demandRV.variance);
+            setDemandRVandExpected(
+                theSimulation.quantityOrdered,
+                Number(nvp.usrInputs.get('dr').get()), Number(v));
             break;
 
         case 'Cu':
@@ -273,9 +281,10 @@ function localUpdateFromUser(inp){
 
         case 'quan':
             theSimulation.quantityOrdered = Number(v);
-            setExpected(theSimulation.quantityOrdered,
-                theSimulation.demandRV.mean,
-                theSimulation.demandRV.variance);
+            setDemandRVandExpected(
+                theSimulation.quantityOrdered,
+                Number(nvp.usrInputs.get('dr').get()), 
+                Number(nvp.usrInputs.get('dcv').get()));
             break;
 
 
@@ -300,21 +309,26 @@ function setDesired(under, over) {
         .innerHTML = (100 * under / (under + over)).toFixed(2);
 }
 
-function setExpected(q, m, v) {
+function setExpected(q, low, high) {
 	let perc;
-	// r.v has a range of [m(1-v)], m(1+v)] 
-	// modQ finds the "q" in the range above.
-	let modQ = Math.max(Math.min(q, m * (1 + v)), m * (1 - v));
-	if (v != 0) perc = 100 * (modQ - m * (1 - v)) / (2 * m * v);
-	else if (q < m) perc = 0;
-	else perc = 100;
+    if( q < low ) perc = 0;
+    else if( q > high ) perc = 100;
+    else perc = 100* (q - low + 1) / (high - low + 1);
+    
+    
+//	// r.v has a range of [m(1-v)], m(1+v)] 
+//	// modQ finds the "q" in the range above.
+//	let modQ = Math.max(Math.min(q, m * (1 + v)), m * (1 - v));
+//	if (v != 0) perc = 100 * (modQ - m * (1 - v)) / (2 * m * v);
+//	else if (q < m) perc = 0;
+//	else perc = 100;
 	document.getElementById('expectedPercnvp')
         .innerHTML = (perc).toFixed(2);
 }
 
-function setActual(enough, total) {
+function setActual() {
 	document.getElementById('actualPercnvp')
-        .innerHTML = (100 * enough / total).toFixed(2);
+        .innerHTML = (100 * nvp.fracEnough.getAverage()).toFixed(2);
 }
 
 //  One variable for each process step or queue
@@ -422,9 +436,12 @@ const theSimulation = {
 
 	initialize: function () {
 		// random variables
-		const r = nvp.usrInputs.get('dr').get();
-		const cv = nvp.usrInputs.get('dcv').get();
-		theSimulation.demandRV = new UniformRV(r, cv);
+		const r = Number(nvp.usrInputs.get('dr').get());
+		const cv = Number(nvp.usrInputs.get('dcv').get());
+        const low = Math.floor( r * (1-cv) );
+        const high = Math.ceil( r * (1+cv));
+//        console.log('initiation  ',r,cv, low, high);
+		theSimulation.demandRV = new DiscreteUniformRV(low,high);
 		theSimulation.serviceRV =
 			new DeterministicRV(animForQueue.walkingTime2);
 		theSimulation.Co = Number(nvp.usrInputs.get('Co').get());
@@ -501,8 +518,9 @@ class DemandCreator {
 		this.overageForDay = theSimulation.Co * Math.max(0, excess);
 		this.underageForDay = theSimulation.Cu * Math.max(0, -excess);
 		nvp.totCost += this.overageForDay + this.underageForDay;
-		if (this.curDemand <= theSimulation.quantityOrdered)
-			nvp.enough++;
+		nvp.fracEnough.addItem(
+            this.curDemand <= theSimulation.quantityOrdered? 1 : 0 );
+			
 
 		let t = nvp.now;
 		let deltaT = peopleSpacing / anim.stage.normalSpeed;
@@ -533,7 +551,7 @@ class DemandCreator {
 	graph() {
 		nvp.graph.push(nvp.nRounds, this.underageForDay, this.overageForDay);
 //		console.log(nvp.nRounds,nvp.now);
-		setActual(nvp.enough, nvp.nRounds);
+		setActual();
 
 		theSimulation.store.makeAllGrey();
 	}
@@ -602,8 +620,8 @@ function nvpHTML(){
     usrInputs.set('dr', new NumSlider('dr',drInput,
                 localUpdateFromUser, 0, 2, 1) );
     
-    const dcvInput = genRange('dcvnvp', '0.0', 0, 2, .5);
-    elem.append(htmlNumSlider(dcvInput, 'Demand Variability = ', '0.0',['0.0','1.0','2.0']) );
+    const dcvInput = genRange('dcvnvp', '0.0', 0, 1, .1);
+    elem.append(htmlNumSlider(dcvInput, 'Demand Variability = ', '0.0',['0.0','0.5','1.0']) );
     usrInputs.set('dcv', new NumSlider('dcv', dcvInput,
                 localUpdateFromUser, 1,2,10) );
     
