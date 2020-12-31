@@ -157,7 +157,6 @@ export class IRT{
         
         this.inSys++;
         this.lastT = t;
-//        console.log('entry ', this.totInv, this.totFlow, this.avgRT());
     };
     out(t,a){  //departure at time t with flow time of f
         this.totInv += (t - this.lastT) * this.inSys;
@@ -166,7 +165,6 @@ export class IRT{
         this.inSys--;
         this.completed++;
         this.lastT = t;
-//        console.log('exit ', this.totInv, this.totFlow ,this.avgRT());
     };
     avgI(){  //inventory or in system
         return this.totInv / (this.lastT - this.firstT);
@@ -197,8 +195,6 @@ export class Heap {
 	};
 
 	push(event) {
-		//         console.log('at heap pushing person or machine for proc', event.proc, 'future time ', event.time);
-
 		this.h.push(event);
 		let k = this.h.length - 1;
 		while (k >= 1) {
@@ -269,8 +265,6 @@ export class Heap {
 				//                cnt++
 			}
 		}
-		//        console.log('found ', cnt, 'events in the heap of type ',type,' and ', 
-		//                   this.h.length - cnt, ' which are not');
 		this.heapify();
 	}
 }; //end class Heap

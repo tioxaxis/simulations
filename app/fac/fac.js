@@ -71,7 +71,6 @@ class FacGraph extends TioxGraph {
 		t /= tioxTimeConv;
         flow /= tioxTimeConv;
         if( thru ) thru *= tioxTimeConv;
-//        console.log(' at fac graph with ', t, flow, thru);
 		let p = {t: t, flow: flow,
 				 thru: thru
                 };
@@ -119,8 +118,6 @@ anim.card = {
 	path: {
 		left: -100,
 		right: anim.stage.width * 1.1,
-//		headQueue: [anim.stage.width * 0.2,anim.stage.width * 0.5,anim.stage.width * 0.8],
-//		workPos: [anim.stage.width * 0.3, anim.stage.width * 0.6, anim.stage.width * 0.9],
 		top: 40,
 	}
 };
@@ -182,11 +179,9 @@ function computeStageTimes(){
             if( stage == s ){
                 count++
                 total += time;
-//                console.log(key,s, time);
             }
         }
         fac.stageTimes[s].setMean(total * tioxTimeConv);
-//        console.log('stage',s,total);
         
         // adjust the feature time by stage to remove the movetime.
         let delta =  moveTime/count;
@@ -318,7 +313,6 @@ class FaceGame extends OmConcept {
                     break;
                     
                 case 'speed':
-//                    console.log('at speed adjust',v,speeds);
                     fac.adjustSpeed(v,speeds);
                     break;
                 default:
@@ -407,7 +401,6 @@ class AnimForQueue  {
                 let destTime = Math.max(this.left + point.x - card.cur.x,
                                        this.top + point.y - card.cur.y) 
                                 / anim.stage.normalSpeed;
-//                console.log('destTime',destTime);
                 card.updatePath({
                     t: fac.now + destTime+700,
                     x: this.left + point.x,
@@ -548,9 +541,6 @@ const theSimulation = {
     walkOffStage: null,
 	
 	initialize: function () {
-        //graphs
-//        fac.graph = new FacGraph();
-//		fac.resetCollection.push(fac.graph);
 		
 		//queues
 		this.supply = new Supplier(anim.card.path.left, anim.card.path.top);
@@ -641,7 +631,6 @@ class Supplier {
              this.markCount--;
             if( this.markCount > 0 ) card.graphic.mark = true;
         }
-//        console.log('in supplier', card.which, card);
         return card;
 	}
     bumpCount(){
@@ -745,12 +734,10 @@ class FaceCard {
             const frac2 = ( frac - 0.5 ) * 2;
             const sg = fac.usrInputs.get(key).get();
             ctx.strokeStyle = anim.worker[sg].color;
-//            console.log('in draw',this.x,key)
             switch (key) {
                 case 'face':
                     ctx.beginPath();
                     ctx.lineWidth = 1;
-//                    ctx.rect(.5*this.w,.5*this.h,.2*this.h,.2*this.w);
                     ctx.arc(.5*this.w, .5*this.h, .325*this.w, 0, frac*pi2);
                     ctx.stroke();
                     ctx.closePath();

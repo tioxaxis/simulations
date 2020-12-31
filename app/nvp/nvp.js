@@ -189,9 +189,6 @@ class NewsVendor extends OmConcept{
     constructor(usrInputs){
         super('nvp');
         this.usrInputs = usrInputs;
-//        document.getElementById('slidersWrappernvp')
-//			.addEventListener('input', this.captureUserUpdate.bind(this));
-//        this.setupScenarios();    
     };
     localReset () {
 		
@@ -307,18 +304,11 @@ function setDesired(under, over) {
 }
 
 function setExpected(q, low, high) {
-	let perc;
+	//uniform distribution on [low,high].  find P{RV<=q}
+    let perc;
     if( q < low ) perc = 0;
     else if( q > high ) perc = 100;
     else perc = 100* (q - low + 1) / (high - low + 1);
-    
-    
-//	// r.v has a range of [m(1-v)], m(1+v)] 
-//	// modQ finds the "q" in the range above.
-//	let modQ = Math.max(Math.min(q, m * (1 + v)), m * (1 - v));
-//	if (v != 0) perc = 100 * (modQ - m * (1 - v)) / (2 * m * v);
-//	else if (q < m) perc = 0;
-//	else perc = 100;
 	document.getElementById('expectedPercnvp')
         .innerHTML = (perc).toFixed(2);
 }

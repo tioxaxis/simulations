@@ -204,13 +204,10 @@ export class OmConcept {
 		while ((theTop = this.heap.top()) &&
 				theTop.time <= this.frameNow) {
 			const event = this.heap.pull();
-//            console.log('top',theTop,event);
 			// event on heap is {time: ,proc: ,item: }
 			this.now = event.time;
-//            console.log('eventFrame',event.time);
 			event.proc(event.item);
 		}
-//        console.log('out of while loop', this.frameNow);
 		this.now = this.frameNow;
 		this.clearStageForeground();
 		this.itemCollection.moveDisplayAll(deltaSimuTime);
@@ -225,8 +222,6 @@ export class OmConcept {
 		this.frameSpeed = speeds[v].time;
 		this.graph.updateForSpeed(speeds[v].graph);
 		this.itemCollection.updateForSpeed();
-//		document.getElementById('disp' + id)
-//				.innerHTML = speeds[v].time;
 		if (oldFrameSpeed < 100 && this.frameSpeed > 100 ){
 			if (this.isRunning){
 				this.pause();
@@ -270,14 +265,9 @@ export class OmConcept {
 
 	setSlidersFrom (row){
         const inpsChanged = [];
-//        console.log(' set Sliders row=',row);
         for( let [key, inp] of this.usrInputs ){
           if( inp.set(row[key]) ) inpsChanged.push(inp);
         } 
-        
-        // NEED to handle legend status which are checked and which are not
-        // add a new class of objects to handle these cases
-        
         
         if (!this.editMode) {
             if (row.reset == 'true')
@@ -295,14 +285,12 @@ export class OmConcept {
         for( let [key, inp]  of this.usrInputs ){
             row[key] = inp.get();
         };
-//        console.log('get sliders row=',row);
         return row;
     };
     sEncode(row){
         let str = '';
         for ( let [key, inp] of this.usrInputs ){
             const x = inp.encode(row[key]);
-            console.log('in Encode', key, row[key],x);
             str += x;
         }
         return str + row['desc'];
@@ -313,7 +301,6 @@ export class OmConcept {
         for ( let [key, inp] of this.usrInputs ){
             let len = inp.shortLen;
             
-            console.log('in Decode', str, str.slice(p,p+len),len, key);
             row[key] = inp.decode(str.slice(p,p+len));
             p += len;
         }
@@ -693,7 +680,6 @@ export class OmConcept {
 //			( edit ? "&edit=allow" : "" ) +
 			  '#' + this.key;
 		const encResult =  encodeURI(result);
-		//console.log('in createURL',result, encResult);
 		return encResult;
 	};
 

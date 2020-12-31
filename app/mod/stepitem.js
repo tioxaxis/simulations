@@ -176,7 +176,6 @@ export class MachineCenter {
 		this.recordStart = recordStart;
 		this.recordFinish = recordFinish;
         this.machIndex = 0;
-//        this.leaveEarly = null;
 
 		this.machs = [];
 		// setup machines if finite number with positions offset by dx,dy
@@ -222,7 +221,6 @@ export class MachineCenter {
             this.machIndex = (this.machIndex + 1) % this.numMachines;
         }
         return -1;
-//		return this.machs.findIndex(x => x.status == 'blocked')
 	};
 
 	knockFromPrevious() {
@@ -237,14 +235,10 @@ export class MachineCenter {
 
 	start(machine) {
 		let theProcTime = this.procTime.observe();
-//		console.log('start of machine',this.name,' proctime=',theProcTime,
-//                   'now=',this.omConcept.now);
         const person = this.previousQueue.pull(theProcTime);
         
 
 		if (person) {
-//			console.log('start of machine',this.name,' person ', person.which,
-//                       'person xcoord', person.cur.x);
             if (this.animFunc) {
 				this.animFunc.start(theProcTime, person, machine.index);
 			}
@@ -784,9 +778,6 @@ export class NStickFigure {
 export class BoxStack {
 	constructor(box, snake = true) {
 		this.box = box;
-//		this.boxSpace = boxSpace;
-//		this.boxSize = boxSize;
-//		this.nPerRow = nPerRow;
 		this.snake = snake;
 	}
 	relCoord(k) {

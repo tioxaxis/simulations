@@ -95,27 +95,6 @@ export function genArbSlider( id, name, initial, indivs, values){
     return d;
 }
 
-//export function genSlider( id, before, mid, after,
-//                            initial, min, max, step, values){	
-//    const sp = document.createElement('span');
-//    sp.id = 'disp' + id;
-//    sp.append(mid);
-//    const disp = document.createElement('div');
-//    disp.append(before,sp,after);
-//
-//    const vals = document.createElement('div');
-//    vals.className="spreadValues";
-//    for( let v of values){
-//        let s = document.createElement('span');
-//        s.append(v);
-//        vals.append(s);
-//    }
-//
-//    const d = document.createElement('div');
-//    d.className = "sliderBox columnAroundCenter";
-//    d.append(disp, genRange(id,initial,min,max,step), vals);
-//    return d;
-//}
 
  function genPlayResetButtons(key){
     const d = document.getElementById('playButtons').cloneNode(true);
@@ -161,14 +140,6 @@ export function addDiv(key, toId,...fromIds){
         d.append(elem);
     }
 }
-
-//export function copyMainPage(key){
-//    let page = document.getElementById('whole')
-//        .cloneNode(true);
-//    addKeyForIds(key, page);
-//    let keyPage = document.getElementById(key);
-//    keyPage.innerHTML = page.innerHTML;
-//}
 
 export function htmlNumSlider( inputElem, displayText, initial, sliderValues) {
         const sp = document.createElement('span');
@@ -302,12 +273,6 @@ export class ArbSlider{
     
 
 };
-//export function genCheckBox(id){
-//    const inp = document.createElement('input');
-//    inp.type = 'checkbox';
-//    inp.id = id;
-//    return inp;
-//}
 
 export function htmlCheckBox(inp, desc){
         const label = document.createElement('LABEL');
@@ -341,8 +306,6 @@ export class CheckBox{
     userUpdate(){
         this.localUpdate(this);
     };
-    
-    
 }
 export function htmlRadioButton(id, name, value, checked, desc){
     const inp = document.createElement('input');
@@ -372,7 +335,6 @@ export class RadioButton{
             alert('Radio Button class intialized with more than 10 values');
     }
     get(){
-//        const nodelist = document.getElementsByName(this.name);
         for (let j = 0; j < this.nodelist.length; j++) {
           if (this.nodelist[j].checked) {
               return this.nodelist[j].value;
@@ -382,7 +344,6 @@ export class RadioButton{
     }
     set(str){
         // can't be done until html exists!!
-//        const nodelist = document.getElementsByName(this.name);
         for (let j = 0; j < this.nodelist.length; j++) {
 		  if (this.nodelist[j].value == str) {
               const changed = !this.nodelist[j].checked;
@@ -474,15 +435,12 @@ export class LegendItem{
 };
 
 export function match(inps,keys){
-//    console.log('in match',inps,keys);
     for( let inp of inps ) {
         for( let key of keys ) {
             if( key == inp.key ){
-//                console.log('in match and found match');
                 return true;
             }
         }
     }
-//    console.log('in match and NO!!!! match');
     return false;
 }

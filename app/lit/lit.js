@@ -392,8 +392,6 @@ const theSimulation = {
 		const scv = lit.usrInputs.get('scv').get();
 		theSimulation.serviceRV = new GammaRV(1 / st / tioxTimeConv, scv);
 
-//		lit.graph = new LittleGraph();
-//		lit.resetCollection.push(lit.graph);
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 
@@ -423,27 +421,11 @@ const theSimulation = {
 		function LBRecordStart(person) {
 			person.arrivalTime = lit.now;
             irt.in(lit.now);
-            
-//			totInv += (lit.now - lastArrDep) *
-//				(theSimulation.LittlesBox.getNumberBusy());
-//			lastArrDep = lit.now;
-			//            console.log(' LB start', person);
-			//console.log('LB record start',lit.now,person);
-
 		};
 
 		function LBRecordFinish(person) {
             irt.out(lit.now,person.arrivalTime);
             lit.graph.push(lit.now,irt.avgI(),irt.avgRT());
-            
-//			totInv += (lit.now - lastArrDep) *
-//				(theSimulation.LittlesBox.getNumberBusy());
-//			lastArrDep = lit.now;
-//			totPeople++;
-//			totTime += lit.now - person.arrivalTime;
-//			lit.graph.push(lit.now, 
-//					 totInv / (lit.now - firstArr),
-//					 totTime / (lit.now - firstArr) );
 		};
 
 		//link the queue to machine before and after

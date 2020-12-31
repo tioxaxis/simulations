@@ -59,7 +59,6 @@ class QueueGraph extends TioxGraph {
 					                   false, true,  5, 10);
 		this.predWait = new GraphLine(this, d => d.p, cbColors.red,
 					                   true, false,  10, 0);
-//        this.lines.push(indivWait,avgWait,this.predWait);
 		this.predictedWaitValue = null; /*this.predictedWait();*/
         
         const leg0 = indivWait.createLegend('individual wait');
@@ -254,7 +253,6 @@ function localUpdateFromUser(inp){
                             theSimulation.serviceRV);
             break;
         case 'speed':
-            console.log('at speed adjust',v,speeds);
             que.adjustSpeed(v,speeds);
             break;
         case 'action':
@@ -291,7 +289,6 @@ const animForQueue = {
 			x: anim.person.path.headQueue - dist,
 			y: anim.person.path.top
 		});
-//		if (person.cur.x < -110) console.log('adding person with arrival',arrivalTime,'starting point',person.cur.x);
 		if (person.isThereOverlap()) {
 			person.cur.y = person.ahead.cur.y - 10;
 		}
@@ -421,9 +418,6 @@ const theSimulation = {
 		const scv = que.usrInputs.get('scv').get();
 		theSimulation.serviceRV = new GammaRV(sr / tioxTimeConv, scv);
 
-//		que.graph = new QueueGraph();
-//		que.resetCollection.push(que.graph);
-		
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 

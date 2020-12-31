@@ -304,8 +304,6 @@ export class TioxGraph {
 		ctx.beginPath();
   		ctx.rect(this.inner.left, 0,
 						  this.inner.width, this.outer.height);
-//        ctx.fillStyle = 'pink';
-//        ctx.fill()
   		ctx.clip(); // for the first quadrant of graph.
         
         for( let line of this.lines ){
@@ -324,75 +322,6 @@ export class TioxGraph {
         ctx.stroke();
         ctx.restore();
     };
-        
-        
-        
-        
-        
-        
-//        
-//        ctx.strokeStyle = cbColors.purple;
-//        ctx.lineWidth = 10;
-//		for(let p of this.data){
-//            if( p.restart ){
-//                    // draw vertical line
-//                    const xg = this.xScale(this.xAccess(p));
-//                    ctx.moveTo( xg, this.inner.bot );
-//                    ctx.lineTo( xg, this.inner.top );
-//                };
-//        };
-//        ctx.stroke(); 
-//        
-//        for( let line of this.lines ) {
-//			if( !line.visible ) continue;
-//            
-//			ctx.lineWidth = line.lineWidth;
-//			ctx.strokeStyle = 
-//					ctx.fillStyle = line.color;
-//			let last = {x:null, y: null};
-//			ctx.beginPath();
-//			
-//			for (let  p of this.data ){
-//				let cur = {x: this.xAccess(p),
-//				        y: line.yAccess(p)};
-//				if( p.restart ){
-//                    last.y = null;
-//                    continue;
-//                };
-//                if( cur.y == undefined) continue;
-//
-//                if( last.y == null ) {  //handles first point.
-//                        ctx.moveTo( 
-//                            this.xScale(cur.x),
-//                            this.yScale(cur.y, line.right));
-//
-//                } else {
-//                    if(line.vertical) {
-//                        ctx.lineTo( 
-//                           this.xScale(cur.x),
-//                           this.yScale(last.y, line.right));
-//                    }
-//                    if( cur.y != null ) {
-//                        ctx.lineTo( 
-//                                this.xScale(cur.x),
-//                                this.yScale(cur.y, line.right));
-//                        ctx.stroke();
-//                    }
-//                }
-//
-//                if( cur.y != null && line.dotSize > 0) {
-//                    ctx.beginPath();
-//                    ctx.arc(this.xScale(cur.x),
-//                        this.yScale(cur.y, line.right), line.dotSize,
-//                            0,2*Math.PI, true);
-//                    ctx.fill();
-//                    ctx.stroke();
-//                }
-//                last = cur;
-//			}
-//		}
-//		ctx.restore();   // removes the clip path
-//	};
 	
 	checkBounds(p){
 		//either p.x or one of p.y is out of bounds 
@@ -425,74 +354,9 @@ export class TioxGraph {
                 line.data.push({...pair});
             }
         };
-//        for( let i = 0; i < this.lines.length; i++ ){
-//            
-//            console.log('line',i,' and data= ',this.lines[i].data);
-//        }
     };
-//        this.data.push(p);
-//        const ctx = this.ctx;
-////		console.log('in draw one',p);
-//		
-//        if( p.restart ){
-//            ctx.strokeStyle = cbColors.purple;
-//            ctx.lineWidth = 10;
-//            const xg = this.xScale(this.xAccess(p));
-//            ctx.moveTo( xg, this.inner.bot );
-//            ctx.lineTo( xg, this.inner.top );
-//            ctx.stroke();
-//            return;
-//        };
-//        
-//        for( let line of this.lines ) {
-////			console.log(' in one draw color=',line.color);
-//            let cur = {x: this.xAccess(p), y: line.yAccess(p)};
-//            if( line.visible ) {
-//			ctx.lineWidth = line.lineWidth;
-//			ctx.strokeStyle = 
-//				ctx.fillStyle = line.color;
-//			
-//			//if no data then skip it and keep last for next data point
-//			if( cur.y === undefined) continue;
-//			
-//			//no previous point then skip drawing line
-//			if( line.last.y != null ) {
-//				ctx.beginPath();
-//
-//				ctx.moveTo( 
-//					this.xScale(line.last.x),
-//					this.yScale(line.last.y, line.right));
-//
-//				if(line.vertical) {
-//					ctx.lineTo( 
-//						this.xScale(cur.x),
-//						this.yScale(line.last.y, line.right));
-//				}
-//				if( cur.y != null) {
-//					ctx.lineTo( 
-//						this.xScale(cur.x),
-//						this.yScale(cur.y, line.right));
-//					ctx.stroke();
-//				}
-//			}
-//
-//			if( cur.y != null && line.dotSize > 0 ) {
-//				ctx.beginPath();
-//				ctx.arc(this.xScale(cur.x),
-//					this.yScale(cur.y, line.right), line.dotSize,
-//					0,2*Math.PI, true);
-////				console.log('draw one',line.dotSize,
-////							cur.x,cur.y,this.ctx.lineWidth);
-//				ctx.fill();
-//				ctx.stroke();
-//			}
-//		  }
-//		  line.last = cur;
-//		  this.xInfo.lastX = cur.x;	
-//		}
-//	};
     restartGraph(t){
-        console.log('enter restart routine with length=',this.vertCoors.length,this.vertCoors);
+//        console.log('enter restart routine with length=',this.vertCoors.length,this.vertCoors);
         
         // exit if no new point on first line
         const line0data = this.lines[0].data;
@@ -502,7 +366,7 @@ export class TioxGraph {
         
         for( let line of this.lines ){
            k = line.data.length - 1;
-          console.log(line.data.length,line.data);
+//          console.log(line.data.length,line.data);
             
           if( line.data[k].y != null ){
               line.data.push({x:t,y:null});
@@ -511,7 +375,7 @@ export class TioxGraph {
         
         //graph grey veritcal line at t
         this.vertCoors.push(t);
-        console.log('pushed value ',t, 'on vertical coord list');
+//        console.log('pushed value ',t, 'on vertical coord list');
         this.ctx.strokeStyle = vertLines.color;
         this.ctx.lineWidth = vertLines.lineWidth;
         this.ctx.beginPath();
@@ -546,7 +410,6 @@ export class GraphLine{
         
     createLegend(text){
         const elem = document.createElement('div');
-//        elem.classList.add('rowAroundCenter');
         
         const dot = document.createElement('span');
         dot.innerHTML = '&emsp; &emsp; &#11044;&nbsp;'
@@ -557,7 +420,6 @@ export class GraphLine{
         if( !this.visible ) 
             this.button.classList.add('crossOut');
         elem.append(dot, this.button);
-//        this.setVisibility(this.visible);
         
         this.button.addEventListener('click',this.clickResponse.bind(this));
         return elem;
