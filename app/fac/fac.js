@@ -714,6 +714,7 @@ class FaceCard {
                       this.y + anim.box.delta);
         ctx.beginPath();
         ctx.strokeStyle = 'black';
+        ctx.fillStyle = 'white';
         ctx.lineWidth = 1;
         
         ctx.rect(0,0,this.w,this.h);
@@ -721,10 +722,11 @@ class FaceCard {
 //            ctx.font = "30px Material-icons";
             ctx.fillStyle = 'pink';
 //            ctx.fillText('\u153',0,0);
-            ctx.fill();
+           
         };
-        ctx.stroke();
         ctx.closePath();
+        ctx.stroke();
+        ctx.fill();
         
         for( let key in this.start ){
             const s = this.start[key];

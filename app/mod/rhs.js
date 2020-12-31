@@ -80,6 +80,7 @@ export class OmConcept {
 		
 		this.ulPointer = document.getElementById("ULScenarioList"+key);		
 		this.currentLi = null, // poiner to current  LI in the UL in the HTML
+        this.lastLi = null,
 
 		this.textMode = false,
 		this.editMode = false,
@@ -322,8 +323,10 @@ export class OmConcept {
                 this.saveEdit();
             }
         } else {
-            if (this.currentLi) 
+            if (this.currentLi){ 
                 this.currentLi.classList.remove("selected");
+                this.lastLi = this.currentLi;
+            }
             this.currentLi = null;
         }
     }
@@ -335,6 +338,9 @@ export class OmConcept {
 				return cur.nextElementSibling;
 			return cur;
 		}
+        if( this.lastLi ){
+            return this.lastLi;
+        };
 		return this.ulPointer.firstElementChild;
 	};
 
@@ -345,6 +351,9 @@ export class OmConcept {
 				return cur.previousElementSibling;
 			return cur;
 		}
+        if( this.lastLi ){
+            return this.lastLi;
+        };
 		return this.ulPointer.lastElementChild;
 	};
 
@@ -486,6 +495,7 @@ export class OmConcept {
 		li.classList.add("selected");
 		this.ulPointer.append(li);
 		this.currentLi = li;
+        this.lastLi = null;
 		this.addTextBox(desc==noName ? '' : desc);
 
 		function createCopyName(str) {
@@ -519,6 +529,7 @@ export class OmConcept {
 		this.saveModifiedDesc();
 		if (this.currentLi) this.currentLi.classList.remove("selected");
 		if (newRow) {
+            this.lastLi = null;
 			this.setSlidersFrom(newRow.scenario);
 			newRow.classList.add("selected");
 		};

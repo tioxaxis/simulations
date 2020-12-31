@@ -410,13 +410,16 @@ export class GraphLine{
         
     createLegend(text){
         const elem = document.createElement('div');
+        elem.classList.add('legendbox');
         
-        const dot = document.createElement('span');
-        dot.innerHTML = '&emsp; &emsp; &#11044;&nbsp;'
+        const dot = document.createElement('div');
+        dot.classList.add('legendCircle');
+        dot.innerHTML = '&#11044;'
         dot.style = 'color:'+this.color;
         
-        this.button = document.createElement('span');
-        this.button.innerHTML = text;
+        this.button = document.createElement('div');
+        this.button.classList.add('legendText');
+        this.button.innerHTML = text ;
         if( !this.visible ) 
             this.button.classList.add('crossOut');
         elem.append(dot, this.button);

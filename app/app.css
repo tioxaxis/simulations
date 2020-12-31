@@ -185,15 +185,30 @@
 	
 	.chartLegend{
 		flex: 0 0 10%;
+        width: 80%;
 	}
 	.legitem {
 		cursor: pointer;
-        margin: auto;
+        margin-right: 2vw;
 /*        border: red solid*/
 	}
+/* four formats for legend box of dot and name */
     .crossOut{
         text-decoration-line: line-through;
         }
+    .legendbox{
+        display: flex;
+        align-items: baseline;
+        /*        border: solid red;*/
+        font-size: 1.3vw;
+        }
+    .legendCircle{
+            margin-right: .5vw;       
+        }
+    .legendText{
+            cursor: pointer;
+        }
+
 .dualChartWrapper{
    flex: 1 1 0;
 	
