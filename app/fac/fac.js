@@ -289,10 +289,7 @@ class FaceGame extends OmConcept {
                 computeStageTimes();
                 this.partialReset();
                 this.localReset();
-                fac.graph.drawOnePoint({
-                    t: fac.now / tioxTimeConv, 
-                    restart: true
-                });
+                fac.graph.restartGraph(fac.now/tioxTimeConv);
         }
         
         for(let inp of inpsChanged){
@@ -341,10 +338,7 @@ function localUpdateFromUser(inp){
         computeStageTimes();
         fac.partialReset()
         fac.localReset()
-        fac.graph.drawOnePoint({
-                    t: fac.now / tioxTimeConv, 
-                    restart: true
-                });
+        fac.graph.restartGraph(fac.now/tioxTimeConv);
     }
 }; 
 

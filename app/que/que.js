@@ -125,12 +125,9 @@ class QueueGraph extends TioxGraph {
 		this.predictedWaitValue = pW;
 	};
     updateForParamChange(){
-        que.graph.updatePredictedWait();
-        que.graph.averageWait = new Average();
-        que.graph.drawOnePoint({
-			t: (que.now / tioxTimeConv),
-			restart: true
-		});
+        this.updatePredictedWait();
+        this.averageWait = new Average();
+        this.restartGraph(que.now/tioxTimeConv);
     };
 }
 const anim = {};
@@ -552,7 +549,7 @@ function queHTML(){
                 localUpdateFromUser, ['none','play','pause']) );
      
     const speedInput = genRange('speedque',0,0,5,1);
-    elem.append(htmlArbSlider(speedInput, 'Speed = ', 0,
+    elem.append(htmlArbSlider(speedInput, 'Speed = ', '1x',
                             ["slow",' ',' ',' ',"fast",'∞']) );
     usrInputs.set('speed', new ArbSlider('speed', speedInput, 
                 localUpdateFromUser, ["1x",'2x','5x','10x',"25x",'∞'],

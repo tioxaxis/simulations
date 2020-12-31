@@ -107,10 +107,7 @@ class LittleGraph extends TioxGraph {
     updateForParamChange(){
         lit.graph.updatePredictedInv();
         irt = new IRT(lit.now, theSimulation.LittlesBox.getNumberBusy());
-        this.drawOnePoint({
-			t: (lit.now / tioxTimeConv),
-			restart: true
-		});
+        this.restartGraph(lit.now/tioxTimeConv);
     };
 }
 

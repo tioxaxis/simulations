@@ -96,10 +96,7 @@ class NVGraph extends TioxGraph {
     updateForParamChange(){
         this.avgCost = new Average();
         nvp.fracEnough = new Average();
-        this.drawOnePoint({
-			t: (nvp.nRounds),
-			restart: true
-		});
+        this.restartGraph(nvp.nRounds+0.5);
     };
 }
 const anim = {};
@@ -513,7 +510,7 @@ class DemandCreator {
 		this.curDemand = Math.floor(theSimulation.demandRV.observe());
 		theSimulation.store.addBox(theSimulation.quantityOrdered);
 		//		this.store.packages.drawAll();
-		nvp.nRounds++;
+		
 		let excess = theSimulation.quantityOrdered - this.curDemand;
 		this.overageForDay = theSimulation.Co * Math.max(0, excess);
 		this.underageForDay = theSimulation.Cu * Math.max(0, -excess);
@@ -549,7 +546,8 @@ class DemandCreator {
 		});
 	};
 	graph() {
-		nvp.graph.push(nvp.nRounds, this.underageForDay, this.overageForDay);
+		nvp.nRounds++;
+        nvp.graph.push(nvp.nRounds, this.underageForDay, this.overageForDay);
 //		console.log(nvp.nRounds,nvp.now);
 		setActual();
 

@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */	
 import {
-	Average
+	Average, cbColors
 }
 from "./util.js";
 function verticalAxis(y,table) {
@@ -43,7 +43,7 @@ function horizontalScaleAxis(newScale, xInfo){
 	xInfo.max = xInfo.min + xInfo.width;
 	xInfo.scale = newScale;
 }
-var dxlcount = 0;
+const vertLines = {color: 'grey', lineWidth: 10 };
 
 
 export class TioxGraph {
@@ -57,6 +57,7 @@ export class TioxGraph {
 		this.xWidthStep = xWidthStep;
 		this.xAccess= xAccess;
 		this.lines = [];
+        this.vertCoors = [];
         this.hasRight = hasRight;
 		
 		this.outer= {width: this.ch.width, height: this.ch.height}
@@ -74,7 +75,9 @@ export class TioxGraph {
 	}
 	
 	reset(yMax, yMaxRight = null){
-		this.data = [];
+		this.vertCoors = [];
+        for( let line of this.lines )
+            line.data = [{x:0,y:null}];;
 		//make copy of table
 		this.table = [...[
 			{
@@ -170,17 +173,29 @@ export class TioxGraph {
 	shiftXaxis(x){
 		if ( x <= this.xInfo.max ) return false;
 		horizonalShiftAxis(x,this.xInfo);
-		let k = this.data.findIndex( 
-			elem => this.xAccess(elem) >= this.xInfo.min );
-		if ( k > 0 ) this.data.splice(0,k-1);
+		//need to shift data for all lines and vertCoors
+        for( let line of this.lines ){
+            let k = line.data.findIndex( 
+			     elem => elem.x >= this.xInfo.min );
+		if ( k > 0 ) line.data.splice(0,k-1);
+        }
+        let k = this.vertCoors.findIndex( 
+			x => x >= this.xInfo.min );
+		if ( k > 0 ) this.vertCoors.splice(0,k-1);
+        
 		return true;	
 	};
 	shiftXaxis2(){
 		let delta = this.xInfo.max - this.xInfo.min;
 		this.xInfo.min = this.xInfo.max;
 		this.xInfo.max += delta;
-		this.data.splice(0,this.data.length-1);
-		this.setupThenRedraw();
+		
+        for( let line of this.lines ){
+             line.data.splice(0,line.data.length - 1);
+        }
+//        this.vertCoors.length = 0;
+//        this.vertCoors.push(this.xInfo.min);
+        this.setupThenRedraw();
 	}
 	updateYaxis(y){
 		if ( y <= this.yInfo.max ) return false;
@@ -284,62 +299,100 @@ export class TioxGraph {
 		this.drawLines();
 	};
     drawLines () {
-		this.ctx.save();
-		this.ctx.beginPath();
-  		this.ctx.rect(this.inner.left, 0,
+		let ctx = this.ctx;
+        ctx.save();
+		ctx.beginPath();
+  		ctx.rect(this.inner.left, 0,
 						  this.inner.width, this.outer.height);
-  		this.ctx.clip(); // for the first quadrant of graph.
-
-		for( let line of this.lines ) {
-			if( !line.visible ) continue;
-            let ctx = this.ctx;
-			ctx.lineWidth = line.lineWidth;
-			ctx.strokeStyle = 
-					ctx.fillStyle = line.color;
-			let last = {x:null, y: null};
-			ctx.beginPath();
-			
-			for (let  p of this.data ){
-				if( p.restart ){
-                    last.y = null;
-                    continue;
-                };
-                let cur = {x: this.xAccess(p),
-				        y: line.yAccess(p)};
-				if( cur.y == undefined) continue;
-
-                if( last.y == null ) {  //handles first point.
-                        ctx.moveTo( 
-                            this.xScale(cur.x),
-                            this.yScale(cur.y, line.right));
-
-                } else {
-                    if(line.vertical) {
-                        ctx.lineTo( 
-                           this.xScale(cur.x),
-                           this.yScale(last.y, line.right));
-                    }
-                    if( cur.y != null ) {
-                        ctx.lineTo( 
-                                this.xScale(cur.x),
-                                this.yScale(cur.y, line.right));
-                        ctx.stroke();
-                    }
-                }
-
-                if( cur.y != null && line.dotSize > 0) {
-                    ctx.beginPath();
-                    ctx.arc(this.xScale(cur.x),
-                        this.yScale(cur.y, line.right), line.dotSize,
-                            0,2*Math.PI, true);
-                    ctx.fill();
-                    ctx.stroke();
-                }
-                last = cur;
-			}
-		}
-		this.ctx.restore();   // removes the clip path
-	};
+//        ctx.fillStyle = 'pink';
+//        ctx.fill()
+  		ctx.clip(); // for the first quadrant of graph.
+        
+        for( let line of this.lines ){
+            line.drawLine();
+        }
+        
+        ctx.beginPath();
+        ctx.strokeStyle = vertLines.color;
+        ctx.lineWidth = vertLines.lineWidth;
+        for( let t of this.vertCoors){
+            const xg = this.xScale(t);
+            ctx.moveTo(xg, this.inner.bot);
+            ctx.lineTo(xg, this.inner.top);   
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+    };
+        
+        
+        
+        
+        
+        
+//        
+//        ctx.strokeStyle = cbColors.purple;
+//        ctx.lineWidth = 10;
+//		for(let p of this.data){
+//            if( p.restart ){
+//                    // draw vertical line
+//                    const xg = this.xScale(this.xAccess(p));
+//                    ctx.moveTo( xg, this.inner.bot );
+//                    ctx.lineTo( xg, this.inner.top );
+//                };
+//        };
+//        ctx.stroke(); 
+//        
+//        for( let line of this.lines ) {
+//			if( !line.visible ) continue;
+//            
+//			ctx.lineWidth = line.lineWidth;
+//			ctx.strokeStyle = 
+//					ctx.fillStyle = line.color;
+//			let last = {x:null, y: null};
+//			ctx.beginPath();
+//			
+//			for (let  p of this.data ){
+//				let cur = {x: this.xAccess(p),
+//				        y: line.yAccess(p)};
+//				if( p.restart ){
+//                    last.y = null;
+//                    continue;
+//                };
+//                if( cur.y == undefined) continue;
+//
+//                if( last.y == null ) {  //handles first point.
+//                        ctx.moveTo( 
+//                            this.xScale(cur.x),
+//                            this.yScale(cur.y, line.right));
+//
+//                } else {
+//                    if(line.vertical) {
+//                        ctx.lineTo( 
+//                           this.xScale(cur.x),
+//                           this.yScale(last.y, line.right));
+//                    }
+//                    if( cur.y != null ) {
+//                        ctx.lineTo( 
+//                                this.xScale(cur.x),
+//                                this.yScale(cur.y, line.right));
+//                        ctx.stroke();
+//                    }
+//                }
+//
+//                if( cur.y != null && line.dotSize > 0) {
+//                    ctx.beginPath();
+//                    ctx.arc(this.xScale(cur.x),
+//                        this.yScale(cur.y, line.right), line.dotSize,
+//                            0,2*Math.PI, true);
+//                    ctx.fill();
+//                    ctx.stroke();
+//                }
+//                last = cur;
+//			}
+//		}
+//		ctx.restore();   // removes the clip path
+//	};
 	
 	checkBounds(p){
 		//either p.x or one of p.y is out of bounds 
@@ -363,57 +416,111 @@ export class TioxGraph {
 	
 	drawOnePoint(p){
 		this.checkBounds(p);
-		this.data.push(p);
-        const ctx = this.ctx;
-//		console.log('in draw one',p);
-		
-        for( let line of this.lines ) {
-//			console.log(' in one draw color=',line.color);
-		  let cur = {x: this.xAccess(p), y: line.yAccess(p)};
-		  if( line.visible && !p.restart ) {
-			ctx.lineWidth = line.lineWidth;
-			ctx.strokeStyle = 
-				ctx.fillStyle = line.color;
-			
-			//if no data then skip it and keep last for next data point
-			if( cur.y === undefined) continue;
-			
-			//no previous point then skip drawing line
-			if( line.last.y != null ) {
-				ctx.beginPath();
-
-				ctx.moveTo( 
-					this.xScale(line.last.x),
-					this.yScale(line.last.y, line.right));
-
-				if(line.vertical) {
-					ctx.lineTo( 
-						this.xScale(cur.x),
-						this.yScale(line.last.y, line.right));
-				}
-				if( cur.y != null) {
-					ctx.lineTo( 
-						this.xScale(cur.x),
-						this.yScale(cur.y, line.right));
-					ctx.stroke();
-				}
-			}
-
-			if( cur.y != null && line.dotSize > 0 ) {
-				ctx.beginPath();
-				ctx.arc(this.xScale(cur.x),
-					this.yScale(cur.y, line.right), line.dotSize,
-					0,2*Math.PI, true);
-//				console.log('draw one',line.dotSize,
-//							cur.x,cur.y,this.ctx.lineWidth);
-				ctx.fill();
-				ctx.stroke();
-			}
-		  }
-		  line.last = cur;
-		  this.xInfo.lastX = cur.x;	
-		}
-	};
+		const pair = {};
+        pair.x = this.xAccess(p);
+        for( let line of this.lines) {
+            pair.y = line.yAccess(p);
+            if( pair.y != null ){
+                line.drawPoint(pair);
+                line.data.push({...pair});
+            }
+        };
+//        for( let i = 0; i < this.lines.length; i++ ){
+//            
+//            console.log('line',i,' and data= ',this.lines[i].data);
+//        }
+    };
+//        this.data.push(p);
+//        const ctx = this.ctx;
+////		console.log('in draw one',p);
+//		
+//        if( p.restart ){
+//            ctx.strokeStyle = cbColors.purple;
+//            ctx.lineWidth = 10;
+//            const xg = this.xScale(this.xAccess(p));
+//            ctx.moveTo( xg, this.inner.bot );
+//            ctx.lineTo( xg, this.inner.top );
+//            ctx.stroke();
+//            return;
+//        };
+//        
+//        for( let line of this.lines ) {
+////			console.log(' in one draw color=',line.color);
+//            let cur = {x: this.xAccess(p), y: line.yAccess(p)};
+//            if( line.visible ) {
+//			ctx.lineWidth = line.lineWidth;
+//			ctx.strokeStyle = 
+//				ctx.fillStyle = line.color;
+//			
+//			//if no data then skip it and keep last for next data point
+//			if( cur.y === undefined) continue;
+//			
+//			//no previous point then skip drawing line
+//			if( line.last.y != null ) {
+//				ctx.beginPath();
+//
+//				ctx.moveTo( 
+//					this.xScale(line.last.x),
+//					this.yScale(line.last.y, line.right));
+//
+//				if(line.vertical) {
+//					ctx.lineTo( 
+//						this.xScale(cur.x),
+//						this.yScale(line.last.y, line.right));
+//				}
+//				if( cur.y != null) {
+//					ctx.lineTo( 
+//						this.xScale(cur.x),
+//						this.yScale(cur.y, line.right));
+//					ctx.stroke();
+//				}
+//			}
+//
+//			if( cur.y != null && line.dotSize > 0 ) {
+//				ctx.beginPath();
+//				ctx.arc(this.xScale(cur.x),
+//					this.yScale(cur.y, line.right), line.dotSize,
+//					0,2*Math.PI, true);
+////				console.log('draw one',line.dotSize,
+////							cur.x,cur.y,this.ctx.lineWidth);
+//				ctx.fill();
+//				ctx.stroke();
+//			}
+//		  }
+//		  line.last = cur;
+//		  this.xInfo.lastX = cur.x;	
+//		}
+//	};
+    restartGraph(t){
+        console.log('enter restart routine with length=',this.vertCoors.length,this.vertCoors);
+        
+        // exit if no new point on first line
+        const line0data = this.lines[0].data;
+        let k = line0data.length -1;
+        if( line0data[k].y == null ) return;
+        
+        
+        for( let line of this.lines ){
+           k = line.data.length - 1;
+          console.log(line.data.length,line.data);
+            
+          if( line.data[k].y != null ){
+              line.data.push({x:t,y:null});
+          }
+        };
+        
+        //graph grey veritcal line at t
+        this.vertCoors.push(t);
+        console.log('pushed value ',t, 'on vertical coord list');
+        this.ctx.strokeStyle = vertLines.color;
+        this.ctx.lineWidth = vertLines.lineWidth;
+        this.ctx.beginPath();
+        const xg = this.xScale(t);
+        this.ctx.moveTo(xg, this.inner.top);
+        this.ctx.lineTo(xg, this.inner.bot);
+        this.ctx.closePath();
+        this.ctx.stroke();
+    };
 	
 };
     
@@ -434,7 +541,7 @@ export class GraphLine{
         this.dotSize = dotSize;
         this.origDotSize = dotSize;
         this.right = right;
-        this.last = {x:null,y:null};
+        this.data = [{x:0,y:null}];
     };
         
     createLegend(text){
@@ -472,6 +579,76 @@ export class GraphLine{
           this.button.classList.add('crossOut');
         this.graph.setupThenRedraw();
     };
+    
+    drawPoint(pair){
+        if( !this.visible ) return;
+        const ctx = this.graph.ctx;
+        ctx.fillStyle = this.color;
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.lineWidth;
+        ctx.beginPath();
+        
+        const k = this.data.length - 1;
+        const last = this.data[k];
+//        console.log('inside drawPoint last', last.x,last.y,
+//                    'and pair=',pair.x,pair.y)
+        if( last.y != null){
+            ctx.moveTo(this.graph.xScale(last.x),
+                       this.graph.yScale(last.y,this.right));
+            ctx.lineTo(this.graph.xScale(pair.x),
+                       this.graph.yScale(pair.y,this.right));
+            ctx.stroke()
+        }
+        
+        if( this.dotSize > 0) {
+            ctx.beginPath();
+            ctx.arc(this.graph.xScale(pair.x),
+					this.graph.yScale(pair.y, this.right),
+                    this.dotSize, 0, 2*Math.PI, true);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.fill();
+        }
+        ctx.closePath();
+        ctx.stroke();
+        ctx.fill();
+        
+    };
+    
+    drawLine(){
+        if( !this.visible) return;
+        const ctx = this.graph.ctx;
+        ctx.fillStyle = this.color;
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = this.lineWidth;
+        ctx.beginPath();
+        
+        let last = {x: null, y: null};
+        for( let pair of this.data ){
+            if( pair.y != null ){
+                if( last.y != null ){
+                    ctx.moveTo(this.graph.xScale(last.x),
+                               this.graph.yScale(last.y,this.right));
+                    ctx.lineTo(this.graph.xScale(pair.x),
+                               this.graph.yScale(pair.y,this.right));
+                    ctx.stroke();
+                };
+                if( this.dotSize > 0) {
+                    ctx.beginPath();
+                    ctx.arc(this.graph.xScale(pair.x),
+					   this.graph.yScale(pair.y, this.right),
+                        this.dotSize, 0, 2*Math.PI, true);
+                    ctx.closePath();
+                    ctx.stroke();
+                    ctx.fill();
+                }
+            };
+            last = pair;
+        };
+        ctx.closePath();
+        ctx.stroke();
+        ctx.fill();
+    }
 };
     	
 	
