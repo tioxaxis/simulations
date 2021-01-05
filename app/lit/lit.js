@@ -53,7 +53,8 @@ from '../mod/genHTML.js';
 
 class LittleGraph extends TioxGraph {
 	constructor(){
-		super(lit,'chartCanvaslit',40, {width:20, step:5}, d=>d.t);
+		super(lit,'chartCanvaslit',40, {width:20, step:5}, d=>d.t,
+             2000,600,false);
 		this.predictedInvValue = null;
 		this.setTitle('Inventory');
 		const avgInv = new GraphLine(this, d => d.i, cbColors.blue,

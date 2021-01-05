@@ -59,7 +59,8 @@ from '../mod/genHTML.js';
 
 class InvGraph extends TioxGraph {
 	constructor(){
-		super(inv,'chartCanvasinv',40, {width:24, step:6}, d=>d.t);
+		super(inv,'chartCanvasinv',40, {width:24, step:6}, d=>d.t,
+             2000,600,false);
 		this.predictedInvValue = null;
 		this.setTitle('Inventory');
 		const onhandInv = new GraphLine(this, d => d.i, cbColors.blue,

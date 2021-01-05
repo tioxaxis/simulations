@@ -19,7 +19,7 @@
 */		
 
 import {
-	DeterministicRV, Heap, cbColors
+	DeterministicRV, Heap, cbColors, StageOnCanvas
 }
 from "../mod/util.js";
 import {
@@ -51,7 +51,8 @@ from '../mod/genHTML.js';
 
 class FacGraph extends TioxGraph {
 	constructor(){	
-		super(fac, 'chartfac', 40, {width:200, step:40}, d=>d.t, true);
+		super(fac, 'chartfac', 40, {width:200, step:40}, d=>d.t,
+              1400, 500, true);
 		const flowtime = new GraphLine(this, d => d.flow, cbColors.blue,
 					   false, true,  5, 8);
 		const throughput = new GraphLine(this,d => d.thru, cbColors.yellow,
@@ -241,14 +242,27 @@ function facDefine(){
     fac.creatorTime = new DeterministicRV(0);
     
 
-	anim.stage.foreContext = document
-			.getElementById('foregroundfac')
-			.getContext('2d');
-	anim.stage.backContext = document
-			.getElementById('backgroundfac')
-			.getContext('2d');
+	anim.stage.foreground = new StageOnCanvas('foregroundfac',
+                                anim.stage.width, anim.stage.height);
+    anim.stage.background = new StageOnCanvas('backgroundfac',
+                                anim.stage.width, anim.stage.height);
+    anim.stage.foreContext = anim.stage.foreground.reset();
+	anim.stage.backContext = anim.stage.background.reset();
 	fac.stage = anim.stage;
+    
+    window.addEventListener('resize',redoStagesGraphfac );
     return fac;
+};
+
+function redoStagesGraphfac(){
+    anim.stage.foreground.reset();
+    anim.stage.background.reset();
+    fac.graph.chart.reset();
+    
+    
+    fac.graph.setupThenRedraw();
+    fac.clearRedrawStage(0,true);
+    console.log('in facegame and called redoStages');
 };
 
 function markCard(){
@@ -335,6 +349,8 @@ function localUpdateFromUser(inp){
         fac.graph.restartGraph(fac.now/tioxTimeConv);
     }
 }; 
+
+
 
 class AnimForQueue  {
 	constructor( which, lanes, left, top, anim) {
@@ -479,7 +495,7 @@ class animForWorker {
             fac.graph.push(fac.now, fac.now - card.arrivalTime, thruput );
         }
     };
-    draw(){
+    draw(redraw = false){
         // helper functions: clear, draw, update an individual worker
         const clearIndiv = (j) => {
             ctx.clearRect(this.left-lineWidth, 
@@ -522,14 +538,20 @@ class animForWorker {
         let number = Number(document.getElementById('quantity'+this.which+'fac').value);
         if( fac.stageTimes[this.which].mean == 0 ) number = 0;
         
-        for( let j = 0; j < 3; j++){
-            if( j < number ){
-                if( j < this.lastNumber ) updateIndiv(j);
-                else drawIndiv(j);
-            } else if( j < this.lastNumber ) clearIndiv(j);
-        };
-        this.lastNumber = number;
-    }
+        if( redraw ){
+            for( let j = 0; j < number; j++){
+             drawIndiv(j);
+            }
+        } else {
+            for( let j = 0; j < 3; j++){
+                if( j < number ){
+                    if( j < this.lastNumber ) updateIndiv(j);
+                    else drawIndiv(j);
+                } else if( j < this.lastNumber ) clearIndiv(j);
+            };
+            this.lastNumber = number;
+        }
+    };
 };
 
 const theSimulation = {
@@ -579,33 +601,45 @@ const theSimulation = {
 			this.supply, this.queues[0],
 			animForCreator);
 		fac.resetCollection.push(this.creator);
+        
+        fac.animWorkers= [];
 
-		const animWorker0 = new animForWorker(0);
-        fac.resourceCollection.push(animWorker0);
-        this.workers[0] = new MachineCenter(fac, "worker0",
-			1, fac.stageTimes[0],
-			this.queues[0], this.queues[1],
-			animWorker0);
-        animWorker0.machineCenter = this.workers[0];
-		fac.resetCollection.push(this.workers[0]);
-        
-        const animWorker1 = new animForWorker(1);
-        fac.resourceCollection.push(animWorker1);
-        this.workers[1] = new MachineCenter(fac, "worker1",
-			1, fac.stageTimes[1],
-			this.queues[1], this.queues[2],
-			animWorker1);
-        animWorker1.machineCenter = this.workers[1];
-		fac.resetCollection.push(this.workers[1]);
-        
-        const animWorker2 = new animForWorker(2);
-        fac.resourceCollection.push(animWorker2);
-        this.workers[2] = new MachineCenter(fac, "worker2",
-			1, fac.stageTimes[2],
-			this.queues[2], this.walkOffStage,
-			animWorker2);
-        animWorker2.machineCenter = this.workers[2];
-		fac.resetCollection.push(this.workers[2]);
+        for( let j = 0; j < 3; j++){
+            fac.animWorkers[j] = new animForWorker(j);
+            fac.resourceCollection.push(fac.animWorkers[j]);
+            this.workers[j] = new MachineCenter(fac, "worker"+j,
+                 1, fac.stageTimes[j],
+			     this.queues[j], this.queues[j+1],
+			     fac.animWorkers[j]);
+            fac.animWorkers[j].machineCenter = this.workers[j];
+		    fac.resetCollection.push(this.workers[j]);
+        }
+//		const animWorker0 = new animForWorker(0);
+//        fac.resourceCollection.push(animWorker0);
+//        this.workers[0] = new MachineCenter(fac, "worker0",
+//			1, fac.stageTimes[0],
+//			this.queues[0], this.queues[1],
+//			animWorker0);
+//        animWorker0.machineCenter = this.workers[0];
+//		fac.resetCollection.push(this.workers[0]);
+//        
+//        const animWorker1 = new animForWorker(1);
+//        fac.resourceCollection.push(animWorker1);
+//        this.workers[1] = new MachineCenter(fac, "worker1",
+//			1, fac.stageTimes[1],
+//			this.queues[1], this.queues[2],
+//			animWorker1);
+//        animWorker1.machineCenter = this.workers[1];
+//		fac.resetCollection.push(this.workers[1]);
+//        
+//        const animWorker2 = new animForWorker(2);
+//        fac.resourceCollection.push(animWorker2);
+//        this.workers[2] = new MachineCenter(fac, "worker2",
+//			1, fac.stageTimes[2],
+//			this.queues[2], this.walkOffStage,
+//			animWorker2);
+//        animWorker2.machineCenter = this.workers[2];
+//		fac.resetCollection.push(this.workers[2]);
         
         this.queues[0].setPreviousNext(this.creator, this.workers[0]);
         this.queues[1].setPreviousNext(this.workers[0], this.workers[1]);
@@ -679,7 +713,7 @@ class Card extends Item {
 }; // end class Person
 const pi2 =2 * 3.14159;
 const pi = 3.14159;
-class FaceCard {
+export class FaceCard {
     constructor(ctx,x,y,w,h){
         this.ctx = ctx;
         this.x = x;

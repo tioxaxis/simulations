@@ -19,7 +19,7 @@
 */		
 
 import {
-	GammaRV, Heap, cbColors, Average
+	GammaRV, Heap, cbColors, Average, StageOnCanvas
 }
 from "../mod/util.js";
 import {
@@ -51,7 +51,8 @@ from '../mod/genHTML.js';
 
 class QueueGraph extends TioxGraph {
 	constructor(){	
-		super(que,'chartCanvasque', 40, {width:10, step:2}, d=>d.t);
+		super(que,'chartCanvasque', 40, {width:10, step:2}, d=>d.t,
+             2000,600,false);
 		this.setTitle('Waiting Time');
 		const indivWait = new GraphLine(this, d => d.i, cbColors.blue,
 					                   false, true,  5, 10);
@@ -171,22 +172,38 @@ function queDefine(){
 	
 	que.tioxTimeConv = tioxTimeConv;
 
-	anim.stage.foreContext = document
-			.getElementById('foregroundque')
-			.getContext('2d');
-	anim.stage.backContext = document
-			.getElementById('backgroundque')
-			.getContext('2d');
+	
+    
+    anim.stage.foreground = new StageOnCanvas('foregroundque',
+                                anim.stage.width, anim.stage.height);
+    anim.stage.background = new StageOnCanvas('backgroundque',
+                                anim.stage.width, anim.stage.height);
+    anim.stage.foreContext = anim.stage.foreground.reset();
+	anim.stage.backContext = anim.stage.background.reset();
+	que.stage = anim.stage;
+    
+    window.addEventListener('resize',redoStagesGraphque );
     
     const tsaAgent = document.getElementById("tsaAgent");
     anim.stage.backContext
         .drawImage(tsaAgent, anim.person.path.headQueue+10,
                    30, 80, 100);
      
-	que.stage = anim.stage;
 	gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height);
 };
+
+function redoStagesGraphque(){
+    anim.stage.foreground.reset();
+    anim.stage.background.reset();
+    que.graph.chart.reset();
+    
+    
+    que.graph.setupThenRedraw();
+    que.clearRedrawStage(0,true);
+    console.log('in queueing and called redoStages');
+};
+
 
 class Queueing extends OmConcept{
     constructor(usrInputs){
@@ -364,7 +381,7 @@ const animForTSA = {
 		let locY = anim.person.path.top;
 		let c = anim.stage.backContext;
 	
-		c.resetTransform();
+//		c.resetTransform();
 		c.strokeStyle = 'blue';
 		c.lineWidth = 5;
 		c.beginPath();

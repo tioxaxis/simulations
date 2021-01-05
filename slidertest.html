@@ -18,36 +18,303 @@
     .crossOut{
         text-decoration-line: line-through;
         }
-        .gridbox{
+        .leftHandSideBoxX {
+            position: relative;
+            width: 60vw;
+            height: 15vw;
+            border: solid red;
+        }
+
+        .foregroundx{
             border: solid green;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .gridclass{
+            display:grid;
+            grid-template-columns: 50% 50%;
         }
     </style>
+    
+
 </head>
 <body>
-    <div id='place' style='width: 40%'>
-        
-        
+
+    <button type="button" id="button1" onclick="draw1()">First</button>
+    <button type="button" id="button2" onclick="draw2()">Second</button>
+    <button type="button" id="button3" onclick="draw3()">Third</button>
     
-    </div>
-    <div style='width: 80%'> 
-    <div class='grid2col'><div class='rightJustify gridbox'>&#11044;</div><div class='leftJustify gridbox'>Title of Legend<br>(underword)</div>
-        <div class='gridbox'>2nd line left</div><div class='gridbox'>2nd line right</div>
-    </div>
-    </div>
     
+    
+    <div class='leftHandSideBoxX'>0
+        <span id=item0></span>
+
+	   <canvas class="theStage foregroundx" id="foreground0" ></canvas>
+	   <canvas class="theStage background" id="background0" ></canvas>
+    </div>
+
+  
+  
     
 </body>
-<script type='module'>
-    import {
-         genRange,  htmlNumSlider, NumSlider,
-                    htmlArbSlider, ArbSlider,
-         htmlCheckBox, CheckBox,
-        genRadio , htmlRadioButton, RadioButton ,
-        IntegerInput, 
-        LegendItem
-          
+    <script >
+    
+    
+ const pi2 =2 * 3.14159;
+const pi = 3.14159;
+ class FaceCard {
+    constructor(ctx,x,y,w,h){
+        this.ctx = ctx;
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+        this.start = {face:null, eyes:null, nose: null, 
+                     ears:null, mout:null, hair:null};
+        this.mark = false;
     }
-    from "./app/mod/genHTML.js";
+    startStage (stage, now){
+        //set start time for each feature at stage
+        let t = now + moveTime;
+        for ( let key in fac.features){
+            let s = Number(fac.usrInputs.get(key).get())
+            if( s == stage){
+                this.start[key] = t;
+                t += fac.features[key].adjustedTime;
+            };
+        };
+    };
+    moveTo(x, y) {
+		this.x = Math.floor(x);
+		this.y = Math.floor(y);
+	};
+    
+    draw(now,lineWidth= 1){
+        let ctx = this.ctx;
+         ctx.save();
+        
+        ctx.translate(this.x + anim.box.delta,
+                      this.y + anim.box.delta);
+        ctx.beginPath();
+        ctx.strokeStyle = 'black';
+        ctx.fillStyle = 'white';
+        ctx.lineWidth = lineWidth;
+        console.log('line Width',lineWidth);
+        
+        ctx.rect(0,0,this.w,this.h);
+        
+        if( this.mark ){
+//            ctx.font = "30px Material-icons";
+            ctx.fillStyle = 'pink';
+//            ctx.fillText('\u153',0,0);
+           
+        };
+        ctx.closePath();
+        ctx.fill();
+        ctx.moveTo( this.w*.05,this.h*.05);
+        ctx.lineTo( this.w*.95,this.h*.95);
+        ctx.stroke();
+        
+        
+        for( let key in this.start ){
+            const s = this.start[key];
+            if( !s || now < s ) continue;
+            const frac = Math.min(1,(now-s)/fac.features[key].adjustedTime);
+            const frac1 = Math.min(1,frac*2);
+            const frac2 = ( frac - 0.5 ) * 2;
+//            const sg = fac.usrInputs.get(key).get();
+            ctx.strokeStyle = 'blue'
+            switch (key) {
+                case 'face':
+                    ctx.beginPath();
+                    ctx.lineWidth = lineWidth;
+                    ctx.arc(.5*this.w, .5*this.h, .325*this.w, 0, frac*pi2);
+                    ctx.stroke();
+                    ctx.closePath();
+                    break;
+                case 'eyes':
+                    
+                    ctx.beginPath();
+                    ctx.arc(.35*this.w,.4*this.h,.07*this.w,0,frac1*pi2);
+                    ctx.stroke();
+                    ctx.closePath();
+                    ctx.beginPath();
+                    ctx.arc(.33*this.w,.42*this.h,.02*this.w,0,frac1*pi2);
+                    ctx.stroke();
+                    ctx.closePath();
+                    if( frac <=.5 ) break;
+                    ctx.beginPath();
+                    ctx.arc(.65*this.w,.4*this.h,.07*this.w,0,frac2*pi2);
+                    ctx.stroke();
+                    ctx.closePath();
+                    ctx.beginPath();
+                    ctx.arc(.63*this.w,.42*this.h,.02*this.w,0,frac2*pi2);
+                    ctx.stroke();
+                    ctx.closePath();
+                    break;
+                case 'nose':
+                    ctx.beginPath();
+                    ctx.moveTo(.5*this.w,.4*this.h);
+                    ctx.lineTo((.5 -.1*frac1)*this.w,(.4 +.2*frac1)*this.h);
+                    if( frac > .5 )  
+                        ctx.lineTo((.4+.1*frac2)*this.w,.6*this.h);
+                    ctx.stroke();
+                    ctx.closePath();
+                    break;
+                case 'ears':
+                    ctx.beginPath();
+                    ctx.arc(0.25*this.w, 0.5*this.h, 0.15*this.w, 0.6*pi,
+                            (0.6 + 0.8 * frac1)*pi);
+                    ctx.stroke();
+                    ctx.closePath();
+                    if( frac < 0.5 ) break;
+                    ctx.beginPath();
+                    ctx.arc(.75*this.w, .5*this.h, .15*this.w, 1.6*pi,
+                            ((1.6 + .8 * frac2) % 2)*pi);
+                    ctx.stroke();
+                    ctx.closePath();
+                    break;
+                case 'mout':
+                    ctx.beginPath();
+                    ctx.arc(.5*this.w, .48*this.h, .25*this.w, .20*pi,
+                            (.2 + frac*.6)*pi);
+                    ctx.stroke();
+                    ctx.closePath();
+                    break;
+                case 'hair':
+                    ctx.beginPath();
+                    ctx.moveTo(.3*this.w,.25*this.h);
+                    ctx.lineTo(.35*this.w,.1*this.h);
+                    if( frac > .125 ) ctx.lineTo(.40*this.w,.2*this.h);
+                    if( frac > .250 ) ctx.lineTo(.45*this.w,.1*this.h);
+                    if( frac > .375 ) ctx.lineTo(.5*this.w,.2*this.h);
+                    if( frac > .500 ) ctx.lineTo(.55*this.w,.1*this.h);
+                    if( frac > .625 ) ctx.lineTo(.6*this.w,.2*this.h);
+                    if( frac > .750 ) ctx.lineTo(.65*this.w,.1*this.h);
+                    if( frac > .875 ) ctx.lineTo(.7*this.w,.25*this.h);
+                    ctx.stroke();
+                    ctx.closePath();
+                    break;
+                    
+            }
+        }
+        ctx.restore();
+    };
+};
+    var anim = {};
+    anim.box ={delta: 20};
+     var stage = {};
+    
+class stageOnCanvas{
+    constructor (id, w, h){
+        this.canv = document.getElementById(id);
+        this.context = this.canv.getContext('2d');
+        this.stage = {width:w, height:h};
+    };
+    reset(){
+        const rect = this.canv.getBoundingClientRect();
+        this.canv.width = rect.width * devicePixelRatio;
+        this.canv.height = rect.height * devicePixelRatio;
+        this.context.scale(this.canv.width/this.stage.width,
+                           this.canv.height/this.stage.height);
+        return this.context;
+    };
+};
+function setup(id){
+    var canv = document.getElementById(id);
+    const ctx = canv.getContext('2d');
+    const rect = canv.getBoundingClientRect();
+    canv.width = rect.width * devicePixelRatio;
+    canv.height = rect.height * devicePixelRatio;
+    ctx.scale(c.width/800,c.height/200);
+    
+    
+    console.log('in setup', rect.width, rect.height, c.width, c.height);
+
+    
+//    const item = document.getElementById('item'+k);
+//    item.innerHTML = 'Rectangle: '+rect.width.toFixed(0)+' x '+rect.height.toFixed(0)
+//            +'<br>Canvas style Width '+ c.style.width +
+//        '<br>  Canvas Width x Height: '+ c.width+' x '+c.height;
+    return ctx;
+    
+};
+    
+//    const size = [2000,1000,3000,1500,4000,2000,5000,2500];
+//    var ctx = [];
+// function updateBR(){
+//      setup(0);
+// }
+    
+    const stg = new stageOnCanvas('foreground0',800,200);
+    const cty = stg.reset();
+    window.onresize = stg.reset.bind(stg);
+    
+    
+    
+    
+    
+    
+    var fac = {};
+    fac.features = {face:{}, eyes:{}, nose: {}, 
+                     ears:{}, mout:{}, hair:{}};
+    
+    
+    fac.features.face.adjustedTime = 1;
+    fac.features.eyes.adjustedTime = 1;
+    fac.features.nose.adjustedTime = 1;
+    fac.features.ears.adjustedTime = 1;
+    fac.features.mout.adjustedTime = 1;
+    fac.features.hair.adjustedTime = 1;
+    
+//    var faces=[];
+//    for(let i = 0; i<8; i+=2){
+//         faces[i] = new FaceCard(ctx[i], size[i]/100, size[i]/100,
+//                          size[i]/25, size[i]/25);
+//    faces[i].start = {face:10, eyes:10, nose: 10, 
+//                     ears:10, mout:10, hair:10};
+//    faces[i].draw(100,2); //Math.ceil(size[i]/size[0]));
+//    }
+//    for(let i = 1; i<8; i+=2){
+//         faces[i] = new FaceCard(ctx[i], size[i]/100, size[i]/100,
+//                          100,100);
+//    faces[i].start = {face:10, eyes:10, nose: 10, 
+//                     ears:10, mout:10, hair:10};
+//    faces[i].draw(100,2); //Math.ceil(size[i]/size[0]));
+//    }
+    
+    
+    var f1 = new FaceCard(cty, 50, 50,
+                          100, 100);
+    f1.start = {face:10, eyes:10, nose: 10, 
+                     ears:10, mout:10, hair:10};
+    f1.draw(100,1);
+    
+    function draw1(){
+        var f1 = new FaceCard(cty, 250, 50, 100, 100);
+        f1.start = {face:10, eyes:10, nose: 10, 
+                     ears:10, mout:10, hair:10};
+        f1.draw(100,1);
+    };
+    
+    function draw2(){
+        var f1 = new FaceCard(cty, 450, 50, 100, 100);
+        f1.start = {face:10, eyes:10, nose: 10, 
+                     ears:10, mout:10, hair:10};
+        f1.draw(100,1);
+    };
+    
+    function draw3(){
+        var f1 = new FaceCard(cty, 650, 50, 100, 100);
+        f1.start = {face:10, eyes:10, nose: 10, 
+                     ears:10, mout:10, hair:10};
+        f1.draw(100,1);
+    };
+    
+    
 //    function numSpecifics(){
 //        console.log('called the num specifics routines value is',NumSlider.get());
 //    };
@@ -63,26 +330,26 @@
 //        console.log('called the cb specifics routines value is',cb.get());
 //    };
     
-    let spRoutines ={}
-    
-    let place = document.getElementById('place');
-    
-    let numInput = genRange('numid','6.0',5, 9, 1);
-    let numSliderBox = htmlNumSlider(numInput,
-                        'Numeric Range = ', '6.0', [5, 7, 9] );
-    let numRngObj = new NumSlider('num', numInput, localRoutine,1,2,10);
-    place.append(numSliderBox);
-    
-
-    let arbInput = genRange('arbid',0 ,0, 4, 1);
-    let arbSliderBox = htmlArbSlider(arbInput,
-                        'Arbitrary Range = ', 'A' 
-                        , ['A','C','E']  );
-    let arbRngObj = new ArbSlider(arbInput, localRoutine,
-                                 ['A','B','C','D','E'], ['a','b','c','d','e']);
-    place.append(arbSliderBox);
-        
-    spRoutines['numid']=numRngObj;
+//    let spRoutines ={}
+//    
+//    let place = document.getElementById('place');
+//    
+//    let numInput = genRange('numid','6.0',5, 9, 1);
+//    let numSliderBox = htmlNumSlider(numInput,
+//                        'Numeric Range = ', '6.0', [5, 7, 9] );
+//    let numRngObj = new NumSlider('num', numInput, localRoutine,1,2,10);
+//    place.append(numSliderBox);
+//    
+//
+//    let arbInput = genRange('arbid',0 ,0, 4, 1);
+//    let arbSliderBox = htmlArbSlider(arbInput,
+//                        'Arbitrary Range = ', 'A' 
+//                        , ['A','C','E']  );
+//    let arbRngObj = new ArbSlider(arbInput, localRoutine,
+//                                 ['A','B','C','D','E'], ['a','b','c','d','e']);
+//    place.append(arbSliderBox);
+//        
+//    spRoutines['numid']=numRngObj;
     
 //    let ArbSlider = new ArbSlider('arbid',arbSpecifics,
 //                                ['A','B','C','D','E'],
@@ -93,18 +360,18 @@
 //    let arbHTML = ArbSlider.htmlArbSlider('Arbitrary Range =',1,['A','C','E']   );
     
 //    place.append(numSliderBox);
-    console.log(numRngObj.get());
-    console.log(arbRngObj.get());
-    console.log(arbRngObj.getValue());
-    
-    numRngObj.set(9);
-    arbRngObj.set(4);
-    console.log(numRngObj.get());
-    console.log(arbRngObj.get());
-    console.log(arbRngObj.getValue());
-    function localRoutine(key){
-        console.log('reached local rountine with key=>'+key+'<=')
-    }
+//    console.log(numRngObj.get());
+//    console.log(arbRngObj.get());
+//    console.log(arbRngObj.getValue());
+//    
+//    numRngObj.set(9);
+//    arbRngObj.set(4);
+//    console.log(numRngObj.get());
+//    console.log(arbRngObj.get());
+//    console.log(arbRngObj.getValue());
+//    function localRoutine(key){
+//        console.log('reached local rountine with key=>'+key+'<=')
+//    }
     
 //    let cbInput = genCheckBox('cbid');
 //    let cbElem = htmlCheckBox(cbInput,'here is a checkbox');
@@ -115,32 +382,26 @@
     
     
 //    spRoutines['action'] = rb;
-    place.append(
-    htmlRadioButton('action','play','play',true,'PlayLabel'),
-    htmlRadioButton('action','pause','pause',false,'PauseLabel'),
-    htmlRadioButton('action','none','none',false,'NoneLabel')
-    );
-    let rb = new RadioButton('action',localRoutine, ["none","play","pause"]);
-    
-    rb.set('pause');
-    console.log('radio button output',rb.get()+'>'+rb.encode(rb.get())+'<');
-    
-    rb.set('none');
-    console.log('radio button output',rb.get()+'>'+rb.encode(rb.get())+'<');
-    
-    
-    let intRange = genRange('intid', 4, 2, 12, 2);
-    let intInput = new IntegerInput(intRange, localRoutine, 2);
-    place.append('here is a integer box',intRange);
+//    place.append(
+//    htmlRadioButton('action','play','play',true,'PlayLabel'),
+//    htmlRadioButton('action','pause','pause',false,'PauseLabel'),
+//    htmlRadioButton('action','none','none',false,'NoneLabel')
+//    );
+//    let rb = new RadioButton('action',localRoutine, ["none","play","pause"]);
+//    
+//    rb.set('pause');
+//    console.log('radio button output',rb.get()+'>'+rb.encode(rb.get())+'<');
+//    
+//    rb.set('none');
+//    console.log('radio button output',rb.get()+'>'+rb.encode(rb.get())+'<');
+//    
+//    
+//    let intRange = genRange('intid', 4, 2, 12, 2);
+//    let intInput = new IntegerInput(intRange, localRoutine, 2);
+//    place.append('here is a integer box',intRange);
     
     
 //    place.addEventListener('input', captureUserUpdate);
-    
-    
-    
-    
-    
-    
-    
+  
     </script>
 </html>

@@ -198,7 +198,7 @@
         }
     .legendbox{
         display: flex;
-        align-items: baseline;
+        align-items:center;
         /*        border: solid red;*/
         font-size: 1.3vw;
         }

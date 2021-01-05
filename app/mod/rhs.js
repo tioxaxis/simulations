@@ -29,7 +29,7 @@
 //   option 2 is the way to go between the various types.
 
 import {
-	Heap
+	Heap, StageOnCanvas
 }
 from "./util.js";
 import {
@@ -210,11 +210,15 @@ export class OmConcept {
 			event.proc(event.item);
 		}
 		this.now = this.frameNow;
-		this.clearStageForeground();
-		this.itemCollection.moveDisplayAll(deltaSimuTime);
-        this.resourceCollection.drawAll();
+		this.clearRedrawStage(deltaSimuTime,false);
 		this.requestAFId = window.requestAnimationFrame(this.eachFrame.bind(this));
 	};
+    
+    clearRedrawStage(deltaSimuTime, redraw){
+        this.clearStageForeground();
+		this.itemCollection.moveDisplayAll(deltaSimuTime);
+        this.resourceCollection.drawAll(redraw);
+    }
     
 	adjustSpeed(v,speeds){
 		if( this.frameSpeed == speeds[v].time) return;

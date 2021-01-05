@@ -380,8 +380,8 @@ export class ResourceCollection extends Array{
     reset(){
         this.splice(0,this.length);
     };
-    drawAll(){
-        this.forEach(r => r.draw());
+    drawAll(redraw = false){
+        this.forEach(r => r.draw(redraw));
     };
     remove(resource){
         let k = this.indexOf(resource);

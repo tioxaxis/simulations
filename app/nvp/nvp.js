@@ -53,7 +53,8 @@ from '../mod/genHTML.js';
 class NVGraph extends TioxGraph {
 	constructor(){
 		
-		super(nvp,'chartCanvasnvp',40, {width:12, step:3}, d=>d.t);
+		super(nvp,'chartCanvasnvp',40, {width:12, step:3}, d=>d.t,
+             2000,600,false);
 		this.totalCost = 0;
 		this.setTitle('$ of cost per day');
 		

@@ -268,3 +268,24 @@ export class Heap {
 		this.heapify();
 	}
 }; //end class Heap
+
+
+export class StageOnCanvas{
+    constructor (id, w, h){
+        this.id = id;
+        this.canv = document.getElementById(id);
+        this.context = this.canv.getContext('2d');
+        this.stage = {width:w, height:h};
+    };
+    reset(){
+        console.log('in StagesOnCanvas reset with id=',this.id);
+        
+        const rect = this.canv.getBoundingClientRect();
+        console.log('in StageOnCanvas and rect =',rect.width,rect.height,devicePixelRatio, this.stage.width,this.stage.height);
+        this.canv.width = rect.width * devicePixelRatio;
+        this.canv.height = rect.height * devicePixelRatio;
+        this.context.scale(this.canv.width/this.stage.width,
+                           this.canv.height/this.stage.height);
+        return this.context;
+    };
+};

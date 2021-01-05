@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */	
 import {
-	Average, cbColors
+	Average, cbColors, StageOnCanvas
 }
 from "./util.js";
 function verticalAxis(y,table) {
@@ -47,12 +47,13 @@ const vertLines = {color: 'grey', lineWidth: 10 };
 
 
 export class TioxGraph {
-	constructor (omConcept, domElem, fontSize, xWidthStep, xAccess, hasRight = false ){
+	constructor (omConcept, domElem, fontSize, xWidthStep, xAccess,
+                  width, height, hasRight = false ){
 		this.omConcept = omConcept;
-		this.ch = document.getElementById(domElem);
-        this.ctx = document.getElementById(domElem).getContext('2d');
+		this.chart = new StageOnCanvas(domElem, width, height);
+        
+        this.ctx = this.chart.reset();
 		this.fontSize = fontSize;
-		
 		this.extraLine = {width: 15, origWidth: 15};
 		this.xWidthStep = xWidthStep;
 		this.xAccess= xAccess;
@@ -60,7 +61,7 @@ export class TioxGraph {
         this.vertCoors = [];
         this.hasRight = hasRight;
 		
-		this.outer= {width: this.ch.width, height: this.ch.height}
+		this.outer= {width: width, height: height}
 		this.margin = {top: this.fontSize, bot: this.fontSize*3/2,
 					   left: this.fontSize*3, 
                        right:this.fontSize * (this.hasRight ? 3 : 1)}
@@ -75,6 +76,7 @@ export class TioxGraph {
 	}
 	
 	reset(yMax, yMaxRight = null){
+        console.log('in graph reset with OM=',this.omConcept.key);
 		this.vertCoors = [];
         for( let line of this.lines )
             line.data = [{x:0,y:null}];;
@@ -293,6 +295,7 @@ export class TioxGraph {
 	};
 
 	setupThenRedraw(){
+        console.log('inside graph Redraw with OM=',this.omConcept.key);
 		this.cleargraph();
 		this.drawGrid();
 		this.drawExtraLines();
