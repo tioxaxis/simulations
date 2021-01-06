@@ -246,15 +246,16 @@ function facDefine(){
                                 anim.stage.width, anim.stage.height);
     anim.stage.background = new StageOnCanvas('backgroundfac',
                                 anim.stage.width, anim.stage.height);
-    anim.stage.foreContext = anim.stage.foreground.reset();
-	anim.stage.backContext = anim.stage.background.reset();
+    anim.stage.foreContext = anim.stage.foreground.context;
+	anim.stage.backContext = anim.stage.background.context;
 	fac.stage = anim.stage;
     
-    window.addEventListener('resize',redoStagesGraphfac );
+    window.addEventListener('resize',redoStagesGraph );
+    fac.redoStagesGraph = redoStagesGraph;
     return fac;
 };
 
-function redoStagesGraphfac(){
+function redoStagesGraph(){
     anim.stage.foreground.reset();
     anim.stage.background.reset();
     fac.graph.chart.reset();
@@ -264,6 +265,7 @@ function redoStagesGraphfac(){
     fac.clearRedrawStage(0,true);
     console.log('in facegame and called redoStages');
 };
+
 
 function markCard(){
     theSimulation.creator.machs[0]

@@ -178,11 +178,12 @@ function queDefine(){
                                 anim.stage.width, anim.stage.height);
     anim.stage.background = new StageOnCanvas('backgroundque',
                                 anim.stage.width, anim.stage.height);
-    anim.stage.foreContext = anim.stage.foreground.reset();
-	anim.stage.backContext = anim.stage.background.reset();
+    anim.stage.foreContext = anim.stage.foreground.context;
+	anim.stage.backContext = anim.stage.background.context;
 	que.stage = anim.stage;
     
-    window.addEventListener('resize',redoStagesGraphque );
+    window.addEventListener('resize',redoStagesGraph );
+    que.redoStagesGraph = redoStagesGraph;
     
     const tsaAgent = document.getElementById("tsaAgent");
     anim.stage.backContext
@@ -193,7 +194,7 @@ function queDefine(){
 			anim.person.height);
 };
 
-function redoStagesGraphque(){
+function redoStagesGraph(){
     anim.stage.foreground.reset();
     anim.stage.background.reset();
     que.graph.chart.reset();

@@ -20,7 +20,7 @@
 
 
 import {
-	GammaRV, Heap, cbColors, Average, IRT
+	GammaRV, Heap, cbColors, Average, IRT, StageOnCanvas
 }
 from '../mod/util.js';
 import {
@@ -172,17 +172,32 @@ function litDefine(){
 	
 	lit.tioxTimeConv = tioxTimeConv;
 
-    anim.stage.foreContext = document
-		.getElementById('foregroundlit')
-		.getContext('2d');
-	anim.stage.backContext = document
-		.getElementById('backgroundlit')
-		.getContext('2d');
+    anim.stage.foreground = new StageOnCanvas('foregroundlit',
+                                anim.stage.width, anim.stage.height);
+    anim.stage.background = new StageOnCanvas('backgroundlit',
+                                anim.stage.width, anim.stage.height);
+    anim.stage.foreContext = anim.stage.foreground.context;
+	anim.stage.backContext = anim.stage.background.context;
 	lit.stage = anim.stage;
+    
+    window.addEventListener('resize',redoStagesGraph );
+    lit.redoStagesGraph = redoStagesGraph;
 	
 	gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height,0);
 };
+
+function redoStagesGraph(){
+    anim.stage.foreground.reset();
+    anim.stage.background.reset();
+    lit.graph.chart.reset();
+    
+    
+    lit.graph.setupThenRedraw();
+    lit.clearRedrawStage(0,true);
+    console.log('in Littles Law and called redoStages');
+};
+
 class LittlesLaw extends OmConcept{
     constructor(usrInputs){
         super('lit');

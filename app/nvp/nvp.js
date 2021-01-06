@@ -20,7 +20,7 @@
 
 import {
 	GammaRV, UniformRV, DiscreteUniformRV, DeterministicRV, 
-    Heap, cbColors, Average, IRT
+    Heap, cbColors, Average, IRT, StageOnCanvas
 }
 from '../mod/util.js';
 import {
@@ -156,13 +156,17 @@ function nvpDefine(){
 	
 	document.getElementById('nvp').omConcept = nvp;
 	
-	anim.stage.foreContext = document
-		.getElementById('foregroundnvp')
-		.getContext('2d');
-	anim.stage.backContext = document
-		.getElementById('backgroundnvp')
-		.getContext('2d');
+	anim.stage.foreground = new StageOnCanvas('foregroundnvp',
+                                anim.stage.width, anim.stage.height);
+    anim.stage.background = new StageOnCanvas('backgroundnvp',
+                                anim.stage.width, anim.stage.height);
+    anim.stage.foreContext = anim.stage.foreground.context;
+	anim.stage.backContext = anim.stage.background.context;
 	nvp.stage = anim.stage;
+    
+    window.addEventListener('resize',redoStagesGraph );
+    nvp.redoStagesGraph = redoStagesGraph;
+	
 	gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height, anim.box.size);
 	
@@ -184,6 +188,17 @@ function nvpDefine(){
 		this.frameNow = this.now;
 		this.clearStageForeground();
 	}
+};
+
+function redoStagesGraph(){
+    anim.stage.foreground.reset();
+    anim.stage.background.reset();
+    nvp.graph.chart.reset();
+    
+    
+    nvp.graph.setupThenRedraw();
+    nvp.clearRedrawStage(0,true);
+    console.log('in NewsVendor and called redoStages');
 };
 
 class NewsVendor extends OmConcept{

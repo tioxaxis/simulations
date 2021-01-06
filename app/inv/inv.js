@@ -25,7 +25,7 @@ const disappointed = {
 };
 const tioxTimeConv = 10000; //time are in milliseconds/10
 import {
-	GammaRV, UniformRV, DeterministicRV, Heap, cbColors
+	GammaRV, UniformRV, DeterministicRV, Heap, cbColors, StageOnCanvas
 }
 from '../mod/util.js';
 import {
@@ -204,19 +204,34 @@ function invDefine(){
 	
 	inv.whichRule = 'methRop';
 
-	anim.stage.foreContext = document
-		.getElementById('foregroundinv')
-		.getContext('2d');
-	anim.stage.backContext = document
-		.getElementById('backgroundinv')
-		.getContext('2d');
+	anim.stage.foreground = new StageOnCanvas('foregroundinv',
+                                anim.stage.width, anim.stage.height);
+    anim.stage.background = new StageOnCanvas('backgroundinv',
+                                anim.stage.width, anim.stage.height);
+    anim.stage.foreContext = anim.stage.foreground.context;
+	anim.stage.backContext = anim.stage.background.context;
 	inv.stage = anim.stage;
+    
+    window.addEventListener('resize',redoStagesGraph );
+    inv.redoStagesGraph = redoStagesGraph;
+    
+    
 	gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height, anim.box.size);
 	
 	inv.tioxTimeConv = tioxTimeConv;
 };
 
+function redoStagesGraph(){
+    anim.stage.foreground.reset();
+    anim.stage.background.reset();
+    inv.graph.chart.reset();
+    
+    
+    inv.graph.setupThenRedraw();
+    inv.clearRedrawStage(0,true);
+    console.log('in Inventory and called redoStages');
+};
 
 class Inventory extends OmConcept{
     constructor(usrInputs){

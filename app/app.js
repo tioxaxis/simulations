@@ -55,6 +55,8 @@ function switchTo(which){
 	if( k >= 0 ){
 		currentTab = document.getElementById(which);
 		currentTab.classList.remove('displayNone');
+        console.log('in app.js and making tab ',k,' appear for ',currentTab.id);
+        omConcepts[currentTab.id].redoStagesGraph();
 //		possibles[k].start();
 	} else {
 		currentTab = document.getElementById('mainPage');
@@ -122,13 +124,15 @@ document.getElementById('mainPage').addEventListener('click',router);
 
 
 var currentTab = null;
-switchTo(location.hash.slice(1));
-
 omConcepts['que'] = queStart();
 omConcepts['lit'] = litStart();
 omConcepts['nvp'] = nvpStart();
 omConcepts['inv'] = invStart();
 omConcepts['fac'] = facStart();
+
+switchTo(location.hash.slice(1));
+
+
 
 
 

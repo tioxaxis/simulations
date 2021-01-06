@@ -52,7 +52,7 @@ export class TioxGraph {
 		this.omConcept = omConcept;
 		this.chart = new StageOnCanvas(domElem, width, height);
         
-        this.ctx = this.chart.reset();
+        this.ctx = this.chart.context;
 		this.fontSize = fontSize;
 		this.extraLine = {width: 15, origWidth: 15};
 		this.xWidthStep = xWidthStep;
@@ -141,7 +141,7 @@ export class TioxGraph {
 		for( let line of this.lines ){
 			line.last ={x:null, y: null}
 		}
-		this.setupThenRedraw();
+//		this.setupThenRedraw();
 	};
 	setTitle(title){
 		document.getElementById('chartTitle' + this.omConcept.key).innerHTML = title;
