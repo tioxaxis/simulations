@@ -656,7 +656,7 @@ export class NStickFigure {
 		this.maxLegAngle = 120;
 		this.maxArmAngle = 90;
 		this.armAngleRadians = null //pi2 / 15;
-		this.legAngleRadians = null //pi2 / 12;
+		this.legAngleRadians = Math.random() * pi2/8; //pi2 / 12;
 		let d = Math.floor( Math.random() * this.maxLegAngle);
 		this.legAngleDegrees = d;
 		this.gSF = gSF;
@@ -692,12 +692,14 @@ export class NStickFigure {
 		this.y = y;
 	};
 
-	draw() {
+    
+    draw() {
 		// use x,y as starting point and draw the rest of the
 		// parts by translating and rotating from there
 
 		if ( this.x < -50 || this.x > 1050 ) return;
 		let c = this.gSF.context;
+        
 		c.save();
 		c.strokeStyle = this.bdaryColor;
 		c.fillStyle = this.color;
@@ -730,12 +732,6 @@ export class NStickFigure {
 		c.rect(-this.gSF.leg.w / 2, 0, this.gSF.leg.w, this.gSF.leg.h);
 		c.restore();
 
-		// body
-		c.save();
-		c.translate(this.gSF.body.x, this.gSF.body.y);
-		c.rect(-this.gSF.body.w / 2, 0, this.gSF.body.w,
-			this.gSF.body.h);
-		c.restore();
 
 		//  leg 1
 		c.save();
@@ -754,25 +750,34 @@ export class NStickFigure {
 		}
 		c.rect(-this.gSF.arm.w / 2, 0, this.gSF.arm.w, this.gSF.arm.h);
 		c.restore();
-
-		// head
+        
+        // body
+		c.save();
+		c.translate(this.gSF.body.x, this.gSF.body.y);
+		c.rect(-this.gSF.body.w / 2, 0, this.gSF.body.w,
+			this.gSF.body.h);
+		c.restore();
+        c.stroke();  //all but the head.
+		c.fill();
+        
+        // head
 		c.save();
 		c.translate(this.gSF.head.x, this.gSF.head.y);
+        c.beginPath()
 		c.arc(0, 0, this.gSF.head.r, 0, pi2, true);
 		c.restore();
-
-		// draw (fill and stroke) the entire figure
 		c.stroke();
 		c.fill();
 
 		//badge
 		if (this.badgeVisible) {
-			c.save();
+            c.font = this.gSF.fontSize + 'px Arial'; 
+            // why must we set this every draw.  Is it being reset somewhere???
 			c.fillText(this.badgeText, this.gSF.badge.x, this.gSF.badge.y);
-			c.restore();
 		}
 		c.restore();
 	};
+
 };
 
 export class BoxStack {
@@ -798,44 +803,49 @@ export class GStore {
 		this.omConcept = omConcept;
 		this.anim = anim;
 		this.boxStack = new BoxStack(anim.box, true);
-		this.drawStore(this.anim.stage.backContext,
-					   this.anim.store, this.anim.box);
+		this.drawStore();
 		this.packages = [];
 		this.snake = true;
 	};
 	reset() {
 		this.packages = [];
 	};
-	drawStore(c, s, b) {
+	drawStore() {
+        const c = this.anim.stage.backContext;
+        const s = this.anim.store;
+        const b = this.anim.box;
 		c.save();
-		c.resetTransform();
+//		c.resetTransform();
 		c.strokeStyle = 'black';
-		c.fillStyle = 'white'
+//		c.fillStyle = 'white'
 		c.lineWidth = s.stroke;;
 		c.strokeRect(s.left, s.top, s.width, s.height);
 		c.beginPath();
 		c.moveTo(s.left, s.top);
 		c.lineTo(s.left + s.width / 2, s.top / 2);
 		c.lineTo(s.left + s.width, s.top);
-		c.lineTo(s.left, s.top);
+//		c.lineTo(s.left, s.top);
 		c.closePath();
-		c.stroke();
-		c.fill();
+		
 		this.drawShelves(c, s, b);
+        c.stroke();
+//		c.fill();
 		c.restore();
 	};
 	drawShelves(c, s, b) {
 		let left, right, y;
+//        c.beginPath();
 		for (let k = 0; k < 9; k++) {
 			left = s.left + ((k % 2) == 0 ? 0 : b.space);
 			right = s.left + s.width - ((k % 2) == 0 ? b.space : 0);
 			y = s.bot - (k + 1) * b.space;
-			c.beginPath();
+//			c.beginPath();
 			c.moveTo(left, y);
 			c.lineTo(right, y);
-			c.closePath();
-			c.stroke();
-		}
+//			c.closePath();
+//			c.stroke();
+		};
+//        c.stroke();
 	};
 	emptyStore() {
 		this.packages.forEach(p => p.destroy());

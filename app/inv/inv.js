@@ -211,11 +211,7 @@ function invDefine(){
     anim.stage.foreContext = anim.stage.foreground.context;
 	anim.stage.backContext = anim.stage.background.context;
 	inv.stage = anim.stage;
-    
-    window.addEventListener('resize',redoStagesGraph );
-    inv.redoStagesGraph = redoStagesGraph;
-    
-    
+      
 	gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height, anim.box.size);
 	
@@ -267,6 +263,19 @@ class Inventory extends OmConcept{
         for(let inp of inpsChanged){
             localUpdate(inp); 
         };
+    };
+    redoStagesGraph(){
+        this.stage.foreground.reset();
+        this.stage.background.reset();
+        this.graph.chart.reset();
+
+        this.redrawBackground();
+        this.graph.setupThenRedraw();
+        this.clearRedrawStage(0,true);
+        console.log('in Inventory and called redoStages');
+    };
+    redrawBackground() {
+        theSimulation.store.drawStore();    
     };
 };
 function localUpdateFromUser(inp){

@@ -278,13 +278,13 @@ export class StageOnCanvas{
         this.stage = {width:w, height:h};
     };
     reset(){
-        const rent = this.canv.parentElement;
-        const rect = this.canv.getBoundingClientRect();
-        console.log('Parent height:', rent.clientHeight);
-        console.log('in StageOnCanvas reset with id=',this.id,
-                    '  and rect =',rect.width,rect.height,
-                    ' and computed = ',rect.right-rect.left,rect.bottom-rect.top,
-                    ' dpr= ',devicePixelRatio.toFixed(1), this.stage.width,this.stage.height);
+//        const rent = this.canv.parentElement;
+//        const rect = this.canv.getBoundingClientRect();
+//        console.log('Parent height:', rent.clientHeight);
+//        console.log('in StageOnCanvas reset with id=',this.id,
+//                    '  and rect =',rect.width,rect.height,
+//                    ' and computed = ',rect.right-rect.left,rect.bottom-rect.top,
+//                    ' dpr= ',devicePixelRatio.toFixed(1), this.stage.width,this.stage.height);
         
         this.canv.width = this.canv
             .getBoundingClientRect().width * devicePixelRatio;

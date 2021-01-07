@@ -182,28 +182,15 @@ function queDefine(){
 	anim.stage.backContext = anim.stage.background.context;
 	que.stage = anim.stage;
     
-    window.addEventListener('resize',redoStagesGraph );
-    que.redoStagesGraph = redoStagesGraph;
+//    window.addEventListener('resize',que.redoStagesGraph );
+        
     
-    const tsaAgent = document.getElementById("tsaAgent");
-    anim.stage.backContext
-        .drawImage(tsaAgent, anim.person.path.headQueue+10,
-                   30, 80, 100);
      
 	gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height);
 };
 
-function redoStagesGraph(){
-    anim.stage.foreground.reset();
-    anim.stage.background.reset();
-    que.graph.chart.reset();
-    
-    
-    que.graph.setupThenRedraw();
-    que.clearRedrawStage(0,true);
-    console.log('in queueing and called redoStages');
-};
+
 
 
 class Queueing extends OmConcept{
@@ -232,6 +219,41 @@ class Queueing extends OmConcept{
         if( match(inpsChanged,['ar','acv','sr','scv'])) {
             que.graph.updateForParamChange();
         }
+    };
+    redoStagesGraph(){
+        this.stage.foreground.reset();
+        this.stage.background.reset();
+        this.graph.chart.reset();
+
+        this.redrawBackground();
+        this.graph.setupThenRedraw();
+        this.clearRedrawStage(0,true);
+        console.log('in queueing and called redoStages');
+    };
+    redrawBackground() {
+        const tsaAgent = document.getElementById("tsaAgent");
+        this.stage.backContext
+            .drawImage(tsaAgent, anim.person.path.headQueue+10,
+                   30, 80, 100);
+        
+        animForTSA.machLoc = [];
+		let locX = anim.person.path.scanner;
+		let locY = anim.person.path.top;
+		const c = anim.stage.backContext;
+	    const numMachines = 1;
+		c.strokeStyle = 'blue';
+		c.lineWidth = 5;
+		c.beginPath();
+		for (let k = 0; k < numMachines; k++) {
+			c.strokeRect(locX - 28, locY - 15, 55, anim.person.height*1.4);
+			animForTSA.machLoc[k] = {
+				x: locX,
+				y: locY
+			};
+			locX += anim.scannerDelta.dx;
+			locY += anim.scannerDelta.dy;
+		}
+		c.closePath();
     };
 };
 function localUpdateFromUser(inp){
@@ -375,27 +397,27 @@ const animForTSA = {
 	machLoc: null,
 	lastFinPerson: null,
 
-	reset: function (numMachines) {
-		animForTSA.machLoc = [];
+	reset: function (numMachines ) {
+//		animForTSA.machLoc = [];
 		animForTSA.lastFinPerson = null;
-		let locX = anim.person.path.scanner;
-		let locY = anim.person.path.top;
-		let c = anim.stage.backContext;
-	
-//		c.resetTransform();
-		c.strokeStyle = 'blue';
-		c.lineWidth = 5;
-		c.beginPath();
-		for (let k = 0; k < numMachines; k++) {
-			c.strokeRect(locX - 28, locY - 15, 55, anim.person.height*1.4);
-			animForTSA.machLoc[k] = {
-				x: locX,
-				y: locY
-			};
-			locX += anim.scannerDelta.dx;
-			locY += anim.scannerDelta.dy;
-		}
-		c.closePath();
+//		let locX = anim.person.path.scanner;
+//		let locY = anim.person.path.top;
+//		let c = anim.stage.backContext;
+//	
+////		c.resetTransform();
+//		c.strokeStyle = 'blue';
+//		c.lineWidth = 5;
+//		c.beginPath();
+//		for (let k = 0; k < numMachines; k++) {
+//			c.strokeRect(locX - 28, locY - 15, 55, anim.person.height*1.4);
+//			animForTSA.machLoc[k] = {
+//				x: locX,
+//				y: locY
+//			};
+//			locX += anim.scannerDelta.dx;
+//			locY += anim.scannerDelta.dy;
+//		}
+//		c.closePath();
 	},
 	
 	start: function (theProcTime, person, m) {

@@ -250,8 +250,6 @@ function facDefine(){
 	anim.stage.backContext = anim.stage.background.context;
 	fac.stage = anim.stage;
     
-    window.addEventListener('resize',redoStagesGraph );
-    fac.redoStagesGraph = redoStagesGraph;
     return fac;
 };
 
@@ -338,6 +336,19 @@ class FaceGame extends OmConcept {
             }
         };
         
+    };
+    redoStagesGraph(){
+        this.stage.foreground.reset();
+        this.stage.background.reset();
+        this.graph.chart.reset();
+
+        this.redrawBackground();
+        this.graph.setupThenRedraw();
+        this.clearRedrawStage(0,true);
+        console.log('in FaceGrame and called redoStages');
+    };
+    redrawBackground() {
+//        console.log('in facegame and called redraw Background')
     };
 };
 function localUpdateFromUser(inp){

@@ -76,7 +76,7 @@ export class TioxGraph {
 	}
 	
 	reset(yMax, yMaxRight = null){
-        console.log('in graph reset with OM=',this.omConcept.key);
+//        console.log('in graph reset with OM=',this.omConcept.key);
 		this.vertCoors = [];
         for( let line of this.lines )
             line.data = [{x:0,y:null}];;
@@ -295,7 +295,7 @@ export class TioxGraph {
 	};
 
 	setupThenRedraw(){
-        console.log('inside graph Redraw with OM=',this.omConcept.key);
+//        console.log('inside graph Redraw with OM=',this.omConcept.key);
 		this.cleargraph();
 		this.drawGrid();
 		this.drawExtraLines();
@@ -448,6 +448,33 @@ export class GraphLine{
         this.graph.setupThenRedraw();
     };
     
+    //process one point for a line for either drawPoint or drawLine.
+    processOne(ctx,last,pair){
+        const gx = this.graph.xScale(pair.x);
+        const gy = this.graph.yScale(pair.y,this.right);
+        if( last.y != null){
+            const gLx = this.graph.xScale(last.x);
+            const gLy = this.graph.yScale(last.y,this.right);
+            
+            ctx.beginPath();
+            ctx.moveTo(gLx,gLy);
+            if( this.vertical){
+                ctx.lineTo(gx,gLy)
+            }
+            ctx.lineTo(gx,gy);
+//            ctx.closePath();
+            ctx.stroke()
+        }
+        
+        if( this.dotSize > 0) {
+            ctx.beginPath();
+            ctx.arc(gx, gy, this.dotSize, 0, 2*Math.PI, true);
+//            ctx.closePath();
+            ctx.stroke();
+            ctx.fill();
+        }
+    };
+    
     drawPoint(pair){
         if( !this.visible ) return;
         const ctx = this.graph.ctx;
@@ -458,28 +485,8 @@ export class GraphLine{
         
         const k = this.data.length - 1;
         const last = this.data[k];
-//        console.log('inside drawPoint last', last.x,last.y,
-//                    'and pair=',pair.x,pair.y)
-        if( last.y != null){
-            ctx.moveTo(this.graph.xScale(last.x),
-                       this.graph.yScale(last.y,this.right));
-            ctx.lineTo(this.graph.xScale(pair.x),
-                       this.graph.yScale(pair.y,this.right));
-            ctx.stroke()
-        }
         
-        if( this.dotSize > 0) {
-            ctx.beginPath();
-            ctx.arc(this.graph.xScale(pair.x),
-					this.graph.yScale(pair.y, this.right),
-                    this.dotSize, 0, 2*Math.PI, true);
-            ctx.closePath();
-            ctx.stroke();
-            ctx.fill();
-        }
-        ctx.closePath();
-        ctx.stroke();
-        ctx.fill();
+        this.processOne(ctx,last,pair);
         
     };
     
@@ -494,28 +501,10 @@ export class GraphLine{
         let last = {x: null, y: null};
         for( let pair of this.data ){
             if( pair.y != null ){
-                if( last.y != null ){
-                    ctx.moveTo(this.graph.xScale(last.x),
-                               this.graph.yScale(last.y,this.right));
-                    ctx.lineTo(this.graph.xScale(pair.x),
-                               this.graph.yScale(pair.y,this.right));
-                    ctx.stroke();
-                };
-                if( this.dotSize > 0) {
-                    ctx.beginPath();
-                    ctx.arc(this.graph.xScale(pair.x),
-					   this.graph.yScale(pair.y, this.right),
-                        this.dotSize, 0, 2*Math.PI, true);
-                    ctx.closePath();
-                    ctx.stroke();
-                    ctx.fill();
-                }
+                this.processOne(ctx,last,pair);
             };
             last = pair;
         };
-        ctx.closePath();
-        ctx.stroke();
-        ctx.fill();
     }
 };
     	

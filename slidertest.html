@@ -21,7 +21,7 @@
         .leftHandSideBoxX {
             position: relative;
             width: 60vw;
-            height: 15vw;
+            height: 60vw;
             border: solid red;
         }
 
@@ -43,8 +43,8 @@
 </head>
 <body>
 
-    <button type="button" id="button1" onclick="draw1()">First</button>
-    <button type="button" id="button2" onclick="draw2()">Second</button>
+    <button type="button" id="button1" >First</button>
+    <button type="button" id="button2" >Second</button>
     <button type="button" id="button3" onclick="draw3()">Third</button>
     
     
@@ -60,9 +60,17 @@
   
     
 </body>
-    <script >
-    
-    
+    <script type='module'>
+  import {
+      NStickFigure, GStickFigure
+  }  
+    from './app/mod/stepitem.js';
+        
+        document.getElementById('button1')
+        .addEventListener('click',draw1);
+        document.getElementById('button2')
+        .addEventListener('click',draw2);
+        
  const pi2 =2 * 3.14159;
 const pi = 3.14159;
  class FaceCard {
@@ -229,7 +237,7 @@ function setup(id){
     const rect = canv.getBoundingClientRect();
     canv.width = rect.width * devicePixelRatio;
     canv.height = rect.height * devicePixelRatio;
-    ctx.scale(c.width/800,c.height/200);
+    ctx.scale(c.width/800,c.height/800);
     
     
     console.log('in setup', rect.width, rect.height, c.width, c.height);
@@ -249,7 +257,7 @@ function setup(id){
 //      setup(0);
 // }
     
-    const stg = new stageOnCanvas('foreground0',800,200);
+    const stg = new stageOnCanvas('foreground0',800,800);
     const cty = stg.reset();
     window.onresize = stg.reset.bind(stg);
     
@@ -292,19 +300,70 @@ function setup(id){
     f1.start = {face:10, eyes:10, nose: 10, 
                      ears:10, mout:10, hair:10};
     f1.draw(100,1);
+//        const start = Date.now();
+//        let n = 10000;
+//        for( let j = 0; j <n; j++){
+//            cty.save()
+//            cty.beginPath();
+//            cty.strokeStyle = 'purple';
+//            cty.fillStyle = 'green'
+//            cty.lineWidth = 10;
+//            cty.moveTo( 250,50);
+//            cty.lineTo( 250,150);
+//            cty.lineTo( 300,150);
+//            cty.stroke();
+//            cty.fill();
+//    //        cty.closePath();
+//    //        cty.beginPath();
+//            cty.strokeStyle = 'green';
+//            cty.fillStyle = 'yellow'
+//            cty.moveTo( 350,50);
+//            cty.lineTo( 350,150);
+//            cty.lineTo( 400,150);
+//            cty.stroke();
+//            cty.closePath();
+//            cty.strokeStyle = 'red';
+//            cty.stroke();
+//            cty.fill();
+//            cty.restore();
+//        }
+//        console.log('running time for ',n,'iterations',Date.now() - start);
+        
     
+        const gSF = new GStickFigure(cty,60);
+        const guys = [];
+        for(let j = 0; j<10; j++){
+            for( let k = 0; k<15;k++){
+            guys[j*15+k] = new NStickFigure(gSF,200+40*k,50+70*j );
+                guys[j*15+k].draw();
+            }
+        }
+        
+        
+
+        
+        
     function draw1(){
-        var f1 = new FaceCard(cty, 250, 50, 100, 100);
-        f1.start = {face:10, eyes:10, nose: 10, 
-                     ears:10, mout:10, hair:10};
-        f1.draw(100,1);
+       let start = Date.now();
+        for(let n =0; n<67;n++){
+            for(let k= 0;k<150;k++){
+                guys[k].draw();
+            }
+        }
+        console.log('to do 150 people over 67 times  for 10050 people takes =',Date.now()-start);
+        
+        
+         
     };
     
     function draw2(){
-        var f1 = new FaceCard(cty, 450, 50, 100, 100);
-        f1.start = {face:10, eyes:10, nose: 10, 
-                     ears:10, mout:10, hair:10};
-        f1.draw(100,1);
+        const start = Date.now();
+        for(let n =0; n<67;n++){
+            for(let k= 0;k<150;k++){
+                guys[k].drawOld();
+            }
+        }
+        console.log('to do 150 people over 67 times  for 10050 people old way =',Date.now()-start);
     };
     
     function draw3(){

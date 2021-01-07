@@ -164,10 +164,7 @@ function nvpDefine(){
 	anim.stage.backContext = anim.stage.background.context;
 	nvp.stage = anim.stage;
     
-    window.addEventListener('resize',redoStagesGraph );
-    nvp.redoStagesGraph = redoStagesGraph;
-	
-	gSF = new GStickFigure(anim.stage.foreContext,
+    gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height, anim.box.size);
 	
 	
@@ -244,6 +241,20 @@ class NewsVendor extends OmConcept{
         if( match(inpsChanged,['dr','dcv','Cu','Co','quan'])){
            nvp.graph.updateForParamChange();
         };
+    };
+    redoStagesGraph(){
+        this.stage.foreground.reset();
+        this.stage.background.reset();
+        this.graph.chart.reset();
+
+        this.redrawBackground();
+        this.graph.setupThenRedraw();
+        this.clearRedrawStage(0,true);
+        console.log('in Newsvendor and called redoStages');
+    };
+    redrawBackground() {
+        theSimulation.store.drawStore();
+//        console.log('in Newsvendor and called redraw Background');
     };
 };
 function localUpdateFromUser(inp){

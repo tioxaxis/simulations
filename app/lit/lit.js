@@ -179,24 +179,12 @@ function litDefine(){
     anim.stage.foreContext = anim.stage.foreground.context;
 	anim.stage.backContext = anim.stage.background.context;
 	lit.stage = anim.stage;
-    
-    window.addEventListener('resize',redoStagesGraph );
-    lit.redoStagesGraph = redoStagesGraph;
 	
 	gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height,0);
 };
 
-function redoStagesGraph(){
-    anim.stage.foreground.reset();
-    anim.stage.background.reset();
-    lit.graph.chart.reset();
-    
-    
-    lit.graph.setupThenRedraw();
-    lit.clearRedrawStage(0,true);
-    console.log('in Littles Law and called redoStages');
-};
+
 
 class LittlesLaw extends OmConcept{
     constructor(usrInputs){
@@ -225,6 +213,31 @@ class LittlesLaw extends OmConcept{
         if( match(inpsChanged,['ar','acv','st','scv'])) {
             lit.graph.updateForParamChange();
         }
+    };
+    redoStagesGraph(){
+        this.stage.foreground.reset();
+        this.stage.background.reset();
+        this.graph.chart.reset();
+
+        this.redrawBackground();
+        this.graph.setupThenRedraw();
+        this.clearRedrawStage(0,true);
+        console.log('in Littles Law and called redoStages');
+    };
+    
+    redrawBackground() {
+        const c = anim.stage.backContext;
+        const b = anim.room;
+        c.strokeStyle = b.stroke;
+        c.lineWidth = b.strokeWidth;
+        c.beginPath();
+        c.strokeRect(150, b.top, b.width, b.height);
+        c.closePath();
+        c.fillStyle = 'white';
+        c.beginPath();
+        c.fillRect(anim.pathway.left, anim.pathway.top, 
+                   anim.pathway.width, anim.pathway.height);
+        c.closePath();
     };
 };
 function localUpdateFromUser(inp){
@@ -274,21 +287,7 @@ function localUpdateFromUser(inp){
     }
 }
 
-function setBackground() {
-	const c = anim.stage.backContext;
-	const b = anim.room;
-	c.resetTransform();
-	c.strokeStyle = b.stroke;
-	c.lineWidth = b.strokeWidth;
-	c.beginPath();
-	c.strokeRect(150, b.top, b.width, b.height);
-	c.closePath();
-	c.fillStyle = 'white';
-	c.beginPath();
-	c.fillRect(anim.pathway.left, anim.pathway.top, 
-			   anim.pathway.width, anim.pathway.height);
-	c.closePath();
-};
+
 
 
 //  One variable for each process step or queue
@@ -398,7 +397,7 @@ const theSimulation = {
 	TSAagent: null,
 
 	initialize: function () {
-		setBackground();
+//		setBackground();
 
 		// random variables
 		const ar = lit.usrInputs.get('ar').get();

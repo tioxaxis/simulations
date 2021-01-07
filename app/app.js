@@ -41,32 +41,36 @@ import {
 from './fac/fac.js';
 	
 	
-const possibles = ["que", "lit", "nvp", "inv","fac" ];
+const possibles = ['dir','que', 'lit', 'nvp', 'inv', 'fac'];
 const omConcepts ={};
 
+//handles resize window event.
+function redrawBackground(){
+    const om = omConcepts[currentTab.id];
+    om.redoStagesGraph();
+}
 function switchTo(which){
-	if( currentTab ) {
-		currentTab.classList.add('displayNone');
-		if (currentTab.id != 'mainPage')
-			omConcepts[currentTab.id].pause();
-	}
-	
-	let k = possibles.findIndex(key => key == which)
-	if( k >= 0 ){
-		currentTab = document.getElementById(which);
-		currentTab.classList.remove('displayNone');
-        console.log('in app.js and making tab ',k,' appear for ',currentTab.id);
-        omConcepts[currentTab.id].redoStagesGraph();
-//		possibles[k].start();
-	} else {
-		currentTab = document.getElementById('mainPage');
-		currentTab.classList.remove('displayNone');
-	}
+    if( currentTab ) {
+        currentTab.classList.add('displayNone');
+        if (currentTab.id != 'dir'){
+            const om = omConcepts[currentTab.id];
+            om.pause();
+        }
+    }
+
+    
+    let k = possibles.findIndex(key => key == which);
+    currentTab = document.getElementById(k >= 0 ? which : 'dir');
+    currentTab.classList.remove('displayNone');
+    if( k > 0 ){
+        redrawBackground();
+    }
+//    console.log('Current Tab = ',currentTab.id,'<<<')
 };
 
 window.onpopstate = function(event) {
 	const s = event.state;
-	switchTo(s ? s.tabName : '');
+	switchTo(s ? s.tabName : 'dir');
 };
 
 
@@ -120,7 +124,8 @@ function keyDownFunction(evt) {
 	};
 };
 document.addEventListener('keydown', keyDownFunction);
-document.getElementById('mainPage').addEventListener('click',router);
+window.addEventListener('resize', redrawBackground);
+document.getElementById('dir').addEventListener('click', router);
 
 
 var currentTab = null;
@@ -130,7 +135,9 @@ omConcepts['nvp'] = nvpStart();
 omConcepts['inv'] = invStart();
 omConcepts['fac'] = facStart();
 
-switchTo(location.hash.slice(1));
+
+const h = location.hash;
+switchTo(h != '' ? h.slice(1) : 'dir');
 
 
 
