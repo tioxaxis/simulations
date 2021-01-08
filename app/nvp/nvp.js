@@ -80,12 +80,12 @@ class NVGraph extends TioxGraph {
             {t: n,
              u: under,
              o: over,
-             a: this.avgCost.addItem(under + over)
+             a: nvp.avgCost.addItem(under + over)
             }
         );
 	};
 	reset(yMax){
-        this.avgCost = new Average();
+        nvp.avgCost = new Average();
 		super.reset(yMax);
 		const v = document.getElementById('speednvp').value;
 		const f = speeds[v].graph;
@@ -95,9 +95,8 @@ class NVGraph extends TioxGraph {
 		this.scaleXaxis(factor);
 	}
     updateForParamChange(){
-        this.avgCost = new Average();
-        nvp.fracEnough = new Average();
-        this.restartGraph(nvp.nRounds+0.5);
+        if( nvp.inCycle ) nvp.afterNextPointRestartGraph = true;
+        else resetAvgsRestartGraph();
     };
 }
 const anim = {};
@@ -463,8 +462,6 @@ const theSimulation = {
 		theSimulation.quantityOrdered = 
             nvp.usrInputs.get('quan').get();
 
-//		nvp.graph = new NVGraph();
-		
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 
@@ -517,6 +514,7 @@ class DemandCreator {
 		this.curDemand = null;
 		this.overageForDay = null;
 		this.underageForDay = null;
+        nvp.inCycle = false;
 	};
 
 	reset() {};
@@ -561,15 +559,28 @@ class DemandCreator {
 			proc: this.cycle.bind(this),
 			item: null
 		});
+        nvp.inCycle = true;
 	};
+    
 	graph() {
 		nvp.nRounds++;
-        nvp.graph.push(nvp.nRounds, this.underageForDay, this.overageForDay);
+        nvp.graph.push(nvp.nRounds, 
+            this.underageForDay, this.overageForDay);
 //		console.log(nvp.nRounds,nvp.now);
 		setActual();
-
+        if( nvp.afterNextPointRestartGraph ){
+            resetAvgsRestartGraph();
+            nvp.afterNextPointRestartGraph = false;
+        }
 		theSimulation.store.makeAllGrey();
+        nvp.inCycle = false;
 	}
+};
+
+function resetAvgsRestartGraph(){
+    nvp.avgCost = new Average();
+    nvp.fracEnough = new Average();
+    nvp.graph.restartGraph(nvp.nRounds+0.5); 
 };
 
 class RetailStore extends GStore {
@@ -606,18 +617,21 @@ function nvpHTML(){
 	
 	const d1 = document.createElement('div');
 	d1.className ="statDisplay";
+    d1.title = 'Percentage of days newsvendor will "have enough" in expectation';
 	const s1 = document.createElement('span');
 	s1.id = 'expectedPercnvp';
 	d1.append('Expected: ',s1,'%');
 	
 	const d2 = document.createElement('div');
 	d2.className ="statDisplay";
+    d2.title = 'Percentage of days newsvendor should "have enough" to minimize costs';
 	const s2 = document.createElement('span');
 	s2.id = 'desiredPercnvp';
 	d2.append('Desired: ',s2,'%');
 	
 	const d3 = document.createElement('div');
 	d3.className ="statDisplay";
+    d3.title = 'Percentage of days newsvendor did "have enough" in this simulation';
 	const s3 = document.createElement('span');
 	s3.id = 'actualPercnvp';
 	d3.append('Actual: ',s3,'%');

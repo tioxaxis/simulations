@@ -295,7 +295,7 @@ export class TioxGraph {
 	};
 
 	setupThenRedraw(){
-//        console.log('inside graph Redraw with OM=',this.omConcept.key);
+        console.log('inside graph Redraw with OM=',this.omConcept.key);
 		this.cleargraph();
 		this.drawGrid();
 		this.drawExtraLines();

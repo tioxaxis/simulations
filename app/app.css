@@ -135,6 +135,7 @@
 
 	.statDisplay {
 		color: var(--fontColor);
+        cursor:context-menu;
 	}
 
 .facDataWrapper{
@@ -336,16 +337,30 @@
 	flex-direction: row;
 	justify-content: space-between;
 }
+.center{
+    text-align: center;
+    
+}
 
 .spreadValues span {
 	min-width: 1.5vw;
 	text-align: center;
 }
+input[type=number]{
+    width:3vw;
+    height: 1.3vw;
+    font-size: 1.3vw;
+    text-align:center;
+}
+input[type=radio]{
+    margin: 0vw .7vw 0vw 1.3vw;
+    cursor: pointer;
+}
 input[type=checkbox],
-/*input[type=radio],*/
 label {
 	height: 1vw;
 	cursor: pointer;
+    
 }
 input[type=range] {
 	-webkit-appearance: none;

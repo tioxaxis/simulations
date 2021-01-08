@@ -155,16 +155,16 @@ export class OmConcept {
         this.clearStageForeground();
         this.heap.reset();
         this.resetCollection.forEach(obj => obj.reset());
-    }
+    };
     
     localReset(){
         alert(' this routine should be ovewritten, right?');
         debugger;
-    }
+    };
 
 	clearStageForeground() {
 		this.stage.foreContext.clearRect(0, 0, this.stage.width, this.stage.height);
-	}
+	};
 
 	// play, pause, toggle .
 	play() {

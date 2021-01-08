@@ -97,7 +97,8 @@ class InvGraph extends TioxGraph {
 	};
 	
 	reset(){
-		let maxI;
+		console.log('in Graph Inventory Reset');
+        let maxI;
 		if ( inv.whichRule == 'methRop' ){
 			maxI = theSimulation.rop + theSimulation.quantityOrdered + 1;
 		} else {
@@ -139,10 +140,12 @@ class InvGraph extends TioxGraph {
 	
 		
 	resetRopLine(y){
+        console.log(' In Graph Inventory ROP LINE');
 		this.setExtraLines(cbColors.yellow,{min:y},null);
 	}
 	resetPeriodLines(x){
-		this.setExtraLines(cbColors.yellow,null, {min:x,step:x});
+		console.log(' In Graph Inventory PERIOD LINES');
+        this.setExtraLines(cbColors.yellow,null, {min:x,step:x});
 	}
 }
 const anim = {};
@@ -254,7 +257,8 @@ class Inventory extends OmConcept{
                 item: null
             });
         }
-        document.getElementById('lostSales').innerHTML = '0';
+        document.getElementById('lostSales').innerHTML = '0'
+        ;
         document.getElementById('fillRate').innerHTML = '100';
         document.getElementById('serviceLevel').innerHTML = '100';
     };
@@ -356,7 +360,10 @@ function pickInvSimulation(which) {
 		default:
 			alert('picked inv simulation with ', which);
 			debugger;
+            
 	}
+    console.log('in PickInv Method ', which);
+//    inv.graph.reset();
 };
 
 const speeds = [{time:1,graph:1,anim:true},
