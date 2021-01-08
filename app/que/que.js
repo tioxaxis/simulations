@@ -92,14 +92,14 @@ class QueueGraph extends TioxGraph {
 			1.5: Math.max(1.5,this.predictedWaitValue * 1.1);
 		super.reset(yMax);
 		
-		const v = document.getElementById('speedque').value;
-		const f = speeds[v].graph;
-		this.updateForSpeed(f);
+//		const v = document.getElementById('speedque').value;
+//		const f = speeds[v].graph;
+//		this.updateForSpeed(f);
 	}
-	updateForSpeed (factor){
-		this.scaleXaxis(factor);
-//		console.log('in graph update for speed',factor)
-	};
+//	updateForSpeed (factor){
+//		this.scaleXaxis(factor);
+////		console.log('in graph update for speed',factor)
+//	};
 	predictedWait () {
 			const sr = theSimulation.serviceRV.rate;
 			const ir = theSimulation.interarrivalRV.rate;
@@ -228,7 +228,7 @@ class Queueing extends OmConcept{
         this.redrawBackground();
         this.graph.setupThenRedraw();
         this.clearRedrawStage(0,true);
-        console.log('in queueing and called redoStages');
+//        console.log('in queueing and called redoStages');
     };
     redrawBackground() {
         const tsaAgent = document.getElementById("tsaAgent");
@@ -337,13 +337,14 @@ const animForQueue = {
 	arrive: function (nSeatsUsed, person) {
 		theSimulation.nInQueue++;
 		document.getElementById('nInQueue').innerHTML = 
-			theSimulation.nInQueue ;
+			theSimulation.nInQueue.toString().
+        padEnd(5,' ') ;
 	},
 
 	leave: function (procTime, nSeatsUsed) {
 		theSimulation.nInQueue--;
 		document.getElementById('nInQueue').innerHTML = 
-			theSimulation.nInQueue ;
+			theSimulation.nInQueue.toString().padEnd(5,' ');
 		
 		for (let k = 0; k < theSimulation.queue.q.length; k++) {
 			let p = theSimulation.queue.q[k];

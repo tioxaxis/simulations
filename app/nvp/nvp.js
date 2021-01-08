@@ -87,13 +87,13 @@ class NVGraph extends TioxGraph {
 	reset(yMax){
         nvp.avgCost = new Average();
 		super.reset(yMax);
-		const v = document.getElementById('speednvp').value;
-		const f = speeds[v].graph;
-		this.updateForSpeed(f);
+//		const v = document.getElementById('speednvp').value;
+//		const f = speeds[v].graph;
+//		this.updateForSpeed(f);
 	}
-	updateForSpeed (factor){
-		this.scaleXaxis(factor);
-	}
+//	updateForSpeed (factor){
+//		this.scaleXaxis(factor);
+//	}
     updateForParamChange(){
         if( nvp.inCycle ) nvp.afterNextPointRestartGraph = true;
         else resetAvgsRestartGraph();

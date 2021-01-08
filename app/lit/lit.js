@@ -87,13 +87,13 @@ class LittleGraph extends TioxGraph {
 		this.predictedInvValue = this.predictedInv();
         super.reset(this.predictedInvValue * 1.2);
         
-		const v = document.getElementById('speedlit').value;
-		const f = speeds[v].graph;
-		this.updateForSpeed(f);
+//		const v = document.getElementById('speedlit').value;
+//		const f = speeds[v].graph;
+//		this.updateForSpeed(f);
 	}
-	updateForSpeed (factor){
-		this.scaleXaxis(factor);
-	};
+//	updateForSpeed (factor){
+//		this.scaleXaxis(factor);
+//	};
 	predictedInv() {
 		return (theSimulation.serviceRV.mean) / 
 			(theSimulation.interarrivalRV.mean);
@@ -222,7 +222,7 @@ class LittlesLaw extends OmConcept{
         this.redrawBackground();
         this.graph.setupThenRedraw();
         this.clearRedrawStage(0,true);
-        console.log('in Littles Law and called redoStages');
+//        console.log('in Littles Law and called redoStages');
     };
     
     redrawBackground() {

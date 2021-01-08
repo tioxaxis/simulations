@@ -57,8 +57,7 @@ class FacGraph extends TioxGraph {
 					   false, true,  5, 8);
 		const throughput = new GraphLine(this,d => d.thru, cbColors.yellow,
 					   false, true,  5, 8, true);
-        this.doReset = true;
-        
+                
         document.getElementById('leftLegendfac').append(
             flowtime.createLegend('Flow time<br>(seconds/card)'));
         document.getElementById('rightLegendfac').append(
@@ -78,12 +77,11 @@ class FacGraph extends TioxGraph {
 		this.drawOnePoint(p);
 	};
 	reset(){
-		if( this.doReset) super.reset(12,12);
-        this.doReset = true;
-	}
-	updateForSpeed (factor){
-		this.scaleXaxis(factor);
-	};
+		super.reset(12,12);
+    }
+//	updateForSpeed (factor){
+//		this.scaleXaxis(factor);
+//	};
 
 }
 const anim = {};
@@ -345,7 +343,7 @@ class FaceGame extends OmConcept {
         this.redrawBackground();
         this.graph.setupThenRedraw();
         this.clearRedrawStage(0,true);
-        console.log('in FaceGrame and called redoStages');
+//        console.log('in FaceGrame and called redoStages');
     };
     redrawBackground() {
 //        console.log('in facegame and called redraw Background')

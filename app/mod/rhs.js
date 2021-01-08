@@ -225,8 +225,9 @@ export class OmConcept {
         
         const oldFrameSpeed = this.frameSpeed;
 		this.frameSpeed = speeds[v].time;
-		this.graph.updateForSpeed(speeds[v].graph);
-		this.itemCollection.updateForSpeed();
+		this.graph.scaleXaxis(speeds[v].graph);
+        this.graph.setupThenRedraw();
+        this.itemCollection.updateForSpeed();
 		if (oldFrameSpeed < 100 && this.frameSpeed > 100 ){
 			if (this.isRunning){
 				this.pause();

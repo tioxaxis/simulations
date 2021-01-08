@@ -37,17 +37,16 @@ function horizonalShiftAxis(x, xInfo){
 		xInfo.max = xInfo.min + xInfo.width 
 		};
 }
-function horizontalScaleAxis(newScale, xInfo){
-	xInfo.width = xInfo.width / xInfo.scale * newScale;
-	xInfo.step = xInfo.step / xInfo.scale * newScale;
+function horizontalScaleAxis(newScale, oldScale, xInfo){
+	xInfo.width = xInfo.width / oldScale * newScale;
+	xInfo.step = xInfo.step / oldScale * newScale;
 	xInfo.max = xInfo.min + xInfo.width;
-	xInfo.scale = newScale;
 }
 const vertLines = {color: 'grey', lineWidth: 10 };
 
 
 export class TioxGraph {
-	constructor (omConcept, domElem, fontSize, xWidthStep, xAccess,
+	constructor (omConcept, domElem, fontSize, xOrigWidthStep, xAccess,
                   width, height, hasRight = false ){
 		this.omConcept = omConcept;
 		this.chart = new StageOnCanvas(domElem, width, height);
@@ -55,7 +54,7 @@ export class TioxGraph {
         this.ctx = this.chart.context;
 		this.fontSize = fontSize;
 		this.extraLine = {width: 15, origWidth: 15};
-		this.xWidthStep = xWidthStep;
+		this.xOrigWidthStep = xOrigWidthStep;
 		this.xAccess= xAccess;
 		this.lines = [];
         this.vertCoors = [];
@@ -72,7 +71,7 @@ export class TioxGraph {
 			 right: this.outer.width- this.margin.right,
 			 height: this.outer.height - this.margin.top - this.margin.bot,
 			 width: this.outer.width - this.margin.left - this.margin.right};
-		
+        this.xScaleFactor = 1;
 	}
 	
 	reset(yMax, yMaxRight = null){
@@ -125,23 +124,24 @@ export class TioxGraph {
 				step: 2
 			}
 		]];
-		this.xInfo = {min: 0, 
-                      max: this.xWidthStep.width,
-					  step: this.xWidthStep.step,
-					  width: this.xWidthStep.width,
-					  lastX: 0, scale: 1};
-		this.yInfo = {min:0, 
+        this.xInfo = {min: 0, 
+                      max: this.xOrigWidthStep.width,
+					  step: this.xOrigWidthStep.step,
+					  width: this.xOrigWidthStep.width,
+					  lastX: 0};
+        this.yInfo = {min:0, 
                       max: this.table[0].max,
 					  step: this.table[0].step};
         this.yInfoRight = {min:0, 
                       max: this.tableRight[0].max,
-					  step: this.tableRight[0].step};
+					  step: this.tableRight[0].step};				
 		this.updateYaxis(yMax)
         if( yMaxRight ) this.updateYaxisRight(yMaxRight);
 		for( let line of this.lines ){
 			line.last ={x:null, y: null}
 		}
-//		this.setupThenRedraw();
+        this.scaleXaxis(this.xScaleFactor);
+		this.setupThenRedraw();
 	};
 	setTitle(title){
 		document.getElementById('chartTitle' + this.omConcept.key).innerHTML = title;
@@ -158,9 +158,20 @@ export class TioxGraph {
 	};
     
 	scaleXaxis(scale){
-		if ( scale == this.xInfo.scale ) return false;
-		horizontalScaleAxis(scale, this.xInfo);
-		
+//        console.log('inside scale Xaxis  scale=',scale,
+//                    ' this.xScaleFactor=', this.xScaleFactor,
+//                   ' test equality=',scale == this.xScaleFactor);
+        
+        this.xInfo.width =this.xOrigWidthStep.width * scale;
+        this.xInfo.step =this.xOrigWidthStep.step * scale;
+        this.xInfo.max = this.xInfo.min + this.xInfo.width;
+        this.xScaleFactor = scale;
+        
+//        horizontalScaleAxis(scale, this.xInfo);
+//		console.log('After....  scale=',scale,
+//                    ' this.xScaleFactor=', this.xScaleFactor,
+//                   ' test equality=',scale == this.xScaleFactor);
+        
 		for (let line of this.lines ) {
 			line.dotSize = Math.ceil(line.origDotSize / scale);
 			line.lineWidth = Math.ceil(line.origLineWidth / scale);
@@ -169,13 +180,12 @@ export class TioxGraph {
 			this.extraLine.origWidth/scale);
 
 		this.shiftXaxis(this.xInfo.lastX, this.xInfo);
-		this.setupThenRedraw();
-		return true;
 	};
 	shiftXaxis(x){
 		if ( x <= this.xInfo.max ) return false;
 		horizonalShiftAxis(x,this.xInfo);
-		//need to shift data for all lines and vertCoors
+		
+        //need to shift data for all lines and vertCoors
         for( let line of this.lines ){
             let k = line.data.findIndex( 
 			     elem => elem.x >= this.xInfo.min );
@@ -295,7 +305,7 @@ export class TioxGraph {
 	};
 
 	setupThenRedraw(){
-        console.log('inside graph Redraw with OM=',this.omConcept.key);
+//        console.log('inside graph setup Then Redraw with OM=',this.omConcept.key);
 		this.cleargraph();
 		this.drawGrid();
 		this.drawExtraLines();

@@ -97,7 +97,7 @@ class InvGraph extends TioxGraph {
 	};
 	
 	reset(){
-		console.log('in Graph Inventory Reset');
+//		console.log('in Graph Inventory Reset');
         let maxI;
 		if ( inv.whichRule == 'methRop' ){
 			maxI = theSimulation.rop + theSimulation.quantityOrdered + 1;
@@ -105,13 +105,13 @@ class InvGraph extends TioxGraph {
 			maxI = theSimulation.upto+1;
 		};
 		super.reset(maxI);
-		const v = document.getElementById('speedinv').value;
-		const f = speeds[v].graph;
-		this.updateForSpeed(f);
+//		const v = document.getElementById('speedinv').value;
+//		const f = speeds[v].graph;
+//		this.updateForSpeed(f);
 	};
-	updateForSpeed (factor){
-		this.scaleXaxis(factor);
-	};
+//	updateForSpeed (factor){
+//		this.scaleXaxis(factor);
+//	};
 	computePredInv () {
 		let avgInv;
 		
@@ -140,11 +140,11 @@ class InvGraph extends TioxGraph {
 	
 		
 	resetRopLine(y){
-        console.log(' In Graph Inventory ROP LINE');
+//        console.log(' In Graph Inventory ROP LINE');
 		this.setExtraLines(cbColors.yellow,{min:y},null);
 	}
 	resetPeriodLines(x){
-		console.log(' In Graph Inventory PERIOD LINES');
+//		console.log(' In Graph Inventory PERIOD LINES');
         this.setExtraLines(cbColors.yellow,null, {min:x,step:x});
 	}
 }
@@ -276,7 +276,7 @@ class Inventory extends OmConcept{
         this.redrawBackground();
         this.graph.setupThenRedraw();
         this.clearRedrawStage(0,true);
-        console.log('in Inventory and called redoStages');
+//        console.log('in Inventory and called redoStages');
     };
     redrawBackground() {
         theSimulation.store.drawStore();    
@@ -322,15 +322,22 @@ function localUpdate(inp){
             theSimulation.upto = Number(v);
             break;
         case 'method':
+            inv.whichRule = v;
             if( v == 'methRop'){
+                displayToggle(['rop1','rop2'], ['upto1','upto2']);
                 const rop = Number(inv.usrInputs.get('rop').get());
                 inv.graph.resetRopLine(rop);
-            } else {
+                inv.graph.setupThenRedraw();
+            } else if( v == 'methUpto'){
+                displayToggle(['upto1','upto2'], ['rop1','rop2']);
                 const period = Number(inv.usrInputs.get('period').get());
                 inv.graph.resetPeriodLines(period);
+                inv.graph.setupThenRedraw();
+            } else {
+                alert('picked inv simulation with nonexistant method ', v);
+			     debugger;
             }
             console.log('changing method>'+ v+"<");
-            pickInvSimulation(v);
             inv.reset();
             break;
         case 'speed':
@@ -349,22 +356,22 @@ function localUpdate(inp){
     }
 };
 
-function pickInvSimulation(which) {
-	switch (which) {
-		case 'methRop':
-			displayToggle(['rop1','rop2'], ['upto1','upto2']);
-			break;
-		case 'methUpto':
-			displayToggle(['upto1','upto2'], ['rop1','rop2']);
-			break;
-		default:
-			alert('picked inv simulation with ', which);
-			debugger;
-            
-	}
-    console.log('in PickInv Method ', which);
-//    inv.graph.reset();
-};
+//function pickInvSimulation(which) {
+//	switch (which) {
+//		case 'methRop':
+//			displayToggle(['rop1','rop2'], ['upto1','upto2']);
+//			break;
+//		case 'methUpto':
+//			displayToggle(['upto1','upto2'], ['rop1','rop2']);
+//			break;
+//		default:
+//			alert('picked inv simulation with ', which);
+//			debugger;
+//            
+//	}
+//    console.log('in PickInv Method ', which);
+////    inv.graph.reset();
+//};
 
 const speeds = [{time:1,graph:1,anim:true},
 				{time:2,graph:1,anim:true},
@@ -895,21 +902,25 @@ function invHTML(){
 	
 	const d1 = document.createElement('div');
 	d1.className ="statDisplay";
-	const s1 = document.createElement('span');
+	d1.title = 'number of customers leaving without a package since the start of the simulation';
+    const s1 = document.createElement('span');
 	s1.id = 'lostSales'
+    
 	d1.append('Lost Sales: ',s1);
 	
 	const d2 = document.createElement('div');
 	d2.className ="statDisplay";
-	const s2 = document.createElement('span');
+	d2.title = 'percentage of customers leaving with a package';const s2 = document.createElement('span');
 	s2.id = 'fillRate'
 	d2.append('Fill Rate: ',s2,'%');
 	
 	const d3 = document.createElement('div');
 	d3.className ="statDisplay";
-	const s3 = document.createElement('span');
+	d3.title = 'percentage of truck arrivals which arrived before lost sales occurred on that cycle';
+    const s3 = document.createElement('span');
 	s3.id = 'serviceLevel'
-	d3.append('Service Level: ',s3,'%');
+	
+    d3.append('Service Level: ',s3,'%');
 	d.append(d1,d2,d3);
 	
 	//method radio boxes at top of rhs
