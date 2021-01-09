@@ -313,6 +313,9 @@ function localUpdate(inp){
             break;
         case 'period':
             theSimulation.period = Number(v) * tioxTimeConv;
+            inv.heap.modify('next order', 
+                function(){const p = theSimulation.period;
+                           return Math.floor((inv.now + p)/p) * p});
             if( inv.whichRule == 'methUpto'){
                 inv.graph.resetPeriodLines(Number(v));
                 inv.graph.setupThenRedraw();
@@ -337,7 +340,7 @@ function localUpdate(inp){
                 alert('picked inv simulation with nonexistant method ', v);
 			     debugger;
             }
-            console.log('changing method>'+ v+"<");
+//            console.log('changing method>'+ v+"<");
             inv.reset();
             break;
         case 'speed':
@@ -664,8 +667,9 @@ class RopStore extends GStore {
 		this.createDelivery(theSimulation.quantityOrdered);
 	};
 	orderUpto() {
-		inv.heap.push({
-			time: inv.now + theSimulation.period,
+		const p = theSimulation.period;
+        inv.heap.push({
+			time: Math.floor((inv.now + p) / p) * p,
 			type: 'next order',
 			proc: this.orderUpto.bind(this),
 			item: null

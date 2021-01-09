@@ -318,12 +318,13 @@ class FaceGame extends OmConcept {
                 case 'quantity1':
                 case 'quantity2':
                 case 'qln':
-                case 'leg0':
-                case 'leg1':
                 case 'action':
                 case 'reset':
                     break;
-                    
+                case 'leg0':
+                case 'leg1':
+                    break;
+    
                 case 'speed':
                     fac.adjustSpeed(v,speeds);
                     break;

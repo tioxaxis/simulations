@@ -249,7 +249,7 @@ class NewsVendor extends OmConcept{
         this.redrawBackground();
         this.graph.setupThenRedraw();
         this.clearRedrawStage(0,true);
-        console.log('in Newsvendor and called redoStages');
+//        console.log('in Newsvendor and called redoStages');
     };
     redrawBackground() {
         theSimulation.store.drawStore();

@@ -415,17 +415,17 @@ export class LegendItem{
          return this.line.visible.toString();
     };
     set(x){
-        const b = x == 'true';
+        const b = (x == 'true');
         const changed = this.line.visible != b;
         this.line.setVisibility(b);
         return changed;
     };
     encode(x) {
-        return x == 'true' ? 'T' : 'F';
+        return (x == 'true' ? 'T' : 'F');
     };
     
     decode(x) {
-        return x = 'T' ? 'true' : 'false';
+        return (x == 'T' ? 'true' : 'false');
     };
     
     userUpdate(){

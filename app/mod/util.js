@@ -257,16 +257,24 @@ export class Heap {
 
 	}
 
-	modify(type,now, RV) {
+	modify(type,timeFunc) {
 		//        let cnt = 0;
 		for (let i = 0; i < this.h.length; i++) {
 			if (this.h[i].type == type) {
-				this.h[i].time = now + RV.observe();
+				this.h[i].time = timeFunc();
 				//                cnt++
 			}
 		}
 		this.heapify();
 	}
+    
+//    modifyNextOrder(now,period){
+//        for( let i = 0; i < this.h.length; i++ ){
+//            if( this.h[i].type == 'next order' ){
+//                this.h[i].time = Math.floor((now+period)/period)*period
+//            }
+//        }
+//    }
 }; //end class Heap
 
 

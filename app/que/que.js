@@ -271,26 +271,26 @@ function localUpdateFromUser(inp){
         case 'ar':
             theSimulation.interarrivalRV
                 .setRate(v / tioxTimeConv);
-            que.heap.modify('finish/creator', que.now, 
-                            theSimulation.interarrivalRV);
+            que.heap.modify('finish/creator',
+                () => que.now + theSimulation.interarrivalRV.observe());
             break;
         case 'acv':
             theSimulation.interarrivalRV
                 .setCV(v);
-            que.heap.modify('finish/creator', que.now,
-                            theSimulation.interarrivalRV);
+            que.heap.modify('finish/creator',
+                () => que.now + theSimulation.interarrivalRV.observe());
             break;
         case 'sr':
             theSimulation.serviceRV
                 .setRate(v / tioxTimeConv);
-            que.heap.modify('finish/TSAagent', que.now, 
-                            theSimulation.serviceRV);
+            que.heap.modify('finish/TSAagent',
+                () => que.now + theSimulation.serviceRV.observe());
            break;
         case 'scv':
             theSimulation.serviceRV
                 .setCV(v);
-            que.heap.modify('finish/TSAagent', que.now, 
-                            theSimulation.serviceRV);
+            que.heap.modify('finish/TSAagent', 
+                () => que.now + theSimulation.serviceRV.observe());
             break;
         case 'speed':
             que.adjustSpeed(v,speeds);
