@@ -61,406 +61,197 @@
     
 </body>
     <script type='module'>
-  import {
-      NStickFigure, GStickFigure
-  }  
-    from './app/mod/stepitem.js';
+  let localStore = {"app":{"version":"v1.1", "omConcept":{}}};
+  let schema= {que:{ar: {type:'range', low:0, high:10, deflt: 5},
+                    acv: {type:'range', low:0, high:2, deflt: 0},
+                    sr: {type:'range', low:0, high:10,  deflt: 6},
+                    scv: {type:'range', low:0, high:2, deflt: 0},
+                    speed: {type:'range', low:0, high:4, deflt: 0},
+                    action: {type: 'list', list:['none','play','pause'], deflt: 'none'},
+                    reset: {type: 'boolean', deflt: 'false'},
+                    leg0: {type: 'boolean', deflt: 'true'},
+                    leg1: {type: 'boolean', deflt: 'true'},
+                    leg2: {type: 'boolean', deflt: 'false'}
+                    },
+               
+               lit:{ar: {type:'range', low:0, high:6, deflt: 1},
+                    acv: {type:'range', low:0, high:2, deflt: 0},
+                    st: {type:'range', low:5, high:25,  deflt: 6},
+                    scv: {type:'range', low:0, high:2, deflt: 0},
+                    speed: {type:'range', low:0, high:4, deflt: 0},
+                    action: {type: 'list', list:['none','play','pause'], deflt: 'none'},
+                    reset: {type: 'boolean', deflt: 'false'},
+                    leg0: {type: 'boolean', deflt: 'true'},
+                    leg1: {type: 'boolean', deflt: 'true'},
+                    leg2: {type: 'boolean', deflt: 'false'}
+                    },
+               
+                nvp:{
+                    dr: {type:'range', low:10, high:50, deflt: 20},
+                    dcv: {type:'range', low:0, high:1, deflt: 0},
+                    Cu: {type:'range', low:0, high:10,  deflt: 8},
+                    Co: {type:'range', low:0, high:10, deflt: 1},
+                    quan: {type:'range', low:10, high:50, deflt: 20},
+                    speed: {type:'range', low:0, high:4, deflt: 0},
+                    action: {type: 'list', list:['none','play','pause'], deflt: 'none'},
+                    reset: {type: 'boolean', deflt: 'false'},
+                    leg0: {type: 'boolean', deflt: 'true'},
+                    leg1: {type: 'boolean', deflt: 'true'},
+                    leg2: {type: 'boolean', deflt: 'true'}
+                    },
+                
+                inv:{
+                    method: {type: 'list', list: ['methRop','methUpto']},
+                    ar: {type:'range', low:1, high:9, deflt: 5},
+                    acv: {type:'range', low:0, high:2, deflt: 0},
+                    lt: {type:'range', low:2, high:10,  deflt: 5},
+                    ltcv: {type:'range', low:0, high:2, deflt: 0},
+                    quan: {type:'range', low:10, high:50, deflt: 24},
+                    rop: {type:'range', low:5, high:85, deflt: 10},
+                    period: {type:'range', low:2, high:8,  deflt: 3},
+                    upto: {type:'range', low:10, high:90, deflt: 36},
+                    speed: {type:'range', low:0, high:4, deflt: 0},
+                    action: {type: 'list', list:['none','play','pause'], deflt: 'none'},
+                    reset: {type: 'boolean', deflt: 'false'},
+                    leg0: {type: 'boolean', deflt: 'true'},
+                    leg1: {type: 'boolean', deflt: 'true'},
+                    leg2: {type: 'boolean', deflt: 'false'}
+                    
+                    },
+                
+                fac:{
+                    "face":{type:'range', low:0, high:2, deflt: 0},
+                    "eyes":{type:'range', low:0, high:2, deflt: 1},
+                    "nose":{type:'range', low:0, high:2, deflt: 1},
+                    "mout":{type:'range', low:0, high:2, deflt: 1},
+                    "ears":{type:'range', low:0, high:2, deflt: 1},
+                    "hair":{type:'range', low:0, high:2, deflt: 2},
+                    "faceTime":{type: 'range', low: 1, high: 9, deflt: 1},
+                    "eyesTime":{type: 'range', low: 1, high: 9, deflt: 2},
+                    "noseTime":{type: 'range', low: 1, high: 9, deflt: 1},
+                    "moutTime":{type: 'range', low: 1, high: 9, deflt: 2},
+                    "earsTime":{type: 'range', low: 1, high: 9, deflt: 1},
+                    "hairTime":{type: 'range', low: 1, high: 9, deflt: 2},
+                    "quantity0":{type: 'range', low: 1, high: 3, deflt: 1},
+                    "quantity1":{type: 'range', low: 1, high: 3, deflt: 1},
+                    "quantity2":{type: 'range', low: 1, high: 3, deflt: 1},
+                    "qln": {type: 'list', list:['1', '3', '5', '-1'], deflt: '-1'},
+                    speed: {type:'range', low:0, high:4, deflt: 0},
+                    action: {type: 'list', list:['none','play','pause'], deflt: 'none'},
+                    reset: {type: 'boolean', deflt: 'false'},
+                    leg0: {type: 'boolean', deflt: 'true'},
+                    leg1: {type: 'boolean', deflt: 'true'}
+                    },
+                };                  
+       
+                    
+ let jsonString ='[{"ar":"25", "acv":"1.7", "sr":"26","scv":"0", "speed":"5", "action":"pliy","leg0":"fals", "leg1":"trul", "leg2":"false", "reset":"false", "desc":"A: no variability"},{"ar":"5", "acv":"1", "sr":"6", "scv":"0", "speed":"0", "action":"none","leg0":"true", "leg1":"true", "leg2":"false", "reset":"false","desc":"B: arrival variability"}]';
         
-        document.getElementById('button1')
-        .addEventListener('click',draw1);
-        document.getElementById('button2')
-        .addEventListener('click',draw2);
+        let scenarios = JSON.parse(jsonString);
+        console.log(scenarios);
         
- const pi2 =2 * 3.14159;
-const pi = 3.14159;
- class FaceCard {
-    constructor(ctx,x,y,w,h){
-        this.ctx = ctx;
-        this.x = x;
-        this.y = y;
-        this.w = w;
-        this.h = h;
-        this.start = {face:null, eyes:null, nose: null, 
-                     ears:null, mout:null, hair:null};
-        this.mark = false;
-    }
-    startStage (stage, now){
-        //set start time for each feature at stage
-        let t = now + moveTime;
-        for ( let key in fac.features){
-            let s = Number(fac.usrInputs.get(key).get())
-            if( s == stage){
-                this.start[key] = t;
-                t += fac.features[key].adjustedTime;
+        localStore.app.omConcept.key = "que";
+        localStore.app.omConcept.scenarios = scenarios;
+        console.log('the whole thing', localStore);
+        
+        const s7 = decode(localStore);
+        
+        const lsout = encode('que',s7);
+        console.log(lsout);
+        
+        
+        
+//   async function getScenariosFromDefault(key){
+//		let response = await fetch(`app/${key}/${key}.json`);
+//		if (response.ok) {
+//			return await response.json();
+//			}
+//		console.log("json file HTTP-Error: " + response.status);
+//		return null;
+//	};
+        function decode(input){
+            //check if key matches.
+            const scenarios = input.app.omConcept.scenarios;
+            const key = input.app.omConcept.key;
+            console.log('in DECODE', scenarios);
+            for( let j = 0; j< scenarios.length; j++){//scen of scenarios ){
+                console.log('inside decode loop with scen',j, scenarios[j]);
+                verify(schema[key],scenarios[j]);
+                }
+            console.log('inside Decode at end',scenarios);
+            return scenarios
+        };
+        
+        function verify(scheme,scen){
+            console.log('At start of verify  with schme',scheme, 'scen inside verify',scen);
+            for( let k in scheme ) {
+                const item = scheme[k];
+                console.log('begining of loop ', k,scen[k]);
+                const v = scen[k];
+                if ( v == undefined ){
+                    switch (item.type){
+                        case 'range':
+                            if( (item.low <= v) && (v <= item.high) ) break;
+                            console.log('found parameter with key ',k, 'with value ',v,'outside of range.  Set to default');
+                            scen[k] = item.deflt.toString;
+                            break;
+                        case 'list':
+                            if( item.list.indexOf(v)>=0 ) break;
+                            console.log('found parameter with key ',k, 'with value ',v,' not in list of possibles.  Set to default');
+                            scen[k] = item.deflt.toString;;
+                            break;
+                        case 'boolean':
+                            if( (v == 'true') || (v == 'false') ) break;
+                            console.log('found parameter with key ',k, 'with value ',v,' neither true nor false.  Set to default');
+                            scen[k] = item.deflt.toString;;
+                            break;
+                        default:
+                            break;
+                    }
+                } else {
+                    console.log(' got to code if value is undefined key = ',k,
+                                item.deflt, scen[k]);
+                    scen[k] = item.deflt;
+                };
             };
         };
-    };
-    moveTo(x, y) {
-		this.x = Math.floor(x);
-		this.y = Math.floor(y);
-	};
-    
-    draw(now,lineWidth= 1){
-        let ctx = this.ctx;
-         ctx.save();
         
-        ctx.translate(this.x + anim.box.delta,
-                      this.y + anim.box.delta);
-        ctx.beginPath();
-        ctx.strokeStyle = 'black';
-        ctx.fillStyle = 'white';
-        ctx.lineWidth = lineWidth;
-        console.log('line Width',lineWidth);
-        
-        ctx.rect(0,0,this.w,this.h);
-        
-        if( this.mark ){
-//            ctx.font = "30px Material-icons";
-            ctx.fillStyle = 'pink';
-//            ctx.fillText('\u153',0,0);
-           
-        };
-        ctx.closePath();
-        ctx.fill();
-        ctx.moveTo( this.w*.05,this.h*.05);
-        ctx.lineTo( this.w*.95,this.h*.95);
-        ctx.stroke();
-        
-        
-        for( let key in this.start ){
-            const s = this.start[key];
-            if( !s || now < s ) continue;
-            const frac = Math.min(1,(now-s)/fac.features[key].adjustedTime);
-            const frac1 = Math.min(1,frac*2);
-            const frac2 = ( frac - 0.5 ) * 2;
-//            const sg = fac.usrInputs.get(key).get();
-            ctx.strokeStyle = 'blue'
-            switch (key) {
-                case 'face':
-                    ctx.beginPath();
-                    ctx.lineWidth = lineWidth;
-                    ctx.arc(.5*this.w, .5*this.h, .325*this.w, 0, frac*pi2);
-                    ctx.stroke();
-                    ctx.closePath();
-                    break;
-                case 'eyes':
-                    
-                    ctx.beginPath();
-                    ctx.arc(.35*this.w,.4*this.h,.07*this.w,0,frac1*pi2);
-                    ctx.stroke();
-                    ctx.closePath();
-                    ctx.beginPath();
-                    ctx.arc(.33*this.w,.42*this.h,.02*this.w,0,frac1*pi2);
-                    ctx.stroke();
-                    ctx.closePath();
-                    if( frac <=.5 ) break;
-                    ctx.beginPath();
-                    ctx.arc(.65*this.w,.4*this.h,.07*this.w,0,frac2*pi2);
-                    ctx.stroke();
-                    ctx.closePath();
-                    ctx.beginPath();
-                    ctx.arc(.63*this.w,.42*this.h,.02*this.w,0,frac2*pi2);
-                    ctx.stroke();
-                    ctx.closePath();
-                    break;
-                case 'nose':
-                    ctx.beginPath();
-                    ctx.moveTo(.5*this.w,.4*this.h);
-                    ctx.lineTo((.5 -.1*frac1)*this.w,(.4 +.2*frac1)*this.h);
-                    if( frac > .5 )  
-                        ctx.lineTo((.4+.1*frac2)*this.w,.6*this.h);
-                    ctx.stroke();
-                    ctx.closePath();
-                    break;
-                case 'ears':
-                    ctx.beginPath();
-                    ctx.arc(0.25*this.w, 0.5*this.h, 0.15*this.w, 0.6*pi,
-                            (0.6 + 0.8 * frac1)*pi);
-                    ctx.stroke();
-                    ctx.closePath();
-                    if( frac < 0.5 ) break;
-                    ctx.beginPath();
-                    ctx.arc(.75*this.w, .5*this.h, .15*this.w, 1.6*pi,
-                            ((1.6 + .8 * frac2) % 2)*pi);
-                    ctx.stroke();
-                    ctx.closePath();
-                    break;
-                case 'mout':
-                    ctx.beginPath();
-                    ctx.arc(.5*this.w, .48*this.h, .25*this.w, .20*pi,
-                            (.2 + frac*.6)*pi);
-                    ctx.stroke();
-                    ctx.closePath();
-                    break;
-                case 'hair':
-                    ctx.beginPath();
-                    ctx.moveTo(.3*this.w,.25*this.h);
-                    ctx.lineTo(.35*this.w,.1*this.h);
-                    if( frac > .125 ) ctx.lineTo(.40*this.w,.2*this.h);
-                    if( frac > .250 ) ctx.lineTo(.45*this.w,.1*this.h);
-                    if( frac > .375 ) ctx.lineTo(.5*this.w,.2*this.h);
-                    if( frac > .500 ) ctx.lineTo(.55*this.w,.1*this.h);
-                    if( frac > .625 ) ctx.lineTo(.6*this.w,.2*this.h);
-                    if( frac > .750 ) ctx.lineTo(.65*this.w,.1*this.h);
-                    if( frac > .875 ) ctx.lineTo(.7*this.w,.25*this.h);
-                    ctx.stroke();
-                    ctx.closePath();
-                    break;
-                    
-            }
+        function encode(key, scenarios){
+            console.log('start of encode scenarios',scenarios);
+            for( let scen of scenarios ){
+                verify(schema[key],scen);
+                }
+            let ls = {"app":{"version":"v1.1", "omConcept":{}}};
+            ls.app.omConcept.scenarios = scenarios;
+            ls.app.omConcept.key = key;
+            return ls;
         }
-        ctx.restore();
-    };
-};
-    var anim = {};
-    anim.box ={delta: 20};
-     var stage = {};
-    
-class stageOnCanvas{
-    constructor (id, w, h){
-        this.canv = document.getElementById(id);
-        this.context = this.canv.getContext('2d');
-        this.stage = {width:w, height:h};
-    };
-    reset(){
-        const rect = this.canv.getBoundingClientRect();
-        this.canv.width = rect.width * devicePixelRatio;
-        this.canv.height = rect.height * devicePixelRatio;
-        this.context.scale(this.canv.width/this.stage.width,
-                           this.canv.height/this.stage.height);
-        return this.context;
-    };
-};
-function setup(id){
-    var canv = document.getElementById(id);
-    const ctx = canv.getContext('2d');
-    const rect = canv.getBoundingClientRect();
-    canv.width = rect.width * devicePixelRatio;
-    canv.height = rect.height * devicePixelRatio;
-    ctx.scale(c.width/800,c.height/800);
-    
-    
-    console.log('in setup', rect.width, rect.height, c.width, c.height);
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+ 
 
     
-//    const item = document.getElementById('item'+k);
-//    item.innerHTML = 'Rectangle: '+rect.width.toFixed(0)+' x '+rect.height.toFixed(0)
-//            +'<br>Canvas style Width '+ c.style.width +
-//        '<br>  Canvas Width x Height: '+ c.width+' x '+c.height;
-    return ctx;
-    
-};
-    
-//    const size = [2000,1000,3000,1500,4000,2000,5000,2500];
-//    var ctx = [];
-// function updateBR(){
-//      setup(0);
-// }
-    
-    const stg = new stageOnCanvas('foreground0',800,800);
-    const cty = stg.reset();
-    window.onresize = stg.reset.bind(stg);
-    
-    
-    
-    
-    
-    
-    var fac = {};
-    fac.features = {face:{}, eyes:{}, nose: {}, 
-                     ears:{}, mout:{}, hair:{}};
-    
-    
-    fac.features.face.adjustedTime = 1;
-    fac.features.eyes.adjustedTime = 1;
-    fac.features.nose.adjustedTime = 1;
-    fac.features.ears.adjustedTime = 1;
-    fac.features.mout.adjustedTime = 1;
-    fac.features.hair.adjustedTime = 1;
-    
-//    var faces=[];
-//    for(let i = 0; i<8; i+=2){
-//         faces[i] = new FaceCard(ctx[i], size[i]/100, size[i]/100,
-//                          size[i]/25, size[i]/25);
-//    faces[i].start = {face:10, eyes:10, nose: 10, 
-//                     ears:10, mout:10, hair:10};
-//    faces[i].draw(100,2); //Math.ceil(size[i]/size[0]));
-//    }
-//    for(let i = 1; i<8; i+=2){
-//         faces[i] = new FaceCard(ctx[i], size[i]/100, size[i]/100,
-//                          100,100);
-//    faces[i].start = {face:10, eyes:10, nose: 10, 
-//                     ears:10, mout:10, hair:10};
-//    faces[i].draw(100,2); //Math.ceil(size[i]/size[0]));
-//    }
-    
-    
-    var f1 = new FaceCard(cty, 50, 50,
-                          100, 100);
-    f1.start = {face:10, eyes:10, nose: 10, 
-                     ears:10, mout:10, hair:10};
-    f1.draw(100,1);
-//        const start = Date.now();
-//        let n = 10000;
-//        for( let j = 0; j <n; j++){
-//            cty.save()
-//            cty.beginPath();
-//            cty.strokeStyle = 'purple';
-//            cty.fillStyle = 'green'
-//            cty.lineWidth = 10;
-//            cty.moveTo( 250,50);
-//            cty.lineTo( 250,150);
-//            cty.lineTo( 300,150);
-//            cty.stroke();
-//            cty.fill();
-//    //        cty.closePath();
-//    //        cty.beginPath();
-//            cty.strokeStyle = 'green';
-//            cty.fillStyle = 'yellow'
-//            cty.moveTo( 350,50);
-//            cty.lineTo( 350,150);
-//            cty.lineTo( 400,150);
-//            cty.stroke();
-//            cty.closePath();
-//            cty.strokeStyle = 'red';
-//            cty.stroke();
-//            cty.fill();
-//            cty.restore();
-//        }
-//        console.log('running time for ',n,'iterations',Date.now() - start);
-        
-    
-        const gSF = new GStickFigure(cty,60);
-        const guys = [];
-        for(let j = 0; j<10; j++){
-            for( let k = 0; k<15;k++){
-            guys[j*15+k] = new NStickFigure(gSF,200+40*k,50+70*j );
-                guys[j*15+k].draw();
-            }
-        }
-        
-        
 
+    
+
+    
+    
+
+    
+    
         
-        
-    function draw1(){
-       let start = Date.now();
-        for(let n =0; n<67;n++){
-            for(let k= 0;k<150;k++){
-                guys[k].draw();
-            }
-        }
-        console.log('to do 150 people over 67 times  for 10050 people takes =',Date.now()-start);
-        
-        
-         
-    };
     
-    function draw2(){
-        const start = Date.now();
-        for(let n =0; n<67;n++){
-            for(let k= 0;k<150;k++){
-                guys[k].drawOld();
-            }
-        }
-        console.log('to do 150 people over 67 times  for 10050 people old way =',Date.now()-start);
-    };
+     
     
-    function draw3(){
-        var f1 = new FaceCard(cty, 650, 50, 100, 100);
-        f1.start = {face:10, eyes:10, nose: 10, 
-                     ears:10, mout:10, hair:10};
-        f1.draw(100,1);
-    };
-    
-    
-//    function numSpecifics(){
-//        console.log('called the num specifics routines value is',NumSlider.get());
-//    };
-//    function arbSpecifics(){
-//        console.log('called the arb specifics routines value is',ArbSlider.get());
-//    };
-    
-//    function rbSpecifics(){
-//        console.log('called the rb specifics routines value is',rb.get());
-//    };
-//    
-//    function cbSpecifics(){
-//        console.log('called the cb specifics routines value is',cb.get());
-//    };
-    
-//    let spRoutines ={}
-//    
-//    let place = document.getElementById('place');
-//    
-//    let numInput = genRange('numid','6.0',5, 9, 1);
-//    let numSliderBox = htmlNumSlider(numInput,
-//                        'Numeric Range = ', '6.0', [5, 7, 9] );
-//    let numRngObj = new NumSlider('num', numInput, localRoutine,1,2,10);
-//    place.append(numSliderBox);
-//    
-//
-//    let arbInput = genRange('arbid',0 ,0, 4, 1);
-//    let arbSliderBox = htmlArbSlider(arbInput,
-//                        'Arbitrary Range = ', 'A' 
-//                        , ['A','C','E']  );
-//    let arbRngObj = new ArbSlider(arbInput, localRoutine,
-//                                 ['A','B','C','D','E'], ['a','b','c','d','e']);
-//    place.append(arbSliderBox);
-//        
-//    spRoutines['numid']=numRngObj;
-    
-//    let ArbSlider = new ArbSlider('arbid',arbSpecifics,
-//                                ['A','B','C','D','E'],
-//                               ['a','b','c','d','e']);
-//    spRoutines['arbid'] = ArbSlider;
-    
-//    let numHTML = numRngObj.htmlNumSlider('Numeric Range =',6, [5, 7,9]   );
-//    let arbHTML = ArbSlider.htmlArbSlider('Arbitrary Range =',1,['A','C','E']   );
-    
-//    place.append(numSliderBox);
-//    console.log(numRngObj.get());
-//    console.log(arbRngObj.get());
-//    console.log(arbRngObj.getValue());
-//    
-//    numRngObj.set(9);
-//    arbRngObj.set(4);
-//    console.log(numRngObj.get());
-//    console.log(arbRngObj.get());
-//    console.log(arbRngObj.getValue());
-//    function localRoutine(key){
-//        console.log('reached local rountine with key=>'+key+'<=')
-//    }
-    
-//    let cbInput = genCheckBox('cbid');
-//    let cbElem = htmlCheckBox(cbInput,'here is a checkbox');
-//    let cb = new CheckBox('cb', cbInput, localRoutine );
-//    place.append(cbElem);
-//    console.log(' cb=', cb.get() );
-    
-    
-    
-//    spRoutines['action'] = rb;
-//    place.append(
-//    htmlRadioButton('action','play','play',true,'PlayLabel'),
-//    htmlRadioButton('action','pause','pause',false,'PauseLabel'),
-//    htmlRadioButton('action','none','none',false,'NoneLabel')
-//    );
-//    let rb = new RadioButton('action',localRoutine, ["none","play","pause"]);
-//    
-//    rb.set('pause');
-//    console.log('radio button output',rb.get()+'>'+rb.encode(rb.get())+'<');
-//    
-//    rb.set('none');
-//    console.log('radio button output',rb.get()+'>'+rb.encode(rb.get())+'<');
-//    
-//    
-//    let intRange = genRange('intid', 4, 2, 12, 2);
-//    let intInput = new IntegerInput(intRange, localRoutine, 2);
-//    place.append('here is a integer box',intRange);
-    
-    
-//    place.addEventListener('input', captureUserUpdate);
-  
     </script>
 </html>

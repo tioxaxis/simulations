@@ -69,11 +69,11 @@ class QueueGraph extends TioxGraph {
         d3.append(leg0, leg1, leg2);
         
         que.usrInputs.set('leg0', 
-            new LegendItem('leg0', indivWait, localUpdateFromUser)); 
+            new LegendItem('leg0', indivWait, localUpdateFromUser, true)); 
         que.usrInputs.set('leg1', 
-            new LegendItem('leg1', avgWait, localUpdateFromUser));
+            new LegendItem('leg1', avgWait, localUpdateFromUser, true));
         que.usrInputs.set('leg2', 
-            new LegendItem('leg2', this.predWait, localUpdateFromUser));
+            new LegendItem('leg2', this.predWait, localUpdateFromUser, false));
 	};
 	
 	push (t,w){
@@ -559,36 +559,36 @@ function queHTML(){
     const arInput = genRange('arque', '5.0', 0, 10, .1);
     elem.append(htmlNumSlider(arInput, 'Arrival Rate = ', '5.0', [0,2,4,6,8,10]) );
     usrInputs.set('ar', new NumSlider('ar',arInput,
-                localUpdateFromUser, 1,3,10) );
+                localUpdateFromUser, 0, 10, 5, 1,3,10) );
     
     const acvInput = genRange('acvque', '0.0', 0, 2, .5);
     elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', 0,['0.0','1.0','2.0']) );
     usrInputs.set('acv', new NumSlider('acv', acvInput,
-                localUpdateFromUser, 1,2,10) );
+                localUpdateFromUser, 0, 2, 0, 1,2,10) );
     
     
     const srInput = genRange('srque', '6.0', 0, 10, .1);
     elem.append(htmlNumSlider(srInput, 'Service Rate = ', '6.0',[0,2,4,6,8,10]) );
     usrInputs.set('sr', new NumSlider('sr',srInput,
-                localUpdateFromUser, 1,3,10) );
+                localUpdateFromUser, 0, 10, 6, 1,3,10) );
     
     const scvInput = genRange('scvque', '0.0', 0, 2, .5);
     elem.append(htmlNumSlider(scvInput, 'Service CV = ', 0,['0.0','1.0','2.0']) );
     usrInputs.set('scv', new NumSlider('scv', scvInput,
-                localUpdateFromUser, 1,2,10) );
+                localUpdateFromUser, 0, 2, 0, 1,2,10) );
     
     elem.append( genPlayResetBox('que') );
     usrInputs.set('reset', new CheckBox('reset', 'resetque',
-                localUpdateFromUser) );
+                localUpdateFromUser, false) );
     usrInputs.set('action', new RadioButton('action', 'actionque', 
-                localUpdateFromUser, ['none','play','pause']) );
+                localUpdateFromUser, ['none','play','pause'], 'none') );
      
     const speedInput = genRange('speedque',0,0,5,1);
     elem.append(htmlArbSlider(speedInput, 'Speed = ', '1x',
                             ["slow",' ',' ',' ',"fast",'∞']) );
     usrInputs.set('speed', new ArbSlider('speed', speedInput, 
                 localUpdateFromUser, ["1x",'2x','5x','10x',"25x",'∞'],
-				                [1,2,5,10,25,1000]) );   
+				                [1,2,5,10,25,1000], 0) );   
     
 	const f = document.getElementById('scenariosMidque');
 	f.style = "min-height: 26vw";

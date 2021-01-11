@@ -76,9 +76,12 @@ class InvGraph extends TioxGraph {
                   bothInv.createLegend('On Hand and On Order'),
                   predInv.createLegend('Predicted On Hand')
                   );
-        inv.usrInputs.set('leg0', new LegendItem('leg0', onhandInv, localUpdateFromUser));
-        inv.usrInputs.set('leg1', new LegendItem('leg1', bothInv, localUpdateFromUser));
-        inv.usrInputs.set('leg2', new LegendItem('leg2', predInv, localUpdateFromUser)); 
+        inv.usrInputs.set('leg0', 
+            new LegendItem('leg0', onhandInv, localUpdateFromUser, true));
+        inv.usrInputs.set('leg1', 
+            new LegendItem('leg1', bothInv, localUpdateFromUser, true));
+        inv.usrInputs.set('leg2', 
+            new LegendItem('leg2', predInv, localUpdateFromUser, false)); 
 	
 		if( inv.whichRule == 'methRop'){
 			this.resetRopLine(Number(inv.usrInputs.get('rop').get()));
@@ -944,53 +947,53 @@ function invHTML(){
 	
     //radio buttons have to be in document before running this!!
     usrInputs.set('method', new RadioButton('method', 'methodinv', 
-                localUpdateFromUser, ['methRop','methUpto']) );
+                localUpdateFromUser, ['methRop','methUpto'], 'methRop') );
     
 	//now put in the sliders with the play/reset box	
 	const arInput = genRange('arinv', '5', 1, 9, 1);
     elem.append(htmlNumSlider(arInput, 'Arrival Rate = ',
                               '5', [1,3,5,7,9]) );
     usrInputs.set('ar', new NumSlider('ar',arInput,
-                localUpdateFromUser, 0,2,1) );
+                localUpdateFromUser, 1, 9, 5, 0,2,1) );
     
     const acvInput = genRange('acvinv', '0.0', 0, 2, .5);
     elem.append(htmlNumSlider(acvInput, 'Arrival CV = ',
                               '0.0', ['0.0','1.0','2.0']) );
     usrInputs.set('acv', new NumSlider('acv', acvInput,
-                localUpdateFromUser, 1,2,10) );
+                localUpdateFromUser, 0, 2, 0, 1,2,10) );
     
     const ltInput = genRange('ltinv', '5', 2, 10, 1);
     elem.append(htmlNumSlider(ltInput, 'Lead Time = ',
                               '5', [2,4,6,8,10]) );
     usrInputs.set('lt', new NumSlider('lt',ltInput,
-                localUpdateFromUser, 0,2,1) );
+                localUpdateFromUser, 2, 10, 5, 0,2,1) );
     
     const ltcvInput = genRange('ltcvinv', '0.0', 0, 2, .5);
     elem.append(htmlNumSlider(ltcvInput, 'Lead Time CV = ',
                               '0.0', ['0.0','1.0','2.0']) );
     usrInputs.set('ltcv', new NumSlider('ltcv', ltcvInput,
-                localUpdateFromUser, 1,2,10) );
+                localUpdateFromUser, 0, 2, 0, 1,2,10) );
     
     const quanInput = genRange('quaninv', 24, 10,50,1);
     const rop1 = htmlNumSlider(quanInput, 'Order Quantity = ',
                              24, [10,20,30,40,50]);
     rop1.id = 'rop1';
     usrInputs.set('quan', new NumSlider('quan', quanInput,
-               localUpdateFromUser, 0,2,1));
+               localUpdateFromUser, 10, 50, 24, 0,2,1));
     
     const ropInput = genRange('ropinv', 10, 5, 85, 1);
     const rop2 = htmlNumSlider(ropInput, 'Reorder Point = ',
                              10, [5,25,45,65,85]);
     rop2.id ='rop2';
     usrInputs.set('rop', new NumSlider('rop', ropInput,
-                localUpdateFromUser, 0,2,1));
+                localUpdateFromUser, 5, 85, 10, 0,2,1));
     
     const periodInput = genRange('periodinv', 3, 2, 8, 1);
     const upto1 = htmlNumSlider(periodInput, 'Period = ',
                              3, [2,5,8]);
     upto1.id = 'upto1';
     usrInputs.set('period', new NumSlider('period', periodInput,
-                localUpdateFromUser, 0,1,1));
+                localUpdateFromUser, 2, 8, 3, 0,1,1));
     
     
     const uptoInput = genRange('uptoinv', 36, 10, 90, 1);
@@ -998,14 +1001,14 @@ function invHTML(){
                              36, [10,30,50,70,90]);
     upto2.id = 'upto2';
     usrInputs.set('upto', new NumSlider('upto', uptoInput,
-                localUpdateFromUser, 0,2,1));
+                localUpdateFromUser, 10, 90, 36, 0,2,1));
     elem.append(rop1,rop2,hideNode(upto1),hideNode(upto2));
     
     elem.append( genPlayResetBox('inv') );
     usrInputs.set('reset', new CheckBox('reset', 'resetinv',
-                localUpdateFromUser) );
+                localUpdateFromUser, false) );
     usrInputs.set('action', new RadioButton('action', 'actioninv', 
-                localUpdateFromUser, ['none','play','pause']) );
+                localUpdateFromUser, ['none','play','pause'], 'none') );
     
     
 	const speedInput = genRange('speedinv',0,0,5,1);
@@ -1013,7 +1016,7 @@ function invHTML(){
                             ["slow",' ',' ',' ',"fast",'∞']) );
     usrInputs.set('speed', new ArbSlider('speed', speedInput, 
                 localUpdateFromUser, ["1x",'2x','5x','10x',"25x",'∞'],
-				                [1,2,5,10,25,1000]) );  
+				                [1,2,5,10,25,1000], 0) );  
 	
 	const f = document.getElementById('scenariosMidinv');
 	f.style = "min-height: 17vw";

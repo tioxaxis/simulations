@@ -63,8 +63,10 @@ class FacGraph extends TioxGraph {
         document.getElementById('rightLegendfac').append(
             throughput.createLegend('Throughput<br>(cards/minute)'));
 
-        fac.usrInputs.set('leg0', new LegendItem('leg0', flowtime, localUpdateFromUser));
-        fac.usrInputs.set('leg1', new LegendItem('leg1', throughput, localUpdateFromUser));
+        fac.usrInputs.set('leg0', 
+            new LegendItem('leg0', flowtime, localUpdateFromUser, true));
+        fac.usrInputs.set('leg1', 
+            new LegendItem('leg1', throughput, localUpdateFromUser, true));
 	};
 	
 	push (t,flow,thru){
@@ -876,35 +878,35 @@ function facHTML(){
     rhs.insertBefore(radioButtons, rhs.firstChild);
     
     usrInputs.set('face', new RadioButton('face', 'facefac',
-                localUpdateFromUser, ['0','1','2']) );
+                localUpdateFromUser, ['0','1','2'], '0') );
     usrInputs.set('eyes', new RadioButton('eyes', 'eyesfac',
-                localUpdateFromUser, ['0','1','2']) );
+                localUpdateFromUser, ['0','1','2'], '1') );
     usrInputs.set('nose', new RadioButton('nose', 'nosefac',
-                localUpdateFromUser, ['0','1','2']) );
+                localUpdateFromUser, ['0','1','2'], '1') );
     usrInputs.set('mout', new RadioButton('mout', 'moutfac',
-                localUpdateFromUser, ['0','1','2']) );
+                localUpdateFromUser, ['0','1','2'], '1') );
     usrInputs.set('ears', new RadioButton('ears', 'earsfac',
-                localUpdateFromUser, ['0','1','2']) );
+                localUpdateFromUser, ['0','1','2'], '1') );
     usrInputs.set('hair', new RadioButton('hair', 'hairfac',
-                localUpdateFromUser, ['0','1','2']) );
+                localUpdateFromUser, ['0','1','2'], '2') );
     usrInputs.set('faceTime', new NumSlider('faceTime', 'faceTimefac',
-                localUpdateFromUser, 0,1,1) );
+                localUpdateFromUser, 1, 9, 1, 0,1,1) );
     usrInputs.set('eyesTime', new NumSlider('eyesTime', 'eyesTimefac',
-                localUpdateFromUser, 0,1,1) );
+                localUpdateFromUser, 1, 9, 2, 0,1,1) );
     usrInputs.set('noseTime', new NumSlider('noseTime', 'noseTimefac',
-                localUpdateFromUser, 0,1,1) );
+                localUpdateFromUser, 1, 9, 1, 0,1,1) );
     usrInputs.set('moutTime', new NumSlider('moutTime', 'moutTimefac',
-                localUpdateFromUser, 0,1,1) );
+                localUpdateFromUser, 1, 9, 2, 0,1,1) );
     usrInputs.set('earsTime', new NumSlider('earsTime', 'earsTimefac',
-                localUpdateFromUser, 0,1,1) );
+                localUpdateFromUser, 1, 9, 1, 0,1,1) );
     usrInputs.set('hairTime', new NumSlider('hairTime', 'hairTimefac',
-                localUpdateFromUser, 0,1,1) );
+                localUpdateFromUser, 1, 9, 2, 0,1,1) );
     usrInputs.set('quantity0', new IntegerInput('quantity0', 'quantity0fac',
-                localUpdateFromUser, 1) );
+                localUpdateFromUser, 1, 3, 1, 1) );
     usrInputs.set('quantity1', new IntegerInput('quantity1', 'quantity1fac',
-                localUpdateFromUser, 1) );
+                localUpdateFromUser, 1, 3, 1, 1) );
     usrInputs.set('quantity2', new IntegerInput('quantity2', 'quantity2fac',
-                localUpdateFromUser, 1) );
+                localUpdateFromUser, 1, 3, 1, 1) );
     
     
     let elem = document.getElementById('slidersWrapperfac');
@@ -915,20 +917,20 @@ function facHTML(){
 	elem.append(htmlArbSlider(qlnInput, 'Queue Length = ', '∞', ['1','3','5','∞'] ));
     usrInputs.set('qln', new ArbSlider('qln', qlnInput, 
                 localUpdateFromUser, ['1','3','5','∞'],
-                                      [1,3,5,-1]) );
+                                      [1,3,5,-1], 3) );
 		
     elem.append(genPlayResetBox('fac'));
 	usrInputs.set('reset', new CheckBox('reset', 'resetfac',
-                localUpdateFromUser) );
+                localUpdateFromUser, false) );
     usrInputs.set('action', new RadioButton('action', 'actionfac', 
-                localUpdateFromUser, ['none','play','pause']) );	
+                localUpdateFromUser, ['none','play','pause'], 'none') );	
         
     const speedInput = genRange('speedfac',0,0,4,1);
     elem.append(htmlArbSlider(speedInput, 'Speed = ', '1x',
                             ["slow",' ',' ',' ',"fast"]) );
     usrInputs.set('speed', new ArbSlider('speed', speedInput, 
                 localUpdateFromUser, ["1x",'2x','5x','10x',"25x"],
-				                [1,2,5,10,25]) ); 
+				                [1,2,5,10,25], 0) ); 
     	
 	const f = document.getElementById('scenariosMidfac');
 	f.style = "min-height: 16vw";

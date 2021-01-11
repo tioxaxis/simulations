@@ -385,16 +385,19 @@ export class OmConcept {
 	
 	/******************* Two Helper Functions for setupScenarios  *********/
 	// try the 4 options in order returning the rows of parameters 
-	async threeCases(key,search,scenariosString ){
+	async threeCases(key,search,lsString ){
 		if ( search.scenarios ){
 			this.fromURL = true;
 			return this.parseURLScenariosToRows(search.scenarios)
 			}
 			
-		if (scenariosString) {
-			return JSON.parse(scenariosString);
+		if (lsString) {
+			const params = this.verifyParamsObject( JSON.parse(lsString) );
+            return params.app.omConcept.scenarios;
 		}
-		return this.getScenariosFromDefault(key);
+		let params = await this.getScenariosFromDefault(key);
+        params = this.verifyParamsObject(params);
+        return params.app.omConcept.scenarios;
 	};
 	
 	// capture the three possible 'search' parameters
@@ -422,8 +425,9 @@ export class OmConcept {
 				decodeURI(location.search.slice(1)), hash == this.key)
 			rows = this.parseURLScenariosToRows(search.scenarios)
 		} else {
-			rows = await  this.getScenariosFromDefault(
-					this.key);
+			let params = await this.getScenariosFromDefault(this.key);
+            params = this.verifyParamsObject(params);
+            rows = params.app.omConcept.scenarios;
 		};
 		this.setUL(rows);
 		this.currentLi = null;
@@ -438,14 +442,28 @@ export class OmConcept {
 		let search = this.parseSearchString(
 			decodeURI(location.search.slice(1)), hash == this.key)
 		
-		let scenariosString =  localStorage.getItem(this.keyForLocalStorage);
-		this.warningLSandScens = search.scenarios  && scenariosString;
+		let lsString = localStorage.getItem(this.keyForLocalStorage);
+		this.warningLSandScens = search.scenarios  && lsString;
 		
-		let rows = await this.threeCases(this.key,search, scenariosString);
-	
+		let rows = await this.threeCases(this.key,search, lsString);
+	       
 		// if one thing worked 'rows' has it.
 		this.setUL(rows);
 	};
+    
+    verifyParamsObject(params) {
+        //for now we just check each scenario in the params
+        if( params == null ) return null;
+        let scenarios = params.app.omConcept.scenarios;
+        for( let s of scenarios ) {
+            console.log('verifying scenario s=',s);
+            for( let [key,input] of this.usrInputs ){
+                console.log('verifying key =',key,s[key]);
+                s[key] = input.verify(s[key]);
+            };   
+        };
+        return params;
+    };
 	
 
 	printScenarios () {
@@ -620,9 +638,9 @@ export class OmConcept {
 		this.toastTimer = setTimeout(
 			this.removeToastMessage.bind(this), 4100);
 	};
-    exportWithJSON () {
-        copyToClipboard(this.createJSONfromUL());
-    }
+//    exportWithJSON () {
+//        copyToClipboard(this.createJSONfromUL());
+//    }
 		
 	liClicked (ev) {
 		if (ev.target == this.currentLi || 
@@ -700,7 +718,11 @@ export class OmConcept {
 	};
 
 	createJSONfromUL() { //from curreent UL
-		return JSON.stringify(this.createRowsFromUL());
+		const allParams = {app: { omConcept: { 
+                           key: this.key,
+                           scenarios: this.createRowsFromUL()}
+                    }};
+        return JSON.stringify(allParams);
 	};
 };
 

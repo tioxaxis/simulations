@@ -1,3 +1,5 @@
+{"app": {
+    "omConcept":{ "key":"inv","scenarios":
 [{"method":"methRop", "ar":"5", "acv":"0", "lt":"2", "ltcv":"0",
   "quan":"24", "rop":"10", "period":"2", "upto":"10", 
   "speed":"2", "action":"none", 
@@ -33,3 +35,4 @@
   "speed":"2", "action":"none",  
   "leg0":"true", "leg1":"true", "leg2":"false", "reset":"false", 
   "desc":"3B Two trucks in process"}]
+                }}}

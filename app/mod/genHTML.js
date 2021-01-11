@@ -168,11 +168,15 @@ function domElem(x){
 }
 export class NumSlider{
     // slider stores a number; receives and returns string
-    constructor (key, inputElem, localUpdate, precision, shortLen, scale){
+    constructor (key, inputElem, localUpdate, 
+                  min, max, deflt, precision, shortLen, scale){
         this.key = key;
         this.inputElem = domElem(inputElem);
 //        this.disp = document.getElementById('disp' + this.inputElem.id);
         this.localUpdate = localUpdate;
+        this.min = min;
+        this.max = max;
+        this.deflt = deflt;
         this.precision = precision;
         this.shortLen = shortLen;
         this.scale = scale;
@@ -188,6 +192,11 @@ export class NumSlider{
         const disp = document.getElementById('disp' + this.inputElem.id);
         if( disp ) disp.innerHTML = Number(x).toFixed(this.precision);
         return changed;
+    };
+    verify(x) {
+        if( (this.min <= x) && (x <= this.max) ) return x.toString();
+        reportError(this.key, x);
+        return this.deflt.toString();
     };
 
     encode(x){
@@ -230,12 +239,13 @@ export function htmlArbSlider(inputElem, displayText, initial, sliderValues){
     };
 export class ArbSlider{
     //slider holds the index but otherwise use values[index]
-    constructor (key, inputElem, localUpdate,  displayValues, values ){
+    constructor (key, inputElem, localUpdate,  displayValues, values, deflt ){
         this.key = key;
         this.inputElem = domElem(inputElem);
         this.localUpdate = localUpdate;
         this.displayValues = displayValues;
         this.values = values;
+        this.deflt = deflt;
         this.shortLen = 1;
         this.inputElem.addEventListener('input', this.userUpdate.bind(this));
         if( values.length > 10 )
@@ -256,6 +266,11 @@ export class ArbSlider{
         disp.innerHTML = this.displayValues[i];
         return changed;
     };
+    verify(x) {
+        if( (0 <= x) && (x < this.values.length) ) return x.toString();
+        reportError(this.key, x);
+        return this.deflt.toString();
+    }
     encode(x){
         return x.toString();;
     };
@@ -281,10 +296,11 @@ export function htmlCheckBox(inp, desc){
     };
 export class CheckBox{
     //slider holds "checked" receives and returns string
-    constructor (key, inputElem, localUpdate) {
+    constructor (key, inputElem, localUpdate, deflt) {
         this.key = key;
         this.inputElem = domElem(inputElem);
         this.localUpdate = localUpdate;
+        this.deflt = deflt;
         this.shortLen = 1;
         this.inputElem.addEventListener('input', this.userUpdate.bind(this));
     };
@@ -297,6 +313,11 @@ export class CheckBox{
         this.inputElem.checked = x == 'true';
         return changed;
     };
+    verify(x) {
+        if( (x == 'true') || (x == 'false') ) return x;
+        reportError(this.key, x);
+        return this.deflt.toString();
+    }
     encode(x){
         return ( x == 'true' ? 'T' : 'F');
     };
@@ -320,12 +341,13 @@ export function htmlRadioButton(id, name, value, checked, desc){
     return label;
 };
 export class RadioButton{
-    constructor (key, name, localUpdate, values){
+    constructor (key, name, localUpdate, values, deflt){
         this.key = key;
         this.name = name;
         this.localUpdate = localUpdate;
         this.nodelist = document.getElementsByName(name); 
         this.values = values;
+        this.deflt = deflt;
         this.shortLen = 1;
         for( let j = 0; j < this.nodelist.length; j++) {
             this.nodelist[j].addEventListener('click',
@@ -354,6 +376,12 @@ export class RadioButton{
         alert("can't find the doc elem with name", this.name, " and value ", str);
         debugger;
     };
+    verify(v) {
+        const k = this.values.findIndex((x) => x == v );
+        if( k >= 0 ) return v;
+        reportError(this.key, v);
+        return this.deflt;
+    };
     encode(v){
         return this.values.findIndex((x) => x == v ).toString();
     };
@@ -371,10 +399,14 @@ export class RadioButton{
  
 export class IntegerInput{
     //returns and receives number
-    constructor (key, inputElem, localUpdate, shortLen){
+    constructor (key, inputElem, localUpdate,
+                  min, max, deflt, shortLen){
         this.key = key;
         this.inputElem = domElem(inputElem);
         this.localUpdate = localUpdate;
+        this.min = min;
+        this.max = max;
+        this.deflt = deflt;
         this.shortLen = shortLen;
         this.inputElem.addEventListener('input',this.userUpdate.bind(this));
     };
@@ -386,6 +418,11 @@ export class IntegerInput{
         const changed = this.inputElem.value != x;
         this.inputElem.value = x;
         return changed;
+    };
+    verify(x){
+        if( (this.min <= x)  && (x <= this.max) ) return x;
+        reportError(this.key, x);
+        return this.deflt.toString();
     };
     encode(x){
         const y = x.toString().padStart(this.shortLen,'0');
@@ -403,10 +440,11 @@ export class IntegerInput{
 }
 export class LegendItem{
     //returns and receives string 'true'/'false' but stores boolean
-    constructor ( key, line, localUpdate){
+    constructor ( key, line, localUpdate, deflt){
         this.key = key;
         this.line = line;
         this.localUpdate = localUpdate;
+        this.deflt = deflt;
         this.shortLen = 1;
         this.line.button.addEventListener('click',
              this.userUpdate.bind(this));
@@ -419,6 +457,11 @@ export class LegendItem{
         const changed = this.line.visible != b;
         this.line.setVisibility(b);
         return changed;
+    };
+    verify(x) {
+        if( (x == 'true' || x == 'false') ) return x;
+        reportError(this.key, x);
+        return this.deflt.toString();
     };
     encode(x) {
         return (x == 'true' ? 'T' : 'F');
@@ -433,6 +476,11 @@ export class LegendItem{
     }
     
 };
+
+function reportError(key,x){
+    if( x == undefined ) alert ('input with key '+key+' has an undefined value and it will be set to the default value');
+    else alert('input with key '+key+' has a value '+x+' which is not an allowed value.  It will be set to the default value');
+}
 
 export function match(inps,keys){
     for( let inp of inps ) {

@@ -70,9 +70,12 @@ class LittleGraph extends TioxGraph {
                   avgRT.createLegend('avg. flow time * avg. throughput'),
                   predInv.createLegend('predicted inventory')
                   );
-        lit.usrInputs.set('leg0', new LegendItem('leg0', avgInv, localUpdateFromUser));
-        lit.usrInputs.set('leg1', new LegendItem('leg1', avgRT, localUpdateFromUser));
-        lit.usrInputs.set('leg2', new LegendItem('leg2', predInv, localUpdateFromUser));
+        lit.usrInputs.set('leg0', 
+            new LegendItem('leg0', avgInv, localUpdateFromUser, true));
+        lit.usrInputs.set('leg1', 
+            new LegendItem('leg1', avgRT, localUpdateFromUser, true));
+        lit.usrInputs.set('leg2', 
+            new LegendItem('leg2', predInv, localUpdateFromUser, false));
     };
 	
 	push (t, inv, rt){
@@ -503,36 +506,36 @@ function litHTML(){
     const arInput = genRange('arlit', '1', 1, 6, 1);
     elem.append(htmlNumSlider(arInput, 'Arrival Rate = ', '1', [1,2,3,4,5,6]) );
     usrInputs.set('ar', new NumSlider('ar',arInput,
-                localUpdateFromUser, 0, 1, 1) );
+                localUpdateFromUser, 1, 6, 1, 0, 1, 1) );
     
     const acvInput = genRange('acvlit', '0.0', 0, 2, .5);
     elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', 0,['0.0','1.0','2.0']) );
     usrInputs.set('acv', new NumSlider('acv', acvInput,
-                localUpdateFromUser, 1, 2, 10) );
+                localUpdateFromUser, 0, 2, 0, 1, 2, 10) );
     
     
     const stInput = genRange('stlit', '6', 5, 25, 1);
     elem.append(htmlNumSlider(stInput, 'Service Time = ', 6, [5, 15, 25]) );
     usrInputs.set('st', new NumSlider('st',stInput,
-                localUpdateFromUser, 0, 2, 1) );
+                localUpdateFromUser, 5, 25, 6, 0, 2, 1) );
     
     const scvInput = genRange('scvlit', '0.0', 0, 2, .5);
     elem.append(htmlNumSlider(scvInput, 'Service CV = ', 0,['0.0','1.0','2.0']) );
     usrInputs.set('scv', new NumSlider('scv', scvInput,
-                localUpdateFromUser, 1, 2, 10) );
+                localUpdateFromUser, 0, 2, 0, 1, 2, 10) );
 
 	elem.append(genPlayResetBox('lit') );
     usrInputs.set('reset', new CheckBox('reset', 'resetlit',
-                localUpdateFromUser) );
+                localUpdateFromUser, false) );
     usrInputs.set('action', new RadioButton('action', 'actionlit', 
-                localUpdateFromUser, ['none','play','pause']) );
+                localUpdateFromUser, ['none','play','pause'], 'none') );
     
     const speedInput = genRange('speedlit',0,0,5,1);
     elem.append(htmlArbSlider(speedInput, 'Speed = ', 0,
                             ["slow",' ',' ',' ',"fast",'∞']) );
     usrInputs.set('speed', new ArbSlider('speed', speedInput, 
                 localUpdateFromUser, ["1x",'2x','5x','10x',"25x",'∞'],
-				                [1,2,5,10,25,1000]) );
+				                [1,2,5,10,25,1000], 0) );
     
     
     const f = document.getElementById('scenariosMidlit');
