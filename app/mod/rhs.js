@@ -489,7 +489,8 @@ export class OmConcept {
     
 	// called at initiation
     async setupScenarios () {
-		// get the scenarios from 1) the URL, 2) user specified .json
+		console.log('in setup scenarios',this.key);
+        // get the scenarios from 1) the URL, 2) user specified .json
 		// 3) local storage or 4) default .json file in that order
 		let search = this.parseSearchString(this.key);
 		let lsObject = this.getlocalStoreAndParse(this.keyForLocalStorage);
