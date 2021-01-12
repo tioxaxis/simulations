@@ -371,8 +371,64 @@ export class OmConcept {
 			return cur.nextElementSibling;
 		return null;
 	};
+	
+	
+	/****** Several Helper Functions for setupScenarios  or resetScenarios *********/
+	
+	// option 1 get scenarios from search string
+    // capture the three possible 'search' parameters
+	parseSearchString( key ){
+        let search = {url: null, scenarios: null};
+        let hash = location.hash.slice(1);
+        if( key != hash ) return search;
+        let str = decodeURI(location.search.slice(1));
+        if (str.length == 0) return search;
 
-	async getScenariosFromDefault(key){
+        const terms = str.split('&');
+        for (let term of terms){
+            let j = term.indexOf('=');
+            if ( j > 0 ) {
+                search[term.substring(0,j)] = term.substring(j+1)
+            } else {
+                console.log( 'term missing =',term);
+            }
+        }
+        return search
+    };
+	
+	
+	// option 2 get scenarios from localStorage
+    getlocalStoreAndParse( key ){
+        let lsString = localStorage.getItem( key );
+        let lsObject = (lsString != '' ? JSON.parse(lsString) : null);
+        //fix compatibility problems
+        if( Array.isArray(lsObject) ){
+            //fix the 'which' parameter
+            if( this.key = 'inv' ){
+                for( let s of lsObject ) {
+                    s.method = s.which;
+                    delete s.which
+                }
+            }
+            //fix the 'sr' parameter
+            if( this.key = 'lit' ){
+                for ( let s of lsObject ) {
+                    s.st = s.sr;
+                    delete s.sr;
+                }
+            }
+            // add outer wrapper of object
+            lsObject = {app:{omConcept:{
+                key: this.key,
+                scenarios: lsObject}}};
+            lsString = JSON.stringify(lsObject);
+            localStorage.setItem( key, lsString );
+        }
+        return lsObject;
+    }
+    
+    // option 3 get default scenarios from 'key'.json file on server
+    async getScenariosFromDefault(key){
 		let response = await fetch(`app/${key}/${key}.json`);
 		if (response.ok) {
 			return await response.json();
@@ -380,103 +436,70 @@ export class OmConcept {
 		console.log("json file HTTP-Error: " + response.status);
 		return null;
 	};
-	
-	
-	
-	/******************* Two Helper Functions for setupScenarios  *********/
-	// try the 4 options in order returning the rows of parameters 
-	async threeCases(key,search,lsString ){
+    
+    //verify that json has legitimate values for each parameter for each scenario
+    verifyParamsObject(params) {
+        //for now we just check each scenario in the params
+        if( params == null ) return null;
+        
+        let scenarios = params.app.omConcept.scenarios;
+        for( let s of scenarios ) {
+            for( let [key,input] of this.usrInputs ){
+                 s[key] = input.verify(s[key]);
+            };   
+        };
+        return params;
+    };
+    
+    // pick the source 1)URL, 2) localStorage, 3) Default on server
+    async threeCases(key, search, lsObject ){
 		if ( search.scenarios ){
 			this.fromURL = true;
 			return this.parseURLScenariosToRows(search.scenarios)
-			}
-			
-		if (lsString) {
-			const params = this.verifyParamsObject( JSON.parse(lsString) );
+        }
+		if (lsObject) {
+			const params = this.verifyParamsObject( lsObject );
             return params.app.omConcept.scenarios;
 		}
 		let params = await this.getScenariosFromDefault(key);
         params = this.verifyParamsObject(params);
         return params.app.omConcept.scenarios;
 	};
-	
-	// capture the three possible 'search' parameters
-	parseSearchString(str, hashMatchesKey ){
-			let search = {url: null, scenarios: null}
-			if (str.length == 0) return search;
-			if (!hashMatchesKey) return search;
-			const terms = str.split('&');
-			for (let term of terms){
-				let j = term.indexOf('=');
-				if ( j > 0 ) {
-					search[term.substring(0,j)] = term.substring(j+1)
-				} else {
-					console.log( 'term missing =',term);
-				}
-			}
-			return search
-		}
-	
-	async resetScenarios() {
-		let rows;
-		if ( this.fromURL ){
-			let hash = location.hash.slice(1);
-			let search = this.parseSearchString(
-				decodeURI(location.search.slice(1)), hash == this.key)
-			rows = this.parseURLScenariosToRows(search.scenarios)
-		} else {
-			let params = await this.getScenariosFromDefault(this.key);
-            params = this.verifyParamsObject(params);
-            rows = params.app.omConcept.scenarios;
-		};
+    
+    // called for reset scenario button
+    async resetScenarios() {
+		let search = this.parseSearchString(this.key);
+        let rows = await this.threeCases(this.key, search, null);
+        
+//        let rows;
+//		if ( this.fromURL ){
+//			let search = this.parseSearchString(this.key);
+//			rows = this.parseURLScenariosToRows(search.scenarios)
+//		} else {
+//			let params = await this.getScenariosFromDefault(this.key);
+//            params = this.verifyParamsObject(params);
+//            rows = params.app.omConcept.scenarios;
+//		};
 		this.setUL(rows);
 		this.currentLi = null;
 		localStorage.removeItem(this.keyForLocalStorage);
 //        this.saveEdit();
 		enableButtonQ('deleteButton'+this.key, false);
 	};
-	
-	async setupScenarios () {
+    
+	// called at initiation
+    async setupScenarios () {
 		// get the scenarios from 1) the URL, 2) user specified .json
 		// 3) local storage or 4) default .json file in that order
-		let hash = location.hash.slice(1);
-		let search = this.parseSearchString(
-			decodeURI(location.search.slice(1)), hash == this.key)
+		let search = this.parseSearchString(this.key);
+		let lsObject = this.getlocalStoreAndParse(this.keyForLocalStorage);
+		this.warningLSandScens = search.scenarios  && lsObject;
 		
-		let lsString = localStorage.getItem(this.keyForLocalStorage);
-		this.warningLSandScens = search.scenarios  && lsString;
-		
-		let rows = await this.threeCases(this.key,search, lsString);
-	       
-		// if one thing worked 'rows' has it.
+		let rows = await this.threeCases(this.key, search, lsObject);
 		this.setUL(rows);
 	};
     
-    verifyParamsObject(params) {
-        //for now we just check each scenario in the params
-        let update = false;
-        if( params == null ) return null;
-        //kludge to deal with old setup
-        if( Array.isArray(params) ){
-            params = {app:{omConcept:{
-                key: this.key,
-                scenarios: params}}};
-                update = true;
-        }
-        let scenarios = params.app.omConcept.scenarios;
-        for( let s of scenarios ) {
-//            console.log('verifying scenario s=',s);
-            for( let [key,input] of this.usrInputs ){
-//                console.log('verifying key =',key,s[key]);
-                 update = update || input.verify(s[key]);
-            };   
-        };
-//        if( update ){
-//            localStorage.setItem(this.keyForLocalStorage, 
-//							 this.createJSONfromUL());
-//        }
-        return params;
-    };
+    
 	
 
 	printScenarios () {
