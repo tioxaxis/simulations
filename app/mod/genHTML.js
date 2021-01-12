@@ -478,8 +478,10 @@ export class LegendItem{
 };
 
 function reportError(key,x){
-    if( x == undefined ) alert ('input with key '+key+' has an undefined value and it will be set to the default value');
-    else alert('input with key '+key+' has a value '+x+' which is not an allowed value.  It will be set to the default value');
+    if( x == undefined ) 
+        console.log('input with key '+key+' has an undefined value and it will be set to the default value');
+    else 
+        console.log('input with key '+key+' has a value '+x+' which is not an allowed value.  It will be set to the default value');
 }
 
 export function match(inps,keys){

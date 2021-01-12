@@ -454,21 +454,27 @@ export class OmConcept {
     
     verifyParamsObject(params) {
         //for now we just check each scenario in the params
+        let update = false;
         if( params == null ) return null;
         //kludge to deal with old setup
         if( Array.isArray(params) ){
             params = {app:{omConcept:{
                 key: this.key,
                 scenarios: params}}};
+                update = true;
         }
         let scenarios = params.app.omConcept.scenarios;
         for( let s of scenarios ) {
 //            console.log('verifying scenario s=',s);
             for( let [key,input] of this.usrInputs ){
 //                console.log('verifying key =',key,s[key]);
-                s[key] = input.verify(s[key]);
+                 update = update || input.verify(s[key]);
             };   
         };
+//        if( update ){
+//            localStorage.setItem(this.keyForLocalStorage, 
+//							 this.createJSONfromUL());
+//        }
         return params;
     };
 	
