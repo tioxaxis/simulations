@@ -404,14 +404,14 @@ export class OmConcept {
         //fix compatibility problems
         if( Array.isArray(lsObject) ){
             //fix the 'which' parameter
-            if( this.key = 'inv' ){
+            if( this.key == 'inv' ){
                 for( let s of lsObject ) {
                     s.method = s.which;
                     delete s.which
                 }
             }
             //fix the 'sr' parameter
-            if( this.key = 'lit' ){
+            if( this.key == 'lit' ){
                 for ( let s of lsObject ) {
                     s.st = s.sr;
                     delete s.sr;
