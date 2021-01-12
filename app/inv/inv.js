@@ -53,7 +53,7 @@ import {
     htmlRadioButton, RadioButton, 
     IntegerInput, 
     addKeyForIds, 
-    LegendItem
+    LegendItem, match
 }
 from '../mod/genHTML.js';
 
@@ -149,7 +149,11 @@ class InvGraph extends TioxGraph {
 	resetPeriodLines(x){
 //		console.log(' In Graph Inventory PERIOD LINES');
         this.setExtraLines(cbColors.yellow,null, {min:x,step:x});
-	}
+	};
+    updateForParamChange(){
+        this.restartGraph(inv.now/tioxTimeConv);
+    };
+    
 }
 const anim = {};
 var inv;
@@ -270,6 +274,10 @@ class Inventory extends OmConcept{
         for(let inp of inpsChanged){
             localUpdate(inp); 
         };
+        if( match(inpsChanged,['ar','acv','lt','ltcv',
+                     'quan','rop','period','upto'])) {
+            inv.graph.updateForParamChange();
+        }
     };
     redoStagesGraph(){
         this.stage.foreground.reset();
@@ -288,6 +296,10 @@ class Inventory extends OmConcept{
 function localUpdateFromUser(inp){
     inv.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
+    if( match([inp],['ar','acv','lt','ltcv',
+                     'quan','rop','period','upto'])) {
+            inv.graph.updateForParamChange();
+        }
 };    
 function localUpdate(inp){
     let v = inp.get();
@@ -990,10 +1002,10 @@ function invHTML(){
     
     const periodInput = genRange('periodinv', 3, 2, 8, 1);
     const upto1 = htmlNumSlider(periodInput, 'Period = ',
-                             3, [2,5,8]);
+                             3, [2,4,6,8,10,12]);
     upto1.id = 'upto1';
     usrInputs.set('period', new NumSlider('period', periodInput,
-                localUpdateFromUser, 2, 8, 3, 0,1,1));
+                localUpdateFromUser, 2, 12, 3, 0,1,1));
     
     
     const uptoInput = genRange('uptoinv', 36, 10, 90, 1);
