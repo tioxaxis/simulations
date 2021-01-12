@@ -431,7 +431,8 @@ export class OmConcept {
 		};
 		this.setUL(rows);
 		this.currentLi = null;
-		this.saveEdit();
+		localStorage.removeItem(this.keyForLocalStorage);
+//        this.saveEdit();
 		enableButtonQ('deleteButton'+this.key, false);
 	};
 	
@@ -454,11 +455,17 @@ export class OmConcept {
     verifyParamsObject(params) {
         //for now we just check each scenario in the params
         if( params == null ) return null;
+        //kludge to deal with old setup
+        if( Array.isArray(params) ){
+            params = {app:{omConcept:{
+                key: this.key,
+                scenarios: params}}};
+        }
         let scenarios = params.app.omConcept.scenarios;
         for( let s of scenarios ) {
-            console.log('verifying scenario s=',s);
+//            console.log('verifying scenario s=',s);
             for( let [key,input] of this.usrInputs ){
-                console.log('verifying key =',key,s[key]);
+//                console.log('verifying key =',key,s[key]);
                 s[key] = input.verify(s[key]);
             };   
         };
