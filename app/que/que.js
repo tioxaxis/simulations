@@ -91,15 +91,7 @@ class QueueGraph extends TioxGraph {
 		let yMax = (this.predictedWaitValue == Infinity)?
 			1.5: Math.max(1.5,this.predictedWaitValue * 1.1);
 		super.reset(yMax);
-		
-//		const v = document.getElementById('speedque').value;
-//		const f = speeds[v].graph;
-//		this.updateForSpeed(f);
 	}
-//	updateForSpeed (factor){
-//		this.scaleXaxis(factor);
-////		console.log('in graph update for speed',factor)
-//	};
 	predictedWait () {
 			const sr = theSimulation.serviceRV.rate;
 			const ir = theSimulation.interarrivalRV.rate;
@@ -169,11 +161,8 @@ anim.scannerDelta = {
 function queDefine(){
 	document.getElementById('que').omConcept = que;
 	
-	
 	que.tioxTimeConv = tioxTimeConv;
 
-	
-    
     anim.stage.foreground = new StageOnCanvas('foregroundque',
                                 anim.stage.width, anim.stage.height);
     anim.stage.background = new StageOnCanvas('backgroundque',
@@ -182,10 +171,6 @@ function queDefine(){
 	anim.stage.backContext = anim.stage.background.context;
 	que.stage = anim.stage;
     
-//    window.addEventListener('resize',que.redoStagesGraph );
-        
-    
-     
 	gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height);
 };
@@ -209,7 +194,6 @@ class Queueing extends OmConcept{
         //fudge to get animation started quickly
         let t = que.heap.top().time - 1;
         que.now = que.frameNow = t;
-        theSimulation.nInQueue = 0;
         document.getElementById('nInQueue').innerHTML = '0';
     };
     localUpdateFromSliders(...inpsChanged){
@@ -228,15 +212,15 @@ class Queueing extends OmConcept{
         this.redrawBackground();
         this.graph.setupThenRedraw();
         this.clearRedrawStage(0,true);
-//        console.log('in queueing and called redoStages');
     };
     redrawBackground() {
         const tsaAgent = document.getElementById("tsaAgent");
+        this.clearStageBackground();
         this.stage.backContext
             .drawImage(tsaAgent, anim.person.path.headQueue+10,
                    30, 80, 100);
         
-        animForTSA.machLoc = [];
+        const tsa = theSimulation.TSAagent;
 		let locX = anim.person.path.scanner;
 		let locY = anim.person.path.top;
 		const c = anim.stage.backContext;
@@ -244,12 +228,10 @@ class Queueing extends OmConcept{
 		c.strokeStyle = 'blue';
 		c.lineWidth = 5;
 		c.beginPath();
-		for (let k = 0; k < numMachines; k++) {
+		for (let k = 0; k < tsa.machs.length; k++) {
 			c.strokeRect(locX - 28, locY - 15, 55, anim.person.height*1.4);
-			animForTSA.machLoc[k] = {
-				x: locX,
-				y: locY
-			};
+			tsa.machs[k].locx = locX;
+            tsa.machs[k].locy = locY;
 			locX += anim.scannerDelta.dx;
 			locY += anim.scannerDelta.dy;
 		}
@@ -284,13 +266,15 @@ function localUpdateFromUser(inp){
             theSimulation.serviceRV
                 .setRate(v / tioxTimeConv);
             que.heap.modify('finish/TSAagent',
-                () => que.now + theSimulation.serviceRV.observe());
+                () => que.now +
+                theSimulation.serviceRV.observe());
            break;
         case 'scv':
             theSimulation.serviceRV
                 .setCV(v);
-            que.heap.modify('finish/TSAagent', 
-                () => que.now + theSimulation.serviceRV.observe());
+            que.heap.modify('finish/TSAagent',
+                () => que.now +
+                theSimulation.serviceRV.observe());
             break;
         case 'speed':
             que.adjustSpeed(v,speeds);
@@ -308,69 +292,119 @@ function localUpdateFromUser(inp){
     }
 };
 
-const animForQueue = {
-	delta: {dx: anim.person.width,
-			dy: 0},
-	dontOverlap: true,
-	walkingTime: (anim.person.path.headQueue - anim.person.path.left) / anim.stage.normalSpeed,
+//function adjustServiceDist(){
+//  //determine number of rvs = # of servers + # in q[].
+//    // generate that number of rvs.
+//    // for the m servers put ct on heap and on people in service
+//    // add rest pf times to people in queue update compl times
+//    //recompute PathList for people not in a seat
+//    const firstPT = theSimulation.serviceRV.observe();
+//    let priorCT = que.now + 
+//        (( que.heap.modify('finish/TSAagent',
+//                () => que.now + firstPT) > 0 )? firstPT : 0);  
+//                //works for one server
+//    
+//    const queue = theSimulation.queue;
+//    const q = queue.q;
+//    let compl = 0;
+//    for( let k = 0; k < q.length; k++ ){
+//        console.log('before Times',
+//                    q[k].arrivalTime, q[k].procTime, q[k].compTime);
+//        q[k].procTime = theSimulation.serviceRV.observe();
+//        priorCT = q[k].compTime = 
+//            Math.max( priorCT, q[k].arrivalTime) + q[k].procTime;
+//        while( q[compl].compTime <= q[k].arrivalTime )compl++;
+//        console.log('after Times', q[k].arrivalTime, q[k].procTime, q[k].compTime, ' complIndex= ',compl);
+//        const dist = (k == compl) ? 0 :
+//                    (k - compl - 1 ) 
+//                    * anim.person.width;
+//        
+//        if( k > queue.numSeatsUsed ){
+//            const path = q[k].pathList[0];
+//            console.log('Before path', path.t, path.x);
+//            q[k].updatePath({t: path.t,
+//                             x: anim.person.path.headQueue - dist,
+//                             y: path.y
+//                            });
+//              console.log('After path', q[k].pathList[0].t, q[k].pathList[0].x);
+//          
+//        };
+//    };
+//};
+class QueQueue extends Queue {
+	constructor (){
+        super(que, "theQueue", -1 /*,theSimulation.serviceRV*/);
+        this.delta = {dx: anim.person.width,
+			          dy: 0},
+	    this.dontOverlap = true,
+	    this.walkingTime = (anim.person.path.headQueue 
+                            - anim.person.path.left) / anim.stage.normalSpeed;
+        this.sumOfTimes = [];
+    };
+    reset(){
+        super.reset();
+        this.sumOfTimes = [];
+    }
 
-	reset: function () {},
-
-	join: function (nInQueue, arrivalTime, person) {
-		let guessInQueue = Math.max( 0, Math.floor(
-			nInQueue - this.walkingTime / theSimulation.serviceRV.mean));
-		let dist = nInQueue * animForQueue.delta.dx;
-		let time = que.now + dist / anim.stage.normalSpeed;
-//		console.log('in Queue join', guessInQueue,dist,time);
-		// simply move person back appropriate amount.
-		person.cur.x -= guessInQueue * animForQueue.delta.dx;
-		person.addPath({
-			t: arrivalTime,
-			x: anim.person.path.headQueue - dist,
-			y: anim.person.path.top
-		});
+	pushAnim (person) {
+        person.checkAhead = true;
+        person.width = this.delta.dx;
+        
+        const dist = this.numSeatsUsed * this.delta.dx;
+        person.cur.x = anim.person.path.left - dist;
+        person.addPath({
+                t: que.now + this.walkingTime,
+                x: anim.person.path.headQueue - dist,
+                y: anim.person.path.top
+            });
+        
+        person.cur.x = anim.person.path.left ;
 		if (person.isThereOverlap()) {
 			person.cur.y = person.ahead.cur.y - 10;
 		}
-	},
+	};
 
-	arrive: function (nSeatsUsed, person) {
-		theSimulation.nInQueue++;
-		document.getElementById('nInQueue').innerHTML = 
-			theSimulation.nInQueue.toString().
-        padEnd(5,' ') ;
-	},
+	arriveAnim (person) {
+        document.getElementById('nInQueue').innerHTML = 
+			this.numSeatsUsed.toString().padEnd(5,' ');
+        for (let k = this.numSeatsUsed; 
+             k < this.q.length; k++) {
+			let p = this.q[k];   
+            p.updatePathDelta(p.pathList[0].t,
+					-this.delta.dx, -this.delta.dy)
+        }
+	};
 
-	leave: function (procTime, nSeatsUsed) {
-		theSimulation.nInQueue--;
-		document.getElementById('nInQueue').innerHTML = 
-			theSimulation.nInQueue.toString().padEnd(5,' ');
-		
-		for (let k = 0; k < theSimulation.queue.q.length; k++) {
-			let p = theSimulation.queue.q[k];
-			let time = que.now + Math.min(animForQueue.delta.dx / anim.stage.normalSpeed, procTime);
-			if (p.pathList.length == 0) {
-				p.addPath({
-					t: time,
-					x: p.cur.x + animForQueue.delta.dx,
-					y: p.cur.y + animForQueue.delta.dy
-				});
-			} else {
-				let dest = p.pathList[p.pathList.length - 1];
-				p.updatePathDelta(Math.max(time, dest.t),
-					animForQueue.delta.dx, animForQueue.delta.dy)
-			}
-		}
-	}
+	pullAnim (person) {
+        let walkForOne = this.delta.dx / anim.stage.normalSpeed;
+        que.graph.push(que.now, que.now - person.arrivalTime);
+        document.getElementById('nInQueue').innerHTML = 
+			this.numSeatsUsed.toString().padEnd(5,' ');
+        
+        for( let k = 0; k < this.numSeatsUsed; k++ ){
+            let p = this.q[k];   
+            p.updatePathDelta(
+                que.now + Math.min(walkForOne,person.procTime),
+					this.delta.dx, this.delta.dy)
+        };
+        
+        for (let k = this.numSeatsUsed; 
+             k < this.q.length; k++) {
+			let p = this.q[k];   
+            p.updatePathDelta(p.pathList[0].t,
+					this.delta.dx, this.delta.dy)
+        }
+	};
 };
 
-const animForWalkOffStage = {
-	walkingTime: Math.abs(anim.person.path.scanner 
-		- anim.person.path.right) / anim.stage.normalSpeed,
-
-	reset: function(){},
-    start: function (person) {
-		person.addPath({
+class QueWalkOffStage extends WalkAndDestroy {
+    constructor(){
+	   super(que, "walkOff", true);
+        this.walkingTime = Math.abs(anim.person.path.scanner 
+		- anim.person.path.right) / anim.stage.normalSpeed;
+    };
+    pushAnim (person) {
+        person.addPath({
 			t: que.now + 50 / anim.stage.normalSpeed,
 			x: anim.person.path.pastScanner,
 			y: anim.person.path.top
@@ -385,58 +419,69 @@ const animForWalkOffStage = {
 			person.cur.y = person.ahead.cur.y - 10;
 		}
 	}
+    arriveAnim (person){
+    }
 };
-const animForCreator = {
-	reset: function () {},
-	start: function (theProcTime, person, m) {},
-	finish: function () {},
+class QueCreator extends MachineCenter {
+    constructor( ){
+        super(que, "creator",1, theSimulation.interarrivalRV); 
+    };
+    startAnim(machine, theProcTime){};
+    finishAnim(machine){};
 };
 
-const animForTSA = {
-	dontOverlap: true,
+class QueTSA extends MachineCenter {
+	constructor( ){
+        super(que, "TSAagent", 1, theSimulation.serviceRV); 
+        this.dontOverlap = true;
 
-	machLoc: null,
-	lastFinPerson: null,
+//        this.machLoc = null;
+        this.lastFinPerson = null;
+    };
 
-	reset: function (numMachines ) {
-//		animForTSA.machLoc = [];
-		animForTSA.lastFinPerson = null;
-//		let locX = anim.person.path.scanner;
-//		let locY = anim.person.path.top;
-//		let c = anim.stage.backContext;
-//	
-////		c.resetTransform();
-//		c.strokeStyle = 'blue';
-//		c.lineWidth = 5;
-//		c.beginPath();
-//		for (let k = 0; k < numMachines; k++) {
-//			c.strokeRect(locX - 28, locY - 15, 55, anim.person.height*1.4);
-//			animForTSA.machLoc[k] = {
-//				x: locX,
-//				y: locY
-//			};
-//			locX += anim.scannerDelta.dx;
-//			locY += anim.scannerDelta.dy;
-//		}
-//		c.closePath();
-	},
+	reset () {
+		this.lastFinPerson = null;
+        super.reset();
+	};
 	
-	start: function (theProcTime, person, m) {
-		person.setDestWithProcTime(theProcTime,
-			animForTSA.machLoc[m].x, animForTSA.machLoc[m].y);
+	startAnim (machine, theProcTime) { 
+        machine.person.setDestWithProcTime(theProcTime,
+			machine.locx, machine.locy);
 		//       person.setColor("purple");
-		if (animForTSA.lastFinPerson &&
-			animForTSA.lastFinPerson.pathList.length > 1) {
-			let path = animForTSA.lastFinPerson.pathList[0];
-			path.t = Math.min(path.t, que.now + theProcTime);
+		if (this.lastFinPerson &&
+			this.lastFinPerson.pathList.length > 1) {
+			let path = this.lastFinPerson.pathList[0];
+			path.t = Math.min(path.t, que.now + 0.5*theProcTime);
 		}
-	},
+	};
 
-	finish: function (person) {
-		animForTSA.lastFinPerson = person;
+	finishAnim (machine) {
+        machine.person.checkAhead = false;
+		this.lastFinPerson = machine.person;
 	}
 };
-
+var arrIndex = -1;
+var arrValues = [2000,2000,2000,2000];
+class ArrRV {
+    constructor(){};
+    observe(){
+        let n = arrValues.length;
+        arrIndex = (arrIndex + 1) % n;
+        return arrValues[arrIndex];
+    };
+    setRate(){};
+};
+var serIndex = -1;
+var serValues = [3000,1000,2000,3000];
+class SerRV{
+    constructor(){};
+    observe(){
+        let n = serValues.length;
+        serIndex = (serIndex + 1) % n;
+        return serValues[serIndex];
+    };
+    setRate(){};
+};
 const theSimulation = {
 	//  the two random variables in the simulation
 	interarrivalRV: null,
@@ -454,49 +499,31 @@ const theSimulation = {
 		// random variables
 		const ar = que.usrInputs.get('ar').get();
 		const acv = que.usrInputs.get('acv').get();
-		theSimulation.interarrivalRV = new GammaRV(ar / tioxTimeConv, acv);
+		theSimulation.interarrivalRV = new GammaRV(ar / tioxTimeConv, acv); // ArrRV();
 		const sr = que.usrInputs.get('sr').get();
 		const scv = que.usrInputs.get('scv').get();
-		theSimulation.serviceRV = new GammaRV(sr / tioxTimeConv, scv);
+		theSimulation.serviceRV = new GammaRV(sr / tioxTimeConv, scv); //SerRV();
 
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 
-		this.queue = new Queue(que, "theQueue", -1,
-			animForQueue.walkingTime, animForQueue,
-			recordQueueArrival, recordQueueLeave);
+		this.queue = new QueQueue();
 		que.resetCollection.push(this.queue);
-		
-		// define the helper functions for theQueue
-		function recordQueueArrival(person) {
-			person.arrivalTime = que.now;
-		};
 
-		function recordQueueLeave(person) {
-			que.graph.push(que.now, que.now - person.arrivalTime);
-		};
-
-
-		this.walkOffStage = new WalkAndDestroy(que, "walkOff",
-								animForWalkOffStage, true);
+		this.walkOffStage = new QueWalkOffStage();
 		que.resetCollection.push(this.walkOffStage);
 
 		// machine centers 
-		this.creator = new MachineCenter(que, "creator",
-			1, theSimulation.interarrivalRV,
-			this.supply, this.queue,
-			animForCreator);
+		this.creator = new QueCreator();
 		que.resetCollection.push(this.creator);
 
-		this.TSAagent = new MachineCenter(que, "TSAagent",
-			1, theSimulation.serviceRV,
-			this.queue, this.walkOffStage,
-			animForTSA);
+		this.TSAagent = new QueTSA(); 
 		que.resetCollection.push(this.TSAagent);
 
 		//link the queue to machine before and after
-		this.queue.setPreviousNext(
-			this.creator, this.TSAagent);
+		this.creator.setPreviousNext(this.supply, this.queue);
+        this.queue.setPreviousNext(this.creator, this.TSAagent);
+        this.TSAagent.setPreviousNext(this.queue, this.walkOffStage);
 	},
 };
 

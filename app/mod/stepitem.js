@@ -25,17 +25,13 @@ const darkGrey = 'rgb(52,52,52)';
 
 
 export class Queue {
-	constructor(omConcept, name, numSeats, walkingTime,
-		animFunc,
-		recordArrive = null, recordLeave = null) {
+	constructor(omConcept, name, numSeats, procTimeRV) {
 		this.omConcept = omConcept;
 		this.name = name;
 		this.maxSeats = numSeats;
-		this.walkingTime = walkingTime;
+        this.procTimeRV = procTimeRV;
 
-		this.animFunc = animFunc;
-		this.recordArrive = recordArrive;
-		this.recordLeave = recordLeave;
+//		this.animFunc = animFunc;
 
 		this.previousMachine = null;
 		this.nextMachine = null;
@@ -59,7 +55,7 @@ export class Queue {
 		this.q = [];
 		this.lastAdded = null;
 		this.numSeatsUsed = 0;
-		this.animFunc.reset();
+        this.lastPerCompTime = 0;
 	};
 
 	empty() {
@@ -76,9 +72,17 @@ export class Queue {
 
 	push(person) {
 		if (this.q.length == this.maxSeats) return false;
-		const arrivalTime = this.omConcept.now + this.walkingTime;
-		this.animFunc.join(this.q.length, arrivalTime, person);
-		this.q.push(person);
+        person.arrivalTime = this.omConcept.now + this.walkingTime;
+        if( this.procTimeRV) {
+            person.procTime = this.procTimeRV.observe();
+		    person.compTime = Math.max(this.lastPerCompTime,
+                                   person.arrivalTime) + person.procTime;
+            this.lastPerCompTime = person.compTime;
+        }
+        this.q.push(person);
+        
+        this.pushAnim(person);
+		
 
 		// insert into end of doubly linked list
 		person.ahead = this.lastAdded;
@@ -86,7 +90,7 @@ export class Queue {
 		this.lastAdded = person;
 
 		this.omConcept.heap.push({
-			time: arrivalTime,
+			time: person.arrivalTime,
 			type: 'arrive',
 			proc: this.arrive.bind(this),
 			item: person
@@ -97,21 +101,27 @@ export class Queue {
 
 	arrive(person) {
 		this.numSeatsUsed++;
-		this.animFunc.arrive(this.numSeatsUsed, person);
-		if (this.recordArrive) this.recordArrive(person);
-		if (this.numSeatsUsed == 1) this.nextMachine.knockFromPrevious();
+		this.arriveAnim(person);
+//        console.log('In ARRIVAL numSU',this.numSeatsUsed,
+//                   person);
+//        debugger;
+		if (this.numSeatsUsed == 1) 
+            this.nextMachine.knockFromPrevious();
+        
 		this.printQueue();
 	};
 
-	pull(procTime) {
+	pull() {
 		if (this.numSeatsUsed == 0) return null;
 		this.numSeatsUsed--;
 		const person = this.q.shift();
-		this.animFunc.leave(procTime, this.numSeatsUsed); /// this is the right thing but 
+//        console.log('in PULL From Queue now=',this.omConcept.now,
+//                    '  NSU=',this.numSeatsUsed, person)
+		this.pullAnim(person); /// this is the right thing but 
 		if (this.q.length < this.maxSeats) {
 			this.previousMachine.knockFromNext();
 		}
-		if (this.recordLeave) this.recordLeave(person);
+//		if (this.recordLeave) this.recordLeave(person);
 		this.printQueue();
 		return person;
 	};
@@ -123,17 +133,17 @@ export class Queue {
 
 //  WALK AND DESTROY
 export class WalkAndDestroy {
-	constructor(omConcept, name, animFunc, dontOverlap) {
+	constructor(omConcept, name, dontOverlap) {
 		this.omConcept = omConcept;
 		this.name = name;
-		this.animFunc = animFunc;
-		this.walkingTime = this.animFunc.walkingTime;
+//		this.animFunc = animFunc;
+//		this.walkingTime = this.animFunc.walkingTime;
 		this.dontOverlap = dontOverlap;
 		this.lastAdded = null;
 	};
 
 	reset() {
-        this.animFunc.reset();
+//        this.animFunc.reset();
     };
 
 	push(person) {
@@ -142,7 +152,7 @@ export class WalkAndDestroy {
 		if (this.lastAdded) this.lastAdded.behind = person;
 		this.lastAdded = person;
 
-		this.animFunc.start(person);
+		this.pushAnim(person);
 
 		this.omConcept.heap.push({
 			time: this.omConcept.now + this.walkingTime,
@@ -160,21 +170,17 @@ export class WalkAndDestroy {
 
 //   MACHINE CENTER         
 export class MachineCenter {
-	constructor(omConcept, name, numMachines, procTime,
-		previousQueue, nextQueue,
-		animFunc,
-		recordStart = null, recordFinish = null) {
+	constructor(omConcept, name, numMachines, procTimeRV) {
 		this.omConcept = omConcept;
 		this.name = name;
 		this.numMachines = numMachines;
 		this.numberBusy = 0;
-		this.procTime = procTime;
+		this.procTimeRV = procTimeRV;
 
-		this.previousQueue = previousQueue;
-		this.nextQueue = nextQueue;
-		this.animFunc = animFunc;
-		this.recordStart = recordStart;
-		this.recordFinish = recordFinish;
+//		// need to set up substitute function for this
+//        this.previousQueue = previousQueue;
+//		this.nextQueue = nextQueue;
+//		this.animFunc = animFunc;
         this.machIndex = 0;
 
 		this.machs = [];
@@ -182,6 +188,11 @@ export class MachineCenter {
 		// if infinite number of machines then create them on the fly in same position.
 	};
 
+    setPreviousNext(previousQueue, nextQueue) {
+		this.previousQueue = previousQueue;
+		this.nextQueue = nextQueue;
+	};
+    
 	reset() {
 		this.machs = [];
 		for (let k = 0; k < this.numMachines; k++) {
@@ -191,7 +202,8 @@ export class MachineCenter {
 				index: k
 			};
 		}
-		if (this.animFunc) this.animFunc.reset(this.numMachines);
+        this.omConcept.redrawBackground();
+//		if (this.animFunc) this.animFunc.reset(this.numMachines);
 		this.numberBusy = 0
 	};
 
@@ -200,8 +212,8 @@ export class MachineCenter {
     };
     
     
-    getAverageProcTime() {
-		return this.procTime.mean;
+    getAverageProcTimeRV() {
+		return this.procTimeRV.mean;
 	};
 
 	getNumberBusy() {
@@ -234,40 +246,45 @@ export class MachineCenter {
 	};
 
 	start(machine) {
-		let theProcTime = this.procTime.observe();
-        const person = this.previousQueue.pull(theProcTime);
+		const person = this.previousQueue.pull();
+        let theProcTime;
+		if( !person ) return false;
+        if( this.procTimeRV ) {
+            theProcTime = person.procTime = this.procTimeRV.observe();
+//            console.log('generating proc time machine=',this.name,' which=',person.which, person.procTime);
+        } else {
+            theProcTime = person.procTime
+        };
         
+        person.machine = machine;
+        machine.status = 'busy';
+        machine.person = person;
+        this.startAnim(machine, theProcTime);   
 
-		if (person) {
-            if (this.animFunc) {
-				this.animFunc.start(theProcTime, person, machine.index);
-			}
-			person.machine = machine;
-			machine.status = 'busy';
-			machine.person = person;
+        this.omConcept.heap.push({
+            time: this.omConcept.now + theProcTime,
+            type: 'finish/' + this.name,
+            proc: this.finish.bind(this),
+            item: machine
+        });
 
-			this.omConcept.heap.push({
-				time: this.omConcept.now + theProcTime,
-				type: 'finish/' + this.name,
-				proc: this.finish.bind(this),
-				item: machine
-			});
-            
-            if( this.leaveEarly ){
-                this.omConcept.heap.push({
-                    time: this.omConcept.now + theProcTime - this.leaveEarly,
-				    type: 'leave/' + this.name,
-				    proc: this.leave.bind(this),
-				    item: machine
-                })
-            }
-
-			if (this.recordStart) this.recordStart(person);
-			this.numberBusy++;
-			//remove 'person' from doubly linked list
-			if (person.behind) person.behind.ahead = null;
-			person.behind = null;
-		};
+        // does this make sense anymore leave is nonexistant??
+        if( this.leaveEarly ){
+            this.omConcept.heap.push({
+                time: this.omConcept.now + theProcTime - this.leaveEarly,
+                type: 'leave/' + this.name,
+                proc: this.leave.bind(this),
+                item: machine
+            })
+        };
+        
+//			if (this.recordStart) this.recordStart(person);
+        this.numberBusy++;
+        //remove 'person' from doubly linked list
+//        if (person.behind) person.behind.ahead = null;
+//        person.behind = null;
+        return true;
+		
 	};
     
 //    leave(machine){
@@ -276,15 +293,19 @@ export class MachineCenter {
 //    }
 
 	finish(machine) {
-		if (this.recordFinish) this.recordFinish(machine.person);
-        if (this.animFunc) this.animFunc.finish(machine.person);
+//		if (this.recordFinish) this.recordFinish(machine.person);
+//        if (this.animFunc) this.animFunc.finish(machine.person);
         
         //note bene  the two previous steps must happen first for face game
         // to correctly account for completion time before WalkandDestroy
         // marks the flow time for process
+        const person = machine.person;
+        if (person.behind) person.behind.ahead = null;
+        person.behind = null;
+        
         let success = this.nextQueue.push(machine.person);
         if (success) {
-			
+			this.finishAnim(machine);
 			machine.status = 'idle';
 			machine.person = null;
 			this.start(machine);
@@ -292,6 +313,7 @@ export class MachineCenter {
 			machine.status = 'blocked';
 		}
 		this.numberBusy--;
+        
 	};
     
     
@@ -299,11 +321,8 @@ export class MachineCenter {
 
 // INFINITE MACHINE CENTER
 export class InfiniteMachineCenter extends MachineCenter {
-	constructor(omConcept, name, procTime, input, output, animFunc,
-		recordStart, recordFinish) {
-		super(omConcept, name, -1, procTime,
-			input, output,
-			animFunc, recordStart, recordFinish);
+	constructor(omConcept, name, procTimeRV) {
+		super(omConcept, name, -1, procTimeRV);
 		//create a first machine to avoid a nasty edge case, make the machine idle with noone.
 		this.machs.push({
 			status: 'idle',
@@ -327,12 +346,12 @@ export class InfiniteMachineCenter extends MachineCenter {
 }; //end class InfiniteMachineCenter
 
 export class Combine {
-	constructor(omConcept, name, procTime,
+	constructor(omConcept, name, procTimeRV,
 		personQ, packageQ, afterQ,
 		animFunc) {
 		this.omConcept = omConcept;
 		this.name = name;
-		this.procTime = procTime;
+		this.procTimeRV = procTimeRV;
 		this.personQ = personQ;
 		this.packageQ = packageQ;
 		this.afterQ = afterQ;
@@ -343,7 +362,7 @@ export class Combine {
 		this.start();
 	};
 	start() {
-		const theProcTime = this.procTime.observe();
+		const theProcTime = this.procTimeRV.observe();
 		const person = this.personQ.pull();
 		const pack = this.packageQ.pull();
 		if (this.animFunc) {
@@ -450,7 +469,7 @@ export class Item {
 		this.graphic.setColor(bodyColor, borderColor);
 	};
 
-	moveDisplayWithPath(deltaSimuT) {
+	moveDisplayWithPath_old(deltaSimuT) {
 		if (this.inBatch) return;
 		while (this.pathList.length > 0) {
 			var path = this.pathList[0];
@@ -458,19 +477,21 @@ export class Item {
 				this.cur.t = path.t;
 				this.cur.x = path.x;
 				this.cur.y = path.y;
-//                console.log('about to delete pathList',path.t,path.x);
-				this.pathList.splice(0, 1);
+				this.pathList.shift();
 				deltaSimuT = Math.max(0, this.omConcept.now - path.t);
-////                console.log('card', this.which, this.omConcept.now, 
-//                            'path t',path.t, 'cur.t', this.cur.t,
-//                           'x=',this.cur.x);
 			} else {
-				this.cur.t = this.omConcept.now;
+				path.speedX = (path.x - this.cur.x) 
+                                / (path.t - this.cur.t);
+                path.speedY = (path.y - this.cur.y)
+                                / (path.t - this.cur.t);
+                this.cur.t = this.omConcept.now;
+                
 				this.cur.x += path.speedX * deltaSimuT;
 				if (path.speedX > 0)
 					this.cur.x = Math.min(this.cur.x, path.x);
 				else
 					this.cur.x = Math.max(this.cur.x, path.x);
+                
 				this.cur.y += path.speedY * deltaSimuT;
 				if (path.speedY > 0)
 					this.cur.y = Math.min(this.cur.y, path.y);
@@ -484,6 +505,53 @@ export class Item {
         this.graphic.moveTo(this.cur.x, this.cur.y);
 		this.draw();
 	};
+    
+    
+    moveDisplayWithPath(deltaSimuT) {
+		if (this.inBatch) return;
+		while (this.pathList.length > 0) {
+            var path = this.pathList[0];
+//            if( this.blocked ){ //only pos-x-direction
+//                const aheadX = this.ahead.cur.x - this.width;
+//                if( aheadX < path.x ){
+//                    this.cur.x = aheadX;
+//                    break;
+//                }
+//                this.blocked = false;
+//            }
+            this.cur.t = this.omConcept.now;
+			this.cur.x += path.speedX * deltaSimuT;
+            this.cur.y += path.speedY * deltaSimuT;
+            if( this.checkAhead && this.ahead){ //only pos-x-direction
+                 const aheadX = this.ahead.cur.x - this.width;
+                 if( aheadX < this.cur.x && aheadX < path.x ){
+//                     this.blocked = true;
+                     this.cur.x = aheadX;
+                     break;
+                 }
+            }
+            if (path.speedX >= 0)
+                this.cur.x = Math.min(this.cur.x, path.x);
+            else
+                this.cur.x = Math.max(this.cur.x, path.x);
+
+
+            if (path.speedY >= 0)
+                this.cur.y = Math.min(this.cur.y, path.y);
+            else
+                this.cur.y = Math.max(this.cur.y, path.y);
+			
+			if( this.omConcept.now <= path.t ) break;
+            
+            this.cur.t = path.t;
+            this.cur.x = path.x;
+            this.cur.y = path.y;
+            this.pathList.shift();
+            deltaSimuT = Math.max(0, this.omConcept.now - path.t);
+        };
+        this.graphic.moveTo(this.cur.x, this.cur.y);
+		this.draw();
+    };
 	
 	updatePosition(){
 		const speed = this.omConcept.stage.normalSpeed;
@@ -520,7 +588,7 @@ export class Item {
 		let distance = Math.max(Math.abs(this.cur.x - x),
 			Math.abs(this.cur.y - y));
 		let deltaTime = Math.min(distance / 
-							this.omConcept.stage.normalSpeed, procTime);
+							this.omConcept.stage.normalSpeed, 0.5*procTime);
 		this.addPath({
 			t: this.omConcept.now + deltaTime,
 			x: x,
@@ -529,13 +597,20 @@ export class Item {
 	};
 	updatePathDelta(t, dx, dy) {
 		let n = this.pathList.length;
-		let tempPath = this.pathList[n - 1];
-		this.pathList.splice(n - 1, 1);
-		this.addPath({
+		if( n > 0 ){
+            let tempPath = this.pathList[n - 1];
+		  this.pathList.splice(n - 1, 1);
+		  this.addPath({
 			t: t,
 			x: tempPath.x + dx,
 			y: tempPath.y + dy
-		})
+		  });
+        } else {
+            this.addPath({t:t,
+                          x: this.cur.x + dx,
+                          y: this.cur.y + dy
+                         })
+        }
 	};
 
 	updatePath(triple) {
@@ -561,7 +636,7 @@ export class Item {
 		let last = {};
 		if (n == 1) {
 			last = {
-				t: this.omConcept.frameNow,
+				t: this.omConcept.now,
 				x: this.cur.x,
 				y: this.cur.y
 			};
@@ -573,8 +648,8 @@ export class Item {
 		let deltaT = path.t - last.t;
 
 		if (deltaT == 0) {
-			path.speedX = 0;
-			path.speedY = 0;
+			path.speedX = (path.x - last.x) / 1;
+			path.speedY = (path.y - last.y) / 1;
 		} else {
 			path.speedX = (path.x - last.x) / deltaT;
 			path.speedY = (path.y - last.y) / deltaT;

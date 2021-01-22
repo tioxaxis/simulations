@@ -165,6 +165,9 @@ export class OmConcept {
 	clearStageForeground() {
 		this.stage.foreContext.clearRect(0, 0, this.stage.width, this.stage.height);
 	};
+    clearStageBackground() {
+        this.stage.backContext.clearRect(0, 0, this.stage.width, this.stage.height);
+	};
 
 	// play, pause, toggle .
 	play() {

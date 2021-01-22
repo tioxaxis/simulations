@@ -89,15 +89,8 @@ class LittleGraph extends TioxGraph {
 	reset(){
 		this.predictedInvValue = this.predictedInv();
         super.reset(this.predictedInvValue * 1.2);
-        
-//		const v = document.getElementById('speedlit').value;
-//		const f = speeds[v].graph;
-//		this.updateForSpeed(f);
 	}
-//	updateForSpeed (factor){
-//		this.scaleXaxis(factor);
-//	};
-	predictedInv() {
+    predictedInv() {
 		return (theSimulation.serviceRV.mean) / 
 			(theSimulation.interarrivalRV.mean);
 	};
@@ -110,7 +103,7 @@ class LittleGraph extends TioxGraph {
 	};
     updateForParamChange(){
         lit.graph.updatePredictedInv();
-        irt = new IRT(lit.now, theSimulation.LittlesBox.getNumberBusy());
+        irt = new IRT(lit.now, theSimulation.littlesBox.getNumberBusy());
         this.restartGraph(lit.now/tioxTimeConv);
     };
 }
@@ -297,54 +290,65 @@ function localUpdateFromUser(inp){
 //  that contains the functions to do the specific
 //  animation for that process step
 
-const animForQueue = {
-	loc: {x: anim.person.path.entry, y: anim.person.path.top},
-	walkingTime: (anim.person.path.entry - anim.person.path.left) / anim.stage.normalSpeed,
-
-	reset: function () {},
-	join: function (nInQueue, arrivalTime, person) {
-		person.addPath({
+class LitQueue  extends Queue{
+	constructor(){ 
+        const walkingTime = (anim.person.path.entry - anim.person.path.left) / anim.stage.normalSpeed;
+        super(lit, 'queue', -1, walkingTime);
+        this.loc = {x: anim.person.path.entry, y: anim.person.path.top};
+    }
+	pushAnim (person) /*   was called join... nInQueue, arrivalTime, person)*/ {
+//		if( !super.push(person) ) return false;
+        const arrivalTime = this.omConcept.now + this.walkingTime;
+        person.addPath({
 			t: arrivalTime,
-			x: animForQueue.loc.x,
-			y: animForQueue.loc.y
-		});
-	},
-	arrive: function (nSeatsUsed, person) {},
-	leave: function (procTime, nSeatsUsed) {}
-};
-
-const animForWalkOffStage = {
-	loc: {x: anim.person.path.right, y: anim.person.path.top},
-	walkingTime: Math.abs(anim.person.path.exit - anim.person.path.right) / anim.stage.normalSpeed,
-
-	reset: function(){},
-    start: function (person) {
-		person.addPath({
-			t: lit.now +
-				theSimulation.walkOffStage.walkingTime,
 			x: this.loc.x,
 			y: this.loc.y
 		});
+//        return true;
+	};
+};
+
+class LitWalkOffStage extends WalkAndDestroy {
+	constructor( ){
+        super( lit,'walk off',false);
+        this.loc = {x: anim.person.path.right, y: anim.person.path.top};
+	    this.walkingTime = Math.abs(anim.person.path.exit - anim.person.path.right) / anim.stage.normalSpeed;
+    };
+    pushAnim (person) {   // called start before
+//        super.push(person);
+		person.addPath({
+			t: lit.now +
+				this.walkingTime,
+			x: this.loc.x,
+			y: this.loc.y
+		});
+//        return true;
 	}
 };
 
-const animForCreator = {
-	dontOverlap: false,
-
-	reset: function () {},
-	start: function (theProcTime, person, m) { // only 1 machine for creator m=1
-		person.setDestWithProcTime(theProcTime,
+class LitCreator extends MachineCenter {
+	constructor(){
+        super(lit, 'creator', 1, theSimulation.interarrivalRV);
+    };
+	startAnim (machine, theProcTime) { // only 1 machine for creator m=1
+//        let theProcTime = theSimulation.interarrivalRV.observe();
+//        super.start(machine, theProcTime);
+		machine.person.setDestWithProcTime(theProcTime,
 			anim.person.path.left, anim.person.path.top);
-	},
-	finish: function () {},
+	};
+    finishAnim(machine){};
 };
 
-const animForLittlesBox = {
-	lastFinPerson: null,
-
-	reset: function () {},
-
-	start: function (theProcTime, person, m) {
+class LittlesBox extends InfiniteMachineCenter {
+	constructor(){
+        super(lit, 'LittlesBox', theSimulation.serviceRV);
+        this.lastFinPerson = null;
+    };
+	startAnim (machine, theProcTime){
+        //theProcTime, person, m) {
+//        let theProcTime = theSimulation.serviceRV.observe();
+//        if( !super.start(machine,theProcTime) ) return;
+        let person = machine.person;
 		let walkT = 5 * tioxTimeConv;
 		if (theProcTime < walkT + 3 * tioxTimeConv) {
 			person.addPath({
@@ -378,11 +382,19 @@ const animForLittlesBox = {
 		person.graphic.badgeDisplay(true);
 		person.updateBadge = true;
 		person.arrivalTime = lit.now;
-	},
+        
+        
+        person.arrivalTime = lit.now;
+        irt.in(lit.now);
+	};
 
-	finish: function (person) {
-		animForLittlesBox.lastFinPerson = person;
+	finishAnim (machine) {
+        const person = machine.person;
+		this.lastFinPerson = person;
 		person.updateBadge = false;
+        irt.out(lit.now,person.arrivalTime);
+        lit.graph.push(lit.now,irt.avgI(),irt.avgRT());	
+//        super.finish(machine);
 	}
 };
 
@@ -412,43 +424,21 @@ const theSimulation = {
 
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
-
-
-		this.queue = new Queue(lit,"theQueue", -1, animForQueue.walkingTime,   
-			animForQueue,
-			null, null);
+		this.queue = new LitQueue();
 		lit.resetCollection.push(this.queue);
-		
-		this.walkOffStage = new WalkAndDestroy(lit, "walkOff", animForWalkOffStage, true);
+		this.walkOffStage = new LitWalkOffStage();
 		lit.resetCollection.push(this.walkOffStage);
 
-
 		// machine centers 
-		this.creator = new MachineCenter(lit, "creator",
-			1, theSimulation.interarrivalRV,
-			this.supply, this.queue,
-			animForCreator);
+		this.creator = new LitCreator();
 		lit.resetCollection.push(this.creator);
-
-		this.LittlesBox = new InfiniteMachineCenter(lit, "LittlesBox",
-			theSimulation.serviceRV,
-			this.queue, this.walkOffStage,
-			animForLittlesBox, LBRecordStart, LBRecordFinish);
-		lit.resetCollection.push(this.LittlesBox);
-
-		function LBRecordStart(person) {
-			person.arrivalTime = lit.now;
-            irt.in(lit.now);
-		};
-
-		function LBRecordFinish(person) {
-            irt.out(lit.now,person.arrivalTime);
-            lit.graph.push(lit.now,irt.avgI(),irt.avgRT());
-		};
-
-		//link the queue to machine before and after
-		this.queue.setPreviousNext(
-			this.creator, this.LittlesBox);
+		this.littlesBox = new LittlesBox();
+		lit.resetCollection.push(this.littlesBox);
+		
+        //link the components together
+		this.creator.setPreviousNext(this.supply, this.queue);
+        this.queue.setPreviousNext(this.creator, this.littlesBox);
+        this.littlesBox.setPreviousNext(this.queue, this.walkOffStage);
 	},
 };
 
