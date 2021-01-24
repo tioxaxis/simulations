@@ -35,7 +35,7 @@ export const cbColors = {
 
 
 export class GammaRV {
-	constructor(rate = 0, CV = 0, minimumTime = 20) {
+	constructor(rate = 0, CV = 0, minimumTime = 1) {
 		this.rate = Number(rate);
 		this.CV = Number(CV);;
 		this.minimumTime = Number(minimumTime);

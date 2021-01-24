@@ -647,13 +647,21 @@ export class Item {
 		let path = this.pathList[n - 1];
 		let deltaT = path.t - last.t;
 
-		if (deltaT == 0) {
-			path.speedX = (path.x - last.x) / 1;
-			path.speedY = (path.y - last.y) / 1;
-		} else {
-			path.speedX = (path.x - last.x) / deltaT;
-			path.speedY = (path.y - last.y) / deltaT;
-		}
+//		if (deltaT == 0) {
+			path.speedX = (path.x - last.x) / Math.max(1,deltaT);
+			path.speedY = (path.y - last.y) / Math.max(1,deltaT);
+//		} else {
+//			path.speedX = (path.x - last.x) / deltaT;
+//			path.speedY = (path.y - last.y) / deltaT;
+//		}
+        if( path.speedX < 0){
+            alert('addPath created pathList with speed X< 0');
+            debugger;
+        }
+        if( path.x > 700 && path.x < 750){
+            console.log(this, this.which, this.pathList,path.x);
+            debugger;
+        }
 	};
 
 	destroy() {
