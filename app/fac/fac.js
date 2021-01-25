@@ -399,7 +399,7 @@ class FacQueue  extends Queue{
             this.left + point.x - card.cur.x, 
             this.top + point.y - card.cur.y) / anim.stage.normalSpeed;
         const arrivalTime = fac.now + walkingTime;
-        if( !super.push(card, walkingTime) ) return false;
+        if( !super.push(card, 0) ) return false;
         card.updatePath({
 			t: arrivalTime,
 			x: this.left + point.x,
@@ -412,11 +412,15 @@ class FacQueue  extends Queue{
 
 	pullAnim (card) {
         if (this.q.length == 0) return null;
-		let n = this.q.length;
+		console.log('pulling from QUEUE=',this.which,' card=',card.which,
+                           ' at ',fac.now);
+        
+        let n = this.q.length;
         for (let k = 0; k < n; k++) {
             let card = this.q[k];
             let point = this.relCoord(k);
-            if( card.pathList.length == 0){ 
+            if( card.pathList.length == 0){
+                
                 card.updatePath({
                     t: fac.now + 700,
                     x: this.left + point.x,
@@ -462,9 +466,9 @@ class FacCreator extends MachineCenter {
 //        this.top = anim.queue[0].top;
     };
 	
-	startAnim (card) {};
-	finishAnim (card) {
-        card.arrivalTime = fac.now;
+	startAnim (machine) {};
+	finishAnim (machine) {
+        machine.person.sysEntryTime = fac.now;
     };
 };
 class FacStage extends MachineCenter {
@@ -490,11 +494,11 @@ class FacStage extends MachineCenter {
      startAnim (machine){
          const card = machine.person;
          card.graphic.startStage(this.which,fac.now);
+         console.log('Starting stage=',this.which,' w/CARD=',card.which,' AT=',fac.now);
          card.updatePath({
                 t: fac.now + 500,
                 x: this.leftCard,
-                y: this.top+ machine.index * this.deltaY  // this machine
-             // needs to be the index of the machine in the column.  0 1 2
+                y: this.top+ machine.index * this.deltaY
          });
      };
     finishAnim (machine){
@@ -507,7 +511,7 @@ class FacStage extends MachineCenter {
             } else {
                 this.timeFirstThru = fac.now
             } 
-            fac.graph.push(fac.now, fac.now - card.arrivalTime, thruput );
+            fac.graph.push(fac.now, fac.now - card.sysEntryTime, thruput );
         }
     };
     draw(redraw = false){
