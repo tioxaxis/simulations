@@ -163,9 +163,11 @@ export class OmConcept {
     };
 
 	clearStageForeground() {
-		this.stage.foreContext.clearRect(0, 0, this.stage.width, this.stage.height);
+//		console.log(' reached clear the FOREground!!',this.key);
+        this.stage.foreContext.clearRect(0, 0, this.stage.width, this.stage.height);
 	};
     clearStageBackground() {
+//        console.log(' reached clear the background!!',this.key);
         this.stage.backContext.clearRect(0, 0, this.stage.width, this.stage.height);
 	};
 

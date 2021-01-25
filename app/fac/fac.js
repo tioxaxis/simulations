@@ -215,7 +215,7 @@ function computeStageTimes(){
     fac.creatorTime.setMean( fac.stageTimes[k].mean /
     fac.usrInputs.get('quantity'+k).get()); 
     
-    anim.firstStage = {left: anim.queue[k].left, top: anim.queue[k].top};
+    anim.firstQueue = {left: anim.queue[k].left, top: anim.queue[k].top};
     
     //set links between machines and queues in process
     let previousMachine = theSimulation.creator;
@@ -393,18 +393,19 @@ class FacQueue  extends Queue{
         }
     };
     
-    push(card ) {
+    push(card) {
 		const point = this.relCoord(this.q.length);
 		const walkingTime = Math.max(
             this.left + point.x - card.cur.x, 
             this.top + point.y - card.cur.y) / anim.stage.normalSpeed;
         const arrivalTime = fac.now + walkingTime;
-        super.push(person, walkingTime);
+        if( !super.push(card, walkingTime) ) return false;
         card.updatePath({
 			t: arrivalTime,
 			x: this.left + point.x,
 			y: this.top + point.y
 		});
+        return true;
 	};
     
     arriveAnim (card) {};
@@ -484,11 +485,12 @@ class FacStage extends MachineCenter {
         this.timeFirstThru = null;
         this.count = 0;
     // clear and redraw workers[this.which] 
-        this.draw();
+        this.draw(false);
     };
      startAnim (machine){
-         machine.card.graphic.startStage(this.which,fac.now);
-         machine.card.updatePath({
+         const card = machine.person;
+         card.graphic.startStage(this.which,fac.now);
+         card.updatePath({
                 t: fac.now + 500,
                 x: this.leftCard,
                 y: this.top+ machine.index * this.deltaY  // this machine
@@ -497,6 +499,7 @@ class FacStage extends MachineCenter {
      };
     finishAnim (machine){
         if(this.which == fac.lastStage){
+            const card = machine.person;
             let thruput = null;
             if( this.timeFirstThru ){
                 this.count++;
@@ -504,22 +507,26 @@ class FacStage extends MachineCenter {
             } else {
                 this.timeFirstThru = fac.now
             } 
-            fac.graph.push(fac.now, fac.now - machine.card.arrivalTime, thruput );
+            fac.graph.push(fac.now, fac.now - card.arrivalTime, thruput );
         }
     };
     draw(redraw = false){
         // helper functions: clear, draw, update an individual worker
         const clearIndiv = (j) => {
+//            console.log(' reached clear Indiv Worker =',j);
             ctx.clearRect(this.left-lineWidth, 
                     anim.GWorker.top + (this.deltaY) * j - lineWidth ,
                     anim.GWorker.width + lineWidth*2,
                     anim.GWorker.height + lineWidth*2);
         };
         const drawIndiv = (j) => {
+//            console.log(' reached draw Indiv Worker = ',j);
             const status = this.machs[j].status;
             ctx.fillStyle = (status == 'busy' ? 'lightgreen' : 'lightyellow');
             const label = (status == 'busy' ? '' : status);
             const top = anim.GWorker.top + (this.deltaY) * j ;
+//            console.log('in Draw INDIV ', this.left,top,anim.GWorker.width,
+//                       anim.GWorker.height);
             ctx.beginPath();
             ctx.rect(this.left, top, anim.GWorker.width,
                      anim.GWorker.height);
@@ -538,6 +545,8 @@ class FacStage extends MachineCenter {
             this.lastStatus[j] = status;
         };
         const updateIndiv = (j) => {
+//            console.log('in UPDATE indiv lastStatus',this.lastStatus[j],
+//                        this.machs[j].status);
             if( this.lastStatus[j] == this.machs[j].status )return;
             drawIndiv(j);
         };
@@ -550,10 +559,14 @@ class FacStage extends MachineCenter {
         let number = Number(document.getElementById('quantity'+this.which+'fac').value);
         if( fac.stageTimes[this.which].mean == 0 ) number = 0;
         
+//        console.log('IN DRAW which=',this.which,' number=',number,
+//                   'LAST number',this.lastNumber, ' redraw=',redraw);
+        
         if( redraw ){
             for( let j = 0; j < number; j++){
              drawIndiv(j);
             }
+            this.lastNumber = number;
         } else {
             for( let j = 0; j < 3; j++){
                 if( j < number ){
@@ -604,13 +617,14 @@ const theSimulation = {
 
         for( let j = 0; j < 3; j++){
 //            fac.animWorkers[j] = new FacStage(j);
-//            fac.resourceCollection.push(fac.animWorkers[j]);
+            
             this.workers[j] = new FacStage(j);
 //            MachineCenter(fac, "worker"+j,
 //                 1, fac.stageTimes[j],
 //			     this.queues[j], this.queues[j+1],
 //			     fac.animWorkers[j]);
 //            fac.animWorkers[j].machineCenter = this.workers[j];
+            fac.resourceCollection.push(this.workers[j]);
 		    fac.resetCollection.push(this.workers[j]);
         }
 //		const animWorker0 = new animForWorker(0);
