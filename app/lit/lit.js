@@ -168,7 +168,6 @@ var totInv, totTime, totPeople, firstArr, lastArrDep, LBRFcount;
 
 function litDefine(){
 	document.getElementById('lit').omConcept = lit;
-	
 	lit.tioxTimeConv = tioxTimeConv;
 
     anim.stage.foreground = new StageOnCanvas('foregroundlit',
@@ -189,7 +188,6 @@ class LittlesLaw extends OmConcept{
     constructor(usrInputs){
         super('lit');
         this.usrInputs = usrInputs;
-//        this.setupScenarios();    
     }
     
     localReset () {
@@ -221,7 +219,6 @@ class LittlesLaw extends OmConcept{
         this.redrawBackground();
         this.graph.setupThenRedraw();
         this.clearRedrawStage(0,true);
-//        console.log('in Littles Law and called redoStages');
     };
     
     redrawBackground() {
@@ -286,9 +283,6 @@ function localUpdateFromUser(inp){
     }
 }
 
-
-
-
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
 //  animation for that process step
@@ -319,14 +313,12 @@ class LitWalkOffStage extends WalkAndDestroy {
         super( lit,'walk off',false, anim.walkOffStageTime);
         this.loc = {x: anim.person.path.right, y: anim.person.path.top};
     };
-    pushAnim (person) {   // called start before
-//        super.push(person);
+    pushAnim (person) { 
 		person.addPath({
 			t: lit.now + anim.walkOffStageTime,
 			x: this.loc.x,
 			y: this.loc.y
 		});
-//        return true;
 	}
 };
 
@@ -334,9 +326,7 @@ class LitCreator extends MachineCenter {
 	constructor(){
         super(lit, 'creator', 1, theSimulation.interarrivalRV);
     };
-	startAnim (machine, theProcTime) { // only 1 machine for creator m=1
-//        let theProcTime = theSimulation.interarrivalRV.observe();
-//        super.start(machine, theProcTime);
+	startAnim (machine, theProcTime) { 
 		machine.person.setDestWithProcTime(theProcTime,
 			anim.person.path.left, anim.person.path.top);
 	};
@@ -349,9 +339,6 @@ class LittlesBox extends InfiniteMachineCenter {
         this.lastFinPerson = null;
     };
 	startAnim (machine, theProcTime){
-        //theProcTime, person, m) {
-//        let theProcTime = theSimulation.serviceRV.observe();
-//        if( !super.start(machine,theProcTime) ) return;
         let person = machine.person;
 		let walkT = 5 * tioxTimeConv;
 		if (theProcTime < walkT + 3 * tioxTimeConv) {
@@ -398,7 +385,6 @@ class LittlesBox extends InfiniteMachineCenter {
 		person.updateBadge = false;
         irt.out(lit.now,person.arrivalTime);
         lit.graph.push(lit.now,irt.avgI(),irt.avgRT());	
-//        super.finish(machine);
 	}
 };
 

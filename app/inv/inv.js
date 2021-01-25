@@ -238,16 +238,16 @@ function invDefine(){
 	inv.tioxTimeConv = tioxTimeConv;
 };
 
-function redoStagesGraph(){
-    anim.stage.foreground.reset();
-    anim.stage.background.reset();
-    inv.graph.chart.reset();
-    
-    
-    inv.graph.setupThenRedraw();
-    inv.clearRedrawStage(0,true);
-    console.log('in Inventory and called redoStages');
-};
+//function redoStagesGraph(){
+//    anim.stage.foreground.reset();
+//    anim.stage.background.reset();
+//    inv.graph.chart.reset();
+//    
+//    
+//    inv.graph.setupThenRedraw();
+//    inv.clearRedrawStage(0,true);
+//    console.log('in Inventory and called redoStages');
+//};
 
 class Inventory extends OmConcept{
     constructor(usrInputs){
@@ -384,22 +384,6 @@ function localUpdate(inp){
     }
 };
 
-//function pickInvSimulation(which) {
-//	switch (which) {
-//		case 'methRop':
-//			displayToggle(['rop1','rop2'], ['upto1','upto2']);
-//			break;
-//		case 'methUpto':
-//			displayToggle(['upto1','upto2'], ['rop1','rop2']);
-//			break;
-//		default:
-//			alert('picked inv simulation with ', which);
-//			debugger;
-//            
-//	}
-//    console.log('in PickInv Method ', which);
-////    inv.graph.reset();
-//};
 
 const speeds = [{time:1,graph:1,anim:true},
 				{time:2,graph:1,anim:true},
@@ -447,17 +431,7 @@ class InvCreator extends MachineCenter {
     startAnim(machine, theProcTime){};
     finishAnim(machine){};
 };
-//class InvStore = {
-//	walkingTime: (anim.person.path.bot - anim.person.path.top) / anim.stage.normalSpeed,
-//	reset: function () {},
-//	start: function () {
-//		person.addPath({
-//			t: arrivalTime - this.walkingTime,
-//			x: anim.person.path.right,
-//			y: anim.person.path.bot
-//		});
-//	}
-//}
+
 class InvCombine  extends Combine {
     constructor(rv, queue, store, walkoff ){
         super(inv,'inventory',rv, queue, store, walkoff );
@@ -540,9 +514,6 @@ const theSimulation = {
 		let ltcv = Number(document.getElementById('ltcvinv').value);
 		theSimulation.leadtimeRV = new GammaRV(1 / (lt * tioxTimeConv), ltcv);
 		
-//		inv.graph = new InvGraph();
-//		inv.resetCollection.push(inv.graph);
-		
 		theSimulation.quantityOrdered = Number(
 			inv.usrInputs.get('quan').get());
 		theSimulation.rop = Number(
@@ -574,10 +545,8 @@ const theSimulation = {
 		inv.resetCollection.push(this.seller);
 
 		//link the queue to machine before and after
-		this.creator.setPreviousNext(
-            this.supply,this.queue);
-        this.queue.setPreviousNext(
-			this.creator, this.seller);
+		this.creator.setPreviousNext(this.supply,this.queue);
+        this.queue.setPreviousNext(this.creator, this.seller);
 	}, //end of initialize
 };
 
@@ -1060,7 +1029,6 @@ function invHTML(){
 };
 
 export function invStart() {
-//	let usrInputs = invDefineUsrInputs();
     let usrInputs = invHTML();
     inv = new Inventory(usrInputs);
     invDefine();

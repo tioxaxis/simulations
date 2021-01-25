@@ -90,13 +90,8 @@ class NVGraph extends TioxGraph {
 	reset(yMax){
         nvp.avgCost = new Average();
 		super.reset(yMax);
-//		const v = document.getElementById('speednvp').value;
-//		const f = speeds[v].graph;
-//		this.updateForSpeed(f);
+
 	}
-//	updateForSpeed (factor){
-//		this.scaleXaxis(factor);
-//	}
     updateForParamChange(){
         if( nvp.inCycle ) nvp.afterNextPointRestartGraph = true;
         else resetAvgsRestartGraph();
@@ -196,16 +191,16 @@ function nvpDefine(){
 	}
 };
 
-function redoStagesGraph(){
-    anim.stage.foreground.reset();
-    anim.stage.background.reset();
-    nvp.graph.chart.reset();
-    
-    
-    nvp.graph.setupThenRedraw();
-    nvp.clearRedrawStage(0,true);
-    console.log('in NewsVendor and called redoStages');
-};
+//function redoStagesGraph(){
+//    anim.stage.foreground.reset();
+//    anim.stage.background.reset();
+//    nvp.graph.chart.reset();
+//    
+//    
+//    nvp.graph.setupThenRedraw();
+//    nvp.clearRedrawStage(0,true);
+//    console.log('in NewsVendor and called redoStages');
+//};
 
 class NewsVendor extends OmConcept{
     constructor(usrInputs){
@@ -259,11 +254,9 @@ class NewsVendor extends OmConcept{
         this.redrawBackground();
         this.graph.setupThenRedraw();
         this.clearRedrawStage(0,true);
-//        console.log('in Newsvendor and called redoStages');
     };
     redrawBackground() {
         theSimulation.store.drawStore();
-//        console.log('in Newsvendor and called redraw Background');
     };
 };
 function localUpdateFromUser(inp){
@@ -276,10 +269,8 @@ function localUpdateFromUser(inp){
 
 // helper function for localUpdate.
  function setDemandRVandExpected(q, dr, dcv){
-//     console.log('at set D and exp ',q,dr,dcv);
      const low = Math.floor(dr * (1 - dcv));
      const high = Math.ceil(dr * (1 + dcv));
-//     console.log('at set D and exp ',q,dr,dcv,'  low/high =',low,high);
      theSimulation.demandRV.setParams(low, high);
      setExpected(q, low, high);
  }      
@@ -398,18 +389,6 @@ class  NvpWalkOffStage extends WalkAndDestroy {
 	}
 };
 
-// ???? don;t thinke this gets used even under old name
-//class NvpCreator  {
-//    constructor (){
-//        super(   )
-//    };
-//	reset: function () {},
-//	start: function (theProcTime, person, m) { // only 1 machine for creator m=1
-//		person.setDestWithProcTime(theProcTime,
-//			anim.person.path.left, anim.person.path.top);
-//	},
-//	finish: function () {},
-//};
 
 class NvpCombine extends Combine {
     constructor(rv, queue, store, walkoff ){

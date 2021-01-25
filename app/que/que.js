@@ -177,18 +177,13 @@ function queDefine(){
 			anim.person.height);
 };
 
-
-
-
 class Queueing extends OmConcept{
     constructor(usrInputs){
         super('que');
         this.usrInputs = usrInputs;
-//        this.setupScenarios();    
     };
     
     localReset () {
-		
         // schedule the initial Person to arrive and start the simulation/animation.
         theSimulation.supply.previous = null;
         theSimulation.creator.knockFromPrevious();
@@ -296,13 +291,12 @@ function localUpdateFromUser(inp){
 
 class QueQueue extends Queue {
 	constructor (){
-        super(que, "theQueue", -1 /*,theSimulation.serviceRV*/);
+        super(que, "theQueue", -1);
         this.delta = {dx: anim.person.width,
 			          dy: 0},
 	    this.dontOverlap = true,
 	    this.walkingTime = (anim.person.path.headQueue 
                             - anim.person.path.left) / anim.stage.normalSpeed;
-        
     };
 
 	push (person) {
@@ -321,9 +315,6 @@ class QueQueue extends Queue {
             });
         
         person.cur.x = anim.person.path.left - dist;
-//        console.log('in animPush nLeave=',nLeave,' dist=',dist,
-//                    ' cur=',person.cur.x,
-//                    ' path.x=',person.pathList[0].x);
 		if (person.isThereOverlap()) {
 			person.cur.y = person.ahead.cur.y - 10;
 		}
@@ -336,10 +327,6 @@ class QueQueue extends Queue {
         
         
         const queueActual = (anim.person.path.headQueue - person.cur.x)/this.delta.dx+1;
-//        console.log('at Arrival person w=',person.which, '  arrival Anim actual, theory, difference',
-//                   queueActual,this.numSeatsUsed, queueActual - this.numSeatsUsed,
-//                   ' NSU=',this.numSeatsUsed,'  cur and path', person.cur.x, (person.pathList[0] ? 
-//                    person.pathList[0].x: -1));
         const desiredX = anim.person.path.headQueue -
                     this.delta.dx * (this.numSeatsUsed-1);
         person.pathList = [];
@@ -348,12 +335,6 @@ class QueQueue extends Queue {
         } else {
             person.addPath({t: que.now, x: desiredX, y: anim.person.path.top });
         }
-                
-//        for (let k = this.numSeatsUsed; 
-//             k < this.q.length; k++) {	
-//            p.updatePathDelta(t: p.pathList[0].t,
-//					      this.delta.dx, this.delta.dy);
-//        }
 	};
 
 	pullAnim (person) {
@@ -365,11 +346,6 @@ class QueQueue extends Queue {
         for( let k = 0; k < this.numSeatsUsed; k++ ){
             let p = this.q[k];   
             let pos = p.cur.x
-//            console.log('at pullAnim Seated k=',k,p.cur.x,
-//                        (p.pathList[0] ? 
-//                    p.pathList[0].x: -1), 
-//                       anim.person.path.headQueue - k*this.delta.dx);
-            
                 p.updatePathDelta(
                 que.now + Math.min(walkForOne,person.procTime),
 					this.delta.dx, this.delta.dy)
@@ -381,9 +357,6 @@ class QueQueue extends Queue {
             const servRate = Number(que.usrInputs.get('sr').get()) / tioxTimeConv;
             const nLeave = Math.floor(servRate * (p.arrivalTime - que.now));
             const dist = Math.max(0,(k - nLeave)) * this.delta.dx;
-//            console.log('in pull Anim Walking k=',k,' which=',p.which, 'cur=',p.cur.x,p.pathList[0].x, 
-//                       anim.person.path.headQueue - k*this.delta.dx,' servRate =',servRate,' nleave=',nLeave,
-//                       ' dist=',dist);
             p.updatePath({t: p.pathList[0].t,
 					      x: Math.max(p.pathList[0].x,
                               anim.person.path.headQueue - dist),
@@ -416,6 +389,7 @@ class QueWalkOffStage extends WalkAndDestroy {
     arriveAnim (person){
     }
 };
+
 class QueCreator extends MachineCenter {
     constructor( ){
         super(que, "creator",1, theSimulation.interarrivalRV); 
@@ -428,8 +402,6 @@ class QueTSA extends MachineCenter {
 	constructor( ){
         super(que, "TSAagent", 1, theSimulation.serviceRV); 
         this.dontOverlap = true;
-
-//        this.machLoc = null;
         this.lastFinPerson = null;
     };
 
@@ -439,64 +411,37 @@ class QueTSA extends MachineCenter {
 	};
 	
 	startAnim (machine, theProcTime) {
-//        console.log('at START TSA procTime=',theProcTime);
         machine.person.setDestWithProcTime(theProcTime,
 			machine.locx, machine.locy);
     };
-		//       person.setColor("purple");
-//		if (this.lastFinPerson &&
-//			this.lastFinPerson.cur.x < anim.person.path.pastScanner){
-//                this.updateLastFinPerson();
-//        }
-//        .pathList.length > 1) {
-//			let path = this.lastFinPerson.pathList[0];
-//			console.log('updating LASTFINPerson path, now, procTime ',
-//                       path.t.toFixed(0), que.now.toFixed(0), theProcTime.toFixed(0));
-//            path.t = Math.min(path.t, que.now + 0.5*theProcTime);
-//            console.log('two paths TSA',machine.person.cur.x, machine.person.pathList[0])
-//            console.log('    and done ',this.lastFinPerson.cur.x, this.lastFinPerson.pathList[0]);
-            
-//		}
-//	};
-//    updateLastFinPerson(TSApath){
-//        const lFP = this.lastFinPerson;
-//        for( let k = 0; k < lFP.pathList.length; k++ ){
-//            const path = lFP.pathList[k];
-//            if( path.x = anim.person.path.pastScanner ){
-//                path.t = TSApath.t;
-//                path.speedX = 50/ 
-//                
-//            }
-//        }
-//    }
 
 	finishAnim (machine) {
         machine.person.checkAhead = false;
 		this.lastFinPerson = machine.person;
 	}
 };
-var arrIndex = -1;
-var arrValues = [2000,2000,2000,2000];
-class ArrRV {
-    constructor(){};
-    observe(){
-        let n = arrValues.length;
-        arrIndex = (arrIndex + 1) % n;
-        return arrValues[arrIndex];
-    };
-    setRate(){};
-};
-var serIndex = -1;
-var serValues = [3000,2000,1000,800,600,400,300,200,100,90,80];
-class SerRV{
-    constructor(){};
-    observe(){
-        let n = serValues.length;
-        serIndex = (serIndex + 1) % n;
-        return serValues[serIndex];
-    };
-    setRate(){};
-};
+//var arrIndex = -1;
+//var arrValues = [2000,2000,2000,2000];
+//class ArrRV {
+//    constructor(){};
+//    observe(){
+//        let n = arrValues.length;
+//        arrIndex = (arrIndex + 1) % n;
+//        return arrValues[arrIndex];
+//    };
+//    setRate(){};
+//};
+//var serIndex = -1;
+//var serValues = [3000,2000,1000,800,600,400,300,200,100,90,80];
+//class SerRV{
+//    constructor(){};
+//    observe(){
+//        let n = serValues.length;
+//        serIndex = (serIndex + 1) % n;
+//        return serValues[serIndex];
+//    };
+//    setRate(){};
+//};
 const theSimulation = {
 	//  the two random variables in the simulation
 	interarrivalRV: null,

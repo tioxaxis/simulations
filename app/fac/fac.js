@@ -81,10 +81,6 @@ class FacGraph extends TioxGraph {
 	reset(){
 		super.reset(12,12);
     }
-//	updateForSpeed (factor){
-//		this.scaleXaxis(factor);
-//	};
-
 }
 const anim = {};
 let fac;
@@ -208,7 +204,6 @@ function computeStageTimes(){
             fac.lastStage = i;
             break;
         }
-
     
     // set creator rate and movement based on first stage with nonzero proctime
     const k = fac.firstStage;
@@ -230,9 +225,7 @@ function computeStageTimes(){
     theSimulation.walkOffStage.previousMachine = previousMachine;
 }
 
-
 function facDefine(){
-	
 	document.getElementById('fac').omConcept = fac;
 	fac.tioxTimeConv = tioxTimeConv;
     fac.stageTimes = [];
@@ -253,17 +246,17 @@ function facDefine(){
     return fac;
 };
 
-function redoStagesGraph(){
-    anim.stage.foreground.reset();
-    anim.stage.background.reset();
-    fac.graph.chart.reset();
-    
-    
-    fac.graph.setupThenRedraw();
-    fac.clearRedrawStage(0,true);
-    console.log('in facegame and called redoStages');
-};
-
+//function redoStagesGraph(){
+//    anim.stage.foreground.reset();
+//    anim.stage.background.reset();
+//    fac.graph.chart.reset();
+//    
+//    
+//    fac.graph.setupThenRedraw();
+//    fac.clearRedrawStage(0,true);
+//    console.log('in facegame and called redoStages');
+//};
+//
 
 function markCard(){
     theSimulation.creator.machs[0]
@@ -285,7 +278,6 @@ class FaceGame extends OmConcept {
         this.usrInputs = usrInputs;
         document.getElementById('markButtonfac')
             .addEventListener('click', markCard);
-//        this.setupScenarios();
     };
     localReset () {
         theSimulation.supply.previous = null;
@@ -346,10 +338,8 @@ class FaceGame extends OmConcept {
         this.redrawBackground();
         this.graph.setupThenRedraw();
         this.clearRedrawStage(0,true);
-//        console.log('in FaceGrame and called redoStages');
     };
     redrawBackground() {
-//        console.log('in facegame and called redraw Background')
     };
 };
 function localUpdateFromUser(inp){
@@ -412,9 +402,6 @@ class FacQueue  extends Queue{
 
 	pullAnim (card) {
         if (this.q.length == 0) return null;
-		console.log('pulling from QUEUE=',this.which,' card=',card.which,
-                           ' at ',fac.now);
-        
         let n = this.q.length;
         for (let k = 0; k < n; k++) {
             let card = this.q[k];
@@ -462,8 +449,6 @@ class FacWalkOffStage extends WalkAndDestroy {
 class FacCreator extends MachineCenter {
     constructor(){
         super(fac, "creator",1, fac.creatorTime);///need correct thing here
-//        this.left = anim.queue[0].left;
-//        this.top = anim.queue[0].top;
     };
 	
 	startAnim (machine) {};
@@ -488,13 +473,12 @@ class FacStage extends MachineCenter {
         super.reset();
         this.timeFirstThru = null;
         this.count = 0;
-    // clear and redraw workers[this.which] 
+        // clear and redraw workers[ at stage this.which] 
         this.draw(false);
     };
      startAnim (machine){
          const card = machine.person;
          card.graphic.startStage(this.which,fac.now);
-         console.log('Starting stage=',this.which,' w/CARD=',card.which,' AT=',fac.now);
          card.updatePath({
                 t: fac.now + 500,
                 x: this.leftCard,
@@ -517,20 +501,16 @@ class FacStage extends MachineCenter {
     draw(redraw = false){
         // helper functions: clear, draw, update an individual worker
         const clearIndiv = (j) => {
-//            console.log(' reached clear Indiv Worker =',j);
             ctx.clearRect(this.left-lineWidth, 
                     anim.GWorker.top + (this.deltaY) * j - lineWidth ,
                     anim.GWorker.width + lineWidth*2,
                     anim.GWorker.height + lineWidth*2);
         };
         const drawIndiv = (j) => {
-//            console.log(' reached draw Indiv Worker = ',j);
             const status = this.machs[j].status;
             ctx.fillStyle = (status == 'busy' ? 'lightgreen' : 'lightyellow');
             const label = (status == 'busy' ? '' : status);
             const top = anim.GWorker.top + (this.deltaY) * j ;
-//            console.log('in Draw INDIV ', this.left,top,anim.GWorker.width,
-//                       anim.GWorker.height);
             ctx.beginPath();
             ctx.rect(this.left, top, anim.GWorker.width,
                      anim.GWorker.height);
@@ -549,22 +529,15 @@ class FacStage extends MachineCenter {
             this.lastStatus[j] = status;
         };
         const updateIndiv = (j) => {
-//            console.log('in UPDATE indiv lastStatus',this.lastStatus[j],
-//                        this.machs[j].status);
             if( this.lastStatus[j] == this.machs[j].status )return;
             drawIndiv(j);
         };
         
-        
         const ctx = anim.stage.backContext;
         const lineWidth = 15;
         ctx.lineWidth = lineWidth;
-        
         let number = Number(document.getElementById('quantity'+this.which+'fac').value);
         if( fac.stageTimes[this.which].mean == 0 ) number = 0;
-        
-//        console.log('IN DRAW which=',this.which,' number=',number,
-//                   'LAST number',this.lastNumber, ' redraw=',redraw);
         
         if( redraw ){
             for( let j = 0; j < number; j++){
@@ -611,52 +584,13 @@ const theSimulation = {
 
 		// workers (machine centers) 
 		this.creator = new FacCreator();
-//        MachineCenter(fac, "creator",
-//			1, fac.creatorTime,
-//			this.supply, this.queues[0],
-//			animForCreator);
 		fac.resetCollection.push(this.creator);
         
-//        fac.workers= [];
-
         for( let j = 0; j < 3; j++){
-//            fac.animWorkers[j] = new FacStage(j);
-            
             this.workers[j] = new FacStage(j);
-//            MachineCenter(fac, "worker"+j,
-//                 1, fac.stageTimes[j],
-//			     this.queues[j], this.queues[j+1],
-//			     fac.animWorkers[j]);
-//            fac.animWorkers[j].machineCenter = this.workers[j];
             fac.resourceCollection.push(this.workers[j]);
 		    fac.resetCollection.push(this.workers[j]);
         }
-//		const animWorker0 = new animForWorker(0);
-//        fac.resourceCollection.push(animWorker0);
-//        this.workers[0] = new MachineCenter(fac, "worker0",
-//			1, fac.stageTimes[0],
-//			this.queues[0], this.queues[1],
-//			animWorker0);
-//        animWorker0.machineCenter = this.workers[0];
-//		fac.resetCollection.push(this.workers[0]);
-//        
-//        const animWorker1 = new animForWorker(1);
-//        fac.resourceCollection.push(animWorker1);
-//        this.workers[1] = new MachineCenter(fac, "worker1",
-//			1, fac.stageTimes[1],
-//			this.queues[1], this.queues[2],
-//			animWorker1);
-//        animWorker1.machineCenter = this.workers[1];
-//		fac.resetCollection.push(this.workers[1]);
-//        
-//        const animWorker2 = new animForWorker(2);
-//        fac.resourceCollection.push(animWorker2);
-//        this.workers[2] = new MachineCenter(fac, "worker2",
-//			1, fac.stageTimes[2],
-//			this.queues[2], this.walkOffStage,
-//			animWorker2);
-//        animWorker2.machineCenter = this.workers[2];
-//		fac.resetCollection.push(this.workers[2]);
         
         this.creator.setPreviousNext(this.supply, this.queues[0]);
         this.workers[0].setPreviousNext(this.queues[0], this.queues[1]);
@@ -694,34 +628,6 @@ class Supplier {
         console.log('markCount',this.markCount)
     }
 }; //end class Supplier
-class Worker {
-    constructor(w){
-        this.color = anim.worker[w].color;
-        this.ctx = anim.stage.backContext;
-        this.left = left;
-        this.top = top;
-        this.lineWidth = 15;
-        this.lastStatus = null;
-        
-    }
-    draw(status){
-        if( status == this.lastStatus) return;
-        this.lastStatus = status;
-        this.ctx.fillStyle = 'red';  //depends on status
-        //this.ctx.textFill??
-        this.ctx.strokeStyle = anim.worker[w].color;
-        this.ctx.clearRect(this.left, this.top, 
-                      anim.Gworker.width, anim.GWorker.height);
-        this.ctx.beginPath();
-        
-        this.ctx.lineWidth = this.lineWidth;
-        this.ctx.rect(this.left, this.top , 
-                 anim.GWorker.width, anim.GWorker.height);
-        this.ctx.stroke();
-        this.ctx.fill();
-        this.ctx.closePath();
-
-    }};
 
 
 class Card extends Item {
@@ -733,6 +639,7 @@ class Card extends Item {
 	};
 
 }; // end class Person
+
 const pi2 =2 * 3.14159;
 const pi = 3.14159;
 export class FaceCard {
@@ -946,7 +853,6 @@ function facHTML(){
 };
 
 export function facStart() {
-//	 facDefineUsrInputs();
     let usrInputs = facHTML();
     fac = new FaceGame(usrInputs);
     facDefine();
