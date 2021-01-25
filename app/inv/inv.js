@@ -188,7 +188,17 @@ function animSetup(){
 		bot: anim.store.top + anim.box.space * 7,
 		mid: anim.store.top + anim.box.space * 3.5,
 	};
-	anim.truck = {
+    
+    anim.walkingTime1 = (anim.person.path.right - anim.person.path.left) /
+                            anim.stage.normalSpeed,
+	anim.walkingTime2 = (anim.person.path.mid - anim.person.path.top) /
+                            anim.stage.normalSpeed,
+	anim.walkingTime = ((anim.person.path.right - anim.person.path.left) +
+		                (anim.person.path.mid - anim.person.path.top)) /
+                            anim.stage.normalSpeed,
+	anim.walkOffStageTime = anim.walkingTime1;
+    
+    anim.truck = {
 		height: anim.box.space *5,
 		
 		bedWidth: anim.box.perRow * anim.box.space,
@@ -403,16 +413,19 @@ const speeds = [{time:1,graph:1,anim:true},
 //  that contains the functions to do the specific
 //  animation for that process step
 
-const animForQueue = {
-	walkingTime1: (anim.person.path.right - anim.person.path.left) / anim.stage.normalSpeed,
-	walkingTime2: (anim.person.path.mid - anim.person.path.top) / anim.stage.normalSpeed,
-	walkingTime: ((anim.person.path.right - anim.person.path.left) +
-		(anim.person.path.mid - anim.person.path.top)) / anim.stage.normalSpeed,
+class InvQueue  extends Queue {
+    constructor() {
+        super (inv,"theQueue", -1)
+        this.walkingTime = anim.walkingTime;
+    };
+	
 
-	reset: function () {},
-	join: function (qLength, arrivalTime, person) {
-		person.addPath({
-			t: arrivalTime - this.walkingTime2,
+	push (person) {
+        if( !super.push(person, anim.walkingTime) ) return false;
+        const arrivalTime = inv.now + anim.walkingTime;
+        
+        person.addPath({
+			t: arrivalTime - anim.walkingTime2,
 			x: anim.person.path.right,
 			y: anim.person.path.top
 		});
@@ -421,29 +434,41 @@ const animForQueue = {
 			x: anim.person.path.right,
 			y: anim.person.path.mid
 		});
-	},
-	arrive: function (nSeatsUsed, person) {},
-	leave: function (procTime, nSeatsUsed) {}
+        return true;
+	};
+	arriveAnim() {};
+    pullAnim () {};
 };
-const animForStore = {
-	walkingTime: (anim.person.path.bot - anim.person.path.top) / anim.stage.normalSpeed,
-	reset: function () {},
-	start: function () {
-		person.addPath({
-			t: arrivalTime - this.walkingTime,
-			x: anim.person.path.right,
-			y: anim.person.path.bot
-		});
-	}
-}
 
-const animForSeller = {
-	start: function (person, pack, walkingTime) {
+class InvCreator extends MachineCenter {
+    constructor( ){
+        super(inv, "creator",1, theSimulation.arrivalRV); 
+    };
+    startAnim(machine, theProcTime){};
+    finishAnim(machine){};
+};
+//class InvStore = {
+//	walkingTime: (anim.person.path.bot - anim.person.path.top) / anim.stage.normalSpeed,
+//	reset: function () {},
+//	start: function () {
+//		person.addPath({
+//			t: arrivalTime - this.walkingTime,
+//			x: anim.person.path.right,
+//			y: anim.person.path.bot
+//		});
+//	}
+//}
+class InvCombine  extends Combine {
+    constructor(rv, queue, store, walkoff ){
+        super(inv,'inventory',rv, queue, store, walkoff );
+    };
+	startAnim (person, pack, walkingTime) {
 		person.addPath({ //walk to bot
 			t: inv.now + walkingTime,
 			x: anim.person.path.right,
 			y: anim.person.path.bot
-		});
+	
+        });
 		const leftTime = walkingTime / 2;
 		if (pack) {
 			pack.addPath({
@@ -457,8 +482,8 @@ const animForSeller = {
 				y: anim.person.path.bot + person.graphic.gSF.package.y,
 			});
 		}
-	},
-	finish: function (person, pack) {
+	};
+	finishAnim (person, pack) {
 		if (pack) {
 			person.graphic.packageVisible = true;
 			person.graphic.packageColor = pack.graphic.color;
@@ -466,20 +491,22 @@ const animForSeller = {
 			person.graphic.color = disappointed.color;
 			person.graphic.bdaryColor = disappointed.border;
 		}
-	}
+	};
 };
 
-const animForWalkOffStage = {
-	walkingTime: (anim.person.path.right - anim.person.path.left) / anim.stage.normalSpeed,
 
-	reset: function(){},
-    start: function (person) {
+
+class InvWalkOffStage extends WalkAndDestroy {
+    constructor(){
+        super(inv, "walkOff", true, anim.walkOffStageTime);
+    };
+    pushAnim (person) {
 		person.addPath({
-			t: inv.now + this.walkingTime,
+			t: inv.now + anim.walkOffStageTime,
 			x: anim.person.path.left,
 			y: anim.person.path.bot
 		});
-	}
+	};
 };
 
 const theSimulation = {
@@ -508,7 +535,7 @@ const theSimulation = {
 		let acv = Number(document.getElementById('acvinv').value);
 		theSimulation.arrivalRV = new GammaRV(ar / tioxTimeConv, acv);
 		theSimulation.serviceRV =
-			new DeterministicRV(animForQueue.walkingTime2);
+			new DeterministicRV(anim.walkingTime2);
 		let lt = Number(document.getElementById('ltinv').value);
 		let ltcv = Number(document.getElementById('ltcvinv').value);
 		theSimulation.leadtimeRV = new GammaRV(1 / (lt * tioxTimeConv), ltcv);
@@ -529,33 +556,27 @@ const theSimulation = {
 		this.supply = new Supplier(anim.person.path.left,
 			anim.person.path.top);
 
-		this.queue = new Queue(inv,"theQueue", -1,
-			animForQueue.walkingTime,   
-			animForQueue,
-			null, null);
+		this.queue = new InvQueue();
 		inv.resetCollection.push(this.queue);
 
-		this.walkOffStage = new WalkAndDestroy(inv, "walkOff", animForWalkOffStage, true);
-		inv.resetCollection.push(this.walkOffStage);
+		this.walkOffStage = new InvWalkOffStage();
+        inv.resetCollection.push(this.walkOffStage);
 
-		this.store = new RopStore(inv,anim);
+		this.store = new RopStore();
 		inv.resetCollection.push(this.store);
 
 		//machine centers 
-		this.creator = new MachineCenter(inv,"creator",
-			1, theSimulation.arrivalRV,
-			this.supply, this.queue,
-			null);
+		this.creator = new InvCreator();
 		inv.resetCollection.push(this.creator);
 
-		this.seller = new Combine(inv,'seller',
-			theSimulation.serviceRV,
-			this.queue, this.store, this.walkOffStage,
-			animForSeller);
+		this.seller = new InvCombine(theSimulation.serviceRV,
+			this.queue, this.store, this.walkOffStage);
 		inv.resetCollection.push(this.seller);
 
 		//link the queue to machine before and after
-		this.queue.setPreviousNext(
+		this.creator.setPreviousNext(
+            this.supply,this.queue);
+        this.queue.setPreviousNext(
 			this.creator, this.seller);
 	}, //end of initialize
 };
@@ -573,8 +594,8 @@ class Supplier {
 }; //end class Supplier
 
 class RopStore extends GStore {
-	constructor(omConcept,anim) {
-		super(omConcept,anim);
+	constructor() {
+		super(inv,anim);
 		this.name = 'ropRetail'
 
 		//stats for performance of store
@@ -775,6 +796,8 @@ class RopStore extends GStore {
 		});
 	};
 };
+
+
 
 const pi2 = 2 * Math.PI;
 class Truck extends Item {

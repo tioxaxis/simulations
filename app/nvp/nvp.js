@@ -153,6 +153,13 @@ anim.person.path = {
 	bot: anim.store.top + anim.box.space*7,
 }
 anim.person.path.mid = (anim.person.path.top + anim.person.path.bot) / 2;
+anim.walkingTime1 = (anim.person.path.right - anim.person.path.left) / 
+                            anim.stage.normalSpeed;
+anim.walkingTime2 = (anim.person.path.mid - anim.person.path.top) / 
+                            anim.stage.normalSpeed;
+anim.walkingTime = ((anim.person.path.right - anim.person.path.left) +
+		            (anim.person.path.mid - anim.person.path.top)) /
+                            anim.stage.normalSpeed;
 
 function nvpDefine(){
 	
@@ -351,16 +358,17 @@ function setActual() {
 //  that contains the functions to do the specific
 //  animation for that process step
 
-const animForQueue = {
-	walkingTime1: (anim.person.path.right - anim.person.path.left) / anim.stage.normalSpeed,
-	walkingTime2: (anim.person.path.mid - anim.person.path.top) / anim.stage.normalSpeed,
-	walkingTime: ((anim.person.path.right - anim.person.path.left) +
-		(anim.person.path.mid - anim.person.path.top)) / anim.stage.normalSpeed,
-
-	reset: function () {},
-	join: function (qLength, arrivalTime, person) {
+class NvpQueue extends Queue {
+    constructor(){
+        super(nvp, "theQueue", -1);
+        this.walkingTime = anim.walkingTime;
+    };
+	
+	push(person) {
+        if( !super.push(person, anim.walkingTime) ) return false;
+        const arrivalTime = nvp.now + anim.walkingTime;
 		person.addPath({
-			t: arrivalTime - this.walkingTime2,
+			t: arrivalTime - anim.walkingTime2,
 			x: anim.person.path.right,
 			y: anim.person.path.top
 		});
@@ -369,37 +377,45 @@ const animForQueue = {
 			x: anim.person.path.right,
 			y: anim.person.path.mid
 		});
-	},
-	arrive: function (nSeatsUsed, person) {	},
-	leave: function (procTime, nSeatsUsed) {}
+        return true;
+	};
+    arriveAnim() {};
+	pullAnim () {};
 };
 
-const animForWalkOffStage = {
-	walkingTime: (anim.person.path.right - anim.person.path.left) / anim.stage.normalSpeed,
+class  NvpWalkOffStage extends WalkAndDestroy {
+	constructor(){
+        super(nvp, "walkOff", true, anim.walkingTime1);
+    };
 
-	reset: function(){},
-    start: function (person) {
+	pushAnim (person) {
 		person.addPath({
 			t: nvp.now +
-				this.walkingTime,
+				anim.walkingTime1,
 			x: anim.person.path.left,
 			y: anim.person.path.bot
 		});
 	}
 };
 
-const animForCreator = {
-	reset: function () {},
-	start: function (theProcTime, person, m) { // only 1 machine for creator m=1
-		person.setDestWithProcTime(theProcTime,
-			anim.person.path.left, anim.person.path.top);
-	},
-	finish: function () {},
-};
+// ???? don;t thinke this gets used even under old name
+//class NvpCreator  {
+//    constructor (){
+//        super(   )
+//    };
+//	reset: function () {},
+//	start: function (theProcTime, person, m) { // only 1 machine for creator m=1
+//		person.setDestWithProcTime(theProcTime,
+//			anim.person.path.left, anim.person.path.top);
+//	},
+//	finish: function () {},
+//};
 
-const animForNewsVendor = {
-	//	walkingTime: animForQueue.walkingTime2;
-	start: function (person, pack, walkingTime) {
+class NvpCombine extends Combine {
+    constructor(rv, queue, store, walkoff ){
+        super(nvp,'newsVendor',rv, queue, store, walkoff );
+    }
+	startAnim (person, pack, walkingTime) {
 		person.addPath({ //walk to bot
 			t: nvp.now + walkingTime,
 			x: anim.person.path.right,
@@ -420,9 +436,9 @@ const animForNewsVendor = {
 				y: anim.person.path.bot + person.graphic.gSF.package.y,
 			});
 		}
-	},
+	};
 	
-	finish: function (person, pack) {
+	finishAnim (person, pack) {
 		if (pack) {
 			person.graphic.packageVisible = true;
 			person.graphic.packageColor = pack.graphic.color;
@@ -430,7 +446,7 @@ const animForNewsVendor = {
 			person.graphic.color = disappointed.color;
 			person.graphic.bdaryColor = disappointed.border;
 		}
-	}
+	};
 };
 
 
@@ -459,7 +475,7 @@ const theSimulation = {
 //        console.log('initiation  ',r,cv, low, high);
 		theSimulation.demandRV = new DiscreteUniformRV(low,high);
 		theSimulation.serviceRV =
-			new DeterministicRV(animForQueue.walkingTime2);
+			new DeterministicRV(anim.walkingTime2);
 		theSimulation.Co = Number(nvp.usrInputs.get('Co').get());
 		theSimulation.Cu = Number(nvp.usrInputs.get('Cu').get());
 		theSimulation.quantityOrdered = 
@@ -468,28 +484,25 @@ const theSimulation = {
 		//queues
 		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
 
-		this.queue = new Queue(nvp, "theQueue", -1,
-			animForQueue.walkingTime, animForQueue,
-			null, null);
+		this.queue = new NvpQueue();
 		nvp.resetCollection.push(this.queue);
 		
-		this.store = new RetailStore(nvp, anim);
+		this.store = new RetailStore();
 		nvp.resetCollection.push(this.store);
 		
-		this.walkOffStage = new WalkAndDestroy(nvp, "walkOff", animForWalkOffStage, true);
+		this.walkOffStage = new NvpWalkOffStage();
 		nvp.resetCollection.push(this.walkOffStage);
 
 		this.demand = new DemandCreator(20000, theSimulation.demandRV);
 		nvp.resetCollection.push(this.demand);
 
-		this.newsVendor = new Combine(nvp,'newsVendor',
-			theSimulation.serviceRV,
-			this.queue, this.store, this.walkOffStage,
-			animForNewsVendor);
+		this.newsVendor = new NvpCombine(theSimulation.serviceRV,
+			this.queue, this.store, this.walkOffStage);
 		nvp.resetCollection.push(this.newsVendor);
 
 		//link the queue to machine before and after
-		this.queue.setPreviousNext(
+		
+        this.queue.setPreviousNext(
 			this.creator, this.newsVendor);
 	},
 };
@@ -587,9 +600,8 @@ function resetAvgsRestartGraph(){
 };
 
 class RetailStore extends GStore {
-	constructor(omConcept, anim) {
-		super(omConcept, anim);
-		this.anim = anim;
+	constructor() {
+		super(nvp, anim);
 	};
 	addBox(n) {
 		for (let i = 0; i < n; i++) {

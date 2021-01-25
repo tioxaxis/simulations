@@ -153,6 +153,8 @@ anim.person = {
 		top: 150,
 	}
 };
+anim.walkOffStageTime = Math.abs(
+    anim.person.path.scanner - anim.person.path.right) / anim.stage.normalSpeed;
 anim.scannerDelta = {
   	dx: 0,
 	dy: anim.person.height * 1.8
@@ -300,14 +302,11 @@ class QueQueue extends Queue {
 	    this.dontOverlap = true,
 	    this.walkingTime = (anim.person.path.headQueue 
                             - anim.person.path.left) / anim.stage.normalSpeed;
-        this.sumOfTimes = [];
+        
     };
-    reset(){
-        super.reset();
-        this.sumOfTimes = [];
-    }
 
-	pushAnim (person) {
+	push (person) {
+        if( !super.push(person, this.walkingTime) ) return false;
         person.checkAhead = true;
         person.arrivalTime = que.now + this.walkingTime;
         person.width = this.delta.dx;
@@ -328,6 +327,7 @@ class QueQueue extends Queue {
 		if (person.isThereOverlap()) {
 			person.cur.y = person.ahead.cur.y - 10;
 		}
+        return true;
 	};
 
 	arriveAnim (person) {
@@ -395,9 +395,7 @@ class QueQueue extends Queue {
 
 class QueWalkOffStage extends WalkAndDestroy {
     constructor(){
-	   super(que, "walkOff", true);
-        this.walkingTime = Math.abs(anim.person.path.scanner 
-		- anim.person.path.right) / anim.stage.normalSpeed;
+	   super(que, "walkOff", true, anim.walkOffStageTime);
     };
     pushAnim (person) {
         person.addPath({
@@ -406,7 +404,7 @@ class QueWalkOffStage extends WalkAndDestroy {
 			y: anim.person.path.top
 		});
 		person.addPath({
-			t: que.now + this.walkingTime - 50 / anim.stage.normalSpeed,
+			t: que.now + anim.walkOffStageTime - 50 / anim.stage.normalSpeed,
 			x: anim.person.path.right,
 			y: anim.person.path.top
 		});

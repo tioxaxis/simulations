@@ -70,9 +70,9 @@ export class Queue {
 		return this.q.length;
 	}
 
-	push(person) {
+	push(person, walkingTime = 0) {
 		if (this.q.length == this.maxSeats) return false;
-        person.arrivalTime = this.omConcept.now + this.walkingTime;
+        person.arrivalTime = this.omConcept.now + walkingTime;
         if( this.procTimeRV) {
             person.procTime = this.procTimeRV.observe();
 		    person.compTime = Math.max(this.lastPerCompTime,
@@ -81,7 +81,7 @@ export class Queue {
         }
         this.q.push(person);
         
-        this.pushAnim(person);
+//        this.pushAnim(person);
 		
 
 		// insert into end of doubly linked list
@@ -133,18 +133,16 @@ export class Queue {
 
 //  WALK AND DESTROY
 export class WalkAndDestroy {
-	constructor(omConcept, name, dontOverlap) {
+	constructor(omConcept, name, dontOverlap, walkingTime) {
 		this.omConcept = omConcept;
 		this.name = name;
 //		this.animFunc = animFunc;
-//		this.walkingTime = this.animFunc.walkingTime;
+		this.walkingTime = walkingTime;
 		this.dontOverlap = dontOverlap;
 		this.lastAdded = null;
 	};
 
-	reset() {
-//        this.animFunc.reset();
-    };
+	reset() {};
 
 	push(person) {
 		// insert into end of doubly linked list
@@ -347,16 +345,14 @@ export class InfiniteMachineCenter extends MachineCenter {
 
 export class Combine {
 	constructor(omConcept, name, procTimeRV,
-		personQ, packageQ, afterQ,
-		animFunc) {
+		personQ, packageQ, afterQ) {
 		this.omConcept = omConcept;
 		this.name = name;
 		this.procTimeRV = procTimeRV;
 		this.personQ = personQ;
 		this.packageQ = packageQ;
 		this.afterQ = afterQ;
-		this.animFunc = animFunc;
-	};
+    };
 	reset() {};
 	knockFromPrevious() {
 		this.start();
@@ -365,9 +361,8 @@ export class Combine {
 		const theProcTime = this.procTimeRV.observe();
 		const person = this.personQ.pull();
 		const pack = this.packageQ.pull();
-		if (this.animFunc) {
-			this.animFunc.start(person, pack, theProcTime);
-		}
+		this.startAnim(person, pack, theProcTime);
+        
 		this.omConcept.heap.push({
 			time: this.omConcept.now + theProcTime,
 			type: 'finish' + this.omConcept.name,
@@ -380,7 +375,7 @@ export class Combine {
 
 	};
 	finish(item) {
-		this.animFunc.finish(item.person, item.package);
+		this.finishAnim(item.person, item.package);
 		if (item.package) {
 			item.package.destroy();
 		}
@@ -654,14 +649,14 @@ export class Item {
 //			path.speedX = (path.x - last.x) / deltaT;
 //			path.speedY = (path.y - last.y) / deltaT;
 //		}
-        if( path.speedX < 0){
-            alert('addPath created pathList with speed X< 0');
-            debugger;
-        }
-        if( path.x > 700 && path.x < 750){
-            console.log(this, this.which, this.pathList,path.x);
-            debugger;
-        }
+//        if( path.speedX < 0){
+//            alert('addPath created pathList with speed X< 0');
+//            debugger;
+//        }
+//        if( path.x > 700 && path.x < 750){
+//            console.log(this, this.which, this.pathList,path.x);
+//            debugger;
+//        }
 	};
 
 	destroy() {

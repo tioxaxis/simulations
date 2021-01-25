@@ -153,6 +153,9 @@ anim.person.path.exit = anim.room.left+ anim.room.width;
 anim.person.path.top = (anim.room.height - anim.person.height)/ 
 						2 + anim.room.top;
 
+anim.walkOffStageTime = 
+    Math.abs(anim.person.path.exit - anim.person.path.right) / anim.stage.normalSpeed;
+
 anim.pathway = {
 	left: 0,
 	top: anim.person.path.top - 2,
@@ -292,33 +295,34 @@ function localUpdateFromUser(inp){
 
 class LitQueue  extends Queue{
 	constructor(){ 
-        const walkingTime = (anim.person.path.entry - anim.person.path.left) / anim.stage.normalSpeed;
-        super(lit, 'queue', -1, walkingTime);
+        
+        super(lit, 'queue', -1);
+        this.walkingTime = (anim.person.path.entry - anim.person.path.left) / anim.stage.normalSpeed;
         this.loc = {x: anim.person.path.entry, y: anim.person.path.top};
     }
-	pushAnim (person) /*   was called join... nInQueue, arrivalTime, person)*/ {
-//		if( !super.push(person) ) return false;
+	push(person) /*   was called join... nInQueue, arrivalTime, person)*/ {
+		if( !super.push(person, this.walkingTime) ) return false;
         const arrivalTime = this.omConcept.now + this.walkingTime;
         person.addPath({
 			t: arrivalTime,
 			x: this.loc.x,
 			y: this.loc.y
 		});
-//        return true;
+        return true;
 	};
+    arriveAnim(){};
+    pullAnim(){};
 };
 
 class LitWalkOffStage extends WalkAndDestroy {
 	constructor( ){
-        super( lit,'walk off',false);
+        super( lit,'walk off',false, anim.walkOffStageTime);
         this.loc = {x: anim.person.path.right, y: anim.person.path.top};
-	    this.walkingTime = Math.abs(anim.person.path.exit - anim.person.path.right) / anim.stage.normalSpeed;
     };
     pushAnim (person) {   // called start before
 //        super.push(person);
 		person.addPath({
-			t: lit.now +
-				this.walkingTime,
+			t: lit.now + anim.walkOffStageTime,
 			x: this.loc.x,
 			y: this.loc.y
 		});

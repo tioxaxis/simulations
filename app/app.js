@@ -131,9 +131,9 @@ document.getElementById('dir').addEventListener('click', router);
 var currentTab = null;
 omConcepts['que'] = queStart();
 omConcepts['lit'] = litStart();
-//omConcepts['nvp'] = nvpStart();
-//omConcepts['inv'] = invStart();
-//omConcepts['fac'] = facStart();
+omConcepts['nvp'] = nvpStart();
+omConcepts['inv'] = invStart();
+omConcepts['fac'] = facStart();
 
 
 const h = location.hash;
