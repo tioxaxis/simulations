@@ -960,7 +960,7 @@ function invHTML(){
     usrInputs.set('ar', new NumSlider('ar',arInput,
                 localUpdateFromUser, 1, 9, 5, 0,2,1) );
     
-    const acvInput = genRange('acvinv', '0.0', 0, 2, .5);
+    const acvInput = genRange('acvinv', 0, 0, 2, .5);
     elem.append(htmlNumSlider(acvInput, 'Arrival CV = ',
                               '0.0', ['0.0','1.0','2.0']) );
     usrInputs.set('acv', new NumSlider('acv', acvInput,
@@ -972,7 +972,7 @@ function invHTML(){
     usrInputs.set('lt', new NumSlider('lt',ltInput,
                 localUpdateFromUser, 2, 10, 5, 0,2,1) );
     
-    const ltcvInput = genRange('ltcvinv', '0.0', 0, 2, .5);
+    const ltcvInput = genRange('ltcvinv', 0, 0, 2, .5);
     elem.append(htmlNumSlider(ltcvInput, 'Lead Time CV = ',
                               '0.0', ['0.0','1.0','2.0']) );
     usrInputs.set('ltcv', new NumSlider('ltcv', ltcvInput,

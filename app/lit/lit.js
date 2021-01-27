@@ -488,8 +488,8 @@ function litHTML(){
     usrInputs.set('ar', new NumSlider('ar',arInput,
                 localUpdateFromUser, 1, 6, 1, 0, 1, 1) );
     
-    const acvInput = genRange('acvlit', '0.0', 0, 2, .5);
-    elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', 0,['0.0','1.0','2.0']) );
+    const acvInput = genRange('acvlit', 0, 0, 2, .5);
+    elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', '0.0',['0.0','1.0','2.0']) );
     usrInputs.set('acv', new NumSlider('acv', acvInput,
                 localUpdateFromUser, 0, 2, 0, 1, 2, 10) );
     
@@ -499,8 +499,8 @@ function litHTML(){
     usrInputs.set('st', new NumSlider('st',stInput,
                 localUpdateFromUser, 5, 25, 6, 0, 2, 1) );
     
-    const scvInput = genRange('scvlit', '0.0', 0, 2, .5);
-    elem.append(htmlNumSlider(scvInput, 'Service CV = ', 0,['0.0','1.0','2.0']) );
+    const scvInput = genRange('scvlit', 0, 0, 2, .5);
+    elem.append(htmlNumSlider(scvInput, 'Service CV = ', '0.0',['0.0','1.0','2.0']) );
     usrInputs.set('scv', new NumSlider('scv', scvInput,
                 localUpdateFromUser, 0, 2, 0, 1, 2, 10) );
 
@@ -511,7 +511,7 @@ function litHTML(){
                 localUpdateFromUser, ['none','play','pause'], 'none') );
     
     const speedInput = genRange('speedlit',0,0,5,1);
-    elem.append(htmlArbSlider(speedInput, 'Speed = ', 0,
+    elem.append(htmlArbSlider(speedInput, 'Speed = ', '1x',
                             ["slow",' ',' ',' ',"fast",'∞']) );
     usrInputs.set('speed', new ArbSlider('speed', speedInput, 
                 localUpdateFromUser, ["1x",'2x','5x','10x',"25x",'∞'],

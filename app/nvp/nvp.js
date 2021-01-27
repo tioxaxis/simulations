@@ -643,7 +643,7 @@ function nvpHTML(){
     usrInputs.set('dr', new NumSlider('dr',drInput,
                 localUpdateFromUser, 10, 50, 20, 0, 2, 1) );
     
-    const dcvInput = genRange('dcvnvp', '0.0', 0, 1, .1);
+    const dcvInput = genRange('dcvnvp', 0, 0, 1, .1);
     elem.append(htmlNumSlider(dcvInput, 'Demand Variability = ', '0.0',['0.0','0.5','1.0']) );
     usrInputs.set('dcv', new NumSlider('dcv', dcvInput,
                 localUpdateFromUser, 0, 2, 0, 1,2,10) );

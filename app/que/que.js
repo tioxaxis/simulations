@@ -548,8 +548,8 @@ function queHTML(){
     usrInputs.set('ar', new NumSlider('ar',arInput,
                 localUpdateFromUser, 0, 10, 5, 1,3,10) );
     
-    const acvInput = genRange('acvque', '0.0', 0, 2, .5);
-    elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', 0,['0.0','1.0','2.0']) );
+    const acvInput = genRange('acvque', 0, 0, 2, .5);
+    elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', '0.0',['0.0','1.0','2.0']) );
     usrInputs.set('acv', new NumSlider('acv', acvInput,
                 localUpdateFromUser, 0, 2, 0, 1,2,10) );
     
@@ -559,8 +559,8 @@ function queHTML(){
     usrInputs.set('sr', new NumSlider('sr',srInput,
                 localUpdateFromUser, 0, 10, 6, 1,3,10) );
     
-    const scvInput = genRange('scvque', '0.0', 0, 2, .5);
-    elem.append(htmlNumSlider(scvInput, 'Service CV = ', 0,['0.0','1.0','2.0']) );
+    const scvInput = genRange('scvque', 0, 0, 2, .5);
+    elem.append(htmlNumSlider(scvInput, 'Service CV = ', '0.0',['0.0','1.0','2.0']) );
     usrInputs.set('scv', new NumSlider('scv', scvInput,
                 localUpdateFromUser, 0, 2, 0, 1,2,10) );
     
