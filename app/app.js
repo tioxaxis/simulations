@@ -39,9 +39,13 @@ import {
 	facStart
 }
 from './fac/fac.js';
+import {
+	eosStart
+}
+from './eos/eos.js';	
 	
-	
-const possibles = ['dir','que', 'lit', 'nvp', 'inv', 'fac'];
+const possibles = ['dir','que', 'lit', 'nvp', 'inv',
+                   'fac','eos'];
 const omConcepts ={};
 
 //handles resize window event.
@@ -129,11 +133,12 @@ document.getElementById('dir').addEventListener('click', router);
 
 
 var currentTab = null;
-omConcepts['que'] = queStart();
-omConcepts['lit'] = litStart();
-omConcepts['nvp'] = nvpStart();
-omConcepts['inv'] = invStart();
-omConcepts['fac'] = facStart();
+//omConcepts['que'] = queStart();
+//omConcepts['lit'] = litStart();
+//omConcepts['nvp'] = nvpStart();
+//omConcepts['inv'] = invStart();
+//omConcepts['fac'] = facStart();
+omConcepts['eos'] = eosStart();
 
 
 const h = location.hash;

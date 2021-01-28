@@ -143,8 +143,8 @@ export class TioxGraph {
         this.scaleXaxis(this.xScaleFactor);
 		this.setupThenRedraw();
 	};
-	setTitle(title){
-		document.getElementById('chartTitle' + this.omConcept.key).innerHTML = title;
+	setTitle(title,id){
+		document.getElementById(id + this.omConcept.key).innerHTML = title;
 	};
 	
 	

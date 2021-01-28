@@ -53,7 +53,7 @@ class QueueGraph extends TioxGraph {
 	constructor(){	
 		super(que,'chartCanvasque', 40, {width:10, step:2}, d=>d.t,
              2000,600,false);
-		this.setTitle('Waiting Time');
+		this.setTitle('Waiting Time','chartTitle');
 		const indivWait = new GraphLine(this, d => d.i, cbColors.blue,
 					                   false, true,  5, 10);
 		const avgWait = new GraphLine(this, d => d.a, cbColors.yellow,
@@ -209,6 +209,12 @@ class Queueing extends OmConcept{
         this.redrawBackground();
         this.graph.setupThenRedraw();
         this.clearRedrawStage(0,true);
+    };
+    clearStageForeground(){
+        this.stage.foreground.clear();
+    };
+    clearStageBackground(){
+        this.stage.background.clear();
     };
     redrawBackground() {
         const tsaAgent = document.getElementById("tsaAgent");

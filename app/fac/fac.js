@@ -330,6 +330,9 @@ class FaceGame extends OmConcept {
         };
         
     };
+    clearStageForeground(){
+        this.stage.foreground.clear();
+    };
     redoStagesGraph(){
         this.stage.foreground.reset();
         this.stage.background.reset();

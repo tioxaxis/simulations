@@ -62,7 +62,7 @@ class InvGraph extends TioxGraph {
 		super(inv,'chartCanvasinv',40, {width:24, step:6}, d=>d.t,
              2000,600,false);
 		this.predictedInvValue = null;
-		this.setTitle('Inventory');
+		this.setTitle('Inventory','chartTitle');
 		const onhandInv = new GraphLine(this, d => d.i, cbColors.blue,
 					   true, true,  3, 0);
 		const bothInv = new GraphLine(this, d => d.ip, cbColors.red,
@@ -298,6 +298,9 @@ class Inventory extends OmConcept{
         this.graph.setupThenRedraw();
         this.clearRedrawStage(0,true);
 //        console.log('in Inventory and called redoStages');
+    };
+    clearStageForeground(){
+        this.stage.foreground.clear();
     };
     redrawBackground() {
         theSimulation.store.drawStore();    

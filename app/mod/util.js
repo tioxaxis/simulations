@@ -305,4 +305,27 @@ export class StageOnCanvas{
         this.context.scale(scale, scale);
         return this.context;
     };
+    clear(){
+        this.context.clearRect(0, 0, this.stage.width, this.stage.height);
+    }
 };
+
+
+export class ItemSplitterRandom {
+    constructor(outputs){
+        this.outputs = outputs;
+    };
+    
+//    pushAll(item){
+//        for( let out of outputs ){
+//            const itemCopy = JSON.parse(JSON.stringify(item));
+//            out.push(itemCopy);
+//        };
+//    };
+    
+    push(item){
+        const k = Math.floor(Math.random() * this.outputs.length);
+        this.outputs[k].push(item);
+    };
+};
+

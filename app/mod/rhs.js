@@ -162,14 +162,14 @@ export class OmConcept {
         debugger;
     };
 
-	clearStageForeground() {
-//		console.log(' reached clear the FOREground!!',this.key);
-        this.stage.foreContext.clearRect(0, 0, this.stage.width, this.stage.height);
-	};
-    clearStageBackground() {
-//        console.log(' reached clear the background!!',this.key);
-        this.stage.backContext.clearRect(0, 0, this.stage.width, this.stage.height);
-	};
+//	clearStageForeground() {
+////		console.log(' reached clear the FOREground!!',this.key);
+//        this.stage.foreContext.clearRect(0, 0, this.stage.width, this.stage.height);
+//	};
+//    clearStageBackground() {
+////        console.log(' reached clear the background!!',this.key);
+//        this.stage.backContext.clearRect(0, 0, this.stage.width, this.stage.height);
+//	};
 
 	// play, pause, toggle .
 	play() {

@@ -116,11 +116,13 @@
 	<div id='coverAnimation' class='coverAnimation1' ></div>
 </div>
 	
+<!--	****** wrapper for fac stage-->
 <div class='facStageWrapper' id="facStageWrapper" >
 	<canvas class="theStage foreground" id="foreground" width=1000 height=480></canvas>
 	<canvas class="theStage background" id="background" width=1000 height=480></canvas>
 </div>
 
+<!--	****** wrapper for fac for data-->
 <div class='facDataWrapper' id="facDataWrapper" >
 	   <div class='facepart'><u>Station:</u></div>
        <div class='center'><u>1</u></div>
@@ -199,12 +201,21 @@
                min='1' max='3' step='1'>
 	</div>
 	
+<!--	****** wrapper for eos stage-->    
+<div class='eosStageWrapper' id="eosStageWrapper" >
+    <canvas class="theStage foreground" id="sForeground" width=480 height=480></canvas>
+    <canvas class="theStage background" id="sBackground" width=480 height=480></canvas>
+    <canvas class="theStage foreground" id="jForeground" width=480 height=480></canvas>
+    <canvas class="theStage background" id="jBackground" width=480 height=480></canvas>
+</div>
+
 	
 
 <!--	****** wrapper for stats section-->
 <div class='statsWrapper'  id='statsWrapper' ></div>
 
 <!--	****** wrapper for chart section-->
+    <!--	****** wrapper for standard chart section-->
 <div class='chartWrapper' id="chartWrapper">
 	<div class='chartTitle' id='chartTitle'> title </div>
 	<div class='chart' id='chart'> 
@@ -212,7 +223,8 @@
 	</div>
 	<div class='chartLegend rowAroundCenter' id='chartLegend'></div>
 </div>
-    
+ 
+    <!--	****** wrapper for fac chart with a dual chart -->
 <div class='dualChartWrapper' id='dualChartWrapper'>
     <div class='dualChartTitle legitem rowAroundCenter' id='leftLegend'></div>
     <div class='dualChart' id='dualChart'>
@@ -220,6 +232,21 @@
     </div>
     <div class='dualChartTitle legitem rowAroundCenter' id='rightLegend'></div>
     </div>
+    
+    
+<div class='chartWrapper' id="eoschartWrapper">
+	<div class='chartTitle' id='fchartTitle'> title </div>
+	<div class='chart' id='fchart'> 
+		<canvas  class="chartCanvas" id="fchartCanvas" width='1000' height='600'></canvas>
+	</div>
+	<div class='chartLegend rowAroundCenter' id='fchartLegend'></div>
+    
+    <div class='chartTitle' id='tchartTitle'> title </div>
+	<div class='chart' id='tchart'> 
+		<canvas  class="chartCanvas" id="tchartCanvas" width='1000' height='600'></canvas>
+	</div>
+	
+</div>
 </div>   <!--	****** end of generic pieces-->
 	
 	
@@ -242,6 +269,9 @@
 		<div class='appButton' >
 			<div id="facLink" class='verticalCenter'>Face Game</div>
 		</div>
+        <div class='appButton' >
+			<div id="eosLink" class='verticalCenter'>Economies of Scale</div>
+		</div>
 		<div class='appButton'>
 			<div id='docLink' class='verticalCenter'>Documentation</div>
 		</div>
@@ -251,6 +281,7 @@
 	<div id='nvp' class='displayNone'></div>
 	<div id='inv' class='displayNone'></div>
 	<div id='fac' class='displayNone'></div>
+    <div id='eos' class='displayNone'></div>
 </body>
 </html>
 

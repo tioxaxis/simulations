@@ -56,7 +56,7 @@ class LittleGraph extends TioxGraph {
 		super(lit,'chartCanvaslit',40, {width:20, step:5}, d=>d.t,
              2000,600,false);
 		this.predictedInvValue = null;
-		this.setTitle('Inventory');
+		this.setTitle('Inventory','chartTitle');
 		const avgInv = new GraphLine(this, d => d.i, cbColors.blue,
 					   false, true,  3, 10);
 		const avgRT = new GraphLine(this, d => d.rt, cbColors.yellow,
@@ -219,6 +219,9 @@ class LittlesLaw extends OmConcept{
         this.redrawBackground();
         this.graph.setupThenRedraw();
         this.clearRedrawStage(0,true);
+    };
+    clearStageForeground(){
+        this.stage.foreground.clear();
     };
     
     redrawBackground() {
