@@ -24,13 +24,13 @@ import {
 }
 from "../mod/util.js";
 import {
-	OmConcept
+	OmConcept, displayToggle
 }
 from '../mod/rhs.js';
 import {
 	Queue, WalkAndDestroy, MachineCenter,
 	InfiniteMachineCenter, Item, 
-	GStickFigure, NStickFigure
+	GStickFigure, NStickFigure 
 }
 from "../mod/stepitem.js";
 import {
@@ -55,27 +55,27 @@ class EosGraph  {
     constructor(){	
 		//flow time graph
         this.flowGraph = new TioxGraph(eos,'fchartCanvaseos',
-                40, {width:10, step:2}, d=>d.t, 1000,600,false);
+                40, {width:10, step:2}, d=>d.t, 1000,300,false);
 		this.flowGraph.setTitle('Flow time','fchartTitle');
 		const sepFlow = new GraphLine(this.flowGraph,
-                d => d.s, cbColors.blue, false, true,  5, 10);
+                d => d.s, cbColors.yellow, false, true,  3, 5);
 		const jointFlow = new GraphLine(this.flowGraph,
-                d => d.j, cbColors.yellow, false, true,  5, 10);
+                d => d.j, cbColors.blue, false, true,  3, 5);
 		        
         //throughput graph
         this.thruGraph = new TioxGraph(eos,'tchartCanvaseos',
-                40, {width:10, step:2}, d=>d.t, 1000,600,false);
+                40, {width:10, step:2}, d=>d.t, 1000,300,false);
 		this.thruGraph.setTitle('Throughput','tchartTitle');
 		const sepThru = new GraphLine(this.thruGraph,
-                d => d.s, cbColors.blue, false, true,  5, 10);
+                d => d.s, cbColors.yellow, false, true,  3, 5);
 		const jointThru = new GraphLine(this.thruGraph,
-                d => d.j, cbColors.yellow, false, true,  5, 10);
+                d => d.j, cbColors.blue, false, true,  3, 5);
         
         //setup legends (connected directly to flow graph)
         const leg0 = sepFlow.createLegend('Separate');
         const leg1 = jointFlow.createLegend('Joint');
-        const d3 = document.getElementById('fchartLegendeos');
-        d3.append(leg0, leg1);
+        const d3 = document.getElementById('pairChartLegendeos');
+        d3.append(leg0,'      ', leg1); //option-spaces!!
         
         eos.usrInputs.set('leg0', 
             new LegendItem('leg0', sepFlow, localUpdateFromUser, true)); 
@@ -84,18 +84,23 @@ class EosGraph  {
         
         //setup callbacks so throuhput graphs 
         //  respond to clicks on legends as well.
-        sepFlow.button.addEventListener('click',
-            this.thruGraph.setupThenRedraw.bind(this.thruGraph));
-        jointFlow.button.addEventListener('click',
-            this.thruGraph.setupThenRedraw.bind(this.thruGraph));   
+        sepFlow.button.addEventListener('click',() => {
+            sepThru.visible = !sepThru.visible;
+            sepThru.graph.setupThenRedraw()
+        });
+        jointFlow.button.addEventListener('click',() => {
+            jointThru.visible = !jointThru.visible;
+            jointThru.graph.setupThenRedraw()
+        });   
 	};
 	
 	pushSep (t,f){
 		t /= tioxTimeConv;
         f/= tioxTimeConv;
 		const avgFlow = this.avgSepFlow.addItem(f);
-        this.avgSepThru.in(t);
+        this.avgSepThru.out(t);
         const avgThru = this.avgSepThru.avgR();
+//        console.log('Avg throughput Sep', avgThru);
         this.flowGraph.drawOnePoint( {t: t, s: avgFlow} );
         this.thruGraph.drawOnePoint( {t: t, s: avgThru} );
 	};
@@ -103,31 +108,41 @@ class EosGraph  {
         t /= tioxTimeConv;
         f/= tioxTimeConv;
 		const avgFlow = this.avgJointFlow.addItem(f);
-        this.avgJointThru.in(t);
+        this.avgJointThru.out(t);
         const avgThru = this.avgJointThru.avgR();
+//        console.log('Avg throughput Joint', avgThru);
         this.flowGraph.drawOnePoint( {t: t, j: avgFlow} );
         this.thruGraph.drawOnePoint( {t: t, j: avgThru} );
     };
 	reset(){
 		this.avgSepFlow = new Average();
 		this.avgJointFlow = new Average();
-        this.avgSepThru = new IRT(eos.now,0);
-        this.avgJointThru = new IRT(eos.now,0);
+        this.avgSepThru = new IRT(eos.now/tioxTimeConv,0);
+        this.avgJointThru = new IRT(eos.now/tioxTimeConv,0);
 		this.flowGraph.reset();
 		this.thruGraph.reset();
 	}
+    restartGraph(){
+        this.flowGraph.restartGraph();
+        this.thruGraph.restartGraph();
+        
+    };
 	
     updateForParamChange(){
         this.avgSepFlow = new Average();
 		this.avgJointFlow = new Average();
-        this.avgSepThru = new IRT(eos.now,0);
-        this.avgJointThru = new IRT(eos.now,0);
+        this.avgSepThru = new IRT(eos.now/tioxTimeConv,0);
+        this.avgJointThru = new IRT(eos.now/tioxTimeConv,0);
         this.flowGraph.restartGraph(eos.now/tioxTimeConv);
 		this.thruGraph.restartGraph(eos.now/tioxTimeConv);
     };
     setupThenRedraw(){
         this.flowGraph.setupThenRedraw();
         this.thruGraph.setupThenRedraw();
+    }
+    scaleXaxis(factor){
+        this.flowGraph.scaleXaxis(factor);
+        this.thruGraph.scaleXaxis(factor);
     }
 }
 const anim = {};
@@ -160,7 +175,7 @@ anim.person = {
 		headQueue: anim.stage.width * 0.7,
 		scanner: anim.stage.width * 0.8,
 		pastScanner: anim.stage.width * .90,
-		top: 50,
+		top: anim.stage.height/2,
 	}
 };
 anim.walkOffStageTime = Math.abs(
@@ -195,14 +210,28 @@ function eosDefine(){
 			anim.person.height);
 };
 
+function pauseOnIdleControl(){
+    if( eos.enablePauseOnIdle ){
+        eos.enablePauseOnIdle = false;
+        displayToggle('pauseOnIdleTurnOneos','pauseOnIdleTurnOffeos');
+    } else {
+        eos.enablePauseOnIdle = true;
+        displayToggle('pauseOnIdleTurnOffeos','pauseOnIdleTurnOneos');
+        
+    }
+};
 class EconScale extends OmConcept{
     constructor(usrInputs){
         super('eos');
         this.usrInputs = usrInputs;
+        document.getElementById('pauseOnIdleButtoneos')
+            .addEventListener('click', pauseOnIdleControl);
+        this.enablePauseOnIdle = false;
     };
     
     localReset () {
         // schedule the initial Person to arrive and start the simulation/animation.
+        this.redrawBackground();
         theSimulation.creator.create();
 //        theSimulation.supply.previous = null;
 //        theSimulation.creator.knockFromPrevious();
@@ -215,8 +244,14 @@ class EconScale extends OmConcept{
         for(let inp of inpsChanged){
             localUpdate(inp); 
         };
-        if( match(inpsChanged,['ar','acv','sr','scv'])) {
+        if( match(inpsChanged,['ar','acv','util','scv'])) {
             eos.graph.updateForParamChange();
+        }
+        if( match(inpsChanged,['num'])){
+            this.partialReset();
+            this.localReset();
+            this.redrawBackground();
+            eos.graph.restartGraph(eos.now/tioxTimeConv);
         }
     };
     clearStageForeground(){
@@ -239,41 +274,87 @@ class EconScale extends OmConcept{
         this.graph.setupThenRedraw();
         this.clearRedrawStage(0,true);//// need to clear both stages
     };
+    drawMachineCenter(nMach, machs, ctx, color, lineWidth,
+                       person, stageH, stageX){
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lineWidth;
+        
+        const midpt = stageH/2;
+        const boxHeight = person.height * 1.4;
+        const boxWidth = person.width * 1.5;
+        const boxSep = boxHeight * .3;
+        const total = nMach * boxHeight + (nMach-1) * boxSep;
+        var top = midpt - total/2;
+        for( let k = 0; k < nMach; k++ ){
+            machs[k].locx = stageX;
+            machs[k].locy = top + boxHeight/2;
+            ctx.strokeRect(stageX-boxWidth/2,top,boxWidth,boxHeight);
+            top += boxHeight +  boxSep;
+        };
+    }
     redrawBackground() {
         this.clearStageBackground();
-        //// need to handle multiple separate servers...  on two stages.
-        const tsa = theSimulation.TSAagent;
-		let locX = anim.person.path.scanner;
-		let locY = anim.person.path.top;
-//		const c = anim.stage.backContext;    ////joint stages???
-//	    const numMachines = 1;
-//		c.strokeStyle = 'blue';
-//		c.lineWidth = 5;
-//		c.beginPath();
-//		for (let k = 0; k < tsa.machs.length; k++) {
-//			c.strokeRect(locX - 28, locY - 15, 55, anim.person.height*1.4);
-//			tsa.machs[k].locx = locX;
-//            tsa.machs[k].locy = locY;
-//			locX += anim.scannerDelta.dx;
-//			locY += anim.scannerDelta.dy;
-//		}
-//		c.closePath();
+        const nMach = eos.usrInputs.get('num').get();
+        theSimulation.sepArrivalSplitter.setNumber(nMach);
+        theSimulation.jTSAagent.setNumMachines(nMach);
+        var smachs = [];
+        for(let k = 0; k < nMach; k++ ){
+            smachs[k] = theSimulation.sTSAagents[k].machs[0];   
+        }
+        this.drawMachineCenter(nMach, smachs, 
+                anim.stage.sBackContext, cbColors.yellow, 5,
+                anim.person, anim.stage.height, anim.person.path.scanner);
+        this.drawMachineCenter(nMach, theSimulation.jTSAagent.machs, 
+                anim.stage.jBackContext, cbColors.blue, 5, 
+                anim.person, anim.stage.height, anim.person.path.scanner);
+        
+        //
+        //set queue paths
+        theSimulation.jQueue.pathY = anim.stage.height/2;
+        for( let k = 0; k < nMach; k++ ){
+            theSimulation.sQueues[k].pathY = 
+                theSimulation.sTSAagents[k].machs[0].locy;
+        }
+        
     };
 };
 function localUpdateFromUser(inp){
     eos.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
-    if( match([inp],['ar','acv','sr','scv'])) {
-            eos.fGraph.updateForParamChange();
-            eos.tGraph.updateForParamChange();
+    if( match([inp],['ar','acv','util','scv'])) {
+            eos.graph.updateForParamChange();
         }
+    if( inp.key == 'num'){
+        eos.partialReset();
+        eos.localReset();
+        eos.redrawBackground();
+        eos.graph.restartGraph(eos.now/tioxTimeConv);
+    }
 };
         
         
- function localUpdate(inp){
+ function getServRate(){
+    const a = Number(eos.usrInputs.get('ar').get());
+    const u = Number(eos.usrInputs.get('util').getValue());
+    const n = Number(eos.usrInputs.get('num').get());
+     return a/u/n/tioxTimeConv;
+ };
+function updateServiceRate(a,u,n){
+    if(!a) a = Number(eos.usrInputs.get('ar').get());
+    if(!u) u = Number(eos.usrInputs.get('util').getValue());
+    if(!n) n = Number(eos.usrInputs.get('num').get());
+     const s = a/(u * n);
+    theSimulation.serviceRV.setRate(s / tioxTimeConv);
+     
+     console.log('updateServiceRate a=',a,' s=',s,' u=',u,' n=',n, 
+                'computed util=',a/s/n);
+ };
+
+function localUpdate(inp){
     let v = inp.get();
     switch (inp.key){
         case 'ar':
+            updateServiceRate(v, null, null);
             theSimulation.interarrivalRV
                 .setRate(v / tioxTimeConv);
             eos.heap.modify('finish/creator',
@@ -285,9 +366,8 @@ function localUpdateFromUser(inp){
             eos.heap.modify('finish/creator',
                 () => eos.now + theSimulation.interarrivalRV.observe());
             break;
-        case 'sr':
-            theSimulation.serviceRV
-                .setRate(v / tioxTimeConv);
+        case 'util':
+            updateServiceRate(null, inp.getValue(), null);
             eos.heap.modify('finish/TSAagent',
                 () => eos.now +
                 theSimulation.serviceRV.observe());
@@ -298,6 +378,9 @@ function localUpdateFromUser(inp){
             eos.heap.modify('finish/TSAagent',
                 () => eos.now +
                 theSimulation.serviceRV.observe());
+            break;
+        case 'num':
+            updateServiceRate( null, null, v); theSimulation.jTSAagent.setNumMachines(Number(v));
             break;
         case 'speed':
             eos.adjustSpeed(v,speeds);
@@ -316,8 +399,9 @@ function localUpdateFromUser(inp){
 };
 
 class EosQueue extends Queue {
-	constructor (){
-        super(eos, "theQueue", -1);
+	constructor (name, graphType){
+        super(eos, name, -1);
+        this.graphType = graphType;
         this.delta = {dx: anim.person.width,
 			          dy: 0},
 	    this.dontOverlap = true,
@@ -330,14 +414,14 @@ class EosQueue extends Queue {
         person.checkAhead = true;
         person.arrivalTime = eos.now + this.walkingTime;
         person.width = this.delta.dx;
-        const servRate = Number(eos.usrInputs.get('sr').get()) / tioxTimeConv;
-        const nLeave = Math.floor(servRate * this.walkingTime);
+        const nLeave = Math.floor(getServRate() * this.nextMachine.numMachines *  this.walkingTime);
         const dist = Math.max(0,(this.q.length - 1 - nLeave)) * this.delta.dx;
         person.cur.x = anim.person.path.left - dist;
+        person.cur.y = this.pathY;
         person.addPath({
                 t: eos.now + this.walkingTime,
                 x: anim.person.path.headQueue - dist,
-                y: anim.person.path.top
+                y: this.pathY
             });
         
         person.cur.x = anim.person.path.left - dist;
@@ -348,8 +432,8 @@ class EosQueue extends Queue {
 	};
 
 	arriveAnim (person) {
-        document.getElementById('nInQueue').innerHTML = 
-			this.numSeatsUsed.toString().padEnd(5,' ');
+//        document.getElementById('nInQueue').innerHTML = 
+//			this.numSeatsUsed.toString().padEnd(5,' ');
         
         
         const eosueActual = (anim.person.path.headQueue - person.cur.x)/this.delta.dx+1;
@@ -359,15 +443,15 @@ class EosQueue extends Queue {
         if( person.cur.x >= desiredX ){
             person.cur.x = desiredX;
         } else {
-            person.addPath({t: eos.now, x: desiredX, y: anim.person.path.top });
+            person.addPath({t: eos.now, x: desiredX, y: this.pathY });
         }
 	};
 
 	pullAnim (person) {
         let walkForOne = this.delta.dx / anim.stage.normalSpeed;
-        eos.graph.push(eos.now, eos.now - person.arrivalTime);
-        document.getElementById('nInQueue').innerHTML = 
-			this.numSeatsUsed.toString().padEnd(5,' ');
+        this.graphType(eos.now, eos.now - person.arrivalTime);
+//        document.getElementById('nInQueue').innerHTML = 
+//			this.numSeatsUsed.toString().padEnd(5,' ');
         
         for( let k = 0; k < this.numSeatsUsed; k++ ){
             let p = this.q[k];   
@@ -380,13 +464,12 @@ class EosQueue extends Queue {
         for (let k = this.numSeatsUsed; 
              k < this.q.length; k++) {
 			let p = this.q[k];   
-            const servRate = Number(eos.usrInputs.get('sr').get()) / tioxTimeConv;
-            const nLeave = Math.floor(servRate * (p.arrivalTime - eos.now));
+            const nLeave = Math.floor(getServRate() * this.nextMachine.numMachines *(p.arrivalTime - eos.now));
             const dist = Math.max(0,(k - nLeave)) * this.delta.dx;
             p.updatePath({t: p.pathList[0].t,
 					      x: Math.max(p.pathList[0].x,
                               anim.person.path.headQueue - dist),
-                          y: anim.person.path.top 
+                          y: this.pathY 
                          });
         }
 	};
@@ -417,8 +500,8 @@ class EosWalkOffStage extends WalkAndDestroy {
 };
 
 class EosTSA extends MachineCenter {
-	constructor( k ){
-        super(eos, "TSAagent", k, theSimulation.serviceRV); 
+	constructor( name, k ){
+        super(eos, "TSAagent "+name, k, theSimulation.serviceRV); 
         this.dontOverlap = true;
         this.lastFinPerson = null;
     };
@@ -429,14 +512,34 @@ class EosTSA extends MachineCenter {
 	};
 	
 	startAnim (machine, theProcTime) {
+        //delink it.
+        const s = machine.person.ahead;
+        if( s ) s.behind = null;
+        
+        
+        machine.person.ahead = machine.lastFinPerson;
         machine.person.setDestWithProcTime(theProcTime,
 			machine.locx, machine.locy);
     };
 
 	finishAnim (machine) {
+//        const s = machine.person.behind;
+//        if( s ) s.ahead = null;
         machine.person.checkAhead = false;
-		this.lastFinPerson = machine.person;
+		machine.lastFinPerson = machine.person;
 	}
+    
+    checkForQueue(){
+        if(!eos.enablePauseOnIdle) return;
+        const n = eos.usrInputs.get('num').get();
+        for( let k = 0; k < n; k++ ){
+            if( theSimulation.sQueues[k].numSeatsUsed > 0 ){
+                this.omConcept.pause();
+                return;
+            }
+        }
+        console.log('didnt find a queue>0');
+    }
 };
 //var arrIndex = -1;
 //var arrValues = [2000,2000,2000,2000];
@@ -473,27 +576,29 @@ const theSimulation = {
 	TSAagent: null,
 
 	initialize: function () {
-
+        const nServers = 4;   //maximum possible.
 		// random variables
 		const ar = eos.usrInputs.get('ar').get();
 		const acv = eos.usrInputs.get('acv').get();
-		theSimulation.interarrivalRV = new GammaRV(ar / tioxTimeConv, acv); // ArrRV();
-		const sr = eos.usrInputs.get('sr').get();
+		theSimulation.interarrivalRV = new GammaRV(ar / tioxTimeConv, acv);
+        const num = eos.usrInputs.get('num').get();
+		const util = eos.usrInputs.get('util').get();
 		const scv = eos.usrInputs.get('scv').get();
-		theSimulation.serviceRV = new GammaRV(sr / tioxTimeConv, scv); //SerRV();
+		theSimulation.serviceRV = new GammaRV(ar/(util * num) / tioxTimeConv, scv); 
 
 		//queues
 		this.sSupply = new Supplier(sGSF,anim.person.path.left, anim.person.path.top);
         this.jSupply = new Supplier(jGSF,anim.person.path.left, anim.person.path.top);
 
-		this.jQueue = new EosQueue();
+		this.jQueue = new EosQueue("jointQ",
+                        eos.graph.pushJoint.bind(eos.graph));
 		eos.resetCollection.push(this.jQueue);
         
         this.sQueues = [];
-        const nServers = 2;//number of servers parameter
-            for( let k = 0; k < nServers; k++ ){
-                this.sQueues[k] = new EosQueue();
-                eos.resetCollection.push(this.sQueues[k]);
+        for( let k = 0; k < nServers; k++ ){
+            this.sQueues[k] = new EosQueue("SepQ"+k,
+                        eos.graph.pushSep.bind(eos.graph));
+            eos.resetCollection.push(this.sQueues[k]);
             }
 
 		this.sWalkOffStage = new EosWalkOffStage();
@@ -509,11 +614,13 @@ const theSimulation = {
             this.sepArrivalSplitter,this.jQueue);
 
 		// machine centers 
-        this.jTSAagent = new EosTSA(nServers); 
+        this.jTSAagent = new EosTSA("joint", nServers); 
+        this.jTSAagent.pauseOnIdle = false;
 		eos.resetCollection.push(this.jTSAagent);
         this.sTSAagents = [];
-        for( let k = 0; k < nServers; k++ ){
-                this.sTSAagents[k] = new EosTSA(1);
+        for( let k = 0; k < 4; k++ ){
+                this.sTSAagents[k] = new EosTSA("sep"+k,1);
+                this.sTSAagents[k].pauseOnIdle = true;
                 eos.resetCollection.push(this.sTSAagents[k]);
             }
         
@@ -537,12 +644,17 @@ class Supplier {///// two suppliers for two stages of gSF.????
         this.gSF = gSF;
 		this.x = x;
 		this.y = y;
+        this.current = null;
 	};
-	pull() {
-		return new Person(eos, this.gSF, this.x, this.y);
-        
-        
-	}
+	front() {
+        if( this.current ) return this.current;
+        return this.current = new Person(eos, this.gSF, this.x, this.y);
+	};
+    pull(){
+        const last = this.front();
+        this.current = null;
+        return last;
+	};
 }; //end class Supplier
 
 class EosCreator {
@@ -555,8 +667,12 @@ class EosCreator {
         
     };
     create (){
-        this.sQueue.push(this.sSupplier.pull());
-        this.jQueue.push(this.jSupplier.pull());
+        const sPerson = this.sSupplier.pull();
+        const jPerson = this.jSupplier.pull();
+        sPerson.graphic.color = jPerson.graphic.color;
+        sPerson.graphic.bdaryColor = jPerson.graphic.bdaryColor;
+        this.sQueue.push(sPerson);
+        this.jQueue.push(jPerson);
         const t = this.rv.observe(); ;
         eos.heap.push({
 			time: eos.now + t,
@@ -596,19 +712,8 @@ function eosHTML(){
     
     addDiv('eos','eos','whole')
 	addDiv('eos', 'leftHandSideBox'+'eos',
-			   'eosStageWrapper', 
-			   'eoschartWrapper');
-	 
-    
-    // cant just copy standard leftHandSideBox because we need two stages??
-	//stats line
-//	const d2 = document.getElementById('statsWrappereos');
-//	const delem = document.createElement('div');
-//	const selem = document.createElement('span');
-//	 selem.id = 'nInQueue';
-//	 delem.append('Number in Queue: ',selem);
-//	 d2.append(delem);
-    
+			   'pairStageWrapper', 
+			   'pairChartWrapper');
 
 	//now put in the sliders with the play/reset box	
 	
@@ -625,10 +730,11 @@ function eosHTML(){
                 localUpdateFromUser, 0, 2, 0, 1,2,10) );
     
     
-    const srInput = genRange('sreos', '6.0', 0, 10, .1);
-    elem.append(htmlNumSlider(srInput, 'Service Rate = ', '6.0',[0,2,4,6,8,10]) );
-    usrInputs.set('sr', new NumSlider('sr',srInput,
-                localUpdateFromUser, 0, 10, 6, 1,3,10) );
+    const utilInput = genRange('utileos', 0, 0, 4, 1);
+    elem.append(htmlArbSlider(utilInput, 'System Utilization = ', '0.9',
+                              [.5,.7,.9,.95,.99]) );
+    usrInputs.set('util', new ArbSlider('util',utilInput,
+                localUpdateFromUser, [.5,.7,.9,.95,.99],[.5,.7,.9,.95,.99], 2) );
     
     const scvInput = genRange('scveos', 0, 0, 2, .5);
     elem.append(htmlNumSlider(scvInput, 'Service CV = ', '0.0',['0.0','1.0','2.0']) );
@@ -640,6 +746,11 @@ function eosHTML(){
     usrInputs.set('num', new NumSlider('num',numInput,
                                       localUpdateFromUser, 2, 4, 2, 0, 1, 1 ));
     
+    const pauseOnIdle = document.getElementById('pauseOnIdleButton')
+            .cloneNode(true);
+    addKeyForIds('eos',pauseOnIdle);
+    elem.append(pauseOnIdle);
+
     
     // fill in HTML for pause on next occurance of an idle slider.
     

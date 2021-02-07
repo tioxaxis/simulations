@@ -180,6 +180,7 @@ export class OmConcept {
 		if (this.frameSpeed < 100){
 			this.requestAFId = window.requestAnimationFrame(
 					this.eachFrame.bind(this));
+//            console.log('at Play AFId =',this.requestAFId);
 		} else {
 			this.fullSpeedSim();
 			this.pause();
@@ -187,8 +188,10 @@ export class OmConcept {
 	};
 
 	pause() {
+//        console.log('Begin of Pause isRunning=',this.isRunning);
 		if (!this.isRunning) return;
 		displayToggle('playButton' + this.key, 'pauseButton' + this.key);
+//        console.log('at Pause AFId =',this.requestAFId);
 		window.cancelAnimationFrame(this.requestAFId);
 		this.isRunning = false;
 	};
@@ -199,7 +202,8 @@ export class OmConcept {
 	};
 	
 	eachFrame() {
-		let perfNow = performance.now();
+        this.requestAFId = window.requestAnimationFrame(this.eachFrame.bind(this));
+        let perfNow = performance.now();
 		let deltaRealTime = Math.min(100, perfNow - this.lastPerfNow);
 		this.lastPerfNow = perfNow;
 		let deltaSimuTime = deltaRealTime * this.frameSpeed;
@@ -216,7 +220,6 @@ export class OmConcept {
 		}
 		this.now = this.frameNow;
 		this.clearRedrawStage(deltaSimuTime,false);
-		this.requestAFId = window.requestAnimationFrame(this.eachFrame.bind(this));
 	};
     
     clearRedrawStage(deltaSimuTime, redraw){

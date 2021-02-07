@@ -51,7 +51,7 @@ const omConcepts ={};
 //handles resize window event.
 function redrawBackground(){
     const om = omConcepts[currentTab.id];
-    om.redoStagesGraph();
+    if(om) om.redoStagesGraph();
 }
 function switchTo(which){
     if( currentTab ) {
@@ -133,11 +133,11 @@ document.getElementById('dir').addEventListener('click', router);
 
 
 var currentTab = null;
-//omConcepts['que'] = queStart();
-//omConcepts['lit'] = litStart();
-//omConcepts['nvp'] = nvpStart();
-//omConcepts['inv'] = invStart();
-//omConcepts['fac'] = facStart();
+omConcepts['que'] = queStart();
+omConcepts['lit'] = litStart();
+omConcepts['nvp'] = nvpStart();
+omConcepts['inv'] = invStart();
+omConcepts['fac'] = facStart();
 omConcepts['eos'] = eosStart();
 
 

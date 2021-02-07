@@ -437,7 +437,7 @@ export class GraphLine{
             this.button.classList.add('crossOut');
         elem.append(dot, this.button);
         
-        this.button.addEventListener('click',this.clickResponse.bind(this));
+        elem.addEventListener('click',this.clickResponse.bind(this));
         return elem;
     };
 	

@@ -63,7 +63,7 @@ export class Queue {
 	};
 
 	front() {
-		if (this.numSeatsUsed > 0) return this.q[0];
+		return (this.numSeatsUsed > 0 ? this.q[0] : null );
 	};
 
 	queueLength() {
@@ -200,7 +200,7 @@ export class MachineCenter {
 				index: k
 			};
 		}
-        this.omConcept.redrawBackground();
+//        this.omConcept.redrawBackground();
 //		if (this.animFunc) this.animFunc.reset(this.numMachines);
 		this.numberBusy = 0
 	};
@@ -219,7 +219,8 @@ export class MachineCenter {
 	};
 
 	findIdle() {
-		return this.machs.findIndex(x => x.status == 'idle');
+		const n = this.machs.findIndex(x => x.status == 'idle');
+        return (n >= this.numMachines ? -1 : n);
 	};
 
 	findBlocked() {
@@ -244,7 +245,8 @@ export class MachineCenter {
 	};
 
 	start(machine) {
-		const person = this.previousQueue.pull();
+		//check if someone is there and assign procTime;
+        const person = this.previousQueue.front();
         let theProcTime;
 		if( !person ) return false;
         if( this.procTimeRV ) {
@@ -253,6 +255,8 @@ export class MachineCenter {
         } else {
             theProcTime = person.procTime
         };
+        // now person has procTime you can pull him/her
+        this.previousQueue.pull();
         
         person.machine = machine;
         machine.status = 'busy';
@@ -311,7 +315,9 @@ export class MachineCenter {
 			machine.status = 'blocked';
 		}
 		this.numberBusy--;
-        
+        if(this.pauseOnIdle && machine.status == 'idle'){
+            this.checkForQueue();
+        } 
 	};
     
     
@@ -504,7 +510,11 @@ export class Item {
     
     moveDisplayWithPath(deltaSimuT) {
 		if (this.inBatch) return;
-		while (this.pathList.length > 0) {
+//		console.log('in MoveDisply',this.which, this.cur.x,' deltaSimT=',deltaSimuT);
+//        if(this.ahead)console.log('has something ahead=',this.ahead.which);
+//        if( this.pathList.length == 0) console.log(' no path');
+//        else console.log('path = ',this.pathList[0].x,this.pathList[0].speedX);
+        while (this.pathList.length > 0) {
             var path = this.pathList[0];
 //            if( this.blocked ){ //only pos-x-direction
 //                const aheadX = this.ahead.cur.x - this.width;
@@ -515,26 +525,29 @@ export class Item {
 //                this.blocked = false;
 //            }
             this.cur.t = this.omConcept.now;
-			this.cur.x += path.speedX * deltaSimuT;
-            this.cur.y += path.speedY * deltaSimuT;
+			const newX = this.cur.x + path.speedX * deltaSimuT;
+            const newY = this.cur.y + path.speedY * deltaSimuT;
             if( this.checkAhead && this.ahead){ //only pos-x-direction
                  const aheadX = this.ahead.cur.x - this.width;
-                 if( aheadX < this.cur.x && aheadX < path.x ){
+                 if( aheadX < newX && aheadX < path.x ){
+//                     console.log('blocked by ahead person!!', aheadX);
 //                     this.blocked = true;
+                     const dt = (aheadX - this.cur.x) / path.speedX;
                      this.cur.x = aheadX;
+                     this.cur.y += path.speedY * dt;
                      break;
                  }
             }
             if (path.speedX >= 0)
-                this.cur.x = Math.min(this.cur.x, path.x);
+                this.cur.x = Math.min(newX, path.x);
             else
-                this.cur.x = Math.max(this.cur.x, path.x);
+                this.cur.x = Math.max(newX, path.x);
 
 
             if (path.speedY >= 0)
-                this.cur.y = Math.min(this.cur.y, path.y);
+                this.cur.y = Math.min(newY, path.y);
             else
-                this.cur.y = Math.max(this.cur.y, path.y);
+                this.cur.y = Math.max(newY, path.y);
 			
 			if( this.omConcept.now <= path.t ) break;
             
@@ -685,6 +698,8 @@ const pi2 = Math.PI * 2;
 export class GStickFigure {
 	constructor(context, size, boxSize = 20) {
 		this.context = context;
+        this.height = size;
+        this.width = 2/3 * size;
 		let radius = size / 8;
 		this.head = {
 			x: 0,
@@ -718,8 +733,8 @@ export class GStickFigure {
 		this.fontSize = Math.floor(2 / 5 * size);
 		this.context.font = Math.floor(2 / 5 * size) + 'px Arial';
 		this.package = {
-			x: -25,
-			y: 0.25 * size,
+			x:  - boxSize,
+			y: 0.20  * size + boxSize/2,
 			w: boxSize,
 			h: boxSize
 		};
@@ -774,20 +789,21 @@ export class NStickFigure {
     draw() {
 		// use x,y as starting point and draw the rest of the
 		// parts by translating and rotating from there
-
+//   console.log(' in DRAW NSF ', this.x);
 		if ( this.x < -50 || this.x > 1050 ) return;
 		let c = this.gSF.context;
         
 		c.save();
 		c.strokeStyle = this.bdaryColor;
 		c.fillStyle = this.color;
-		c.translate(this.x, this.y);
+		c.translate(this.x , this.y - this.gSF.height/2);
 
 		//package
 		if (this.packageVisible) {
 			c.save();
 			c.fillStyle = this.packageColor;
-			c.fillRect(this.gSF.package.x, this.gSF.package.y,
+			c.fillRect(this.gSF.package.x - this.gSF.package.w/2,
+                       this.gSF.package.y - this.gSF.package.h/2,
 				this.gSF.package.w, this.gSF.package.h);
 			c.restore();
 		}
@@ -857,30 +873,65 @@ export class NStickFigure {
 	};
 
 };
-
 export class BoxStack {
-	constructor(box, snake = true) {
-		this.box = box;
-		this.snake = snake;
-	}
-	relCoord(k) {
-		let row = Math.floor(k / this.box.perRow);
-		let c = k % this.box.perRow;
-		let col = (this.snake && row % 2 == 1) ?
-			this.box.perRow - 1 - c : c;
-		let delta = this.box.space - this.box.size;
-		return {
-			x: this.box.space * col + Math.floor(delta / 2),
-			y: -(this.box.space) * (1 + row) + delta - 1
-		};
-	};
-}
+    constructor(params){
+        this.params = params;
+        /* isRows, isSnake, lanes, laneLength, hSpace, vSpace, xDir, yDir  */
+    };
+    rowCol(k){
+        let r,c;
+        r = Math.floor(k/this.params.laneLength);
+        if( r < this.params.lanes ){
+            c = k % this.params.laneLength; 
+
+        } else {
+            r = this.params.lanes - 1;
+            c = k - (this.params.lanes -1 ) * (this.params.laneLength);
+        }
+        if( this.params.isSnake && r % 2 == 1 ){
+            c = this.params.laneLength - 1 - c;
+        }
+        return ( this.params.isRows ? {r:r,c:c} : {r:c,c:r} );
+    };
+    relCoord(k){
+        const {r,c} = this.rowCol(k);
+        const deltaX = c * this.params.hSpace * this.params.xDir;
+        const deltaY = r * this.params.vSpace * this.params.yDir;
+//        console.log('in relCoord k=',k,deltaX,deltaY);
+        return {x: deltaX, y: deltaY};
+    };
+    
+};
+
+//export class BoxStack {
+//	constructor(box, snake = true) {
+//		this.box = box;
+//		this.snake = snake;
+//	}
+//	relCoord(k) {
+//		let row = Math.floor(k / this.box.perRow);
+//		let c = k % this.box.perRow;
+//		let col = (this.snake && row % 2 == 1) ?
+//			this.box.perRow - 1 - c : c;
+//		let delta = this.box.space - this.box.size;
+//		return {
+//			x: this.box.space * col + Math.floor(delta / 2),
+//			y: -(this.box.space) * (1 + row) + delta - 1
+//		};
+//	};
+//}
 
 export class GStore {
 	constructor(omConcept,anim) {
 		this.omConcept = omConcept;
 		this.anim = anim;
-		this.boxStack = new BoxStack(anim.box, true);
+		this.firstBox = {x:this.anim.store.left + this.anim.box.space/2,
+                         y:this.anim.store.bot - this.anim.box.space/2};
+        this.boxStack = new BoxStack({isRows: true, isSnake: true,
+                                   lanes: 1000, laneLength: 10,
+                                   hSpace: anim.box.space,
+                                   vSpace: anim.box.space,
+                                   xDir: +1, yDir: -1});
 		this.drawStore();
 		this.packages = [];
 		this.snake = true;
@@ -939,7 +990,7 @@ export class GStore {
 			Math.random() *	tioxColors.length)];
 		let pack = new Package(this.omConcept,
 			this.anim.stage.foreContext, color, this.anim.box.size,
-			this.anim.store.left + point.x, this.anim.store.bot + point.y);
+			this.firstBox.x + point.x, this.firstBox.y + point.y);
 		this.packages.push(pack);
 	};
 	pull() {
@@ -956,8 +1007,8 @@ export class GStore {
 				let point = this.boxStack.relCoord(k);
 				p.updatePath({
 					t: this.omConcept.now + 300,
-					x: this.anim.store.left + point.x,
-					y: this.anim.store.bot + point.y
+					x: this.firstBox.x + point.x,
+					y: this.firstBox.y + point.y
 				});
 			};
 		}
@@ -990,7 +1041,8 @@ class ColorBox {
 	};
 	draw() {
 		this.ctx.fillStyle = this.color;
-		this.ctx.fillRect(this.x, this.y,
-			this.boxSize, this.boxSize)
+		this.ctx.fillRect(this.x - this.boxSize/2,
+                          this.y - this.boxSize/2,
+			             this.boxSize, this.boxSize)
 	};
 };

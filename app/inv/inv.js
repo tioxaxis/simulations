@@ -184,9 +184,9 @@ function animSetup(){
 	anim.person.path = {
 		left: -100,
 		right: anim.store.left - 20,
-		top: anim.store.top,
-		bot: anim.store.top + anim.box.space * 7,
-		mid: anim.store.top + anim.box.space * 3.5,
+		top: anim.store.top + anim.person.height/2,
+		bot: anim.store.top + anim.person.height/2 + anim.box.space * 7,
+		mid: anim.store.top + anim.person.height/2 + anim.box.space * 3.5,
 	};
     
     anim.walkingTime1 = (anim.person.path.right - anim.person.path.left) /
@@ -445,7 +445,7 @@ class InvCombine  extends Combine {
 			x: anim.person.path.right,
 			y: anim.person.path.bot
 	
-        });
+        }); 
 		const leftTime = walkingTime / 2;
 		if (pack) {
 			pack.addPath({
@@ -456,8 +456,14 @@ class InvCombine  extends Combine {
 			pack.addPath({ // move up to arm height in other time
 				t: inv.now + walkingTime,
 				x: anim.person.path.right + person.graphic.gSF.package.x,
-				y: anim.person.path.bot + person.graphic.gSF.package.y,
+				y: anim.person.path.bot - 
+                anim.person.height/2 + person.graphic.gSF.package.y,
 			});
+//            console.log('in start Anim',anim.person.path.right,
+//                       anim.person.path.bot, 
+//                       person.graphic.gSF.package.x,
+//                       person.graphic.gSF.package.y,
+//                       pack.cur.y);
 		}
 	};
 	finishAnim (person, pack) {
@@ -559,9 +565,16 @@ class Supplier {
 	constructor(x, y) {
 		this.x = x;
 		this.y = y;
+	   this.current = null;
 	};
-	pull() {
-		return new Person(inv, this.x, this.y		);
+	front() {
+        if( this.current ) return this.current;
+        return this.current = new Person(inv, this.x, this.y);
+	};
+    pull(){
+        const last = this.front();
+        this.current = null;
+        return last;
 	}
 }; //end class Supplier
 
@@ -622,10 +635,11 @@ class RopStore extends GStore {
 		const n = load.graphic.packages.length;
 		for (let k = 0; k < n; k++) {
 			let point = this.boxStack.relCoord(this.inv + k);
-			load.graphic.packages[k].cur.x = anim.store.left + point.x;
-			load.graphic.packages[k].cur.y = anim.store.bot + point.y;
+			load.graphic.packages[k].cur.x = this.firstBox.x + point.x;
+			load.graphic.packages[k].cur.y = this.firstBox.y + point.y;
 			load.graphic.packages[k].graphic
-				.moveTo(this.left + point.x, anim.store.bot + point.y);
+				.moveTo(this.firstBox.x + point.x,
+                        this.firstBox.y + point.y);
 		}
 		load.graphic.packages.forEach(p => {
 			p.inBatch = false
@@ -846,7 +860,8 @@ class FlatBed {
 class LoadOfBoxes extends Item {
 	constructor(omConcept, context, left, bot, quantity, box) {
 		super(omConcept, left, bot);
-		this.graphic = new DisplayBoxes(context, left, bot,
+		this.graphic = new DisplayBoxes(context,
+            left, bot,
 			quantity, box);
 	};
 };
@@ -867,7 +882,10 @@ class DisplayBoxes {
 			this.packages.push(pack);
 			pack.inBatch = true;
 		}
-		this.boxStack = new BoxStack(box, false);
+		this.boxStack = new BoxStack({isRows: true, isSnake: false,
+                                      lanes: 1000, laneLength: 10,
+                                      hSpace: box.space, vSpace: box.space,
+                                      xDir: +1, yDir: -1}); //box, false);
 	};
 	moveTo(left, bot) {
 		this.left = Math.floor(left);
@@ -882,12 +900,14 @@ class DisplayBoxes {
 			this.ctxDB.translate(2 * (this.left) + this.reverse, 0);
 			this.ctxDB.scale(-1, 1);
 		};
+        const firstBox = {x: this.left ,
+                         y: this.bot - this.box.space};
 		for (let i = 0; i < this.packages.length; i++) {
 			this.ctxDB.fillStyle = this.packages[i].graphic.color;
 			let point = this.boxStack.relCoord(i);
 			this.ctxDB.fillRect(
-				this.left + point.x,
-				this.bot + point.y,
+				firstBox.x + point.x,
+				firstBox.y + point.y,
 				this.box.size, this.box.size);
 		};
 		this.ctxDB.restore();

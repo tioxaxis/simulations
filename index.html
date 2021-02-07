@@ -55,12 +55,26 @@
 	</div>
 </div>
     
+    <!--	****** mark Button for face game -->
     <div class="sliderBox columnAroundCenter" id='markButton'>
         <i class="material-icons actButton font35vw" 
 		   title="mark the card">outlined_flag</i>
     </div>
 	
-<img id = "tsaAgent"
+    <!--	****** pause on Idle Button for EOS -->
+    <div class="sliderBox columnAroundCenter" id='pauseOnIdleButton'>
+        <i id='pauseOnIdleTurnOn'
+           class="material-icons actButton font35vw" 
+		   title="Turn ON: pause for idle server and queue">notification_important</i>
+        <i id='pauseOnIdleTurnOff'
+           class="material-icons revButton font35vw displayNone" 
+		   title="Turn OFF: pause for idle server and queue">notification_important</i>
+    </div>
+    
+    
+    
+    <!--	****** TSA agent image for queueing animation  -->
+    <img id = "tsaAgent"
        src = "./app/que/guard.gif"
        alt = "TSA agent gif" />	
 
@@ -202,11 +216,19 @@
 	</div>
 	
 <!--	****** wrapper for eos stage-->    
-<div class='eosStageWrapper' id="eosStageWrapper" >
-    <canvas class="theStage foreground" id="sForeground" width=480 height=480></canvas>
-    <canvas class="theStage background" id="sBackground" width=480 height=480></canvas>
-    <canvas class="theStage foreground" id="jForeground" width=480 height=480></canvas>
-    <canvas class="theStage background" id="jBackground" width=480 height=480></canvas>
+<div class='pairStageWrapper' id="pairStageWrapper" >
+    <div class='pairStageLeft'>
+        <canvas class="theStage foreground" id="sForeground"
+                width=480 height=480></canvas>
+        <canvas class="theStage background" id="sBackground"
+                width=480 height=480></canvas>
+    </div>
+    <div class='pairStageRight'>
+        <canvas class="theStage foreground" id="jForeground"
+                width=480 height=480></canvas>
+        <canvas class="theStage background" id="jBackground"
+                width=480 height=480></canvas>
+    </div>
 </div>
 
 	
@@ -234,18 +256,25 @@
     </div>
     
     
-<div class='chartWrapper' id="eoschartWrapper">
-	<div class='chartTitle' id='fchartTitle'> title </div>
-	<div class='chart' id='fchart'> 
-		<canvas  class="chartCanvas" id="fchartCanvas" width='1000' height='600'></canvas>
-	</div>
-	<div class='chartLegend rowAroundCenter' id='fchartLegend'></div>
-    
-    <div class='chartTitle' id='tchartTitle'> title </div>
-	<div class='chart' id='tchart'> 
-		<canvas  class="chartCanvas" id="tchartCanvas" width='1000' height='600'></canvas>
-	</div>
+<div class='pairChartWrapper columnAroundCenter' id="pairChartWrapper">
+	<div class='pairChartTop rowAroundCenter'>
+    <div class='pairChartLeft columnAroundCenter'>
+        <div class='pairChartTitle' id='fchartTitle'> title </div>
+        <div class='pairChart' id='fchart'> 
+            <canvas  class="pairChartCanvas" id="fchartCanvas"
+                    width='1000' height='300'></canvas>
+        </div>
+    </div>
 	
+    <div class='pairChartRight columnAroundCenter'>
+        <div class='pairChartTitle' id='tchartTitle'> title </div>
+        <div class='pairChart' id='tchart'> 
+            <canvas  class="pairChartCanvas" id="tchartCanvas"
+                    width='1000' height='300'></canvas>
+        </div>
+    </div>
+    </div>
+	<div class='pairChartLegend rowCenterCenter' id='pairChartLegend'></div>
 </div>
 </div>   <!--	****** end of generic pieces-->
 	

@@ -69,11 +69,15 @@ export class GammaRV {
 		this.shape = 1 / (CV * CV);
 		this.scale = 1 / (rate * this.shape);
 	};
+    
+    setSeed(seed){
+        this.rvSeeded = new Math.seedrandom('simulation'+seed);
+    }
 
 	observe() {
 		if (this.zeroRate) return tioxInfinity;
 		if (this.deterministic) return this.mean;
-		const p = Math.random();
+		const p = ( this.rvSeeded ? this.rvSeeded() : Math.random() );
 		return Math.max(this.minimumTime, jStat.gamma.inv(p, this.shape, this.scale));
 	};
 };
@@ -314,7 +318,11 @@ export class StageOnCanvas{
 export class ItemSplitterRandom {
     constructor(outputs){
         this.outputs = outputs;
+        this.number = this.outputs.length;
     };
+    setNumber(n){
+        this.number = n;
+    }
     
 //    pushAll(item){
 //        for( let out of outputs ){
@@ -324,7 +332,7 @@ export class ItemSplitterRandom {
 //    };
     
     push(item){
-        const k = Math.floor(Math.random() * this.outputs.length);
+        const k = Math.floor(Math.random() * this.number);
         this.outputs[k].push(item);
     };
 };

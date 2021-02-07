@@ -150,15 +150,14 @@ anim.room = {
 }
 anim.person.path.entry = anim.room.left;
 anim.person.path.exit = anim.room.left+ anim.room.width;
-anim.person.path.top = (anim.room.height - anim.person.height)/ 
-						2 + anim.room.top;
+anim.person.path.y = anim.room.top + anim.room.height/2;
 
 anim.walkOffStageTime = 
     Math.abs(anim.person.path.exit - anim.person.path.right) / anim.stage.normalSpeed;
 
 anim.pathway = {
 	left: 0,
-	top: anim.person.path.top - 2,
+	y: anim.person.path.y,
 	fill: 'white',
 	width: anim.stage.width,
 	height: anim.person.height + 4
@@ -234,7 +233,7 @@ class LittlesLaw extends OmConcept{
         c.closePath();
         c.fillStyle = 'white';
         c.beginPath();
-        c.fillRect(anim.pathway.left, anim.pathway.top, 
+        c.fillRect(anim.pathway.left, anim.pathway.y - anim.pathway.height/2, 
                    anim.pathway.width, anim.pathway.height);
         c.closePath();
     };
@@ -295,7 +294,7 @@ class LitQueue  extends Queue{
         
         super(lit, 'queue', -1);
         this.walkingTime = (anim.person.path.entry - anim.person.path.left) / anim.stage.normalSpeed;
-        this.loc = {x: anim.person.path.entry, y: anim.person.path.top};
+        this.loc = {x: anim.person.path.entry, y: anim.person.path.y};
     }
 	push(person) /*   was called join... nInQueue, arrivalTime, person)*/ {
 		if( !super.push(person, this.walkingTime) ) return false;
@@ -314,7 +313,7 @@ class LitQueue  extends Queue{
 class LitWalkOffStage extends WalkAndDestroy {
 	constructor( ){
         super( lit,'walk off',false, anim.walkOffStageTime);
-        this.loc = {x: anim.person.path.right, y: anim.person.path.top};
+        this.loc = {x: anim.person.path.right, y: anim.person.path.y};
     };
     pushAnim (person) { 
 		person.addPath({
@@ -331,7 +330,7 @@ class LitCreator extends MachineCenter {
     };
 	startAnim (machine, theProcTime) { 
 		machine.person.setDestWithProcTime(theProcTime,
-			anim.person.path.left, anim.person.path.top);
+			anim.person.path.left, anim.person.path.y);
 	};
     finishAnim(machine){};
 };
@@ -348,29 +347,29 @@ class LittlesBox extends InfiniteMachineCenter {
 			person.addPath({
 				t: lit.now + theProcTime,
 				x: anim.person.path.exit,
-				y: anim.person.path.top
+				y: anim.person.path.y
 			});
 		} else {
 			walkT = Math.min(walkT, theProcTime);
 			let rx = Math.random() * 0.8 * anim.room.width +
 				anim.room.width * 0.05;
-			let ry = Math.random() * (anim.room.height -
-				anim.person.height) + anim.room.top;
+			let ry = .9 * (Math.random() - 0.5) * 
+                (anim.room.height - anim.person.height)
 			let w = anim.room.width;
 			person.addPath({
 				t: lit.now + walkT * rx / w,
 				x: rx + anim.person.path.entry,
-				y: ry
+				y: ry + anim.person.path.y
 			});
 			person.addPath({
 				t: lit.now + walkT * rx / w + theProcTime - walkT,
 				x: rx + anim.person.path.entry,
-				y: ry
+				y: ry + anim.person.path.y
 			});
 			person.addPath({
 				t: lit.now + theProcTime,
 				x: anim.person.path.exit,
-				y: anim.person.path.top
+				y: anim.person.path.y
 			});
 		}
 		person.graphic.badgeDisplay(true);
@@ -416,7 +415,7 @@ const theSimulation = {
 		theSimulation.serviceRV = new GammaRV(1 / st / tioxTimeConv, scv);
 
 		//queues
-		this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
+		this.supply = new Supplier(anim.person.path.left, anim.person.path.y);
 		this.queue = new LitQueue();
 		lit.resetCollection.push(this.queue);
 		this.walkOffStage = new LitWalkOffStage();
@@ -440,9 +439,16 @@ class Supplier {
 	constructor(x, y) {
 		this.x = x;
 		this.y = y;
+        this.current = null;
 	};
-	pull() {
-		return new Person(lit, this.x, this.y);
+	front() {
+        if( this.current ) return this.current;
+        return this.current = new Person(lit, this.x, this.y);
+	};
+    pull(){
+        const last = this.front();
+        this.current = null;
+        return last;
 	}
 }; //end class Supplier
 
@@ -493,6 +499,7 @@ function litHTML(){
     
     const acvInput = genRange('acvlit', 0, 0, 2, .5);
     elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', '0.0',['0.0','1.0','2.0']) );
+    
     usrInputs.set('acv', new NumSlider('acv', acvInput,
                 localUpdateFromUser, 0, 2, 0, 1, 2, 10) );
     

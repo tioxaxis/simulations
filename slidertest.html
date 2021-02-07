@@ -60,7 +60,7 @@
   
     
 </body>
-    <script type='module'>
+    <script >
 //  let localStore = {"app":{"version":"v1.1", "omConcept":{}}};
 //  let schema= {que:{ar: {type:'range', low:0, high:10, deflt: 5},
 //                    acv: {type:'range', low:0, high:2, deflt: 0},
@@ -158,18 +158,18 @@
 //        
 //        const lsout = encode('que',s7);
 //        console.log(lsout);
-        function modify(qobj){
-            qobj.a++;
-            return qobj;
-        }
+//        function modify(qobj){
+//            qobj.a++;
+//            return qobj;
+//        }
 //        let a = 10;
 //        let b = modify(a);
 //        console.log('not objects',a,b);
-        let pobj = {};
-         pobj.a = 40;
-         let qobj = modify(pobj);
-        console.log('objects prop',pobj.a,qobj.a);
-//        
+//        let pobj = {};
+//         pobj.a = 40;
+//         let qobj = modify(pobj);
+//        console.log('objects prop',pobj.a,qobj.a);
+////        
 //        
 ////   async function getScenariosFromDefault(key){
 ////		let response = await fetch(`app/${key}/${key}.json`);
@@ -237,7 +237,17 @@
 //            return ls;
 //        }
 //        
+       
         
+        
+        var tenRnd = [];
+        for(let k = 0; k<10; k++){
+            tenRnd[k] = new Math.seedrandom('hello'+'.459670');
+        };
+        
+        for(let j = 0; j<20;j++){
+            console.log(tenRnd[0](),tenRnd[1](),tenRnd[2](),tenRnd[3]())
+        };
         
         
         

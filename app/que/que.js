@@ -147,10 +147,10 @@ anim.person = {
 	path: {
 		left: -100,
 		right: anim.stage.width * 1.1,
-		headQueue: anim.stage.width * 0.7,
-		scanner: anim.stage.width * 0.75,
-		pastScanner: anim.stage.width * .80,
-		top: 150,
+		headQueue: anim.stage.width * 0.75,
+		scanner: anim.stage.width * 0.80,
+		pastScanner: anim.stage.width * .85,
+		top: 180,
 	}
 };
 anim.walkOffStageTime = Math.abs(
@@ -185,6 +185,7 @@ class Queueing extends OmConcept{
     
     localReset () {
         // schedule the initial Person to arrive and start the simulation/animation.
+        this.redrawBackground();
         theSimulation.supply.previous = null;
         theSimulation.creator.knockFromPrevious();
 
@@ -231,8 +232,11 @@ class Queueing extends OmConcept{
 		c.strokeStyle = 'blue';
 		c.lineWidth = 5;
 		c.beginPath();
+        const scannerHeight = 84;
+        const scannerWidth = 56;
 		for (let k = 0; k < tsa.machs.length; k++) {
-			c.strokeRect(locX - 28, locY - 15, 55, anim.person.height*1.4);
+			c.strokeRect(locX - scannerWidth/2, locY - scannerHeight/2,
+                         scannerWidth, scannerHeight);
 			tsa.machs[k].locx = locX;
             tsa.machs[k].locy = locY;
 			locX += anim.scannerDelta.dx;
@@ -419,6 +423,8 @@ class QueTSA extends MachineCenter {
 	startAnim (machine, theProcTime) {
         machine.person.setDestWithProcTime(theProcTime,
 			machine.locx, machine.locy);
+//        console.log('in StartAnim TSA queueing', que.now, machine.person.pathList);
+//        debugger;
     };
 
 	finishAnim (machine) {
@@ -498,9 +504,16 @@ class Supplier {
 	constructor(x, y) {
 		this.x = x;
 		this.y = y;
+        this.current = null;
 	};
-	pull() {
-		return new Person(que, this.x, this.y);
+	front() {
+        if( this.current ) return this.current;
+        return this.current = new Person(que, this.x, this.y);
+	};
+    pull(){
+        const last = this.front();
+        this.current = null;
+        return last;
 	}
 }; //end class Supplier
 

@@ -144,8 +144,8 @@ anim.store.bot = anim.store.top + anim.store.height;
 anim.person.path = {
 	left: -100,
 	right: 700,
-	top: anim.store.top,
-	bot: anim.store.top + anim.box.space*7,
+	top: anim.store.top + anim.person.height/2,
+	bot: anim.store.top + anim.person.height/2  + anim.box.space*7,
 }
 anim.person.path.mid = (anim.person.path.top + anim.person.path.bot) / 2;
 anim.walkingTime1 = (anim.person.path.right - anim.person.path.left) / 
@@ -415,7 +415,8 @@ class NvpCombine extends Combine {
 			pack.addPath({ // move up to arm height in other time
 				t: nvp.now + walkingTime,
 				x: anim.person.path.right + person.graphic.gSF.package.x,
-				y: anim.person.path.bot + person.graphic.gSF.package.y,
+				y: anim.person.path.bot - 
+                anim.person.height/2 + person.graphic.gSF.package.y,
 			});
 		}
 	};
@@ -494,10 +495,16 @@ class Supplier {
 	constructor(x, y) {
 		this.x = x;
 		this.y = y;
+	   this.current = null;
 	};
-	pull() {
-		return new Person(nvp,
-			this.x, this.y);
+	front() {
+        if( this.current ) return this.current;
+        return this.current = new Person(nvp, this.x, this.y);
+	};
+    pull(){
+        const last = this.front();
+        this.current = null;
+        return last;
 	}
 }; //end class Supplier
 

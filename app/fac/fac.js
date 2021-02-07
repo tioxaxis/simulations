@@ -28,7 +28,7 @@ import {
 from '../mod/rhs.js';
 import {
 	Queue, WalkAndDestroy, MachineCenter,
-	InfiniteMachineCenter, Item, 
+	InfiniteMachineCenter, Item, BoxStack,
 	GStickFigure, NStickFigure
 }
 from "../mod/stepitem.js";
@@ -363,31 +363,34 @@ class FacQueue  extends Queue{
 	constructor( which, lanes, left, top, anim) {
         super(fac, "queue"+which, 1, 0);
         this.which = which;
-        this.lanes = lanes;
         this.left = left;
         this.top = top;
         this.anim = anim;
+        this.snake = new BoxStack({isRows: false, isSnake: true,
+                lanes: lanes, laneLength: this.anim.box.perCol,
+                hSpace: this.anim.box.space, vSpace: this.anim.box.space,
+                xDir: -1, yDir: 1})
     };
-    relCoord(k) {
-        let row;
-        let col = Math.floor(k / this.anim.box.perCol);
-        if (col < this.lanes-1) {
-            const r = k % this.anim.box.perCol;
-            row = ( col % 2 == 1) ? 
-                    this.anim.box.perCol - 1 - r : r;
-        } else { 
-            col = this.lanes-1;
-            row = k - col * this.anim.box.perCol;
-       }
-        const delta = this.anim.box.space - this.anim.box.size;
-        return {
-            y: this.anim.box.space * row + Math.floor(delta/2),
-            x: -(this.anim.box.space) * col + delta/2
-        }
-    };
+//    relCoord(k) {
+//        let row;
+//        let col = Math.floor(k / this.anim.box.perCol);
+//        if (col < this.lanes-1) {
+//            const r = k % this.anim.box.perCol;
+//            row = ( col % 2 == 1) ? 
+//                    this.anim.box.perCol - 1 - r : r;
+//        } else { 
+//            col = this.lanes-1;
+//            row = k - col * this.anim.box.perCol;
+//       }
+//        const delta = this.anim.box.space - this.anim.box.size;
+//        return {
+//            y: this.anim.box.space * row + Math.floor(delta/2),
+//            x: -(this.anim.box.space) * col + delta/2
+//        }
+//    };
     
     push(card) {
-		const point = this.relCoord(this.q.length);
+		const point = this.snake.relCoord(this.q.length);
 		const walkingTime = Math.max(
             this.left + point.x - card.cur.x, 
             this.top + point.y - card.cur.y) / anim.stage.normalSpeed;
@@ -408,7 +411,7 @@ class FacQueue  extends Queue{
         let n = this.q.length;
         for (let k = 0; k < n; k++) {
             let card = this.q[k];
-            let point = this.relCoord(k);
+            let point = this.snake.relCoord(k);
             if( card.pathList.length == 0){
                 
                 card.updatePath({
@@ -613,19 +616,24 @@ class Supplier {
 		this.x = x;
 		this.y = y;
         this.markCount = 0;
+        this.current = null;
 	};
     reset(){
         this.markCount = 0;
     }
-	pull() {
-        
-		const card = new Card(fac, this.x, this.y);
+	front() {
+        if( this.current ) return this.current;
+        return this.current = new Card(fac, this.x, this.y);
+	};
+    pull(){
+        const last = this.front();
+        this.current = null;
         if( this.markCount > 0 ){
              this.markCount--;
-            if( this.markCount > 0 ) card.graphic.mark = true;
+            if( this.markCount > 0 ) last.graphic.mark = true;
         }
-        return card;
-	}
+        return last;
+	};
     bumpCount(){
         this.markCount++;
         console.log('markCount',this.markCount)
