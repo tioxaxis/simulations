@@ -158,7 +158,6 @@ export class IRT{
     };
     in(t){  //arrival at time t
         this.totInv += (t - this.lastT) * this.inSys;
-        
         this.inSys++;
         this.lastT = t;
     };
@@ -168,12 +167,14 @@ export class IRT{
         this.totFlow += t - Math.max(this.firstT,a);
         this.inSys--;
         this.completed++;
+//        if( this.completed == 0 )this.firstThruT = t;
         this.lastT = t;
     };
     avgI(){  //inventory or in system
         return this.totInv / (this.lastT - this.firstT);
     };
     avgR(){   // throughput
+        if( this.completed <= 0 ) return null;
         return this.completed / (this.lastT - this.firstT);
     };
     avgT(){    // flow time

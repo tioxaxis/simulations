@@ -401,9 +401,9 @@ function localUpdate(inp){
 };
 
 class EosQueue extends Queue {
-	constructor (name, graphType){
+	constructor (name, /*graphType*/){
         super(eos, name, -1);
-        this.graphType = graphType;
+//        this.graphType = graphType;
         this.delta = {dx: anim.person.width,
 			          dy: 0},
 	    this.dontOverlap = true,
@@ -451,7 +451,7 @@ class EosQueue extends Queue {
 
 	pullAnim (person) {
         let walkForOne = this.delta.dx / anim.stage.normalSpeed;
-        this.graphType(eos.now, eos.now - person.arrivalTime);
+//        this.graphType(eos.now, eos.now - person.arrivalTime);
 //        document.getElementById('nInQueue').innerHTML = 
 //			this.numSeatsUsed.toString().padEnd(5,' ');
         
@@ -502,8 +502,9 @@ class EosWalkOffStage extends WalkAndDestroy {
 };
 
 class EosTSA extends MachineCenter {
-	constructor( name, k ){
+	constructor( name, k, graphType){
         super(eos, "TSAagent "+name, k, theSimulation.serviceRV); 
+        this.graphType = graphType;
         this.dontOverlap = true;
         this.lastFinPerson = null;
     };
@@ -527,6 +528,7 @@ class EosTSA extends MachineCenter {
 	finishAnim (machine) {
 //        const s = machine.person.behind;
 //        if( s ) s.ahead = null;
+        this.graphType(eos.now, eos.now - machine.person.arrivalTime);
         machine.person.checkAhead = false;
 		machine.lastFinPerson = machine.person;
 	}
@@ -592,14 +594,12 @@ const theSimulation = {
 		this.sSupply = new Supplier(sGSF,anim.person.path.left, anim.person.path.top);
         this.jSupply = new Supplier(jGSF,anim.person.path.left, anim.person.path.top);
 
-		this.jQueue = new EosQueue("jointQ",
-                        eos.graph.pushJoint.bind(eos.graph));
+		this.jQueue = new EosQueue("jointQ");
 		eos.resetCollection.push(this.jQueue);
         
         this.sQueues = [];
         for( let k = 0; k < nServers; k++ ){
-            this.sQueues[k] = new EosQueue("SepQ"+k,
-                        eos.graph.pushSep.bind(eos.graph));
+            this.sQueues[k] = new EosQueue("SepQ"+k);
             eos.resetCollection.push(this.sQueues[k]);
             }
 
@@ -616,12 +616,14 @@ const theSimulation = {
             this.sepArrivalSplitter,this.jQueue);
 
 		// machine centers 
-        this.jTSAagent = new EosTSA("joint", nServers); 
+        this.jTSAagent = new EosTSA("joint", nServers,
+                            eos.graph.pushJoint.bind(eos.graph)); 
         this.jTSAagent.pauseOnIdle = false;
 		eos.resetCollection.push(this.jTSAagent);
         this.sTSAagents = [];
         for( let k = 0; k < 4; k++ ){
-                this.sTSAagents[k] = new EosTSA("sep"+k,1);
+                this.sTSAagents[k] = new EosTSA("sep"+k,1,
+                                   eos.graph.pushSep.bind(eos.graph));
                 this.sTSAagents[k].pauseOnIdle = true;
                 eos.resetCollection.push(this.sTSAagents[k]);
             }
@@ -754,7 +756,7 @@ function eosHTML(){
     elem.append(pauseOnIdle);
     usrInputs.set('idle',new ButtonOnOff('idle',pauseOnIdle,
                             'pauseOnIdleTurnOneos','pauseOnIdleTurnOffeos',
-                            localUpdateFromUser,'false'));
+                            localUpdateFromUser,false));
 
     
     // fill in HTML for pause on next occurance of an idle slider.

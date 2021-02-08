@@ -341,10 +341,10 @@ export class ButtonOnOff{
         this.onId = onId;
         this.offId = offId;
         this.localUpdate = localUpdate;
-        this.deflt = false;
+        this.deflt = deflt;
         this.shortLen = 1;
         this.divElem.addEventListener('click', this.userUpdate.bind(this));
-        this.value = deflt;
+        this.value = this.deflt;
     };
     get() {
         return this.value.toString();
