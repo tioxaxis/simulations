@@ -46,7 +46,7 @@ import {
     htmlRadioButton, RadioButton, 
     IntegerInput, 
     addKeyForIds, 
-    LegendItem, match
+    LegendItem, match, ButtonOnOff
 }
 from '../mod/genHTML.js';
 
@@ -210,23 +210,23 @@ function eosDefine(){
 			anim.person.height);
 };
 
-function pauseOnIdleControl(){
-    if( eos.enablePauseOnIdle ){
-        eos.enablePauseOnIdle = false;
-        displayToggle('pauseOnIdleTurnOneos','pauseOnIdleTurnOffeos');
-    } else {
-        eos.enablePauseOnIdle = true;
-        displayToggle('pauseOnIdleTurnOffeos','pauseOnIdleTurnOneos');
-        
-    }
-};
+//function pauseOnIdleControl(){
+//    if( eos.enablePauseOnIdle ){
+//        eos.enablePauseOnIdle = false;
+//        displayToggle('pauseOnIdleTurnOneos','pauseOnIdleTurnOffeos');
+//    } else {
+//        eos.enablePauseOnIdle = true;
+//        displayToggle('pauseOnIdleTurnOffeos','pauseOnIdleTurnOneos');
+//        
+//    }
+//};
 class EconScale extends OmConcept{
     constructor(usrInputs){
         super('eos');
         this.usrInputs = usrInputs;
-        document.getElementById('pauseOnIdleButtoneos')
-            .addEventListener('click', pauseOnIdleControl);
-        this.enablePauseOnIdle = false;
+//        document.getElementById('pauseOnIdleButtoneos')
+//            .addEventListener('click', pauseOnIdleControl);
+//        this.enablePauseOnIdle = false;
     };
     
     localReset () {
@@ -251,7 +251,7 @@ class EconScale extends OmConcept{
             this.partialReset();
             this.localReset();
             this.redrawBackground();
-            eos.graph.restartGraph(eos.now/tioxTimeConv);
+            eos.graph.updateForParamChange();
         }
     };
     clearStageForeground(){
@@ -328,7 +328,7 @@ function localUpdateFromUser(inp){
         eos.partialReset();
         eos.localReset();
         eos.redrawBackground();
-        eos.graph.restartGraph(eos.now/tioxTimeConv);
+        eos.graph.updateForParamChange();//restartGraph(eos.now/tioxTimeConv);
     }
 };
         
@@ -381,6 +381,8 @@ function localUpdate(inp){
             break;
         case 'num':
             updateServiceRate( null, null, v); theSimulation.jTSAagent.setNumMachines(Number(v));
+            break;
+        case 'idle':
             break;
         case 'speed':
             eos.adjustSpeed(v,speeds);
@@ -530,7 +532,7 @@ class EosTSA extends MachineCenter {
 	}
     
     checkForQueue(){
-        if(!eos.enablePauseOnIdle) return;
+        if(!eos.usrInputs.get('idle').getValue()) return;
         const n = eos.usrInputs.get('num').get();
         for( let k = 0; k < n; k++ ){
             if( theSimulation.sQueues[k].numSeatsUsed > 0 ){
@@ -750,6 +752,9 @@ function eosHTML(){
             .cloneNode(true);
     addKeyForIds('eos',pauseOnIdle);
     elem.append(pauseOnIdle);
+    usrInputs.set('idle',new ButtonOnOff('idle',pauseOnIdle,
+                            'pauseOnIdleTurnOneos','pauseOnIdleTurnOffeos',
+                            localUpdateFromUser,'false'));
 
     
     // fill in HTML for pause on next occurance of an idle slider.

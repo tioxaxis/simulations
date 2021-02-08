@@ -17,7 +17,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */		
-
+import {
+	displayToggle
+}
+from '../mod/rhs.js';
 export function addKeyForIds(key,node){
 		if ( node.id ) node.id += key;
 		const children = node.childNodes;
@@ -328,6 +331,56 @@ export class CheckBox{
         this.localUpdate(this);
     };
 }
+
+export class ButtonOnOff{
+    // this holds a binary value swapped by clicking a button which 
+    // has an onId and offId inside divElem. 
+    constructor (key, divElem, onId, offId, localUpdate, deflt) {
+        this.key = key;
+        this.divElem = divElem;
+        this.onId = onId;
+        this.offId = offId;
+        this.localUpdate = localUpdate;
+        this.deflt = false;
+        this.shortLen = 1;
+        this.divElem.addEventListener('click', this.userUpdate.bind(this));
+        this.value = deflt;
+    };
+    get() {
+        return this.value.toString();
+    };
+    getValue() {
+        return this.value;
+    }
+    set(x){
+        const b = x == 'true';
+        const changed = this.value != b;
+        this.value = x == 'true';
+        return changed;
+    };
+    verify(x) {
+        if( (x == 'true') || (x == 'false') ) return x;
+        reportError(this.key, x);
+        return this.deflt.toString();
+    }
+    encode(x){
+        return ( x == 'true' ? 'T' : 'F');
+    };
+    decode(x){
+         return ( x == 'T' ? 'true' : 'false');  
+    };
+    userUpdate(){
+        if( this.value ){
+            displayToggle(this.onId,this.offId);
+        } else {
+            displayToggle(this.offId,this.onId);
+        }
+        this.value = !this.value;
+        this.localUpdate(this);
+    };
+}
+
+
 export function htmlRadioButton(id, name, value, checked, desc){
     const inp = document.createElement('input');
     inp.type = 'radio';
