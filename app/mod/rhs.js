@@ -250,11 +250,12 @@ export class OmConcept {
 	coverAnimation(){
 		const elem = document.getElementById(
 			'coverAnimation'+this.key);
-		elem.classList.add('coverAnimation2');
+		elem.classList.add('addOpacity');
 	};
 	uncoverAnimation(){
 		const elem = document.getElementById(
-			'coverAnimation'+this.key);		elem.classList.remove('coverAnimation2');
+			'coverAnimation'+this.key);		
+        elem.classList.remove('addOpacity');
 	}
 	
 	fullSpeedSim(){

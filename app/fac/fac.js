@@ -107,6 +107,8 @@ anim.stage = {
 	height: 480
 };
 anim.box ={ delta: 2, space: 50}
+anim.box.width = 46;
+anim.box.height = 46;
 anim.box.size = anim.box.space - anim.box.delta*2;
 
 anim.card = {
@@ -116,12 +118,14 @@ anim.card = {
 		left: -100,
 		right: anim.stage.width * 1.1,
 		top: 40,
+        y: 65,
 	}
 };
 const c = anim.box.space;
 anim.worker = [];
 anim.queue = [];
 anim.card.path.top = 40;
+
 
 anim.box.perCol = Math.floor(
     (anim.stage.height - anim.card.path.top) 
@@ -131,30 +135,36 @@ anim.GWorker = {width: 1.5*c, height: 2*c,
                top: anim.card.path.top -.2*c};
 
 anim.queue[0] = {left: 2*c,
+                 headX: 2.5*c,
                  top: anim.card.path.top,
                  right: 3*c };
 anim.worker[0] = {left: 4*c,
                  top: anim.card.path.top,
                  right: 5*c,
                  bottom: anim.card.path.top + 2*c,
+                  x: 4.5*c,
                  color: cbColors.black};
 
 anim.queue[1] = {left: 8*c,
+                 headX: 8.5*c,
                  top: anim.card.path.top,
                  right: 9*c };
 anim.worker[1] = {left: 10*c,
                  top:anim.card.path.top,
                  right: 11*c,
                  bottom: anim.card.path.top + 2*c,
-                 color: cbColors.blue};
+                  x: 10.5*c,
+                  color: cbColors.blue};
 anim.queue[2] = {left: 14*c,
+                 headX: 14.5*c,
                  top: anim.card.path.top,
                  right: 15*c };
 anim.worker[2] = {left: 16*c,
                   top: anim.card.path.top,
                   right: 17*c,
                   bottom: anim.card.path.top + 2*c,
-                 color: cbColors.red};
+                  x: 16.5*c,
+                  color: cbColors.red};
 
 function computeStageTimes(){
     
@@ -282,7 +292,7 @@ class FaceGame extends OmConcept {
     localReset () {
         theSimulation.supply.previous = null;
         theSimulation.creator.knockFromPrevious();
-        this.resourceCollection.drawAll();
+//        this.resourceCollection.drawAll();
     };
 
     localUpdateFromSliders(...inpsChanged){
@@ -360,11 +370,9 @@ function localUpdateFromUser(inp){
 
 
 class FacQueue  extends Queue{
-	constructor( which, lanes, left, top, anim) {
+	constructor( which, lanes, anim) {
         super(fac, "queue"+which, 1, 0);
         this.which = which;
-        this.left = left;
-        this.top = top;
         this.anim = anim;
         this.snake = new BoxStack({isRows: false, isSnake: true,
                 lanes: lanes, laneLength: this.anim.box.perCol,
@@ -388,18 +396,22 @@ class FacQueue  extends Queue{
 //            x: -(this.anim.box.space) * col + delta/2
 //        }
 //    };
+    setHead(x,y){
+        this.x = x;
+        this.y = y;
+    }
     
     push(card) {
 		const point = this.snake.relCoord(this.q.length);
 		const walkingTime = Math.max(
-            this.left + point.x - card.cur.x, 
-            this.top + point.y - card.cur.y) / anim.stage.normalSpeed;
+            this.x + point.x - card.cur.x, 
+            this.y + point.y - card.cur.y) / anim.stage.normalSpeed;
         const arrivalTime = fac.now + walkingTime;
         if( !super.push(card, 0) ) return false;
         card.updatePath({
 			t: arrivalTime,
-			x: this.left + point.x,
-			y: this.top + point.y
+			x: this.x + point.x,
+			y: this.y + point.y
 		});
         return true;
 	};
@@ -416,17 +428,17 @@ class FacQueue  extends Queue{
                 
                 card.updatePath({
                     t: fac.now + 700,
-                    x: this.left + point.x,
-                    y: this.top + point.y
+                    x: this.x + point.x,
+                    y: this.y + point.y
                 });
             } else{
-                let destTime = Math.max(this.left + point.x - card.cur.x,
-                                       this.top + point.y - card.cur.y) 
+                let destTime = Math.max(this.x + point.x - card.cur.x,
+                                       this.y + point.y - card.cur.y) 
                                 / anim.stage.normalSpeed;
                 card.updatePath({
                     t: fac.now + destTime+700,
-                    x: this.left + point.x,
-                    y: this.top + point.y
+                    x: this.x + point.x,
+                    y: this.y + point.y
                 });
             }
         };
@@ -447,7 +459,7 @@ class FacWalkOffStage extends WalkAndDestroy {
         card.addPath({
                 t: fac.now + this.walkingTime,
                 x: anim.card.path.right,
-                y: anim.card.path.top
+                y: anim.card.path.y
          });
     }
 };
@@ -466,13 +478,20 @@ class FacStage extends MachineCenter {
     constructor(which) {
         super(fac, "worker"+which, 1, fac.stageTimes[which])
         this.which = which;
+        this.setup1DrawMC(fac.stage.backContext,
+                anim.worker[which].color, 15, false,
+                anim.worker[which].x, anim.card.path.y, anim.stage, anim.box);
+        this.setup2DrawMC();
+        //
         this.top = anim.card.path.top;
         this.mid = (anim.worker[which].right + anim.worker[which].left)/2;
         this.left = this.mid - 0.5 * anim.GWorker.width ;
         this.leftCard = anim.worker[which].left;
         this.deltaY = anim.GWorker.height + 30;
+        //
         this.lastNumber = 0;
         this.lastStatus = [];
+        //
         
     };
     reset(){
@@ -480,15 +499,32 @@ class FacStage extends MachineCenter {
         this.timeFirstThru = null;
         this.count = 0;
         // clear and redraw workers[ at stage this.which] 
-        this.draw(false);
+        this.setup2DrawMC();
+        this.draw();
     };
+    setNumberMachines( n ){
+        super.setNumberMachines(n);
+        this.setup2DrawMC();
+    };
+    pathY(){
+        return this.machs[0].locy;
+    }
+    
+    draw2(){ //???????????
+        let number = Number(document.getElementById('quantity'+this.which+'fac').value);
+        if( fac.stageTimes[this.which].mean == 0 ) number = 0;
+        super.draw2(number);
+    };
+    
+    
+    
      startAnim (machine){
          const card = machine.person;
          card.graphic.startStage(this.which,fac.now);
          card.updatePath({
                 t: fac.now + 500,
-                x: this.leftCard,
-                y: this.top+ machine.index * this.deltaY
+                x: machine.locx,
+                y: machine.locy
          });
      };
     finishAnim (machine){
@@ -504,7 +540,9 @@ class FacStage extends MachineCenter {
             fac.graph.push(fac.now, fac.now - card.sysEntryTime, thruput );
         }
     };
-    draw(redraw = false){
+    draw5(redraw = false){
+        this.draw2();
+        return;
         // helper functions: clear, draw, update an individual worker
         const clearIndiv = (j) => {
             ctx.clearRect(this.left-lineWidth, 
@@ -573,15 +611,14 @@ const theSimulation = {
 	initialize: function () {
 		
 		//queues
-		this.supply = new Supplier(anim.card.path.left, anim.card.path.top);
+		this.supply = new Supplier(anim.card.path.left, anim.card.path.y);
         fac.resetCollection.push(this.supply);
         const shortWalkingTime = 0.25*tioxTimeConv;
 
 		const nColumns = [1,3,3];
         this.queues = [];
         for( let k = 0; k < 3; k++){
-            this.queues[k] = new FacQueue(
-                k, nColumns[k], anim.queue[k].left, anim.queue[k].top, anim);
+            this.queues[k] = new FacQueue(k, nColumns[k],  anim);
             fac.resetCollection.push(this.queues[k]);
         }	
 		
@@ -594,8 +631,11 @@ const theSimulation = {
         
         for( let j = 0; j < 3; j++){
             this.workers[j] = new FacStage(j);
+//            this.workers[j].setup1DrawMC(fac.stage.backContext,
+//                anim.worker[j].color, 15, false, anim.worker[j].left, 0, anim.box);
             fac.resourceCollection.push(this.workers[j]);
 		    fac.resetCollection.push(this.workers[j]);
+            this.queues[j].setHead(anim.queue[j].headX, anim.card.path.y)
         }
         
         this.creator.setPreviousNext(this.supply, this.queues[0]);
@@ -684,8 +724,9 @@ export class FaceCard {
         let ctx = this.ctx;
          ctx.save();
         
-        ctx.translate(this.x + anim.box.delta,
-                      this.y + anim.box.delta);
+        // should be able to adjust this to (this.x-this.w/2, this.y - this.h/2) so I can use centered coordinates to pass.
+        ctx.translate(this.x - this.w/2 ,
+                      this.y - this.h/2);
         ctx.beginPath();
         ctx.strokeStyle = 'black';
         ctx.fillStyle = 'white';

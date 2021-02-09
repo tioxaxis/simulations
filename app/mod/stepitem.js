@@ -182,6 +182,9 @@ export class MachineCenter {
         this.machIndex = 0;
 
 		this.machs = [];
+        for(let k = 0; k < this.numMachines; k++){
+            this.machs[k] = {};
+        }
 		// setup machines if finite number with positions offset by dx,dy
 		// if infinite number of machines then create them on the fly in same position.
 	};
@@ -192,21 +195,22 @@ export class MachineCenter {
 	};
     
 	reset() {
-		this.machs = [];
 		for (let k = 0; k < this.numMachines; k++) {
-			this.machs[k] = {
-				status: 'idle',
-				person: null,
-				index: k
-			};
-		}
+			this.machs[k] = {status: 'idle', person: null, index: k};
+        };
+        
+
 //        this.omConcept.redrawBackground();
 //		if (this.animFunc) this.animFunc.reset(this.numMachines);
 		this.numberBusy = 0
 	};
 
-	setNumMachines( numMachines){
+	setNumMachines( numMachines ){
+        for( let k = this.numMachines; k < numMachines; k++){
+            this.machs[k] = {status: 'idle', person: null, index: k};   
+        };
         this.numMachines = numMachines;
+        
     };
     
     
@@ -320,6 +324,70 @@ export class MachineCenter {
         } 
 	};
     
+    setup1DrawMC(ctx, color, lineWidth, center, stageX, stageY, stage, item){
+        this.ctx = ctx;
+        this.color = color;
+        this.lineWidth = lineWidth;
+        this.center = center;
+        this.stageX = stageX;
+        this.stageY = stageY;
+        this.stage = stage;
+        this.boxWidth = item.width * 1.7;
+        this.boxHeight = item.height * 2.3;
+        this.boxSep = this.boxHeight * .3
+        this.boxCenter = {dx: this.boxWidth / 2,
+                          dy: this.boxHeight * .4};
+    };
+    
+    setup2DrawMC(nMach = this.numMachines){
+        this.top; 
+        const totHeight = nMach * this.boxHeight + (nMach-1)*this.boxSep;
+        if( this.center ){
+            this.top = this.stageY - totHeight/2;
+        }else {
+            this.top = this.stageY - this.boxCenter.dy;    
+        };
+        this.left = this.stageX - this.boxWidth/2;
+        
+        var lastTop = this.top;
+        for( let k = 0; k < nMach; k++ ){
+            this.machs[k].locx = this.stageX ;
+            this.machs[k].locy = lastTop + this.boxCenter.dy;
+            lastTop += this.boxHeight + this.boxSep;
+        };
+    };
+    
+    draw(nMach = this.numMachines){
+        const totHeight = nMach * this.boxHeight + (nMach-1)*this.boxSep;
+        this.ctx.clearRect(this.left - this.lineWidth,  0,
+                        this.boxWidth + 2*this.lineWidth, this.stage.height);
+        
+        this.ctx.lineWidth = this.lineWidth;
+        var lastTop = this.top;
+        for( let k = 0; k < nMach; k++ ){
+            const status = this.machs[k].status;
+            this.ctx.fillStyle = (status == 'busy' ? 'lightgreen' : 'lightyellow');
+            this.ctx.beginPath();
+            this.ctx.strokeStyle = this.color;
+            this.ctx.rect(this.left, lastTop, this.boxWidth, this.boxHeight);
+            
+            this.ctx.stroke();
+            this.ctx.fill();
+            this.ctx.closePath();
+            if( status != 'busy') {
+                this.ctx.beginPath();
+                this.ctx.textAlign = 'center';
+                this.ctx.fillStyle = 'black';
+                this.ctx.font = "20px Arial";
+                this.ctx.fillText(status, this.stageX,lastTop + this.boxHeight * .9);
+                this.ctx.closePath();
+            };
+            lastTop += this.boxHeight + this.boxSep;
+        };
+        
+    };
+    
+    
     
 }; //end class MachineCenter
 
@@ -400,8 +468,8 @@ export class ResourceCollection extends Array{
     reset(){
         this.splice(0,this.length);
     };
-    drawAll(redraw = false){
-        this.forEach(r => r.draw(redraw));
+    drawAll(){
+        this.forEach(r => r.draw());
     };
     remove(resource){
         let k = this.indexOf(resource);

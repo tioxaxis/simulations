@@ -461,7 +461,7 @@ export class IntegerInput{
         this.max = max;
         this.deflt = deflt;
         this.shortLen = shortLen;
-        this.inputElem.addEventListener('input',this.userUpdate.bind(this));
+        this.inputElem.addEventListener('change',this.userUpdate.bind(this));
     };
 
     get() {
@@ -487,7 +487,8 @@ export class IntegerInput{
     decode(x){
        return x; 
     };
-    userUpdate(){
+    userUpdate(event){
+        console.log('in IntegerInput with a input event',event);
         this.localUpdate(this);
     }
 }

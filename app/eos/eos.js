@@ -55,8 +55,8 @@ class EosGraph  {
     constructor(){	
 		//flow time graph
         this.flowGraph = new TioxGraph(eos,'fchartCanvaseos',
-                40, {width:10, step:2}, d=>d.t, 1000,300,false);
-		this.flowGraph.setTitle('Flow time','fchartTitle');
+                40, {width:10, step:2}, d=>d.t, 1000,370,false);
+		this.flowGraph.setTitle('Average Flow time','fchartTitle');
 		const sepFlow = new GraphLine(this.flowGraph,
                 d => d.s, cbColors.yellow, false, true,  3, 5);
 		const jointFlow = new GraphLine(this.flowGraph,
@@ -64,8 +64,8 @@ class EosGraph  {
 		        
         //throughput graph
         this.thruGraph = new TioxGraph(eos,'tchartCanvaseos',
-                40, {width:10, step:2}, d=>d.t, 1000,300,false);
-		this.thruGraph.setTitle('Throughput','tchartTitle');
+                40, {width:10, step:2}, d=>d.t, 1000,370,false);
+		this.thruGraph.setTitle('Average Throughput','tchartTitle');
 		const sepThru = new GraphLine(this.thruGraph,
                 d => d.s, cbColors.yellow, false, true,  3, 5);
 		const jointThru = new GraphLine(this.thruGraph,
@@ -91,7 +91,9 @@ class EosGraph  {
         jointFlow.button.addEventListener('click',() => {
             jointThru.visible = !jointThru.visible;
             jointThru.graph.setupThenRedraw()
-        });   
+        }); 
+        
+        
 	};
 	
 	pushSep (t,f){
@@ -121,6 +123,7 @@ class EosGraph  {
         this.avgJointThru = new IRT(eos.now/tioxTimeConv,0);
 		this.flowGraph.reset();
 		this.thruGraph.reset();
+        this.xInfo = this.flowGraph.xInfo;
 	}
     restartGraph(){
         this.flowGraph.restartGraph();
@@ -143,6 +146,10 @@ class EosGraph  {
     scaleXaxis(factor){
         this.flowGraph.scaleXaxis(factor);
         this.thruGraph.scaleXaxis(factor);
+    }
+    shiftXaxis2(){
+        this.flowGraph.shiftXaxis2();
+        this.thruGraph.shiftXaxis2();
     }
 }
 const anim = {};
@@ -345,9 +352,6 @@ function updateServiceRate(a,u,n){
     if(!n) n = Number(eos.usrInputs.get('num').get());
      const s = a/(u * n);
     theSimulation.serviceRV.setRate(s / tioxTimeConv);
-     
-     console.log('updateServiceRate a=',a,' s=',s,' u=',u,' n=',n, 
-                'computed util=',a/s/n);
  };
 
 function localUpdate(inp){
