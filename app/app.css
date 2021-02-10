@@ -142,9 +142,10 @@
 		transition:   opacity 1s ease-out;
 		z-index: 2;
 	}
-#coverAnimationeos{
-    height:65%;
-}
+    /*   different height for EOS 65% vs 41% for standard apps */
+    #coverAnimationeos{
+        height:65%;
+    }
 	.addOpacity{
 		opacity: 95%;
 	}

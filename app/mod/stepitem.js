@@ -108,6 +108,7 @@ export class Queue {
 		if (this.numSeatsUsed == 1) 
             this.nextMachine.knockFromPrevious();
         
+        if( this.numSeatsUsed > 0 )this.checkIdleMachines();
 		this.printQueue();
 	};
 
@@ -174,6 +175,7 @@ export class MachineCenter {
 		this.numMachines = numMachines;
 		this.numberBusy = 0;
 		this.procTimeRV = procTimeRV;
+        this.active = true;
 
 //		// need to set up substitute function for this
 //        this.previousQueue = previousQueue;
@@ -324,26 +326,26 @@ export class MachineCenter {
         } 
 	};
     
-    setup1DrawMC(ctx, color, lineWidth, center, stageX, stageY, stage, item){
+    setup1DrawMC(ctx, color, lineWidth, center, stageX, stageY, maxMachines, item){
         this.ctx = ctx;
         this.color = color;
         this.lineWidth = lineWidth;
         this.center = center;
         this.stageX = stageX;
         this.stageY = stageY;
-        this.stage = stage;
+        this.maxMachines = maxMachines;
         this.boxWidth = item.width * 1.7;
-        this.boxHeight = item.height * 2.3;
-        this.boxSep = this.boxHeight * .3
+        this.boxHeight = item.height * 2;
+        this.boxSep = this.boxHeight * 0.3
         this.boxCenter = {dx: this.boxWidth / 2,
-                          dy: this.boxHeight * .4};
+                          dy: this.boxHeight * 0.4};
     };
     
     setup2DrawMC(nMach = this.numMachines){
         this.top; 
         const totHeight = nMach * this.boxHeight + (nMach-1)*this.boxSep;
         if( this.center ){
-            this.top = this.stageY - totHeight/2;
+            this.top = this.stageY - totHeight/2 + this.boxHeight * 0.1
         }else {
             this.top = this.stageY - this.boxCenter.dy;    
         };
@@ -358,15 +360,17 @@ export class MachineCenter {
     };
     
     draw(nMach = this.numMachines){
-        const totHeight = nMach * this.boxHeight + (nMach-1)*this.boxSep;
-        this.ctx.clearRect(this.left - this.lineWidth,  0,
-                        this.boxWidth + 2*this.lineWidth, this.stage.height);
+        if( !this.active ) return;
+        const MaxHeight = this.maxMachines * this.boxHeight 
+                        + (this.maxMachines-1)*this.boxSep;
+        this.ctx.clearRect(this.left - this.lineWidth,  this.top,
+                        this.boxWidth + 2*this.lineWidth, MaxHeight);
         
         this.ctx.lineWidth = this.lineWidth;
         var lastTop = this.top;
         for( let k = 0; k < nMach; k++ ){
             const status = this.machs[k].status;
-            this.ctx.fillStyle = (status == 'busy' ? 'lightgreen' : 'lightyellow');
+            this.ctx.fillStyle = (status == 'busy' ? '#54ed77' : 'lightyellow');
             this.ctx.beginPath();
             this.ctx.strokeStyle = this.color;
             this.ctx.rect(this.left, lastTop, this.boxWidth, this.boxHeight);

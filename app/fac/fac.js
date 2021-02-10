@@ -480,7 +480,8 @@ class FacStage extends MachineCenter {
         this.which = which;
         this.setup1DrawMC(fac.stage.backContext,
                 anim.worker[which].color, 15, false,
-                anim.worker[which].x, anim.card.path.y, anim.stage, anim.box);
+                anim.worker[which].x, anim.card.path.y, 
+                4, anim.box);
         this.setup2DrawMC();
         //
         this.top = anim.card.path.top;

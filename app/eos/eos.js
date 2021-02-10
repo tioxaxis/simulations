@@ -58,18 +58,18 @@ class EosGraph  {
                 40, {width:10, step:2}, d=>d.t, 1000,370,false);
 		this.flowGraph.setTitle('Average Flow time','fchartTitle');
 		const sepFlow = new GraphLine(this.flowGraph,
-                d => d.s, cbColors.yellow, false, true,  3, 5);
+                d => d.s, cbColors.yellow, false, true,  5, 10);
 		const jointFlow = new GraphLine(this.flowGraph,
-                d => d.j, cbColors.blue, false, true,  3, 5);
+                d => d.j, cbColors.blue, false, true,  5, 10);
 		        
         //throughput graph
         this.thruGraph = new TioxGraph(eos,'tchartCanvaseos',
                 40, {width:10, step:2}, d=>d.t, 1000,370,false);
 		this.thruGraph.setTitle('Average Throughput','tchartTitle');
 		const sepThru = new GraphLine(this.thruGraph,
-                d => d.s, cbColors.yellow, false, true,  3, 5);
+                d => d.s, cbColors.yellow, false, true,  5, 10);
 		const jointThru = new GraphLine(this.thruGraph,
-                d => d.j, cbColors.blue, false, true,  3, 5);
+                d => d.j, cbColors.blue, false, true,  5, 10);
         
         //setup legends (connected directly to flow graph)
         const leg0 = sepFlow.createLegend('Separate');
@@ -174,15 +174,15 @@ anim.stage = {
 anim.sStage = {};
 anim.jStage = {};
 anim.person = {
-	width: 40,
-	height: 60,
+	width: 30,
+	height: 45,
 	path: {
 		left: -100,
 		right: anim.stage.width * 1.1,
 		headQueue: anim.stage.width * 0.7,
 		scanner: anim.stage.width * 0.8,
 		pastScanner: anim.stage.width * .90,
-		top: anim.stage.height/2,
+		y: anim.stage.height/2,
 	}
 };
 anim.walkOffStageTime = Math.abs(
@@ -281,48 +281,50 @@ class EconScale extends OmConcept{
         this.graph.setupThenRedraw();
         this.clearRedrawStage(0,true);//// need to clear both stages
     };
-    drawMachineCenter(nMach, machs, ctx, color, lineWidth,
-                       person, stageH, stageX){
-        ctx.strokeStyle = color;
-        ctx.lineWidth = lineWidth;
-        
-        const midpt = stageH/2;
-        const boxHeight = person.height * 1.4;
-        const boxWidth = person.width * 1.5;
-        const boxSep = boxHeight * .3;
-        const total = nMach * boxHeight + (nMach-1) * boxSep;
-        var top = midpt - total/2;
-        for( let k = 0; k < nMach; k++ ){
-            machs[k].locx = stageX;
-            machs[k].locy = top + boxHeight/2;
-            ctx.strokeRect(stageX-boxWidth/2,top,boxWidth,boxHeight);
-            top += boxHeight +  boxSep;
-        };
-    }
+sPathsY(nMach) {
+    let pathsY = [];
+    
+    const boxWidth = anim.person.width * 1.7;
+    const boxHeight = anim.person.height * 2;
+    const boxSep = boxHeight * 0.3;
+    const midpt = anim.stage.height/2  /*boxHeight * 0.1;*/
+    const total = nMach * boxHeight + (nMach-1) * boxSep;
+    var top = midpt - total/2;
+    for( let k = 0; k < nMach; k++ ){
+        pathsY[k] = top + boxHeight/2;
+        top += boxHeight +  boxSep;
+    };
+    return pathsY;
+}
     redrawBackground() {
         this.clearStageBackground();
         const nMach = eos.usrInputs.get('num').get();
         theSimulation.sepArrivalSplitter.setNumber(nMach);
         theSimulation.jTSAagent.setNumMachines(nMach);
-        var smachs = [];
-        for(let k = 0; k < nMach; k++ ){
-            smachs[k] = theSimulation.sTSAagents[k].machs[0];   
-        }
-        this.drawMachineCenter(nMach, smachs, 
-                anim.stage.sBackContext, cbColors.yellow, 5,
-                anim.person, anim.stage.height, anim.person.path.scanner);
-        this.drawMachineCenter(nMach, theSimulation.jTSAagent.machs, 
-                anim.stage.jBackContext, cbColors.blue, 5, 
-                anim.person, anim.stage.height, anim.person.path.scanner);
-        
+//        var smachs = [];
+//        for(let k = 0; k < nMach; k++ ){
+//            smachs[k] = theSimulation.sTSAagents[k].machs[0];   
+//        }
+//        this.drawMachineCenter(nMach, smachs, 
+//                anim.stage.sBackContext, cbColors.yellow, 5,
+//                anim.person, anim.stage.height, anim.person.path.scanner);
+//        this.drawMachineCenter(nMach, theSimulation.jTSAagent.machs, 
+//                anim.stage.jBackContext, cbColors.blue, 5, 
+//                anim.person, anim.stage.height, anim.person.path.scanner);
+//        
         //
         //set queue paths
-        theSimulation.jQueue.pathY = anim.stage.height/2;
+        theSimulation.jTSAagent.setup2DrawMC();
+        theSimulation.jTSAagent.draw()
+        let pathsY = this.sPathsY(nMach);
+//        theSimulation.jQueue.pathY = anim.stage.height/2;
         for( let k = 0; k < nMach; k++ ){
-            theSimulation.sQueues[k].pathY = 
-                theSimulation.sTSAagents[k].machs[0].locy;
+            theSimulation.sQueues[k].pathY = pathsY[k];
+            theSimulation.sTSAagents[k].setup1DrawMC(eos.stage.sBackContext, cbColors.yellow,
+                    15, true, anim.person.path.scanner, pathsY[k], 1, anim.person);
+            theSimulation.sTSAagents[k].setup2DrawMC();
+            theSimulation.sTSAagents[k].draw();
         }
-        
     };
 };
 function localUpdateFromUser(inp){
@@ -353,38 +355,48 @@ function updateServiceRate(a,u,n){
      const s = a/(u * n);
     theSimulation.serviceRV.setRate(s / tioxTimeConv);
  };
+function updateArrivalRate(u,s,n){
+    
+    if(!u) u = Number(eos.usrInputs.get('util').getValue());
+    if(!s) s = Number(eos.usrInputs.get('sr').get());
+    if(!n) n = Number(eos.usrInputs.get('num').get());
+     const a = u * s * n;
+    theSimulation.interarrivalRV.setRate(a / tioxTimeConv);
+    console.log('a=',a,' s=',s,' n=',n,' u=',u,' computed util=',a/s/n);
+ };
 
 function localUpdate(inp){
     let v = inp.get();
     switch (inp.key){
-        case 'ar':
-            updateServiceRate(v, null, null);
-            theSimulation.interarrivalRV
-                .setRate(v / tioxTimeConv);
+        case 'util':
+            updateArrivalRate(inp.getValue(), null, null);
             eos.heap.modify('finish/creator',
                 () => eos.now + theSimulation.interarrivalRV.observe());
             break;
         case 'acv':
-            theSimulation.interarrivalRV
-                .setCV(v);
+            theSimulation.interarrivalRV.setCV(v);
             eos.heap.modify('finish/creator',
                 () => eos.now + theSimulation.interarrivalRV.observe());
             break;
-        case 'util':
-            updateServiceRate(null, inp.getValue(), null);
+        case 'sr':
+            updateArrivalRate(null, v, null);
+            theSimulation.serviceRV.setRate(v / tioxTimeConv);
             eos.heap.modify('finish/TSAagent',
                 () => eos.now +
                 theSimulation.serviceRV.observe());
            break;
         case 'scv':
-            theSimulation.serviceRV
-                .setCV(v);
+            theSimulation.serviceRV.setCV(v);
             eos.heap.modify('finish/TSAagent',
                 () => eos.now +
                 theSimulation.serviceRV.observe());
             break;
         case 'num':
-            updateServiceRate( null, null, v); theSimulation.jTSAagent.setNumMachines(Number(v));
+            v = Number(v);
+            updateArrivalRate( null, null, v); theSimulation.jTSAagent.setNumMachines(v);
+            for( let k = 0; k < 4; k++){
+                theSimulation.sTSAagents[k].active = k < v;
+            }
             break;
         case 'idle':
             break;
@@ -420,7 +432,8 @@ class EosQueue extends Queue {
         person.checkAhead = true;
         person.arrivalTime = eos.now + this.walkingTime;
         person.width = this.delta.dx;
-        const nLeave = Math.floor(getServRate() * this.nextMachine.numMachines *  this.walkingTime);
+        const sr = Number(eos.usrInputs.get('sr').get());
+        const nLeave = Math.floor(sr * this.nextMachine.numMachines *  this.walkingTime);
         const dist = Math.max(0,(this.q.length - 1 - nLeave)) * this.delta.dx;
         person.cur.x = anim.person.path.left - dist;
         person.cur.y = this.pathY;
@@ -469,8 +482,9 @@ class EosQueue extends Queue {
         
         for (let k = this.numSeatsUsed; 
              k < this.q.length; k++) {
-			let p = this.q[k];   
-            const nLeave = Math.floor(getServRate() * this.nextMachine.numMachines *(p.arrivalTime - eos.now));
+			let p = this.q[k];
+            const sr = Number(eos.usrInputs.get('sr').get());
+            const nLeave = Math.floor(sr * this.nextMachine.numMachines *(p.arrivalTime - eos.now));
             const dist = Math.max(0,(k - nLeave)) * this.delta.dx;
             p.updatePath({t: p.pathList[0].t,
 					      x: Math.max(p.pathList[0].x,
@@ -479,6 +493,18 @@ class EosQueue extends Queue {
                          });
         }
 	};
+    
+    checkIdleMachines(){
+        if(!eos.usrInputs.get('idle').getValue()) return;
+        const n = eos.usrInputs.get('num').get();
+        for( let k = 0; k < n; k++ ){
+            if( theSimulation.sTSAagents[k].machs[0].status == 'idle' ){
+                this.omConcept.pause();
+                return;
+            }
+        }
+        console.log('didnt find a idle machines');
+    }
 };
 
 class EosWalkOffStage extends WalkAndDestroy {
@@ -489,12 +515,12 @@ class EosWalkOffStage extends WalkAndDestroy {
         person.addPath({
 			t: eos.now + 50 / anim.stage.normalSpeed,
 			x: anim.person.path.pastScanner,
-			y: anim.person.path.top
+			y: anim.person.path.y
 		});
 		person.addPath({
 			t: eos.now + anim.walkOffStageTime - 50 / anim.stage.normalSpeed,
 			x: anim.person.path.right,
-			y: anim.person.path.top
+			y: anim.person.path.y
 		});
 
 		if (person.isThereOverlap()) {
@@ -571,6 +597,7 @@ class EosTSA extends MachineCenter {
 //    };
 //    setRate(){};
 //};
+
 const theSimulation = {
 	//  the two random variables in the simulation
 	interarrivalRV: null,
@@ -586,24 +613,27 @@ const theSimulation = {
 	initialize: function () {
         const nServers = 4;   //maximum possible.
 		// random variables
-		const ar = eos.usrInputs.get('ar').get();
-		const acv = eos.usrInputs.get('acv').get();
-		theSimulation.interarrivalRV = new GammaRV(ar / tioxTimeConv, acv);
-        const num = eos.usrInputs.get('num').get();
 		const util = eos.usrInputs.get('util').get();
+        const sr = eos.usrInputs.get('sr').get();
+		const num = eos.usrInputs.get('num').get();
+        const acv = eos.usrInputs.get('acv').get();
 		const scv = eos.usrInputs.get('scv').get();
-		theSimulation.serviceRV = new GammaRV(ar/(util * num) / tioxTimeConv, scv); 
+        const ar = util * sr * num;
+        theSimulation.interarrivalRV = new GammaRV(ar / tioxTimeConv, acv);
+		theSimulation.serviceRV = new GammaRV(sr / tioxTimeConv, scv); 
 
 		//queues
-		this.sSupply = new Supplier(sGSF,anim.person.path.left, anim.person.path.top);
-        this.jSupply = new Supplier(jGSF,anim.person.path.left, anim.person.path.top);
+		this.sSupply = new Supplier(sGSF,anim.person.path.left, anim.person.path.y);
+        this.jSupply = new Supplier(jGSF,anim.person.path.left, anim.person.path.y);
 
 		this.jQueue = new EosQueue("jointQ");
+        this.jQueue.pathY = anim.person.path.y;
 		eos.resetCollection.push(this.jQueue);
         
         this.sQueues = [];
         for( let k = 0; k < nServers; k++ ){
             this.sQueues[k] = new EosQueue("SepQ"+k);
+            
             eos.resetCollection.push(this.sQueues[k]);
             }
 
@@ -623,13 +653,22 @@ const theSimulation = {
         this.jTSAagent = new EosTSA("joint", nServers,
                             eos.graph.pushJoint.bind(eos.graph)); 
         this.jTSAagent.pauseOnIdle = false;
+        this.jTSAagent.setup1DrawMC(eos.stage.jBackContext, cbColors.blue,
+            15, true, anim.person.path.scanner, anim.person.path.y, 4, anim.person);
 		eos.resetCollection.push(this.jTSAagent);
+        eos.resourceCollection.push(this.jTSAagent);
         this.sTSAagents = [];
         for( let k = 0; k < 4; k++ ){
                 this.sTSAagents[k] = new EosTSA("sep"+k,1,
                                    eos.graph.pushSep.bind(eos.graph));
                 this.sTSAagents[k].pauseOnIdle = true;
+                
                 eos.resetCollection.push(this.sTSAagents[k]);
+                eos.resourceCollection.push(this.sTSAagents[k]);
+            };
+        const n = eos.usrInputs.get('num').get();
+         for( let k = 0; k < 4; k++){
+                theSimulation.sTSAagents[k].active = k < n;
             }
         
         
@@ -643,6 +682,8 @@ const theSimulation = {
         for( let k = 0; k < nServers; k++ ){
                 this.sTSAagents[k].setPreviousNext(this.sQueues[k], this.sWalkOffStage);
             }
+        
+       
 	},
 };
 
@@ -727,22 +768,25 @@ function eosHTML(){
 	
 	let elem = document.getElementById('slidersWrappereos');
     
-    const arInput = genRange('areos', '5.0', 0, 10, .1);
-    elem.append(htmlNumSlider(arInput, 'Arrival Rate = ', '5.0', [0,2,4,6,8,10]) );
-    usrInputs.set('ar', new NumSlider('ar',arInput,
-                localUpdateFromUser, 0, 10, 5, 1,3,10) );
-    
-    const acvInput = genRange('acveos', 0, 0, 2, .5);
-    elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', '0.0',['0.0','1.0','2.0']) );
-    usrInputs.set('acv', new NumSlider('acv', acvInput,
-                localUpdateFromUser, 0, 2, 0, 1,2,10) );
-    
-    
-    const utilInput = genRange('utileos', 0, 0, 4, 1);
+    const utilInput = genRange('utileos', 2, 0, 4, 1);
     elem.append(htmlArbSlider(utilInput, 'System Utilization = ', '0.9',
                               [.5,.7,.9,.95,.99]) );
     usrInputs.set('util', new ArbSlider('util',utilInput,
                 localUpdateFromUser, [.5,.7,.9,.95,.99],[.5,.7,.9,.95,.99], 2) );
+    
+    
+    
+    const acvInput = genRange('acveos', 0, 0, 2, .5);
+    elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', '0.0',['0.0','1.0','2.0']) );
+    usrInputs.set('acv', new NumSlider('acv', acvInput,
+                localUpdateFromUser, 0, 2, 0, 1, 2, 10) );
+    
+    const srInput = genRange('sreos', '1.0', 0, 2, .1);
+    elem.append(htmlNumSlider(srInput, 'Service Rate = ', '1.0',
+                              [0, 0.5,1.0,1.5,2.0]) );
+    usrInputs.set('sr', new NumSlider('sr',srInput,
+                localUpdateFromUser, 0, 2, 1, 1, 3, 10) );
+    
     
     const scvInput = genRange('scveos', 0, 0, 2, .5);
     elem.append(htmlNumSlider(scvInput, 'Service CV = ', '0.0',['0.0','1.0','2.0']) );
