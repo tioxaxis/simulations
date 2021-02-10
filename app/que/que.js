@@ -55,9 +55,9 @@ class QueueGraph extends TioxGraph {
              2000,600,false);
 		this.setTitle('Waiting Time','chartTitle');
 		const indivWait = new GraphLine(this, d => d.i, cbColors.blue,
-					                   false, true,  5, 10);
+					                   false, true,  5, 12);
 		const avgWait = new GraphLine(this, d => d.a, cbColors.yellow,
-					                   false, true,  5, 10);
+					                   false, true,  5, 8);
 		this.predWait = new GraphLine(this, d => d.p, cbColors.red,
 					                   true, false,  10, 0);
 		this.predictedWaitValue = null; /*this.predictedWait();*/
@@ -432,28 +432,7 @@ class QueTSA extends MachineCenter {
 		this.lastFinPerson = machine.person;
 	}
 };
-//var arrIndex = -1;
-//var arrValues = [2000,2000,2000,2000];
-//class ArrRV {
-//    constructor(){};
-//    observe(){
-//        let n = arrValues.length;
-//        arrIndex = (arrIndex + 1) % n;
-//        return arrValues[arrIndex];
-//    };
-//    setRate(){};
-//};
-//var serIndex = -1;
-//var serValues = [3000,2000,1000,800,600,400,300,200,100,90,80];
-//class SerRV{
-//    constructor(){};
-//    observe(){
-//        let n = serValues.length;
-//        serIndex = (serIndex + 1) % n;
-//        return serValues[serIndex];
-//    };
-//    setRate(){};
-//};
+
 const theSimulation = {
 	//  the two random variables in the simulation
 	interarrivalRV: null,

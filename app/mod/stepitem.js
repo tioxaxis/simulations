@@ -81,9 +81,6 @@ export class Queue {
         }
         this.q.push(person);
         
-//        this.pushAnim(person);
-		
-
 		// insert into end of doubly linked list
 		person.ahead = this.lastAdded;
 		if (this.lastAdded) this.lastAdded.behind = person;
@@ -102,13 +99,11 @@ export class Queue {
 	arrive(person) {
 		this.numSeatsUsed++;
 		this.arriveAnim(person);
-//        console.log('In ARRIVAL numSU',this.numSeatsUsed,
-//                   person);
-//        debugger;
 		if (this.numSeatsUsed == 1) 
             this.nextMachine.knockFromPrevious();
         
-        if( this.numSeatsUsed > 0 )this.checkIdleMachines();
+        if( this.pauseOnIdle && this.numSeatsUsed > 0 )
+             this.checkIdleMachines();
 		this.printQueue();
 	};
 
@@ -116,8 +111,6 @@ export class Queue {
 		if (this.numSeatsUsed == 0) return null;
 		this.numSeatsUsed--;
 		const person = this.q.shift();
-//        console.log('in PULL From Queue now=',this.omConcept.now,
-//                    '  NSU=',this.numSeatsUsed, person)
 		this.pullAnim(person); /// this is the right thing but 
 		if (this.q.length < this.maxSeats) {
 			this.previousMachine.knockFromNext();
@@ -128,7 +121,6 @@ export class Queue {
 	};
 
 	printQueue() {
-		//this.q.forEach(p => console.log('which',p.which,p.pathList, p));
 	};
 }; //end class Queue
 
@@ -137,7 +129,6 @@ export class WalkAndDestroy {
 	constructor(omConcept, name, dontOverlap, walkingTime) {
 		this.omConcept = omConcept;
 		this.name = name;
-//		this.animFunc = animFunc;
 		this.walkingTime = walkingTime;
 		this.dontOverlap = dontOverlap;
 		this.lastAdded = null;
@@ -176,19 +167,12 @@ export class MachineCenter {
 		this.numberBusy = 0;
 		this.procTimeRV = procTimeRV;
         this.active = true;
-
-//		// need to set up substitute function for this
-//        this.previousQueue = previousQueue;
-//		this.nextQueue = nextQueue;
-//		this.animFunc = animFunc;
         this.machIndex = 0;
 
 		this.machs = [];
         for(let k = 0; k < this.numMachines; k++){
             this.machs[k] = {};
         }
-		// setup machines if finite number with positions offset by dx,dy
-		// if infinite number of machines then create them on the fly in same position.
 	};
 
     setPreviousNext(previousQueue, nextQueue) {
@@ -200,10 +184,6 @@ export class MachineCenter {
 		for (let k = 0; k < this.numMachines; k++) {
 			this.machs[k] = {status: 'idle', person: null, index: k};
         };
-        
-
-//        this.omConcept.redrawBackground();
-//		if (this.animFunc) this.animFunc.reset(this.numMachines);
 		this.numberBusy = 0
 	};
 
@@ -212,7 +192,6 @@ export class MachineCenter {
             this.machs[k] = {status: 'idle', person: null, index: k};   
         };
         this.numMachines = numMachines;
-        
     };
     
     
@@ -257,7 +236,7 @@ export class MachineCenter {
 		if( !person ) return false;
         if( this.procTimeRV ) {
             theProcTime = person.procTime = this.procTimeRV.observe();
-//            console.log('generating proc time machine=',this.name,' which=',person.which, person.procTime);
+
         } else {
             theProcTime = person.procTime
         };
@@ -277,36 +256,19 @@ export class MachineCenter {
         });
 
         // does this make sense anymore leave is nonexistant??
-        if( this.leaveEarly ){
-            this.omConcept.heap.push({
-                time: this.omConcept.now + theProcTime - this.leaveEarly,
-                type: 'leave/' + this.name,
-                proc: this.leave.bind(this),
-                item: machine
-            })
-        };
-        
-//			if (this.recordStart) this.recordStart(person);
+//        if( this.leaveEarly ){
+//            this.omConcept.heap.push({
+//                time: this.omConcept.now + theProcTime - this.leaveEarly,
+//                type: 'leave/' + this.name,
+//                proc: this.leave.bind(this),
+//                item: machine
+//            })
+//        };
         this.numberBusy++;
-        //remove 'person' from doubly linked list
-//        if (person.behind) person.behind.ahead = null;
-//        person.behind = null;
         return true;
-		
 	};
     
-//    leave(machine){
-//        machine.person.success = this.nextQueue.push(machine.person);
-//        this.animFunc.leave(machine.person);
-//    }
-
 	finish(machine) {
-//		if (this.recordFinish) this.recordFinish(machine.person);
-//        if (this.animFunc) this.animFunc.finish(machine.person);
-        
-        //note bene  the two previous steps must happen first for face game
-        // to correctly account for completion time before WalkandDestroy
-        // marks the flow time for process
         const person = machine.person;
         if (person.behind) person.behind.ahead = null;
         person.behind = null;
@@ -461,8 +423,6 @@ export class Combine {
 	};
 };
 
-
-
 // Resource is something that does not move in simulation
 // but may need to be redrawn at each cycle.
 export class ResourceCollection extends Array{
@@ -515,7 +475,7 @@ export class ItemCollection extends Array {
 	};
 };
 
-		var itemCollCount = 0;
+var itemCollCount = 0;
 
 //Item is the simulation object that moves
 // but its graphic is what gets drawn
@@ -542,7 +502,8 @@ export class Item {
 		this.graphic.setColor(bodyColor, borderColor);
 	};
 
-	moveDisplayWithPath_old(deltaSimuT) {
+	//old version
+    moveDisplayWithPath_old(deltaSimuT) {
 		if (this.inBatch) return;
 		while (this.pathList.length > 0) {
 			var path = this.pathList[0];
@@ -573,8 +534,6 @@ export class Item {
 				break;
 			};
 		};
-
-//		console.log('drawing one item at ',this.cur.x,this.cur.y);
         this.graphic.moveTo(this.cur.x, this.cur.y);
 		this.draw();
 	};
@@ -582,28 +541,14 @@ export class Item {
     
     moveDisplayWithPath(deltaSimuT) {
 		if (this.inBatch) return;
-//		console.log('in MoveDisply',this.which, this.cur.x,' deltaSimT=',deltaSimuT);
-//        if(this.ahead)console.log('has something ahead=',this.ahead.which);
-//        if( this.pathList.length == 0) console.log(' no path');
-//        else console.log('path = ',this.pathList[0].x,this.pathList[0].speedX);
         while (this.pathList.length > 0) {
             var path = this.pathList[0];
-//            if( this.blocked ){ //only pos-x-direction
-//                const aheadX = this.ahead.cur.x - this.width;
-//                if( aheadX < path.x ){
-//                    this.cur.x = aheadX;
-//                    break;
-//                }
-//                this.blocked = false;
-//            }
             this.cur.t = this.omConcept.now;
 			const newX = this.cur.x + path.speedX * deltaSimuT;
             const newY = this.cur.y + path.speedY * deltaSimuT;
             if( this.checkAhead && this.ahead){ //only pos-x-direction
                  const aheadX = this.ahead.cur.x - this.width;
                  if( aheadX < newX && aheadX < path.x ){
-//                     console.log('blocked by ahead person!!', aheadX);
-//                     this.blocked = true;
                      const dt = (aheadX - this.cur.x) / path.speedX;
                      this.cur.x = aheadX;
                      this.cur.y += path.speedY * dt;
@@ -726,22 +671,8 @@ export class Item {
 
 		let path = this.pathList[n - 1];
 		let deltaT = path.t - last.t;
-
-//		if (deltaT == 0) {
-			path.speedX = (path.x - last.x) / Math.max(1,deltaT);
-			path.speedY = (path.y - last.y) / Math.max(1,deltaT);
-//		} else {
-//			path.speedX = (path.x - last.x) / deltaT;
-//			path.speedY = (path.y - last.y) / deltaT;
-//		}
-//        if( path.speedX < 0){
-//            alert('addPath created pathList with speed X< 0');
-//            debugger;
-//        }
-//        if( path.x > 700 && path.x < 750){
-//            console.log(this, this.which, this.pathList,path.x);
-//            debugger;
-//        }
+        path.speedX = (path.x - last.x) / Math.max(1,deltaT);
+        path.speedY = (path.y - last.y) / Math.max(1,deltaT);
 	};
 
 	destroy() {
@@ -861,14 +792,14 @@ export class NStickFigure {
     draw() {
 		// use x,y as starting point and draw the rest of the
 		// parts by translating and rotating from there
-//   console.log(' in DRAW NSF ', this.x);
 		if ( this.x < -50 || this.x > 1050 ) return;
 		let c = this.gSF.context;
         
 		c.save();
 		c.strokeStyle = this.bdaryColor;
 		c.fillStyle = this.color;
-		c.translate(this.x , this.y - this.gSF.height/2);
+		//person (x,y) comes as center.  Adjust for this here
+        c.translate(this.x , this.y - this.gSF.height/2);
 
 		//package
 		if (this.packageVisible) {
@@ -975,23 +906,6 @@ export class BoxStack {
     
 };
 
-//export class BoxStack {
-//	constructor(box, snake = true) {
-//		this.box = box;
-//		this.snake = snake;
-//	}
-//	relCoord(k) {
-//		let row = Math.floor(k / this.box.perRow);
-//		let c = k % this.box.perRow;
-//		let col = (this.snake && row % 2 == 1) ?
-//			this.box.perRow - 1 - c : c;
-//		let delta = this.box.space - this.box.size;
-//		return {
-//			x: this.box.space * col + Math.floor(delta / 2),
-//			y: -(this.box.space) * (1 + row) + delta - 1
-//		};
-//	};
-//}
 
 export class GStore {
 	constructor(omConcept,anim) {

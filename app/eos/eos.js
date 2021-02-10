@@ -217,35 +217,17 @@ function eosDefine(){
 			anim.person.height);
 };
 
-//function pauseOnIdleControl(){
-//    if( eos.enablePauseOnIdle ){
-//        eos.enablePauseOnIdle = false;
-//        displayToggle('pauseOnIdleTurnOneos','pauseOnIdleTurnOffeos');
-//    } else {
-//        eos.enablePauseOnIdle = true;
-//        displayToggle('pauseOnIdleTurnOffeos','pauseOnIdleTurnOneos');
-//        
-//    }
-//};
+
 class EconScale extends OmConcept{
     constructor(usrInputs){
         super('eos');
         this.usrInputs = usrInputs;
-//        document.getElementById('pauseOnIdleButtoneos')
-//            .addEventListener('click', pauseOnIdleControl);
-//        this.enablePauseOnIdle = false;
     };
     
     localReset () {
         // schedule the initial Person to arrive and start the simulation/animation.
         this.redrawBackground();
         theSimulation.creator.create();
-//        theSimulation.supply.previous = null;
-//        theSimulation.creator.knockFromPrevious();
-//
-//        //fudge to get animation started quickly
-//        let t = eos.heap.top().time - 1;
-//        eos.now = eos.frameNow = t;
     };
     localUpdateFromSliders(...inpsChanged){
         for(let inp of inpsChanged){
@@ -301,23 +283,11 @@ sPathsY(nMach) {
         const nMach = eos.usrInputs.get('num').get();
         theSimulation.sepArrivalSplitter.setNumber(nMach);
         theSimulation.jTSAagent.setNumMachines(nMach);
-//        var smachs = [];
-//        for(let k = 0; k < nMach; k++ ){
-//            smachs[k] = theSimulation.sTSAagents[k].machs[0];   
-//        }
-//        this.drawMachineCenter(nMach, smachs, 
-//                anim.stage.sBackContext, cbColors.yellow, 5,
-//                anim.person, anim.stage.height, anim.person.path.scanner);
-//        this.drawMachineCenter(nMach, theSimulation.jTSAagent.machs, 
-//                anim.stage.jBackContext, cbColors.blue, 5, 
-//                anim.person, anim.stage.height, anim.person.path.scanner);
-//        
-        //
+
         //set queue paths
         theSimulation.jTSAagent.setup2DrawMC();
         theSimulation.jTSAagent.draw()
         let pathsY = this.sPathsY(nMach);
-//        theSimulation.jQueue.pathY = anim.stage.height/2;
         for( let k = 0; k < nMach; k++ ){
             theSimulation.sQueues[k].pathY = pathsY[k];
             theSimulation.sTSAagents[k].setup1DrawMC(eos.stage.sBackContext, cbColors.yellow,
@@ -417,9 +387,8 @@ function localUpdate(inp){
 };
 
 class EosQueue extends Queue {
-	constructor (name, /*graphType*/){
+	constructor (name){
         super(eos, name, -1);
-//        this.graphType = graphType;
         this.delta = {dx: anim.person.width,
 			          dy: 0},
 	    this.dontOverlap = true,
@@ -451,10 +420,6 @@ class EosQueue extends Queue {
 	};
 
 	arriveAnim (person) {
-//        document.getElementById('nInQueue').innerHTML = 
-//			this.numSeatsUsed.toString().padEnd(5,' ');
-        
-        
         const eosueActual = (anim.person.path.headQueue - person.cur.x)/this.delta.dx+1;
         const desiredX = anim.person.path.headQueue -
                     this.delta.dx * (this.numSeatsUsed-1);
@@ -468,10 +433,7 @@ class EosQueue extends Queue {
 
 	pullAnim (person) {
         let walkForOne = this.delta.dx / anim.stage.normalSpeed;
-//        this.graphType(eos.now, eos.now - person.arrivalTime);
-//        document.getElementById('nInQueue').innerHTML = 
-//			this.numSeatsUsed.toString().padEnd(5,' ');
-        
+
         for( let k = 0; k < this.numSeatsUsed; k++ ){
             let p = this.q[k];   
             let pos = p.cur.x
@@ -556,8 +518,6 @@ class EosTSA extends MachineCenter {
     };
 
 	finishAnim (machine) {
-//        const s = machine.person.behind;
-//        if( s ) s.ahead = null;
         this.graphType(eos.now, eos.now - machine.person.arrivalTime);
         machine.person.checkAhead = false;
 		machine.lastFinPerson = machine.person;
@@ -575,28 +535,7 @@ class EosTSA extends MachineCenter {
         console.log('didnt find a queue>0');
     }
 };
-//var arrIndex = -1;
-//var arrValues = [2000,2000,2000,2000];
-//class ArrRV {
-//    constructor(){};
-//    observe(){
-//        let n = arrValues.length;
-//        arrIndex = (arrIndex + 1) % n;
-//        return arrValues[arrIndex];
-//    };
-//    setRate(){};
-//};
-//var serIndex = -1;
-//var serValues = [3000,2000,1000,800,600,400,300,200,100,90,80];
-//class SerRV{
-//    constructor(){};
-//    observe(){
-//        let n = serValues.length;
-//        serIndex = (serIndex + 1) % n;
-//        return serValues[serIndex];
-//    };
-//    setRate(){};
-//};
+
 
 const theSimulation = {
 	//  the two random variables in the simulation
@@ -611,14 +550,16 @@ const theSimulation = {
 	TSAagent: null,
 
 	initialize: function () {
-        const nServers = 4;   //maximum possible.
+        const nServers = 4;   //maximum possible that can fit on stage.
 		// random variables
-		const util = eos.usrInputs.get('util').get();
+		const util = eos.usrInputs.get('util').getValue();
         const sr = eos.usrInputs.get('sr').get();
 		const num = eos.usrInputs.get('num').get();
         const acv = eos.usrInputs.get('acv').get();
 		const scv = eos.usrInputs.get('scv').get();
         const ar = util * sr * num;
+        console.log('in initialization',ar,sr,num, util);
+        
         theSimulation.interarrivalRV = new GammaRV(ar / tioxTimeConv, acv);
 		theSimulation.serviceRV = new GammaRV(sr / tioxTimeConv, scv); 
 
@@ -627,13 +568,14 @@ const theSimulation = {
         this.jSupply = new Supplier(jGSF,anim.person.path.left, anim.person.path.y);
 
 		this.jQueue = new EosQueue("jointQ");
+        this.jQueue.pauseOnIdle = false;
         this.jQueue.pathY = anim.person.path.y;
 		eos.resetCollection.push(this.jQueue);
         
         this.sQueues = [];
         for( let k = 0; k < nServers; k++ ){
             this.sQueues[k] = new EosQueue("SepQ"+k);
-            
+            this.sQueues[k].pauseOnIdle = true;
             eos.resetCollection.push(this.sQueues[k]);
             }
 
@@ -682,8 +624,6 @@ const theSimulation = {
         for( let k = 0; k < nServers; k++ ){
                 this.sTSAagents[k].setPreviousNext(this.sQueues[k], this.sWalkOffStage);
             }
-        
-       
 	},
 };
 
@@ -748,10 +688,6 @@ export class Person extends Item {
 		let aPath = a.pathList[0];
 		if (!aPath) return false;
 		return false;
-//		return (pPath.t < aPath.t + a.width / aPath.speedX)
-			//        if (  p.cur.x + p.width > a.cur.x ) return true;
-			//        if ( pPath.deltaX <= aPath.deltaX ) return false;
-			//        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
 	};
 }; // end class Person
 
@@ -764,8 +700,7 @@ function eosHTML(){
 			   'pairStageWrapper', 
 			   'pairChartWrapper');
 
-	//now put in the sliders with the play/reset box	
-	
+		
 	let elem = document.getElementById('slidersWrappereos');
     
     const utilInput = genRange('utileos', 2, 0, 4, 1);
@@ -773,7 +708,6 @@ function eosHTML(){
                               [.5,.7,.9,.95,.99]) );
     usrInputs.set('util', new ArbSlider('util',utilInput,
                 localUpdateFromUser, [.5,.7,.9,.95,.99],[.5,.7,.9,.95,.99], 2) );
-    
     
     
     const acvInput = genRange('acveos', 0, 0, 2, .5);
@@ -798,6 +732,7 @@ function eosHTML(){
     usrInputs.set('num', new NumSlider('num',numInput,
                                       localUpdateFromUser, 2, 4, 2, 0, 1, 1 ));
     
+    // fill in HTML for pause on next occurance of an idle slider.
     const pauseOnIdle = document.getElementById('pauseOnIdleButton')
             .cloneNode(true);
     addKeyForIds('eos',pauseOnIdle);
@@ -805,10 +740,8 @@ function eosHTML(){
     usrInputs.set('idle',new ButtonOnOff('idle',pauseOnIdle,
                             'pauseOnIdleTurnOneos','pauseOnIdleTurnOffeos',
                             localUpdateFromUser,false));
-
     
-    // fill in HTML for pause on next occurance of an idle slider.
-    
+    //now put in the sliders with the play/reset box
     elem.append( genPlayResetBox('eos') );
     usrInputs.set('reset', new CheckBox('reset', 'reseteos',
                 localUpdateFromUser, false) );
