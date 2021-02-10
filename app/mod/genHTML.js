@@ -356,6 +356,11 @@ export class ButtonOnOff{
         const b = x == 'true';
         const changed = this.value != b;
         this.value = x == 'true';
+        if( !this.value ){
+            displayToggle(this.onId,this.offId);
+        } else {
+            displayToggle(this.offId,this.onId);
+        }
         return changed;
     };
     verify(x) {
