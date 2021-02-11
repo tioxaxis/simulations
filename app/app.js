@@ -83,7 +83,7 @@ function router(event){
 	if (!inputElem) return;
 	let key = inputElem.id.slice(0,3);
 	if ( key == 'doc'){
-		window.open("./doc/doc.html","Documentation");
+		window.location.href="./doc/doc.html";
 	} else {	
 		window.history.pushState({tabName:key},'','#'+key);
 		switchTo(key);
@@ -127,23 +127,30 @@ function keyDownFunction(evt) {
 			break;
 	};
 };
-document.addEventListener('keydown', keyDownFunction);
-window.addEventListener('resize', redrawBackground);
-document.getElementById('dir').addEventListener('click', router);
-
-
 var currentTab = null;
-console.log('REdoing all the starts of all the animations')
-omConcepts['que'] = queStart();
-omConcepts['lit'] = litStart();
-omConcepts['nvp'] = nvpStart();
-omConcepts['inv'] = invStart();
-omConcepts['fac'] = facStart();
-omConcepts['eos'] = eosStart();
+    if(performance.navigation.type == 2){
+        location.reload(true);
+        console.log('just did the reload thing')
+    }
+    
+    document.addEventListener('keydown', keyDownFunction);
+    window.addEventListener('resize', redrawBackground);
+    document.getElementById('dir').addEventListener('click', router);
 
 
-const h = location.hash;
-switchTo(h != '' ? h.slice(1) : 'dir');
+    
+    console.log('REdoing all the starts of all the animations')
+    omConcepts['que'] = queStart();
+    omConcepts['lit'] = litStart();
+    omConcepts['nvp'] = nvpStart();
+    omConcepts['inv'] = invStart();
+    omConcepts['fac'] = facStart();
+    omConcepts['eos'] = eosStart();
+
+
+    const h = location.hash;
+    switchTo(h != '' ? h.slice(1) : 'dir');
+
 
 
 
