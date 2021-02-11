@@ -83,7 +83,7 @@ function router(event){
 	if (!inputElem) return;
 	let key = inputElem.id.slice(0,3);
 	if ( key == 'doc'){
-		window.location.href = "./doc/doc.html";
+		window.open("./doc/doc.html","Documentation");
 	} else {	
 		window.history.pushState({tabName:key},'','#'+key);
 		switchTo(key);
@@ -133,6 +133,7 @@ document.getElementById('dir').addEventListener('click', router);
 
 
 var currentTab = null;
+console.log('REdoing all the starts of all the animations')
 omConcepts['que'] = queStart();
 omConcepts['lit'] = litStart();
 omConcepts['nvp'] = nvpStart();
