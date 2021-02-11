@@ -493,8 +493,14 @@ export class IntegerInput{
        return x; 
     };
     userUpdate(event){
-        console.log('in IntegerInput with a input event',event);
+        let x = Number(event.target.value);
+        if( x < this.min ) event.target.value = this.min;
+        else if( x > this.max ) event.target.value = this.max;
+        else if( x != Math.floor(x)) event.target.value = Math.floor(x);
         this.localUpdate(this);
+//        if( x != event.target.value ) 
+//            console.log(' In integer Input and adjusted value from',x,' to ',
+//                   event.target.value);
     }
 }
 export class LegendItem{
