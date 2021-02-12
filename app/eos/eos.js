@@ -312,19 +312,19 @@ function localUpdateFromUser(inp){
 };
         
         
- function getServRate(){
-    const a = Number(eos.usrInputs.get('ar').get());
-    const u = Number(eos.usrInputs.get('util').getValue());
-    const n = Number(eos.usrInputs.get('num').get());
-     return a/u/n/tioxTimeConv;
- };
-function updateServiceRate(a,u,n){
-    if(!a) a = Number(eos.usrInputs.get('ar').get());
-    if(!u) u = Number(eos.usrInputs.get('util').getValue());
-    if(!n) n = Number(eos.usrInputs.get('num').get());
-     const s = a/(u * n);
-    theSimulation.serviceRV.setRate(s / tioxTimeConv);
- };
+// function getServRate(){
+//    const a = Number(eos.usrInputs.get('ar').get());
+//    const u = Number(eos.usrInputs.get('util').getValue());
+//    const n = Number(eos.usrInputs.get('num').get());
+//     return a/u/n/tioxTimeConv;
+// };
+//function updateServiceRate(a,u,n){
+//    if(!a) a = Number(eos.usrInputs.get('ar').get());
+//    if(!u) u = Number(eos.usrInputs.get('util').getValue());
+//    if(!n) n = Number(eos.usrInputs.get('num').get());
+//     const s = a/(u * n);
+//    theSimulation.serviceRV.setRate(s / tioxTimeConv);
+// };
 function updateArrivalRate(u,s,n){
     
     if(!u) u = Number(eos.usrInputs.get('util').getValue());
@@ -462,10 +462,10 @@ class EosQueue extends Queue {
         for( let k = 0; k < n; k++ ){
             if( theSimulation.sTSAagents[k].machs[0].status == 'idle' ){
                 this.omConcept.pause();
+//                console.log('machine ',k,' is idle for an arrival');
                 return;
             }
         }
-        console.log('didnt find a idle machines');
     }
 };
 
@@ -474,11 +474,11 @@ class EosWalkOffStage extends WalkAndDestroy {
 	   super(eos, "walkOff", true, anim.walkOffStageTime);
     };
     pushAnim (person) {
-        person.addPath({
-			t: eos.now + 50 / anim.stage.normalSpeed,
-			x: anim.person.path.pastScanner,
-			y: anim.person.path.y
-		});
+//        person.addPath({
+//			t: eos.now + 50 / anim.stage.normalSpeed,
+//			x: anim.person.path.pastScanner,
+//			y: anim.person.path.y
+//		});
 		person.addPath({
 			t: eos.now + anim.walkOffStageTime - 50 / anim.stage.normalSpeed,
 			x: anim.person.path.right,
@@ -508,13 +508,34 @@ class EosTSA extends MachineCenter {
 	
 	startAnim (machine, theProcTime) {
         //delink it.
-        const s = machine.person.ahead;
+        const p = machine.person;
+        const s = p.ahead;
         if( s ) s.behind = null;
+        p.ahead = machine.lastFinPerson;
         
+        const path = anim.person.path;
+        const speed = anim.stage.normalSpeed;
+        const distIn = machine.locx - path.headQueue;
+        const distOut = path.pastScanner - machine.locx;
+        const tIn = Math.min(0.25 * theProcTime, distIn/speed);
+        const tOut = Math.min(0.25 * theProcTime, distOut/speed);
+        const tProc = theProcTime - tIn - tOut;
         
-        machine.person.ahead = machine.lastFinPerson;
-        machine.person.setDestWithProcTime(theProcTime,
-			machine.locx, machine.locy);
+        p.addPath({t: eos.now + tIn, 
+                   x: machine.locx,
+                   y: machine.locy
+                  });
+        p.addPath({t: eos.now + tIn + tProc,
+                   x: machine.locx,
+                   y: machine.locy
+                  });
+        p.addPath({t: eos.now + theProcTime,
+                   x: path.pastScanner,
+                   y: anim.person.path.y
+                  });
+        
+//        machine.person.setDestWithProcTime(theProcTime,
+//			machine.locx, machine.locy);
     };
 
 	finishAnim (machine) {
@@ -529,10 +550,10 @@ class EosTSA extends MachineCenter {
         for( let k = 0; k < n; k++ ){
             if( theSimulation.sQueues[k].numSeatsUsed > 0 ){
                 this.omConcept.pause();
+//                console.log('Queue ',k,' is >0 for some departure');
                 return;
             }
         }
-        console.log('didnt find a queue>0');
     }
 };
 

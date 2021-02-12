@@ -102,7 +102,7 @@ export class Queue {
 		if (this.numSeatsUsed == 1) 
             this.nextMachine.knockFromPrevious();
         
-        if( this.pauseOnIdle && this.numSeatsUsed > 0 )
+        if( this.pauseOnIdle && this.numSeatsUsed == 1 )
              this.checkIdleMachines();
 		this.printQueue();
 	};
