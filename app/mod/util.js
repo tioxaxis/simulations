@@ -137,6 +137,12 @@ export class Average{
     };
     getAverage(){
         return this.count >= 1 ? this.total/this.count : null;
+    };
+    getTotal(){
+        return this.total;
+    };
+    getCount(){
+        return this.count;
     }
     addItem(x){
         this.count++;

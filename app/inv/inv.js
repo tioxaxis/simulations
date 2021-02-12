@@ -25,7 +25,7 @@ const disappointed = {
 };
 const tioxTimeConv = 10000; //time are in milliseconds/10
 import {
-	GammaRV, UniformRV, DeterministicRV, Heap, cbColors, StageOnCanvas
+	GammaRV, UniformRV, Average, DeterministicRV, Heap, cbColors, StageOnCanvas
 }
 from '../mod/util.js';
 import {
@@ -274,10 +274,10 @@ class Inventory extends OmConcept{
                 item: null
             });
         }
-        document.getElementById('lostSales').innerHTML = '0'
-        ;
-        document.getElementById('fillRate').innerHTML = '100';
-        document.getElementById('serviceLevel').innerHTML = '100';
+//        document.getElementById('lostSales').innerHTML = '0'
+//        ;
+//        document.getElementById('fillRate').innerHTML = '100';
+//        document.getElementById('serviceLevel').innerHTML = '100';
     };
     
     localUpdateFromSliders(...inpsChanged){
@@ -287,6 +287,7 @@ class Inventory extends OmConcept{
         if( match(inpsChanged,['ar','acv','lt','ltcv',
                      'quan','rop','period','upto'])) {
             inv.graph.updateForParamChange();
+            theSimulation.store.resetStats();
         }
     };
     redoStagesGraph(){
@@ -312,6 +313,7 @@ function localUpdateFromUser(inp){
     if( match([inp],['ar','acv','lt','ltcv',
                      'quan','rop','period','upto'])) {
             inv.graph.updateForParamChange();
+            theSimulation.store.resetStats();
         }
 };    
 function localUpdate(inp){
@@ -587,31 +589,39 @@ class RopStore extends GStore {
 		this.inv = null;
 		this.invInDoor = null;
 		this.invPosition = null;
-		this.lostSales = null;
-		this.totalDemand = null;
-		this.nRounds = null;
-		this.roundsWithEnough = null;
+//		this.lostSales = null;
+//		this.totalDemand = null;
+//		this.nRounds = null;
+//		this.roundsWithEnough = null;
 		this.packages = []; //the packages in the store.
 	};
 	reset() {
 		// start with the store filled in the first round.
 		super.reset();
 		if (inv.whichRule == 'methRop')
-			this.inv = theSimulation.quantityOrdered;
+			this.inv = Number(inv.usrInputs.get('quan').get());
 		else
-			this.inv = theSimulation.upto;
+			this.inv = Number(inv.usrInputs.get('upto').get());
 
 		this.invInDoor = this.inv;
 		this.invPosition = this.inv;
 
 		for (let k = 0; k < this.inv; k++)
 			this.addNew();
-		this.lostSales = 0;
-		this.totalDemand = 0;
-		this.nRounds = 0;
-		this.roundsWithEnough = 0;
+        this.resetStats();
+//		this.lostSales = 0;
+//		this.totalDemand = 0;
+//		this.nRounds = 0;
+//		this.roundsWithEnough = 0;
 		this.stockout = false;
 	};
+    resetStats(){
+        this.lostSales = new Average();
+        this.servLevel = new Average();
+        document.getElementById('lostSales').innerHTML = 0;
+        document.getElementById('fillRate').innerHTML = 100;
+        document.getElementById('serviceLevel').innerHTML = 100;	
+    }
 	truckAtDoor(item) {
 		item.truck.graphic.setReverse();
 		item.load.graphic.setReverse();
@@ -652,21 +662,26 @@ class RopStore extends GStore {
 		inv.graph.push(inv.now, this.inv,
 			this.invPosition);
 		// keep track stockouts by round
-		this.nRounds++;
-		if (!this.stockout) this.roundsWithEnough++;
+		this.servLevel.addItem( !this.stockout ? 1 : 0);
+//        this.nRounds++;
+//		if (!this.stockout) this.roundsWithEnough++;
 		this.stockout = false;
 		document.getElementById('serviceLevel').innerHTML =
-			( 100*(this.roundsWithEnough/this.nRounds) ).toFixed(0);
+			( 100 * this.servLevel.getAverage() ).toFixed(0);
 	};
 	truckDestroy(truck) { //event when truck is finally offStageRight
 		truck.destroy();
 	};
 	pull() { //person arrived at queue, sell one unit.
 		let pack = super.pull();
-		this.totalDemand++;
+//		this.totalDemand++;
+        this.lostSales.addItem( pack == null ? 1 : 0);
+        document.getElementById('lostSales').innerHTML = this.lostSales.getTotal();
+		document.getElementById('fillRate').innerHTML =
+			((1 - this.lostSales.getAverage()) * 100).toFixed(0);
 		if (pack == null) {
 			this.stockout = true;
-			this.lostSales++;
+//			this.lostSales++;
 		} else {
 			this.invPosition--;
 			if (this.invPosition <= theSimulation.rop &&
@@ -676,9 +691,7 @@ class RopStore extends GStore {
 			this.invInDoor--;
 			this.inv--;
 		};
-		document.getElementById('lostSales').innerHTML = this.lostSales;
-		document.getElementById('fillRate').innerHTML =
-			((1 - this.lostSales / this.totalDemand) * 100).toFixed(0);
+		
 		
 		inv.graph.push(inv.now, this.inv,
 			this.invPosition);
@@ -1015,7 +1028,7 @@ function invHTML(){
     usrInputs.set('rop', new NumSlider('rop', ropInput,
                 localUpdateFromUser, 5, 85, 10, 0,2,1));
     
-    const periodInput = genRange('periodinv', 3, 2, 8, 1);
+    const periodInput = genRange('periodinv', 3, 2, 12, 1);
     const upto1 = htmlNumSlider(periodInput, 'Period = ',
                              3, [2,4,6,8,10,12]);
     upto1.id = 'upto1';
