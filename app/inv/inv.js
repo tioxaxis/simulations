@@ -820,12 +820,12 @@ class FlatBed {
 		this.reverse = 0;
 	};
 	moveTo(x, y) {
-		this.x = Math.floor(x);
-		this.y = Math.floor(y);
+		this.x = x;//Math.floor(x);
+		this.y = y;//Math.floor(y);
 	};
 	setReverse() {
 		this.reverse = this.anim.truck.cabWidth + this.anim.truck.bedWidth;
-	}
+    }
 	draw() {
 		let c = this.anim.stage.foreContext;
 		c.save();
@@ -901,10 +901,10 @@ class DisplayBoxes {
                                       xDir: +1, yDir: -1}); //box, false);
 	};
 	moveTo(left, bot) {
-		this.left = Math.floor(left);
-		this.bot = Math.floor(bot);
+		this.left = left;//Math.floor(left);
+		this.bot = bot;//Math.floor(bot);
 	};
-	setReverse() {
+	setReverse(zz) {
 		this.reverse = this.box.space * this.box.perRow;
 	}
 	draw() {
@@ -913,7 +913,7 @@ class DisplayBoxes {
 			this.ctxDB.translate(2 * (this.left) + this.reverse, 0);
 			this.ctxDB.scale(-1, 1);
 		};
-        const firstBox = {x: this.left ,
+        const firstBox = {x: this.left + (this.box.space -this.box.size)/2,
                          y: this.bot - this.box.space};
 		for (let i = 0; i < this.packages.length; i++) {
 			this.ctxDB.fillStyle = this.packages[i].graphic.color;
