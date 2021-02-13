@@ -503,6 +503,8 @@ export class IntegerInput{
 //                   event.target.value);
     }
 }
+
+
 export class LegendItem{
     //returns and receives string 'true'/'false' but stores boolean
     constructor ( key, line, localUpdate, deflt){
@@ -537,9 +539,27 @@ export class LegendItem{
     };
     
     userUpdate(){
+        this.line.clickResponse();
         if(this.localUpdate) this.localUpdate(this);
     }
     
+};
+
+export class LegendPair extends LegendItem{ 
+    constructor (key, line1, line2, localUpdate, deflt){
+        super( key, line1, localUpdate, deflt);
+        this.line2 = line2;
+    };
+    set(x){
+        this.line2.visible = (x == 'true');
+        this.line2.graph.setupThenRedraw();
+        return super.set(x);
+    };
+    userUpdate(){
+        this.line2.visible = !this.line2.visible;
+        this.line2.graph.setupThenRedraw();
+        super.userUpdate();
+    }
 };
 
 function reportError(key,x){

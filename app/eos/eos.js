@@ -46,7 +46,7 @@ import {
     htmlRadioButton, RadioButton, 
     IntegerInput, 
     addKeyForIds, 
-    LegendItem, match, ButtonOnOff
+    LegendItem, LegendPair, match, ButtonOnOff
 }
 from '../mod/genHTML.js';
 
@@ -71,29 +71,17 @@ class EosGraph  {
 		const jointThru = new GraphLine(this.thruGraph,
                 d => d.j, cbColors.blue, false, true,  5, 10);
         
-        //setup legends (connected directly to flow graph)
+        //setup legend displays (connected directly to flow graph)
         const leg0 = sepFlow.createLegend('Separate');
         const leg1 = jointFlow.createLegend('Joint');
         const d3 = document.getElementById('pairChartLegendeos');
         d3.append(leg0,'      ', leg1); //option-spaces!!
         
+        // yet, link the LegendItem to both GraphLines via LegendPair. 
         eos.usrInputs.set('leg0', 
-            new LegendItem('leg0', sepFlow, localUpdateFromUser, true)); 
+            new LegendPair('leg0', sepFlow, sepThru, localUpdateFromUser, true)); 
         eos.usrInputs.set('leg1', 
-            new LegendItem('leg1', jointFlow, localUpdateFromUser, true));
-        
-        //setup callbacks so throuhput graphs 
-        //  respond to clicks on legends as well.
-        sepFlow.button.addEventListener('click',() => {
-            sepThru.visible = !sepThru.visible;
-            sepThru.graph.setupThenRedraw()
-        });
-        jointFlow.button.addEventListener('click',() => {
-            jointThru.visible = !jointThru.visible;
-            jointThru.graph.setupThenRedraw()
-        }); 
-        
-        
+            new LegendPair('leg1', jointFlow, jointThru, localUpdateFromUser, true));
 	};
 	
 	pushSep (t,f){
@@ -377,7 +365,6 @@ function localUpdate(inp){
         case 'reset':
         case 'leg0':
         case 'leg1':
-        case 'leg2':
             break;
         default:
             alert(' reached part for default, key=',inp.key);
