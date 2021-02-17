@@ -181,6 +181,7 @@ export class IRT{
     };
     avgR(){   // throughput
         if( this.completed <= 0 ) return null;
+//        console.log('inside IRT',this.completed, this.lastT, this.firstT);
         return this.completed / (this.lastT - this.firstT);
     };
     avgT(){    // flow time

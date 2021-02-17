@@ -272,12 +272,12 @@
 .pairChartTop{
     position: relative;
 /*    border: solid 3px purple;*/
-    height: 90%;
+    height: 100%;
     width: 100%;    
     
 }
 .pairChartLegend{
-        margin: 0% 0% 1% 0%;
+        margin: 0% 0% 2% 0%;
     height: 10%;
         width: 80%;
         

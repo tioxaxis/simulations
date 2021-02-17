@@ -154,6 +154,11 @@
 	<canvas class="theStage background" id="background" width=1000 height=480></canvas>
 </div>
 
+    
+<!--	****** wrapper for fac graphs-->
+    
+    
+    
 <!--	****** wrapper for fac for data-->
 <div class='facDataWrapper' id="facDataWrapper" >
 	   <div class='facepart'><u>Station:</u></div>
@@ -275,7 +280,7 @@
     <div class='dualChartTitle legitem rowAroundCenter' id='rightLegend'></div>
     </div>
     
-    
+    <!--	****** wrapper for eos chart with a pair of charts -->
 <div class='pairChartWrapper columnBetweenCenter' id="pairChartWrapper">
 	<div class='pairChartTop rowAroundCenter'>
     <div class='pairChartLeft columnBetweenCenter'>
@@ -283,6 +288,8 @@
         <div class='pairChart' id='fchart'> 
             <canvas  class="pairChartCanvas" id="fchartCanvas"
                     width='1000' height='300'></canvas>
+        </div>
+        <div class='rowCenterCenter' id='pairChartLeftLegend'>
         </div>
     </div>
 	
@@ -292,9 +299,11 @@
             <canvas  class="pairChartCanvas" id="tchartCanvas"
                     width='1000' height='500'></canvas>
         </div>
+        <div class='rowCenterCenter' id='pairChartRightLegend'>
+        </div>
     </div>
     </div>
-	<div class='pairChartLegend rowCenterCenter' id='pairChartLegend'></div>
+	<div class=' rowCenterCenter' id='pairChartLegend'></div>
 </div>
 </div>   <!--	****** end of generic pieces-->
 	

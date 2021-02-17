@@ -19,7 +19,8 @@
 */		
 
 import {
-	DeterministicRV, Heap, cbColors, StageOnCanvas,computeKeyIndex
+	DeterministicRV, Heap, cbColors, StageOnCanvas,
+    Average, IRT, computeKeyIndex
 }
 from "../mod/util.js";
 import {
@@ -82,6 +83,89 @@ class FacGraph extends TioxGraph {
 		super.reset(12,12);
     }
 }
+class FacGraph2  {
+	//controls both of the flow time and throughput graphs
+    constructor(){	
+		//flow time graph
+        this.flowGraph = new TioxGraph(fac,'fchartCanvasfac',
+                40, {width:200, step:40}, d=>d.t, 1000,370,false);
+		this.flowGraph.setTitle('Flow time','fchartTitle');
+		const flow = new GraphLine(this.flowGraph,
+                d => d.flow, cbColors.blue, false, true,  5, 10);
+        const avgflow = new GraphLine(this.flowGraph,
+                d => d.avgflow, cbColors.yellow, false, true,  5, 10);
+        
+        //throughput graph
+        this.thruGraph = new TioxGraph(fac,'tchartCanvasfac',
+                40, {width:200, step:40}, d=>d.t, 1000,370,false);
+		this.thruGraph.setTitle('Average Throughput','tchartTitle');
+		const thru = new GraphLine(this.thruGraph,
+                d => d.thru, cbColors.yellow, false, true,  5, 10);
+		        
+        const leg0 = flow.createLegend('Indiv. Flow Time');
+        const leg1 = avgflow.createLegend('Avg. Flow Time');
+        const d3 = document.getElementById('pairChartLeftLegendfac');
+        d3.classList.add('pairChartLegend');
+        d3.append(leg0,'   ',leg1);
+        const leg2 = thru.createLegend('Avg. Throughput');
+        const d4 = document.getElementById('pairChartRightLegendfac');
+        d4.classList.add('pairChartLegend');
+        d4.append(leg2);
+        
+        
+        fac.usrInputs.set('leg0', 
+            new LegendItem('leg0', flow, localUpdateFromUser, true));
+        fac.usrInputs.set('leg1', 
+            new LegendItem('leg1', avgflow, localUpdateFromUser, true));
+        fac.usrInputs.set('leg2', 
+            new LegendItem('leg2', thru, localUpdateFromUser, true));
+	};
+	    
+	push(t,f){
+		t /= tioxTimeConv;
+        f/= tioxTimeConv;
+		const avgF = this.avgFlow.addItem(f);
+        this.avgThru.out(t,eos.now);
+        const avgR = this.avgThru.avgR();
+//        console.log('about to push',t,f, avgR);
+        this.flowGraph.drawOnePoint( {t: t, flow: f, avgflow: avgF} );
+        this.thruGraph.drawOnePoint( {t: t, thru: avgR} );
+	};
+    
+	reset(){
+		this.avgFlow = new Average();
+//		console.log('in graph reset',fac.now, tioxTimeConv);
+        this.avgThru = new IRT(fac.now/tioxTimeConv,0);
+        this.flowGraph.reset();
+		this.thruGraph.reset();
+        this.xInfo = this.flowGraph.xInfo;
+	}
+    restartGraph(){
+        this.flowGraph.restartGraph();
+        this.thruGraph.restartGraph();
+        
+    };
+	
+    updateForParamChange(){
+        this.avgFlow = new Average();
+        this.avgThru = new IRT(eos.now/tioxTimeConv,0);
+        this.flowGraph.restartGraph(eos.now/tioxTimeConv);
+		this.thruGraph.restartGraph(eos.now/tioxTimeConv);
+    };
+    setupThenRedraw(){
+        this.flowGraph.setupThenRedraw();
+        this.thruGraph.setupThenRedraw();
+    }
+    scaleXaxis(factor){
+        this.flowGraph.scaleXaxis(factor);
+        this.thruGraph.scaleXaxis(factor);
+    }
+    shiftXaxis2(){
+        this.flowGraph.shiftXaxis2();
+        this.thruGraph.shiftXaxis2();
+    }
+}
+
 const anim = {};
 let fac;
 let facInputs = {};
@@ -355,7 +439,8 @@ class FaceGame extends OmConcept {
     redoStagesGraph(){
         this.stage.foreground.reset();
         this.stage.background.reset();
-        this.graph.chart.reset();
+        this.graph.flowGraph.chart.reset();
+        this.graph.thruGraph.chart.reset();
 
         this.redrawBackground();
         this.graph.setupThenRedraw();
@@ -540,14 +625,16 @@ class FacStage extends MachineCenter {
     finishAnim (machine){
         if(this.which == fac.lastStage){
             const card = machine.person;
-            let thruput = null;
-            if( this.timeFirstThru ){
-                this.count++;
-                thruput = 60 * this.count/(fac.now - this.timeFirstThru);
-            } else {
-                this.timeFirstThru = fac.now
-            } 
-            fac.graph.push(fac.now, fac.now - card.sysEntryTime, thruput );
+//            let thruput = null;
+//            if( this.timeFirstThru ){
+//                this.count++;
+//                thruput = 60 * this.count/(fac.now - this.timeFirstThru);
+//            } else {
+//                this.timeFirstThru = fac.now
+//            } 
+//            fac.graph.push(fac.now, fac.now - card.sysEntryTime, thruput );
+            console.log('Sys Entry Time', card.sysEntryTime);
+            fac.graph.push(fac.now, fac.now - card.sysEntryTime);
         }
     };
     draw5(redraw = false){
@@ -846,7 +933,7 @@ function facHTML(){
     
     addDiv('fac','fac','whole')
 	addDiv('fac', 'leftHandSideBox'+'fac',
-			   'facStageWrapper','dualChartWrapper');
+			   'facStageWrapper','pairChartWrapper');
     
     // insert the radio button box first
     const radioButtons = document.getElementById('facDataWrapper');
@@ -891,7 +978,7 @@ function facHTML(){
     addKeyForIds('fac',mark);
     elem.append(mark);
     const qlnInput = genRange('qlnfac',3,0,3,1);
-	elem.append(htmlArbSlider(qlnInput, 'Queue Length = ', '∞', ['1','3','5','∞'] ));
+	elem.append(htmlArbSlider(qlnInput, 'Max Queue Length = ', '∞', ['1','3','5','∞'] ));
     usrInputs.set('qln', new ArbSlider('qln', qlnInput, 
                 localUpdateFromUser, ['1','3','5','∞'],
                                       [1,3,5,-1], 3) );
@@ -920,7 +1007,7 @@ export function facStart() {
     let usrInputs = facHTML();
     fac = new FaceGame(usrInputs);
     facDefine();
-    fac.graph = new FacGraph();
+    fac.graph = new FacGraph2();
     fac.setupScenarios();
     theSimulation.initialize();
     

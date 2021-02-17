@@ -321,7 +321,7 @@ export class OmConcept {
     sEncode(rows){
         const view = new Int8Array(1000);
         const uint8View = new Uint8Array(view.buffer);
-        const textEncoder = new TextEncoder("utf8");
+        const textEncoder = new TextEncoder();
         let ptr = 0;
         view[ptr++] = rows.length;
         const nParams = this.usrInputs.size;
@@ -334,10 +334,14 @@ export class OmConcept {
                 if( typeof x != "string" ){
                    view[ptr++] = Number(x);
                 } else {
-                   const n = x.length;
+                    let uint8Str = textEncoder.encode(x);               
+                    let n = uint8Str.length;
+                    if( n > 127 ){
+                        n = 127;
+                        uint8Str = uint8Str.subarray(0,n);
+                    }
                     view[ptr++] = -n;
-                    textEncoder.encodeInto(row.desc,
-                            uint8View.subarray(ptr));               
+                    view.set(uint8Str, ptr);
                     ptr += n;
                 }
             }

@@ -129,8 +129,10 @@ function keyDownFunction(evt) {
 };
 var currentTab = null;
     if(performance.navigation.type == 2){
+        alert('  caused a reload');
         location.reload(true);
         console.log('just did the reload thing')
+        
     }
     
     document.addEventListener('keydown', keyDownFunction);
@@ -139,7 +141,7 @@ var currentTab = null;
 
 
     
-    console.log('REdoing all the starts of all the animations')
+//    console.log('REdoing all the starts of all the animations')
     omConcepts['que'] = queStart();
     omConcepts['lit'] = litStart();
     omConcepts['nvp'] = nvpStart();

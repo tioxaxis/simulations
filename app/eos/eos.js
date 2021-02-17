@@ -76,6 +76,7 @@ class EosGraph  {
         const leg0 = sepFlow.createLegend('Separate');
         const leg1 = jointFlow.createLegend('Joint');
         const d3 = document.getElementById('pairChartLegendeos');
+        d3.classList.add('pairChartLegend');
         d3.append(leg0,'      ', leg1); //option-spaces!!
         
         // yet, link the LegendItem to both GraphLines via LegendPair. 
@@ -573,7 +574,7 @@ const theSimulation = {
         const acv = eos.usrInputs.get('acv').get();
 		const scv = eos.usrInputs.get('scv').get();
         const ar = util * sr * num;
-        console.log('in initialization',ar,sr,num, util);
+//        console.log('in initialization',ar,sr,num, util);
         
         theSimulation.interarrivalRV = new GammaRV(ar / tioxTimeConv, acv);
 		theSimulation.serviceRV = new GammaRV(sr / tioxTimeConv, scv); 
