@@ -203,11 +203,11 @@ export class NumSlider{
     };
 
     encode(x){
-       const y = (x * this.scale)
-           .toString().padStart(this.shortLen,'0');
-        if( y.length > this.shortLen ){
-            alert('data from item='+this.key+'  It should be '+this.shortLen+' characters but is='+y)
-        }
+       const y = (x * this.scale);
+//           .toString().padStart(this.shortLen,'0');
+//        if( y.length > this.shortLen ){
+//            alert('data from item='+this.key+'  It should be '+this.shortLen+' characters but is='+y)
+//        }
         return y;
     };
     decode(x){
@@ -275,10 +275,10 @@ export class ArbSlider{
         return this.deflt.toString();
     }
     encode(x){
-        return x.toString();;
+        return Number(x); //.toString();;
     };
     decode(x){
-        return x;
+        return x.toString();
     };
     
     userUpdate(){
@@ -322,10 +322,10 @@ export class CheckBox{
         return this.deflt.toString();
     }
     encode(x){
-        return ( x == 'true' ? 'T' : 'F');
+        return ( x == 'true' ? 1 : 0);
     };
     decode(x){
-         return ( x == 'T' ? 'true' : 'false');  
+         return ( x == 0 ? 'false' : 'true' );  
     };
     userUpdate(){
         this.localUpdate(this);
@@ -369,10 +369,10 @@ export class ButtonOnOff{
         return this.deflt.toString();
     }
     encode(x){
-        return ( x == 'true' ? 'T' : 'F');
+        return ( x == 'true' ? 1 : 0 );
     };
     decode(x){
-         return ( x == 'T' ? 'true' : 'false');  
+         return ( x == 1 ? 'true' : 'false');  
     };
     userUpdate(){
         if( this.value ){
@@ -441,7 +441,7 @@ export class RadioButton{
         return this.deflt;
     };
     encode(v){
-        return this.values.findIndex((x) => x == v ).toString();
+        return this.values.findIndex((x) => x == v ); //.toString();
     };
     decode(k){
          return this.values[k];
@@ -483,14 +483,14 @@ export class IntegerInput{
         return this.deflt.toString();
     };
     encode(x){
-        const y = x.toString().padStart(this.shortLen,'0');
-        if( y.length > this.shortLen ){
-            alert('data from item='+this.key+' It should be '+this.shortLen+' characters but is='+y)
-        }
-        return y;
+//        const y = x.toString().padStart(this.shortLen,'0');
+//        if( y.length > this.shortLen ){
+//            alert('data from item='+this.key+' It should be '+this.shortLen+' characters but is='+y)
+//        }
+        return Number(x);
     };
     decode(x){
-       return x; 
+       return x.toString(); 
     };
     userUpdate(event){
         let x = Number(event.target.value);
@@ -531,11 +531,11 @@ export class LegendItem{
         return this.deflt.toString();
     };
     encode(x) {
-        return (x == 'true' ? 'T' : 'F');
+        return (x == 'true' ? 1 : 0 );
     };
     
     decode(x) {
-        return (x == 'T' ? 'true' : 'false');
+        return (x == 1 ? 'true' : 'false');
     };
     
     userUpdate(){
@@ -545,6 +545,7 @@ export class LegendItem{
     
 };
 
+//handles a LegendItem that is connected to two GraphLines
 export class LegendPair extends LegendItem{ 
     constructor (key, line1, line2, localUpdate, deflt){
         super( key, line1, localUpdate, deflt);
@@ -561,6 +562,17 @@ export class LegendPair extends LegendItem{
         super.userUpdate();
     }
 };
+
+export class Description {
+    constructor(key){
+        this.key = key;
+        this.deflt = 'default'+key;
+    }
+    encode(x){ return x};
+    decode(x){ return x};
+    verify(x){ return x};
+    set(x){};
+}
 
 function reportError(key,x){
     if( x == undefined ) 

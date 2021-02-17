@@ -29,13 +29,18 @@
 //   option 2 is the way to go between the various types.
 
 import {
-	Heap, StageOnCanvas
+	Heap, StageOnCanvas, fromBase64, toBase64
 }
 from "./util.js";
 import {
 	ItemCollection, ResourceCollection
 }
 from "./stepitem.js";
+import {
+    Description
+}
+from "./genHTML.js";
+
 function enableButtonQ(name,bool){
 	const elem = document.getElementById(name);
 	if (bool) {
@@ -46,6 +51,8 @@ function enableButtonQ(name,bool){
 		elem.classList.remove('actButton');
 	}
 };
+
+
 
 export function displayToggle(a,b){
 	if( Array.isArray(a)){
@@ -302,27 +309,85 @@ export class OmConcept {
         };
         return row;
     };
-    sEncode(row){
-        let str = '';
-        for ( let [key, inp] of this.usrInputs ){
-            const x = inp.encode(row[key]);
-            str += x;
+//    sEncode(row){
+//        let str = '';
+//        for ( let [key, inp] of this.usrInputs ){
+//            const x = inp.encode(row[key]);
+//            str += x;
+//        }
+//        return str + row['desc'];
+//    };
+    
+    sEncode(rows){
+        const view = new Int8Array(1000);
+        const uint8View = new Uint8Array(view.buffer);
+        const textEncoder = new TextEncoder("utf8");
+        let ptr = 0;
+        view[ptr++] = rows.length;
+        const nParams = this.usrInputs.size;
+        for(let row of rows ){
+            view[ptr++]= nParams;// number of parameters
+            for ( let [key, inp] of this.usrInputs ){
+                const x = inp.encode(row[key]);
+                view[ptr++] = this.keyIndex[key];
+                //decide if single of multiple byes
+                if( typeof x != "string" ){
+                   view[ptr++] = Number(x);
+                } else {
+                   const n = x.length;
+                    view[ptr++] = -n;
+                    textEncoder.encodeInto(row.desc,
+                            uint8View.subarray(ptr));               
+                    ptr += n;
+                }
+            }
         }
-        return str + row['desc'];
+        // convert the corect length to 64 bit str via toBase64()
+        const str= toBase64(uint8View.subarray(0,ptr));
+        // testing code to see if sDecode will ignore param not in use
+        // and can fill in defaut for those not in the list  it passed.
+//        this.usrInputs.set('d222',new Description('d222'));
+//        this.usrInputs.delete('ar');
+//        console.log('TEST is ar there?=',this.usrInputs.has('ar'));
+//        const rows2 = this.sDecode(str);
+//        console.log('TEST', rows2);
+//        debugger;
+        return str;
     };
-    sDecode(str){
-        let row = {};
-        let p = 0;
-        for ( let [key, inp] of this.usrInputs ){
-            let len = inp.shortLen;
-            
-            row[key] = inp.decode(str.slice(p,p+len));
-            p += len;
-        }
-        row.desc = str.slice(p);
-        return row;
+                
+    sDecode(searchStr){
+        const textDecoder = new TextDecoder();
+        let view = new Int8Array(fromBase64(searchStr));
+        const rows = [];
+        let ptr = 0;
+        const nScenarios = view[ptr++];
+        for( let k = 0; k < nScenarios; k++ ){
+            const row = {}
+            const nParams = view[ptr++];
+            for( let j = 0; j < nParams; j++ ){
+                const keyIndex = view[ptr++];
+                const typeValue = view[ptr++];
+                const key = this.keyNames[keyIndex];
+                if( this.usrInputs.has(key)){
+                    const inp = this.usrInputs.get(key);
+                    if( typeValue >= 0 ){
+                        row[key] = inp.decode(typeValue);
+                    } else {
+                        const n = -typeValue;
+                        //get n bytes from buffer into LongData
+                        row[key] = textDecoder.decode(view.subarray(ptr,ptr+n));
+                        ptr += n;
+                    };
+                };
+            };
+            for(let [key,inp] of this.usrInputs){
+                if( row[key] == undefined ) row[key] = inp.deflt;
+            }
+            rows.push(row);
+        };
+        return rows;
     };
-	
+                
 	createLineFromRow(row) {
 		const liElem = document.createElement("LI");
 		liElem.innerHTML = row.desc;
@@ -464,7 +529,7 @@ export class OmConcept {
     async threeCases(key, search, lsObject ){
 		if ( search.scenarios ){
 			this.fromURL = true;
-			return this.parseURLScenariosToRows(search.scenarios)
+			return this.sDecode(search.scenarios)
         }
 		if (lsObject) {
 			const params = this.verifyParamsObject( lsObject );
@@ -733,31 +798,25 @@ export class OmConcept {
 		}
 	};
 
-	createURLScenarioStr(rows){
-		let first = true;
-		let str = '';
-		for (let row of rows){
-			str += (first ? "" : ";") + this.sEncode(row);
-			first = false;
-		}
-		return str;
-	};
+//	createURLScenarioStr(rows){
+//        const str = this.newSEncode(rows)
+//		return str;
+//	};
 
 	//convert each coded scenario into a row of parameters
-	parseURLScenariosToRows(str){
-		let rows = [];
-		let scens = str.split(';')
-		for ( let scenario of scens){
-			rows.push( this.sDecode(scenario) );
-		}
-		return rows;
-	};
+//	parseURLScenariosToRows(str){
+//		let rows = [];
+//		let scens = str.split(';')
+//		for ( let scenario of scens){
+//			rows.push( this.sDecode(scenario) );
+//		}
+//		return rows;
+//	};
 
 	createURL() { //from current UL
 		const result = location.origin + location.pathname +
 			'?scenarios=' +
-			this.createURLScenarioStr(this.createRowsFromUL()) +
-//			( edit ? "&edit=allow" : "" ) +
+			this.sEncode(this.createRowsFromUL()) +
 			  '#' + this.key;
 		const encResult =  encodeURI(result);
 		return encResult;

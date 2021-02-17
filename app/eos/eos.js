@@ -20,7 +20,7 @@
 
 import {
 	GammaRV, Heap, cbColors, Average, IRT, StageOnCanvas,
-    ItemSplitterRandom
+    ItemSplitterRandom, computeKeyIndex
 }
 from "../mod/util.js";
 import {
@@ -46,7 +46,8 @@ import {
     htmlRadioButton, RadioButton, 
     IntegerInput, 
     addKeyForIds, 
-    LegendItem, LegendPair, match, ButtonOnOff
+    LegendItem, LegendPair, match, ButtonOnOff,
+    Description
 }
 from '../mod/genHTML.js';
 
@@ -210,6 +211,12 @@ class EconScale extends OmConcept{
     constructor(usrInputs){
         super('eos');
         this.usrInputs = usrInputs;
+        this.keyNames = ['util','acv','sr','scv',
+                         'num','idle',
+                         'speed','action','reset',
+                         'leg0','leg1','desc'];
+        this.keyIndex = computeKeyIndex(this.keyNames);
+        
     };
     
     localReset () {
@@ -766,6 +773,7 @@ function eosHTML(){
 	const f = document.getElementById('scenariosMideos');
 	f.style = "min-height: 20vw";
     
+    usrInputs.set('desc', new Description('desc'));
     return usrInputs;
 };
 

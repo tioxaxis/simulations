@@ -331,16 +331,25 @@ export class ItemSplitterRandom {
         this.number = n;
     }
     
-//    pushAll(item){
-//        for( let out of outputs ){
-//            const itemCopy = JSON.parse(JSON.stringify(item));
-//            out.push(itemCopy);
-//        };
-//    };
-    
     push(item){
         const k = Math.floor(Math.random() * this.number);
         this.outputs[k].push(item);
     };
+}; 
+
+export function computeKeyIndex(keyNames){
+    const keyIndex = {};
+    for( let k = 0; k < keyNames.length; k++ ){
+        keyIndex[keyNames[k]] = k;
+    };
+    return keyIndex;
 };
+
+export function toBase64 (u8) {
+     return btoa(String.fromCharCode.apply(null, u8));
+}
+export function fromBase64 (str) {
+    return atob(str).split('').map(
+        function (c) { return c.charCodeAt(0); });
+}
 

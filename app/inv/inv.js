@@ -25,7 +25,7 @@ const disappointed = {
 };
 const tioxTimeConv = 10000; //time are in milliseconds/10
 import {
-	GammaRV, UniformRV, Average, DeterministicRV, Heap, cbColors, StageOnCanvas
+	GammaRV, UniformRV, Average, DeterministicRV, Heap, cbColors, StageOnCanvas, computeKeyIndex
 }
 from '../mod/util.js';
 import {
@@ -53,7 +53,7 @@ import {
     htmlRadioButton, RadioButton, 
     IntegerInput, 
     addKeyForIds, 
-    LegendItem, match
+    LegendItem, match, Description
 }
 from '../mod/genHTML.js';
 
@@ -253,6 +253,12 @@ class Inventory extends OmConcept{
     constructor(usrInputs){
         super('inv');
         this.usrInputs = usrInputs;
+        this.keyNames = ['method','ar','acv','lt','ltcv',
+                         'quan','rop','period','upto',
+                         'speed','action','reset',
+                         'leg0','leg1','leg2','desc'];
+        this.keyIndex = computeKeyIndex(this.keyNames);
+        
 //        this.setupScenarios();    
     }
     localReset () {
@@ -1060,7 +1066,7 @@ function invHTML(){
 	
 	const f = document.getElementById('scenariosMidinv');
 	f.style = "min-height: 17vw";
-    
+    usrInputs.set('desc', new Description('desc'));
     return usrInputs;
 };
 

@@ -19,7 +19,7 @@
 */		
 
 import {
-	DeterministicRV, Heap, cbColors, StageOnCanvas
+	DeterministicRV, Heap, cbColors, StageOnCanvas,computeKeyIndex
 }
 from "../mod/util.js";
 import {
@@ -45,7 +45,7 @@ import {
     htmlRadioButton, RadioButton, 
     IntegerInput, 
     addKeyForIds, 
-    LegendItem, match
+    LegendItem, match, Description
 }
 from '../mod/genHTML.js';
 
@@ -286,6 +286,15 @@ class FaceGame extends OmConcept {
 	constructor(usrInputs){
         super('fac');
         this.usrInputs = usrInputs;
+        
+        this.keyNames = ['face','eyes','nose','mout','ears','hair',     
+                         'faceTime','eyesTime','noseTime',
+                         'earsTime','moutTime','hairTime',
+                         'quantity0', 'quantity1', 'quantity2',
+                         'qln',
+                         'speed','action','reset',
+                         'leg0','leg1','leg2','desc'];
+        this.keyIndex = computeKeyIndex(this.keyNames);
         document.getElementById('markButtonfac')
             .addEventListener('click', markCard);
     };
@@ -902,6 +911,8 @@ function facHTML(){
     	
 	const f = document.getElementById('scenariosMidfac');
 	f.style = "min-height: 16vw";
+    
+    usrInputs.set('desc', new Description('desc'));
     return usrInputs;
 };
 

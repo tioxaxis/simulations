@@ -20,7 +20,7 @@
 
 import {
 	GammaRV, UniformRV, DiscreteUniformRV, DeterministicRV, 
-    Heap, cbColors, Average, IRT, StageOnCanvas
+    Heap, cbColors, Average, IRT, StageOnCanvas, computeKeyIndex
 }
 from '../mod/util.js';
 import {
@@ -46,7 +46,7 @@ import {
     htmlRadioButton, RadioButton, 
     IntegerInput, 
     addKeyForIds, 
-    LegendItem, match
+    LegendItem, match, Description
 }
 from '../mod/genHTML.js';
 
@@ -76,6 +76,7 @@ class NVGraph extends TioxGraph {
             new LegendItem('leg1', over, localUpdateFromUser, true));
         nvp.usrInputs.set('leg2', 
             new LegendItem('leg2', average, localUpdateFromUser, true));
+        
 	};
 	
 	push (n, under, over){
@@ -206,6 +207,10 @@ class NewsVendor extends OmConcept{
     constructor(usrInputs){
         super('nvp');
         this.usrInputs = usrInputs;
+        this.keyNames = ['dr','dcv','Cu','Co','quan',
+                         'speed','action','reset',
+                         'leg0','leg1','leg2','desc'];
+        this.keyIndex = computeKeyIndex(this.keyNames);
     };
     localReset () {
 		
@@ -689,7 +694,7 @@ function nvpHTML(){
     	
 	const f = document.getElementById('scenariosMidnvp');
 	f.style = "min-height: 21vw";
-    
+    usrInputs.set('desc', new Description('desc'));
     return usrInputs;
 };
 

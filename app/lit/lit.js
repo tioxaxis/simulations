@@ -20,7 +20,8 @@
 
 
 import {
-	GammaRV, Heap, cbColors, Average, IRT, StageOnCanvas
+	GammaRV, Heap, cbColors, Average, IRT, StageOnCanvas,
+    computeKeyIndex
 }
 from '../mod/util.js';
 import {
@@ -47,7 +48,7 @@ import {
     htmlRadioButton, RadioButton, 
     IntegerInput, 
     addKeyForIds, 
-    LegendItem, match
+    LegendItem, match, Description
 }
 from '../mod/genHTML.js';
 
@@ -187,6 +188,11 @@ class LittlesLaw extends OmConcept{
     constructor(usrInputs){
         super('lit');
         this.usrInputs = usrInputs;
+        this.keyNames = ['ar','acv','st','scv',
+                         'speed','action','reset',
+                         'leg0','leg1','leg2','desc'];
+        this.keyIndex = computeKeyIndex(this.keyNames);
+        
     }
     
     localReset () {
@@ -530,6 +536,7 @@ function litHTML(){
     
     const f = document.getElementById('scenariosMidlit');
 	f.style = "min-height: 26vw";
+    usrInputs.set('desc', new Description('desc'));
     
     return usrInputs;
 };

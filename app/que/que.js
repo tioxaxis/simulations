@@ -19,7 +19,7 @@
 */		
 
 import {
-	GammaRV, Heap, cbColors, Average, StageOnCanvas
+	GammaRV, Heap, cbColors, Average, StageOnCanvas, computeKeyIndex
 }
 from "../mod/util.js";
 import {
@@ -45,7 +45,7 @@ import {
     htmlRadioButton, RadioButton, 
     IntegerInput, 
     addKeyForIds, 
-    LegendItem, match
+    LegendItem, match, Description
 }
 from '../mod/genHTML.js';
 
@@ -181,6 +181,11 @@ class Queueing extends OmConcept{
     constructor(usrInputs){
         super('que');
         this.usrInputs = usrInputs;
+        
+        this.keyNames = ['ar','acv','sr','scv',
+                         'speed','action','reset',
+                         'leg0','leg1','leg2','desc'];
+        this.keyIndex = computeKeyIndex(this.keyNames);
     };
     
     localReset () {
@@ -577,6 +582,8 @@ function queHTML(){
     
 	const f = document.getElementById('scenariosMidque');
 	f.style = "min-height: 26vw";
+    
+    usrInputs.set('desc', new Description('desc'));
     
     return usrInputs;
 };
