@@ -129,7 +129,7 @@ function keyDownFunction(evt) {
 };
 var currentTab = null;
     if(performance.navigation.type == 2){
-        alert('  caused a reload');
+//        alert('  caused a reload');
         location.reload(true);
         console.log('just did the reload thing')
         

@@ -319,7 +319,7 @@ export class OmConcept {
 //    };
     
     sEncode(rows){
-        const view = new Int8Array(1000);
+        const view = new Int8Array(2000);
         const uint8View = new Uint8Array(view.buffer);
         const textEncoder = new TextEncoder();
         let ptr = 0;
@@ -345,9 +345,14 @@ export class OmConcept {
                     ptr += n;
                 }
             }
+            if( ptr > 1500 ){
+                alert('You have too many scenarios.  They will generated a URL with more than 2000 characters and that may fail on some browsers, notable IE. Your scenarios will continue to work but you can not use the URL button with this set');
+            break;
+            }
         }
         // convert the corect length to 64 bit str via toBase64()
         const str= toBase64(uint8View.subarray(0,ptr));
+        
         // testing code to see if sDecode will ignore param not in use
         // and can fill in defaut for those not in the list  it passed.
 //        this.usrInputs.set('d222',new Description('d222'));

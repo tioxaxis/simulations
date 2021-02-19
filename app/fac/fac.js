@@ -50,40 +50,40 @@ import {
 }
 from '../mod/genHTML.js';
 
-class FacGraph extends TioxGraph {
-	constructor(){	
-		super(fac, 'chartfac', 40, {width:200, step:40}, d=>d.t,
-              1400, 500, true);
-		const flowtime = new GraphLine(this, d => d.flow, cbColors.blue,
-					   false, true,  5, 8);
-		const throughput = new GraphLine(this,d => d.thru, cbColors.yellow,
-					   false, true,  5, 8, true);
-                
-        document.getElementById('leftLegendfac').append(
-            flowtime.createLegend('Flow time<br>(seconds/card)'));
-        document.getElementById('rightLegendfac').append(
-            throughput.createLegend('Throughput<br>(cards/minute)'));
-
-        fac.usrInputs.set('leg0', 
-            new LegendItem('leg0', flowtime, localUpdateFromUser, true));
-        fac.usrInputs.set('leg1', 
-            new LegendItem('leg1', throughput, localUpdateFromUser, true));
-	};
-	
-	push (t,flow,thru){
-		t /= tioxTimeConv;
-        flow /= tioxTimeConv;
-        if( thru ) thru *= tioxTimeConv;
-		let p = {t: t, flow: flow,
-				 thru: thru
-                };
-		this.drawOnePoint(p);
-	};
-	reset(){
-		super.reset(12,12);
-    }
-}
-class FacGraph2  {
+//class FacGraph extends TioxGraph {
+//	constructor(){	
+//		super(fac, 'chartfac', 40, {width:200, step:40}, d=>d.t,
+//              1400, 500, true);
+//		const flowtime = new GraphLine(this, d => d.flow, cbColors.blue,
+//					   false, true,  5, 8);
+//		const throughput = new GraphLine(this,d => d.thru, cbColors.yellow,
+//					   false, true,  5, 8, true);
+//                
+//        document.getElementById('leftLegendfac').append(
+//            flowtime.createLegend('Flow time<br>(seconds/card)'));
+//        document.getElementById('rightLegendfac').append(
+//            throughput.createLegend('Throughput<br>(cards/minute)'));
+//
+//        fac.usrInputs.set('leg0', 
+//            new LegendItem('leg0', flowtime, localUpdateFromUser, true));
+//        fac.usrInputs.set('leg1', 
+//            new LegendItem('leg1', throughput, localUpdateFromUser, true));
+//	};
+//	
+//	push (t,flow,thru){
+//		t /= tioxTimeConv;
+//        flow /= tioxTimeConv;
+//        if( thru ) thru *= tioxTimeConv;
+//		let p = {t: t, flow: flow,
+//				 thru: thru
+//                };
+//		this.drawOnePoint(p);
+//	};
+//	reset(){
+//		super.reset(12,12);
+//    }
+//}
+class FacGraph {
 	//controls both of the flow time and throughput graphs
     constructor(){	
 		//flow time graph
@@ -91,45 +91,48 @@ class FacGraph2  {
                 40, {width:200, step:40}, d=>d.t, 1000,370,false);
 		this.flowGraph.setTitle('Flow time','fchartTitle');
 		const flow = new GraphLine(this.flowGraph,
-                d => d.flow, cbColors.blue, false, true,  5, 10);
-        const avgflow = new GraphLine(this.flowGraph,
-                d => d.avgflow, cbColors.yellow, false, true,  5, 10);
+                d => d.flow, cbColors.blue, false, true,  5, 8);
+//        const avgflow = new GraphLine(this.flowGraph,
+//                d => d.avgflow, cbColors.yellow, false, true,  5, 10);
         
         //throughput graph
         this.thruGraph = new TioxGraph(fac,'tchartCanvasfac',
                 40, {width:200, step:40}, d=>d.t, 1000,370,false);
-		this.thruGraph.setTitle('Average Throughput','tchartTitle');
+		this.thruGraph.setTitle('Throughput','tchartTitle');
 		const thru = new GraphLine(this.thruGraph,
-                d => d.thru, cbColors.yellow, false, true,  5, 10);
+                d => d.thru, cbColors.yellow, false, true,  5, 8);
 		        
-        const leg0 = flow.createLegend('Indiv. Flow Time');
-        const leg1 = avgflow.createLegend('Avg. Flow Time');
+        //add legends
+        const leg0 = flow.createLegend('Individual Flow Times (seconds/card)');
+//        const leg1 = avgflow.createLegend('Avg. Flow Time');
         const d3 = document.getElementById('pairChartLeftLegendfac');
         d3.classList.add('pairChartLegend');
-        d3.append(leg0,'   ',leg1);
-        const leg2 = thru.createLegend('Avg. Throughput');
+        d3.append(leg0);
+        const leg1 = thru.createLegend('Avg. Throughput (cards/minute)');
         const d4 = document.getElementById('pairChartRightLegendfac');
         d4.classList.add('pairChartLegend');
-        d4.append(leg2);
+        d4.append(leg1);
         
-        
+        //set up legends as buttons (and includable in URL)
         fac.usrInputs.set('leg0', 
             new LegendItem('leg0', flow, localUpdateFromUser, true));
         fac.usrInputs.set('leg1', 
-            new LegendItem('leg1', avgflow, localUpdateFromUser, true));
-        fac.usrInputs.set('leg2', 
-            new LegendItem('leg2', thru, localUpdateFromUser, true));
+            new LegendItem('leg1', thru, localUpdateFromUser, true));
 	};
 	    
 	push(t,f){
 		t /= tioxTimeConv;
         f/= tioxTimeConv;
-		const avgF = this.avgFlow.addItem(f);
-        this.avgThru.out(t,eos.now);
-        const avgR = this.avgThru.avgR();
-//        console.log('about to push',t,f, avgR);
-        this.flowGraph.drawOnePoint( {t: t, flow: f, avgflow: avgF} );
-        this.thruGraph.drawOnePoint( {t: t, thru: avgR} );
+        // flow time is in seconds/item
+        this.flowGraph.drawOnePoint( {t: t, flow: f});
+        if( this.timeFirstThru ){
+            this.count++;
+            // thruput is in items/minute
+            const thruput = 60 * this.count/(fac.now - this.timeFirstThru) * tioxTimeConv;
+            this.thruGraph.drawOnePoint( {t: t, thru: thruput} );
+        } else {
+            this.timeFirstThru = fac.now
+        } 
 	};
     
 	reset(){
@@ -139,6 +142,8 @@ class FacGraph2  {
         this.flowGraph.reset();
 		this.thruGraph.reset();
         this.xInfo = this.flowGraph.xInfo;
+        this.timeFirstThru = null;
+        this.count = 0;
 	}
     restartGraph(){
         this.flowGraph.restartGraph();
@@ -147,10 +152,12 @@ class FacGraph2  {
     };
 	
     updateForParamChange(){
-        this.avgFlow = new Average();
-        this.avgThru = new IRT(eos.now/tioxTimeConv,0);
-        this.flowGraph.restartGraph(eos.now/tioxTimeConv);
-		this.thruGraph.restartGraph(eos.now/tioxTimeConv);
+        this.timeFirstThru = null;
+        this.count = 0;
+        //        this.avgFlow = new Average();
+//        this.avgThru = new IRT(fac.now/tioxTimeConv,0);
+        this.flowGraph.restartGraph(fac.now/tioxTimeConv);
+		this.thruGraph.restartGraph(fac.now/tioxTimeConv);
     };
     setupThenRedraw(){
         this.flowGraph.setupThenRedraw();
@@ -377,7 +384,7 @@ class FaceGame extends OmConcept {
                          'quantity0', 'quantity1', 'quantity2',
                          'qln',
                          'speed','action','reset',
-                         'leg0','leg1','leg2','desc'];
+                         'leg0','leg1','desc'];
         this.keyIndex = computeKeyIndex(this.keyNames);
         document.getElementById('markButtonfac')
             .addEventListener('click', markCard);
@@ -393,7 +400,7 @@ class FaceGame extends OmConcept {
                 computeStageTimes();
                 this.partialReset();
                 this.localReset();
-                fac.graph.restartGraph(fac.now/tioxTimeConv);
+                fac.graph.updateForParamChange();
         }
         
         for(let inp of inpsChanged){
@@ -457,7 +464,7 @@ function localUpdateFromUser(inp){
         computeStageTimes();
         fac.partialReset()
         fac.localReset()
-        fac.graph.restartGraph(fac.now/tioxTimeConv);
+        fac.graph.updateForParamChange();
     }
 }; 
 
@@ -591,8 +598,8 @@ class FacStage extends MachineCenter {
     };
     reset(){
         super.reset();
-        this.timeFirstThru = null;
-        this.count = 0;
+//        this.timeFirstThru = null;
+//        this.count = 0;
         // clear and redraw workers[ at stage this.which] 
         this.setup2DrawMC();
         this.draw();
@@ -633,7 +640,7 @@ class FacStage extends MachineCenter {
 //                this.timeFirstThru = fac.now
 //            } 
 //            fac.graph.push(fac.now, fac.now - card.sysEntryTime, thruput );
-            console.log('Sys Entry Time', card.sysEntryTime);
+//            console.log('Sys Entry Time', card.sysEntryTime);
             fac.graph.push(fac.now, fac.now - card.sysEntryTime);
         }
     };
@@ -1007,7 +1014,7 @@ export function facStart() {
     let usrInputs = facHTML();
     fac = new FaceGame(usrInputs);
     facDefine();
-    fac.graph = new FacGraph2();
+    fac.graph = new FacGraph();
     fac.setupScenarios();
     theSimulation.initialize();
     

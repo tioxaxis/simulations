@@ -572,6 +572,7 @@ export class Description {
     decode(x){ return x};
     verify(x){ return x};
     set(x){};
+    get(){return ''};
 }
 
 function reportError(key,x){
