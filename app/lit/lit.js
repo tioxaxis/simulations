@@ -30,7 +30,7 @@ import {
 from '../mod/rhs.js';
 import {
 	Queue, WalkAndDestroy, MachineCenter,
-	InfiniteMachineCenter, Item, 
+	InfiniteMachineCenter, Item, Person, 
 	GStickFigure, NStickFigure
 }
 from "../mod/stepitem.js";
@@ -449,7 +449,7 @@ class Supplier {
 	};
 	front() {
         if( this.current ) return this.current;
-        return this.current = new Person(lit, this.x, this.y);
+        return this.current = new LitPerson(lit, gSF, this.x, this.y);
 	};
     pull(){
         const last = this.front();
@@ -458,10 +458,9 @@ class Supplier {
 	}
 }; //end class Supplier
 
-export class Person extends Item {
-	constructor(omConcept, x, y = 60) {
-		super(omConcept, x, y);
-		this.graphic = new NStickFigure(gSF, x, y);
+export class LitPerson extends Person {
+	constructor(omConcept, gSF,  x, y = 60) {
+		super(omConcept, gSF, x, y);
 		this.updateBadge = false;
 	};
 	updatePosition() {

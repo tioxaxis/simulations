@@ -29,7 +29,7 @@ import {
 from '../mod/rhs.js';
 import {
 	Queue, WalkAndDestroy, MachineCenter,
-	InfiniteMachineCenter, Combine, Item,
+	InfiniteMachineCenter, Combine, Item, Person,
 	GStickFigure, NStickFigure, GStore, tioxColors
 }
 from "../mod/stepitem.js";
@@ -504,7 +504,7 @@ class Supplier {
 	};
 	front() {
         if( this.current ) return this.current;
-        return this.current = new Person(nvp, this.x, this.y);
+        return this.current = new Person(nvp, gSF, this.x, this.y);
 	};
     pull(){
         const last = this.front();
@@ -604,12 +604,12 @@ class RetailStore extends GStore {
 	};
 };
 
-export class Person extends Item {
-	constructor(omConcept, x, y = 60) {
-		super(omConcept, x, y);
-		this.graphic = new NStickFigure(gSF, x, y);
-	};
-}; // end class Person
+//export class Person extends Item {
+//	constructor(omConcept, x, y = 60) {
+//		super(omConcept, x, y);
+//		this.graphic = new NStickFigure(gSF, x, y);
+//	};
+//}; // end class Person
 
 
 

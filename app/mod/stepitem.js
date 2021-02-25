@@ -104,6 +104,9 @@ export class Queue {
         
         if( this.pauseOnIdle && this.numSeatsUsed == 1 )
              this.checkIdleMachines();
+        
+        // check for switch and call routine.
+        
 		this.printQueue();
 	};
 
@@ -285,6 +288,8 @@ export class MachineCenter {
 		this.numberBusy--;
         if(this.pauseOnIdle && machine.status == 'idle'){
             this.checkForQueue();
+            
+            //  check for switch and call routine.
         } 
 	};
     
@@ -687,6 +692,29 @@ export class Item {
 	}
 }; // end of class Item
 
+
+export class Person extends Item {
+    constructor(omConcept, gSF, x, y = 100) {
+		super(omConcept, x, y);
+		this.graphic = new NStickFigure(gSF, x, y);
+	};
+
+	isThereOverlap() {
+		// is 'p' graph above the 'a' graph in [0, p.count] ?
+		let p = this;
+		let a = this.ahead;
+		if (!a) return false;
+		let pPath = p.pathList[0];
+		let aPath = a.pathList[0];
+		if (!aPath) return false;
+		return false;
+//		return (pPath.t < aPath.t + a.width / aPath.speedX)
+			//        if (  p.cur.x + p.width > a.cur.x ) return true;
+			//        if ( pPath.deltaX <= aPath.deltaX ) return false;
+			//        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
+	};
+}; // end class Person
+
 export const tioxColors = ['rgb(28, 62, 203)', 'rgb(80, 212, 146)', 'rgb(151, 78, 224)',
      'rgb(234, 27, 234)', 'rgb(164, 132, 252)', 'rgb(29, 157, 127)',
      'rgb(0, 0, 0)', 'rgb(74, 26, 204)', 'rgb(6, 190, 234)',
@@ -787,6 +815,9 @@ export class NStickFigure {
 		this.x = x;
 		this.y = y;
 	};
+    angleSetup(){
+        
+    };
 
     
     draw() {

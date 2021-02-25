@@ -28,7 +28,7 @@ import {
 from '../mod/rhs.js';
 import {
 	Queue, WalkAndDestroy, MachineCenter,
-	InfiniteMachineCenter, Item, 
+	InfiniteMachineCenter, Item, Person, 
 	GStickFigure, NStickFigure
 }
 from "../mod/stepitem.js";
@@ -492,7 +492,7 @@ class Supplier {
 	};
 	front() {
         if( this.current ) return this.current;
-        return this.current = new Person(que, this.x, this.y);
+        return this.current = new Person(que, gSF, this.x, this.y);
 	};
     pull(){
         const last = this.front();
@@ -502,27 +502,27 @@ class Supplier {
 }; //end class Supplier
 
 
-export class Person extends Item {
-	constructor(omConcept, x, y = 100) {
-		super(omConcept, x, y);
-		this.graphic = new NStickFigure(gSF, x, y);
-	};
-
-	isThereOverlap() {
-		// is 'p' graph above the 'a' graph in [0, p.count] ?
-		let p = this;
-		let a = this.ahead;
-		if (!a) return false;
-		let pPath = p.pathList[0];
-		let aPath = a.pathList[0];
-		if (!aPath) return false;
-		return false;
-//		return (pPath.t < aPath.t + a.width / aPath.speedX)
-			//        if (  p.cur.x + p.width > a.cur.x ) return true;
-			//        if ( pPath.deltaX <= aPath.deltaX ) return false;
-			//        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
-	};
-}; // end class Person
+//export class Person extends Item {
+//	constructor(omConcept, x, y = 100) {
+//		super(omConcept, x, y);
+//		this.graphic = new NStickFigure(gSF, x, y);
+//	};
+//
+//	isThereOverlap() {
+//		// is 'p' graph above the 'a' graph in [0, p.count] ?
+//		let p = this;
+//		let a = this.ahead;
+//		if (!a) return false;
+//		let pPath = p.pathList[0];
+//		let aPath = a.pathList[0];
+//		if (!aPath) return false;
+//		return false;
+////		return (pPath.t < aPath.t + a.width / aPath.speedX)
+//			//        if (  p.cur.x + p.width > a.cur.x ) return true;
+//			//        if ( pPath.deltaX <= aPath.deltaX ) return false;
+//			//        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
+//	};
+//}; // end class Person
 
 
 function queHTML(){	
