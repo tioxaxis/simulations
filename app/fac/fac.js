@@ -789,19 +789,19 @@ class Card extends Item {
 	constructor(omConcept, x, y = 100) {
 		super(omConcept, x, y);
 		this.graphic = new FaceCard(
-            anim.stage.foreContext, x, y, 
+            anim.stage.foreContext, /*x, y,*/ 
             anim.box.size,anim.box.size);
 	};
 
-}; // end class Person
+}; 
 
 const pi2 =2 * 3.14159;
 const pi = 3.14159;
 export class FaceCard {
-    constructor(ctx,x,y,w,h){
+    constructor(ctx,/*x,y,*/w,h){
         this.ctx = ctx;
-        this.x = x;
-        this.y = y;
+//        this.x = x;
+//        this.y = y;
         this.w = w;
         this.h = h;
         this.start = {face:null, eyes:null, nose: null, 
@@ -819,18 +819,18 @@ export class FaceCard {
             };
         };
     };
-    moveTo(x, y) {
-		this.x = Math.floor(x);
-		this.y = Math.floor(y);
-	};
+//    moveTo(x, y) {
+//		this.x = Math.floor(x);
+//		this.y = Math.floor(y);
+//	};
     
-    draw(now){
+    draw(cur,now){
         let ctx = this.ctx;
          ctx.save();
         
         // should be able to adjust this to (this.x-this.w/2, this.y - this.h/2) so I can use centered coordinates to pass.
-        ctx.translate(this.x - this.w/2 ,
-                      this.y - this.h/2);
+        ctx.translate(cur.x - this.w/2 ,
+                      cur.y - this.h/2);
         ctx.beginPath();
         ctx.strokeStyle = 'black';
         ctx.fillStyle = 'white';

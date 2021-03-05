@@ -197,6 +197,7 @@ class Queueing extends OmConcept{
         //fudge to get animation started quickly
         let t = que.heap.top().time - 1;
         que.now = que.frameNow = t;
+        setHalfServiceEvent();
         document.getElementById('nInQueue').innerHTML = '0';
     };
     localUpdateFromSliders(...inpsChanged){
@@ -257,8 +258,20 @@ function localUpdateFromUser(inp){
             que.graph.updateForParamChange();
         }
 };
-        
-        
+function halfServTime(){
+    const rate = Math.max(.0001,Number(que.usrInputs.get('sr').get()));
+    return (tioxTimeConv / rate) / 2;
+}        
+function setHalfServiceEvent(){
+    
+    que.heap.push({
+        time: que.now + halfServTime(),
+        type: 'adjustWalkers' + que.name,
+        proc: theSimulation.queue.everyHalfServiceTime.
+                        bind(theSimulation.queue),
+        item: null
+    });
+}      
  function localUpdate(inp){
     let v = inp.get();
     switch (inp.key){
@@ -287,6 +300,8 @@ function localUpdateFromUser(inp){
             que.heap.modify('finish/TSAagent',
                 () => que.now +
                 theSimulation.serviceRV.observe());
+            que.heap.modify('adjustWalkers',
+                           () => que.now + halfServiceTime())
             break;
         case 'speed':
             que.adjustSpeed(v,speeds);
@@ -359,27 +374,45 @@ class QueQueue extends Queue {
 			this.numSeatsUsed.toString().padEnd(5,' ');
         
         for( let k = 0; k < this.numSeatsUsed; k++ ){
-            let p = this.q[k];   
-            let pos = p.cur.x
-                p.updatePathDelta(
-                que.now + Math.min(walkForOne,person.procTime),
-					this.delta.dx, this.delta.dy)
+            this.q[k].updatePath({
+                t: que.now + Math.min(walkForOne,person.procTime),
+                x: anim.person.path.headQueue - this.delta.dx*k, 
+                y: anim.person.path.top
+            })
         };
-        
-        for (let k = this.numSeatsUsed; 
-             k < this.q.length; k++) {
+        this.updateWalkers();
+	};
+    everyHalfServiceTime(){
+        this.updateWalkers();
+        setHalfServiceEvent();
+    };
+    updateWalkers(){
+//        printQ('before adjustment nsu='+this.numSeatsUsed, this.q);
+        const servRate = Number(que.usrInputs.get('sr').get()) / tioxTimeConv;
+        for (let k = this.numSeatsUsed; k < this.q.length; k++) {
 			let p = this.q[k];   
-            const servRate = Number(que.usrInputs.get('sr').get()) / tioxTimeConv;
             const nLeave = Math.floor(servRate * (p.arrivalTime - que.now));
             const dist = Math.max(0,(k - nLeave)) * this.delta.dx;
             p.updatePath({t: p.pathList[0].t,
-					      x: Math.max(p.pathList[0].x,
-                              anim.person.path.headQueue - dist),
+					      x: anim.person.path.headQueue - dist,
                           y: anim.person.path.top 
                          });
         }
-	};
+//        printQ('after adjustment', this.q);
+//        debugger;
+    }
 };
+function printQ(when, q){
+    console.log(when,'Now = ',que.now);
+    for( let k = 0; k < q.length; k++){
+        const p = q[k];
+        console.log(p.which,' #PL=',p.pathList.length, 
+                    p.cur.x,p.cur.t.toFixed(0));
+        if( p.pathList.length>0 ) 
+            console.log('    and pathList ',p.pathList[0].x,
+                    p.pathList[0].t.toFixed(0));
+    }
+}
 
 class QueWalkOffStage extends WalkAndDestroy {
     constructor(){
@@ -425,9 +458,51 @@ class QueTSA extends MachineCenter {
         super.reset();
 	};
 	
-	startAnim (machine, theProcTime) {
-        machine.person.setDestWithProcTime(theProcTime,
-			machine.locx, machine.locy);
+	startAnim (machine, procTime) {
+        const p = machine.person;
+        const distance = Math.max(Math.abs(p.cur.x - machine.locx),
+			Math.abs(p.cur.y - machine.locy));
+        
+        let  walkTime = distance / this.omConcept.stage.normalSpeed;
+        let armTime = 1000;
+        let remTime = procTime - 2 * armTime - walkTime;
+        if( remTime < 0.3 * procTime ){
+            walkTime = 0.3 * procTime;
+            armTime = 0.2 * procTime;
+            remTime = 0.3 * procTime;
+        }
+        
+        p.addPath({
+            t: que.now + walkTime,
+            x: machine.locx,
+            y: machine.locy
+        });
+        p.addPath({
+            t: que.now + walkTime + armTime,
+            x: machine.locx,
+            y: machine.locy,
+            l: 30,
+            a: 120,
+        });
+        p.addPath({
+            t: que.now + walkTime + armTime + remTime,
+            x: machine.locx,
+            y: machine.locy,
+            l: 30,
+            a: 120,
+        });
+         p.addPath({
+            t: que.now + walkTime + 2* armTime + remTime,
+            x: machine.locx,
+            y: machine.locy,
+            l: 30,
+            a: 22,
+        });
+         
+        
+        
+//                  machine.person.setDestWithProcTime(theProcTime,
+//			machine.locx, machine.locy);
 //        console.log('in StartAnim TSA queueing', que.now, machine.person.pathList);
 //        debugger;
     };
@@ -465,6 +540,7 @@ const theSimulation = {
 
 		this.queue = new QueQueue();
 		que.resetCollection.push(this.queue);
+        
 
 		this.walkOffStage = new QueWalkOffStage();
 		que.resetCollection.push(this.walkOffStage);

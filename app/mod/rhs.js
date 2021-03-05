@@ -27,7 +27,7 @@
 //  4) encoded in a string to go into a url
 //  5) in JSON in a file for the defaults
 //   option 2 is the way to go between the various types.
-
+//var framesDone  = 0;
 import {
 	Heap, StageOnCanvas, fromBase64, toBase64
 }
@@ -209,6 +209,7 @@ export class OmConcept {
 	};
 	
 	eachFrame() {
+//        console.log('frames=',framesDone++);
         this.requestAFId = window.requestAnimationFrame(this.eachFrame.bind(this));
         let perfNow = performance.now();
 		let deltaRealTime = Math.min(100, perfNow - this.lastPerfNow);

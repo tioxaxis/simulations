@@ -41,26 +41,35 @@
 		font-size: 15vh;
 		color: #1244ea;
 		text-align: center;
-		padding: 2vw;
+		padding: 2vh 2vh 2vh 2vw;
 	}
-.appButton{
+A {
+    text-decoration:none;
+}
+.appLink{
 	text-align: center;
-	font-size: 3.5vh;
+	font-size: 5vh;
 	height: 6vh;
-	background-color: var(--borderColor);
-	margin:  2vh auto  2vh auto;
+/*	background-color: var(--borderColor);*/
+	margin:  1vh auto  1vh auto;
 	padding: 1vh;
-	width: 40vh;
-	color: white;
-		cursor: pointer;
+	width: 60vh;
+	color: var(--borderColor);
+    cursor: pointer;
+    text-underline-position: left;
 }
-.appButton:hover{
-	background-color: blue;
-	color: white;
+.appLink:hover{
+/*	background-color: blue;*/
+	color:rgb(0, 172, 152);
 }
+.appLink:active{
+    color: blue;
+}
+/*
 .verticalCenter{
-	padding: 1vh 2vh 1vh 2vh;
+	padding: 0vh 2vh 0vh 2vh;
 }
+*/
 
 
 /*************  Left Hand Side   **************/

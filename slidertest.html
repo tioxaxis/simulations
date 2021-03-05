@@ -8,10 +8,10 @@
 	<link rel="stylesheet" type="text/css" href="./app/app.css">
 
 	<!--software for random number generation-->
-	<script src='./app/res/jstat.min.js'></script>
+<!--	<script src='./app/res/jstat.min.js'></script>-->
 	
 	<!-- converts Math.random() to be seeded    -->
-	<script src='/app/res/seedrandom.min.js'></script>
+<!--	<script src='/app/res/seedrandom.min.js'></script>-->
 
 <!--	<script type='module' src='./app/app.js'></script>-->
     <style>
@@ -46,15 +46,20 @@
     <button type="button" id="button1" >First</button>
     <button type="button" id="button2" >Second</button>
     <button type="button" id="button3" onclick="draw3()">Third</button>
+    <a href="./slidertest.html#AAA"> click for AAA</a>
+    <a href="./slidertest.html#BBB"> click for BBB</a> 
+    <br>
+    <br>
+    <a href="./doc/doc.html">DOCUMENTATION</a>
     
-    
-    
+<!--
     <div class='leftHandSideBoxX'>0
         <span id=item0></span>
 
 	   <canvas class="theStage foregroundx" id="foreground0" ></canvas>
 	   <canvas class="theStage background" id="background0" ></canvas>
     </div>
+-->
 
   
   
@@ -240,17 +245,33 @@
        
         
         
-        var tenRnd = [];
-        for(let k = 0; k<10; k++){
-            tenRnd[k] = new Math.seedrandom('hello'+'.459670');
+//        var tenRnd = [];
+//        for(let k = 0; k<10; k++){
+//            tenRnd[k] = new Math.seedrandom('hello'+'.459670');
+//        };
+//        
+//        for(let j = 0; j<20;j++){
+//            console.log(tenRnd[0](),tenRnd[1](),tenRnd[2](),tenRnd[3]())
+//        };
+//        
+//        
+      var visit = 0;
+        
+        window.addEventListener('hashchange', hashChange);
+     window.addEventListener('popstate',popStateFunc);   
+     window.addEventListener('load',loadedHTML);
+        
+        function loadedHTML(){
+            console.log('LOADED: the page was loaded',
+                       ++visit);
         };
         
-        for(let j = 0; j<20;j++){
-            console.log(tenRnd[0](),tenRnd[1](),tenRnd[2](),tenRnd[3]())
-        };
-        
-        
-        
+        function hashChange(event){
+            console.log('HASH:   the hash is now=',location.hash);
+        }
+        function popStateFunc(event){
+            console.log('POPSTATE called and the hash is now=',location.hash);
+        }
         
         
         

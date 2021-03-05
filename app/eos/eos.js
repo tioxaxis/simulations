@@ -29,7 +29,7 @@ import {
 from '../mod/rhs.js';
 import {
 	Queue, WalkAndDestroy, MachineCenter,
-	InfiniteMachineCenter, Item, 
+	InfiniteMachineCenter, Item, Person, 
 	GStickFigure, NStickFigure 
 }
 from "../mod/stepitem.js";
@@ -690,23 +690,23 @@ class EosCreator {
 }
 
 
-export class Person extends Item {
-	constructor(omConcept, gSF, x, y = 100) {
-		super(omConcept, x, y);
-		this.graphic = new NStickFigure(gSF, x, y);
-	};
-
-	isThereOverlap() {
-		// is 'p' graph above the 'a' graph in [0, p.count] ?
-		let p = this;
-		let a = this.ahead;
-		if (!a) return false;
-		let pPath = p.pathList[0];
-		let aPath = a.pathList[0];
-		if (!aPath) return false;
-		return false;
-	};
-}; // end class Person
+//export class Person extends Item {
+//	constructor(omConcept, gSF, x, y = 100) {
+//		super(omConcept, x, y);
+//		this.graphic = new NStickFigure(gSF, x, y);
+//	};
+//
+//	isThereOverlap() {
+//		// is 'p' graph above the 'a' graph in [0, p.count] ?
+//		let p = this;
+//		let a = this.ahead;
+//		if (!a) return false;
+//		let pPath = p.pathList[0];
+//		let aPath = a.pathList[0];
+//		if (!aPath) return false;
+//		return false;
+//	};
+//}; // end class Person
 
 
 function eosHTML(){	

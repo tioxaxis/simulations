@@ -507,110 +507,123 @@ export class Item {
 		this.graphic.setColor(bodyColor, borderColor);
 	};
 
-	//old version
-    moveDisplayWithPath_old(deltaSimuT) {
-		if (this.inBatch) return;
-		while (this.pathList.length > 0) {
-			var path = this.pathList[0];
-			if (path.t < this.omConcept.now) {
-				this.cur.t = path.t;
-				this.cur.x = path.x;
-				this.cur.y = path.y;
-				this.pathList.shift();
-				deltaSimuT = Math.max(0, this.omConcept.now - path.t);
-			} else {
-				path.speedX = (path.x - this.cur.x) 
-                                / (path.t - this.cur.t);
-                path.speedY = (path.y - this.cur.y)
-                                / (path.t - this.cur.t);
-                this.cur.t = this.omConcept.now;
-                
-				this.cur.x += path.speedX * deltaSimuT;
-				if (path.speedX > 0)
-					this.cur.x = Math.min(this.cur.x, path.x);
-				else
-					this.cur.x = Math.max(this.cur.x, path.x);
-                
-				this.cur.y += path.speedY * deltaSimuT;
-				if (path.speedY > 0)
-					this.cur.y = Math.min(this.cur.y, path.y);
-				else
-					this.cur.y = Math.max(this.cur.y, path.y);
-				break;
-			};
-		};
-        this.graphic.moveTo(this.cur.x, this.cur.y);
-		this.draw();
-	};
+//	//old version
+//    moveDisplayWithPath_old(deltaSimuT) {
+//		if (this.inBatch) return;
+//		while (this.pathList.length > 0) {
+//			var path = this.pathList[0];
+//			if (path.t < this.omConcept.now) {
+//				this.cur.t = path.t;
+//				this.cur.x = path.x;
+//				this.cur.y = path.y;
+//				this.pathList.shift();
+//				deltaSimuT = Math.max(0, this.omConcept.now - path.t);
+//			} else {
+//				path.speedX = (path.x - this.cur.x) 
+//                                / (path.t - this.cur.t);
+//                path.speedY = (path.y - this.cur.y)
+//                                / (path.t - this.cur.t);
+//                this.cur.t = this.omConcept.now;
+//                
+//				this.cur.x += path.speedX * deltaSimuT;
+//				if (path.speedX > 0)
+//					this.cur.x = Math.min(this.cur.x, path.x);
+//				else
+//					this.cur.x = Math.max(this.cur.x, path.x);
+//                
+//				this.cur.y += path.speedY * deltaSimuT;
+//				if (path.speedY > 0)
+//					this.cur.y = Math.min(this.cur.y, path.y);
+//				else
+//					this.cur.y = Math.max(this.cur.y, path.y);
+//				break;
+//			};
+//		};
+//        this.graphic.moveTo(this.cur.x, this.cur.y);
+//		this.draw();
+//	};
     
     
     moveDisplayWithPath(deltaSimuT) {
 		if (this.inBatch) return;
         while (this.pathList.length > 0) {
-            var path = this.pathList[0];
-            this.cur.t = this.omConcept.now;
-			const newX = this.cur.x + path.speedX * deltaSimuT;
-            const newY = this.cur.y + path.speedY * deltaSimuT;
-            if( this.checkAhead && this.ahead){ //only pos-x-direction
-                 const aheadX = this.ahead.cur.x - this.width;
-                 if( aheadX < newX && aheadX < path.x ){
-                     const dt = (aheadX - this.cur.x) / path.speedX;
-                     this.cur.x = aheadX;
-                     this.cur.y += path.speedY * dt;
-                     break;
-                 }
-            }
-            if (path.speedX >= 0)
-                this.cur.x = Math.min(newX, path.x);
-            else
-                this.cur.x = Math.max(newX, path.x);
-
-
-            if (path.speedY >= 0)
-                this.cur.y = Math.min(newY, path.y);
-            else
-                this.cur.y = Math.max(newY, path.y);
-			
-			if( this.omConcept.now <= path.t ) break;
+            const path = this.pathList[0];
+            if( path.speedX == undefined ) this.updatePathSpeeds(path);
             
-            this.cur.t = path.t;
-            this.cur.x = path.x;
-            this.cur.y = path.y;
-            this.pathList.shift();
+            this.updateCur(deltaSimuT, path);
+            
+            if( this.cur.t < path.t ) break;
             deltaSimuT = Math.max(0, this.omConcept.now - path.t);
+            this.pathList.shift();
         };
-        this.graphic.moveTo(this.cur.x, this.cur.y);
-		this.draw();
+//        this.graphic.moveTo(this.cur.x, this.cur.y);
+		this.graphic.draw(this.cur, this.omConcept.now);
     };
+    
+    //helper function for above and for updateAngle in Person.
+    updateCur(deltaSimuT, path){
+        
+        const newX = this.cur.x + path.speedX * deltaSimuT;
+//        console.log('UPDATE Cur newX=',newX,this.omConcept.now,
+//                   'deltaT ',deltaSimuT, 'path speedX',path.speedX);
+        const newY = this.cur.y + path.speedY * deltaSimuT;
+        if( this.checkAhead && this.ahead){ //only pos-x-direction
+             const aheadX = this.ahead.cur.x - this.width;
+             if( aheadX < newX && aheadX < path.x ){
+                 const dt = (aheadX - this.cur.x) / path.speedX;
+                 this.cur.x = aheadX;
+                 this.cur.y += path.speedY * dt;
+                 return dt;
+             }
+        }
+        if (path.speedX >= 0){
+            this.cur.x = Math.min(newX, path.x);
+        } else
+            this.cur.x = Math.max(newX, path.x);
+
+
+        if (path.speedY >= 0)
+            this.cur.y = Math.min(newY, path.y);
+        else
+            this.cur.y = Math.max(newY, path.y);
+
+        this.cur.t = Math.min(this.omConcept.now,path.t);
+        return deltaSimuT;
+    };
+    
 	
 	updatePosition(){
-		const speed = this.omConcept.stage.normalSpeed;
 		if (this.inBatch) return;
-		while (this.pathList.length > 0) {
-			var path = this.pathList[0];
+        const speed = this.omConcept.stage.normalSpeed;
+		
+		
+//        while (this.pathList.length > 0) {
+//            const path = this.pathList[0];
+//            if( path.speedX == undefined ) this.updatePathSpeeds(path);
+//            
+//            this.updateCur(deltaSimuT, path);
+//            
+//            if( this.cur.t < path.t ) break;
+//            deltaSimuT = Math.max(0, this.omConcept.now - path.t);
+//            this.pathList.shift();
+//        };
+        
+        while (this.pathList.length > 0) {
+			const path = this.pathList[0];
 			let deltaT = path.t - this.omConcept.now;
 			if (deltaT <= 0) {
 				this.cur.t = path.t;
 				this.cur.x = path.x;
 				this.cur.y = path.y;
-				this.pathList.splice(0, 1);
-			} else {
+				this.pathList.shift();
+            } else {
 				this.cur.t = this.omConcept.now;
-				
-				const velocX = (path.x - this.cur.x)/deltaT;
-				const signX = Math.sign(velocX);
-				this.speedX = signX * Math.min(Math.abs(velocX),speed);	this.cur.x = path.x - this.speedX * deltaT;
-												   
-				const velocY = (path.y - this.cur.y)/deltaT;
-				const signY = Math.sign(velocY);
-				this.speedY = signY * Math.min(Math.abs(velocY,speed));	this.cur.y = path.y - this.speedY * deltaT;
-											   
+				if( path.speedX == undefined ) this.updatePathSpeeds(path);
+                this.updateCur(deltaT, path);							   
 				break;
 			};
 		};
-
-		this.graphic.moveTo(this.cur.x, this.cur.y);
-		this.draw();
+		this.graphic.draw(this.cur, this.omConcept.now);
 	};
 		
 	
@@ -648,7 +661,7 @@ export class Item {
 			alert('pathlist has length greater than 1 on update');
 			debugger;
 		}
-		this.pathList.splice(0, 1);
+		this.pathList.shift();
 		this.addPath(triple);
 	};
 
@@ -659,26 +672,40 @@ export class Item {
 			this.addPath(triple);
 		}
 	};
+    updatePathSpeeds(path){
+        
+        
+//        this.cur.t = this.omConcept.now;
+        const deltaT = path.t - this.omConcept.now;
+        path.speedX = (path.x - this.cur.x) / Math.max(1,deltaT);
+        path.speedY = (path.y - this.cur.y) / Math.max(1,deltaT);
+//        console.log('in SPEEDS now=',this.omConcept.now,
+//                    'cur=',this.cur,'path=',path);
+//        debugger;
+    }
 
 	addPath(triple) {
 		this.pathList.push(triple);
-		const n = this.pathList.length;
-		let last = {};
-		if (n == 1) {
-			last = {
-				t: this.omConcept.now,
-				x: this.cur.x,
-				y: this.cur.y
-			};
-		} else {
-			last = this.pathList[n - 2];
-		}
-
-		let path = this.pathList[n - 1];
-		let deltaT = path.t - last.t;
-        path.speedX = (path.x - last.x) / Math.max(1,deltaT);
-        path.speedY = (path.y - last.y) / Math.max(1,deltaT);
-	};
+//        if( this.pathList.length == 1 ) 
+//            this.updatePathSpeeds(this.pathList[0])
+    };
+//		const n = this.pathList.length;
+//		let last = {};
+//		if (n == 1) {
+//			last = {
+//				t: this.omConcept.now,
+//				x: this.cur.x,
+//				y: this.cur.y
+//			};
+//		} else {
+//			last = this.pathList[n - 2];
+//		}
+//
+//		const path = this.pathList[n - 1];
+//		const deltaT = path.t - last.t;
+//        path.speedX = (path.x - last.x) / Math.max(1,deltaT);
+//        path.speedY = (path.y - last.y) / Math.max(1,deltaT);
+//	};
 
 	destroy() {
 		this.omConcept.itemCollection.remove(this);
@@ -688,7 +715,8 @@ export class Item {
 		if (a) a.behind = b;
 	};
 	draw() {
-		this.graphic.draw(this.omConcept.now);
+		alert('calling draw inside item and should call draw on graphic directly');
+        this.graphic.draw(this.cur, this.omConcept.now);
 	}
 }; // end of class Item
 
@@ -696,9 +724,110 @@ export class Item {
 export class Person extends Item {
     constructor(omConcept, gSF, x, y = 100) {
 		super(omConcept, x, y);
-		this.graphic = new NStickFigure(gSF, x, y);
+        this.gSF = gSF;
+        
+        
+        this.cur.l = Math.floor( Math.random() * this.gSF.maxL/2)-this.gSF.maxL/4;
+        this.cur.a = this.armAngle( this.cur.l );
+        this.cur.w = this.backToW( this.cur.l );
+            
+		this.graphic = new NStickFigure(gSF);
 	};
+    updatePathSpeeds(path){
+        super.updatePathSpeeds(path);
+        const cur = this.cur;
+        const deltaT = path.t - cur.t;
+        path.armWalking = true;
+        if( path.a ) {
+            cur.a = Math.abs(cur.a);
+            path.speedA = (path.a - cur.a) / Math.max(1,deltaT);
+            path.armWalking = false;
+        }
+        path.legWalking = true;
+        if( path.l ){
+            cur.l = Math.abs(cur.l);
+            path.speedL = (path.l - cur.l) / Math.max(1,deltaT); 
+            path.legWalking = false;
+        }
+    }
+    
+//    addPath(quintuple) {
+//		super.addPath(quintuple);  //do calc for x,y for item.
+//		const n = this.pathList.length;
+//		let last = {};
+//		if (n == 1) {
+//			last = {
+//				t: this.omConcept.now,
+//				a: this.cur.a,
+//				l: this.cur.l
+//			};
+//		} else {
+//			last = this.pathList[n - 2];
+//		}
+//
+//		const path = this.pathList[n - 1];
+//		const deltaT = path.t - last.t;
+//        path.armWalking = true;
+//        if( path.a ) {
+//            path.speedA = (path.a - last.a) / Math.max(1,deltaT);
+//            path.armWalking = false;
+//        }
+//        path.legWalking = true;
+//        if( path.l ){
+//            path.speedL = (path.l - last.l) / Math.max(1,deltaT); 
+//            path.legWalking = false;
+//        }
+//          
+//	};
+    //helper functions for angles of Stick Figure
+    deltaW( deltaX ){
+        const dw = Math.abs(deltaX) / this.gSF.maxX * this.gSF.maxL / 2;
+        return dw;
+    };
+    updateW( w, deltaX ){
+        return ( w + this.deltaW(deltaX)) % this.gSF.maxL;
+    };
+    legAngle( w ){
+        return Math.abs( w - this.gSF.maxL / 2) - this.gSF.maxL/4;
+    }
+    armAngle( l ){
+        return this.gSF.maxA/this.gSF.maxL * l;
+    };
+    backToW( l ){
+        return this.gSF.maxL / 4 - l;
+    };
+    
+    
+    updateCur(deltaT,path) {
+        // updates XY and based on that updates angle for stickFigure
+        const dt = super.updateCur(deltaT,path);
+        const dx = dt * path.speedX;
 
+        if( path.legWalking ){
+            this.cur.w = this.updateW( this.cur.w, dx);
+            this.cur.l = this.legAngle( this.cur.w );
+        } else {
+            const newL = this.cur.l +  dt * path.speedL; 
+            if (path.speedL >= 0)
+                this.cur.l = Math.min(newL, path.l);
+            else
+                this.cur.l = Math.max(newL, path.l);
+        };
+
+        if( path.armWalking ){
+            this.cur.a = this.armAngle( this.cur.l );
+        } else {
+            const newA = this.cur.a + dt * path.speedA;
+            if (path.speedA >= 0)
+                this.cur.a = Math.min(newA, path.a);
+            else
+                this.cur.a = Math.max(newA, path.a);
+        };
+    };
+    
+    
+    
+    
 	isThereOverlap() {
 		// is 'p' graph above the 'a' graph in [0, p.count] ?
 		let p = this;
@@ -760,7 +889,9 @@ export class GStickFigure {
 			x: 1 / 6 * size,
 			y: 2 / 5 * size
 		};
-		this.deltaMaxX = size * (4 / 9);
+		this.maxX = size * (4 / 9);
+        this.maxL = 120;
+        this.maxA = 90;
 		this.fontSize = Math.floor(2 / 5 * size);
 		this.context.font = Math.floor(2 / 5 * size) + 'px Arial';
 		this.package = {
@@ -773,23 +904,27 @@ export class GStickFigure {
 };
 
 export class NStickFigure {
-	constructor(gSF, x = 200, y = 100) {
-		let n = Math.floor(Math.random() * tioxColors.length);
+	constructor(gSF) {
+		this.gSF = gSF;
+        let n = Math.floor(Math.random() * tioxColors.length);
 		this.color = tioxColors[n];
 		this.bdaryColor = tioxBorders[n];
-		this.maxLegAngle = 120;
-		this.maxArmAngle = 90;
-		this.armAngleRadians = null //pi2 / 15;
-		this.legAngleRadians = Math.random() * pi2/8; //pi2 / 12;
-		let d = Math.floor( Math.random() * this.maxLegAngle);
-		this.legAngleDegrees = d;
-		this.gSF = gSF;
+//		this.maxLegAngle = 120;
+//		this.maxArmAngle = 90;
+        //   ???????????????????????
+//		armRadians = null //pi2 / 15;
+//		this.legAngleRadians = Math.random() * pi2/8; //pi2 / 12;
+//		let d = Math.floor( Math.random() * this.maxLegAngle);
+//		this.legAngleDegrees = d;
+//        
+        
+		
 		
 		this.badgeText = null;
 		this.badgeVisible = false;
-		this.ratio = this.maxArmAngle / this.maxLegAngle;
-		this.x = Math.floor(x);
-		this.y = Math.floor(y);
+//		this.ratio = this.maxArmAngle / this.maxLegAngle;
+//		this.x = Math.floor(x);
+//		this.y = Math.floor(y);
 		this.packageVisible = false;
 		this.packageColor = null;
 	};
@@ -815,22 +950,21 @@ export class NStickFigure {
 		this.x = x;
 		this.y = y;
 	};
-    angleSetup(){
-        
-    };
 
     
-    draw() {
-		// use x,y as starting point and draw the rest of the
+    draw(cur,now) {
+		// use cur.x,cur.y as starting point and draw the rest of the
 		// parts by translating and rotating from there
-		if ( this.x < -50 || this.x > 1050 ) return;
+		if ( cur.x < -50 || cur.x > 1050 ) return;
 		let c = this.gSF.context;
         
+        const armRadians = cur.a / 360 * pi2;
+        const legRadians = cur.l / 360 * pi2;
 		c.save();
 		c.strokeStyle = this.bdaryColor;
 		c.fillStyle = this.color;
 		//person (x,y) comes as center.  Adjust for this here
-        c.translate(this.x , this.y - this.gSF.height/2);
+        c.translate(cur.x , cur.y - this.gSF.height/2);
 
 		//package
 		if (this.packageVisible) {
@@ -848,7 +982,7 @@ export class NStickFigure {
 		if (!this.packageVisible) {
 			c.save();
 			c.translate(this.gSF.arm.x, this.gSF.arm.y);
-			c.rotate(this.armAngleRadians);
+			c.rotate(armRadians);
 			c.rect(-this.gSF.arm.w / 2, 0, this.gSF.arm.w, this.gSF.arm.h);
 			c.restore();
 		}
@@ -856,7 +990,7 @@ export class NStickFigure {
 		// leg2
 		c.save();
 		c.translate(this.gSF.leg.x, this.gSF.leg.y);
-		c.rotate(-this.legAngleRadians);
+		c.rotate(-legRadians);
 		c.rect(-this.gSF.leg.w / 2, 0, this.gSF.leg.w, this.gSF.leg.h);
 		c.restore();
 
@@ -864,7 +998,7 @@ export class NStickFigure {
 		//  leg 1
 		c.save();
 		c.translate(this.gSF.leg.x, this.gSF.leg.y);
-		c.rotate(this.legAngleRadians);
+		c.rotate(legRadians);
 		c.rect(-this.gSF.leg.w / 2, 0, this.gSF.leg.w, this.gSF.leg.h);
 		c.restore();
 
@@ -874,7 +1008,7 @@ export class NStickFigure {
 		if (this.packageVisible) {
 			c.rotate(pi2 / 5);
 		} else {
-			c.rotate(-this.armAngleRadians);
+			c.rotate(-armRadians);
 		}
 		c.rect(-this.gSF.arm.w / 2, 0, this.gSF.arm.w, this.gSF.arm.h);
 		c.restore();
@@ -1042,7 +1176,7 @@ export class Package extends Item {
 	constructor(omConcept,ctx, color, boxSize, x, y) {
 		super(omConcept,x, y);
 		this.graphic = new ColorBox(ctx, color, boxSize);
-		this.graphic.moveTo(x, y);
+//		this.graphic.moveTo(x, y);
 	};
 };
 
@@ -1052,14 +1186,14 @@ class ColorBox {
 		this.color = color;
 		this.boxSize = boxSize;
 	};
-	moveTo(x, y) {
-		this.x = Math.floor(x);
-		this.y = Math.floor(y);
-	};
-	draw() {
+//	moveTo(x, y) {
+//		this.x = Math.floor(x);
+//		this.y = Math.floor(y);
+//	};
+	draw(cur,now) {
 		this.ctx.fillStyle = this.color;
-		this.ctx.fillRect(this.x - this.boxSize/2,
-                          this.y - this.boxSize/2,
+		this.ctx.fillRect(cur.x - this.boxSize/2,
+                          cur.y - this.boxSize/2,
 			             this.boxSize, this.boxSize)
 	};
 };

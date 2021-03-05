@@ -44,51 +44,21 @@ import {
 }
 from './eos/eos.js';	
 	
-const possibles = ['dir','que', 'lit', 'nvp', 'inv',
-                   'fac','eos'];
-const omConcepts ={};
-
-//handles resize window event.
-function redrawBackground(){
-    const om = omConcepts[currentTab.id];
-    if(om) om.redoStagesGraph();
-}
-function switchTo(which){
-    if( currentTab ) {
-        currentTab.classList.add('displayNone');
-        if (currentTab.id != 'dir'){
-            const om = omConcepts[currentTab.id];
-            om.pause();
-        }
-    }
-
-    
-    let k = possibles.findIndex(key => key == which);
-    currentTab = document.getElementById(k >= 0 ? which : 'dir');
-    currentTab.classList.remove('displayNone');
-    if( k > 0 ){
-        redrawBackground();
-    }
-//    console.log('Current Tab = ',currentTab.id,'<<<')
-};
-
-window.onpopstate = function(event) {
-	const s = event.state;
-	switchTo(s ? s.tabName : 'dir');
-};
 
 
-function router(event){
-	let inputElem = event.target.closest('div');
-	if (!inputElem) return;
-	let key = inputElem.id.slice(0,3);
-	if ( key == 'doc'){
-		window.location.href="./doc/doc.html";
-	} else {	
-		window.history.pushState({tabName:key},'','#'+key);
-		switchTo(key);
-	}
-}
+
+
+//function router(event){
+//	let inputElem = event.target.closest('div');
+//	if (!inputElem) return;
+//	let key = inputElem.id.slice(0,3);
+//	if ( key == 'doc'){
+//		window.location.href="./doc/doc.html";
+//	} else {	
+//		window.history.pushState({tabName:key},'','#'+key);
+//		switchTo(key);
+//	}
+//}
 //handles keyboard entry for all simulations.
 function keyDownFunction(evt) {
 	let omConc = omConcepts[currentTab.id]; 
@@ -127,28 +97,80 @@ function keyDownFunction(evt) {
 			break;
 	};
 };
+document.addEventListener('keydown', keyDownFunction);
+
 var currentTab = null;
-    if(performance.navigation.type == 2){
-//        alert('  caused a reload');
-        location.reload(true);
-        console.log('just did the reload thing')
-        
+
+
+function redrawBackground(){
+    const om = omConcepts[currentTab.id];
+    if(om) om.redoStagesGraph();
+};
+window.addEventListener('resize', redrawBackground);
+
+window.onpopstate = function() {
+	const h = location.hash;
+    switchTo(h != '' ? h.slice(1) : 'dir');
+};
+
+//    if(performance.navigation.type == 2){
+////        alert('  caused a reload');
+//        location.reload(true);
+//        console.log('just did the reload thing')
+//        
+//    }
+    
+//    document.getElementById('dir').addEventListener('click', router);
+
+const possibles = ['dir','que', 'lit', 'nvp', 'inv',
+                   'fac','eos'];
+const omConcepts ={};
+
+function switchTo (which){
+    if( currentTab ) {
+        currentTab.classList.add('displayNone');
+        if (currentTab.id != 'dir'){
+            const om = omConcepts[currentTab.id];
+            om.pause();
+        }
+    }
+
+    if( !omConcepts[which] ){
+        switch (which) {
+            case "que":
+                omConcepts['que'] = queStart();
+                break;
+            case "lit":
+                omConcepts['lit'] = litStart();
+                break;
+            case "nvp":
+                omConcepts['nvp'] = nvpStart();
+                break;
+            case "inv":
+                omConcepts['inv'] = invStart();
+                break;
+            case "fac":
+                omConcepts['fac'] = facStart();
+                break;
+            case "eos":
+                omConcepts['eos'] = eosStart();
+                break;
+            default :
+                break;
+                
+        }
     }
     
-    document.addEventListener('keydown', keyDownFunction);
-    window.addEventListener('resize', redrawBackground);
-    document.getElementById('dir').addEventListener('click', router);
-
-
+    let k = possibles.findIndex(key => key == which);
+    currentTab = document.getElementById(k >= 0 ? which : 'dir');
+    currentTab.classList.remove('displayNone');
+    if( k > 0 ){
+        redrawBackground();
+    }
+};
     
-//    console.log('REdoing all the starts of all the animations')
-    omConcepts['que'] = queStart();
-    omConcepts['lit'] = litStart();
-    omConcepts['nvp'] = nvpStart();
-    omConcepts['inv'] = invStart();
-    omConcepts['fac'] = facStart();
-    omConcepts['eos'] = eosStart();
-
+    
+    
 
     const h = location.hash;
     switchTo(h != '' ? h.slice(1) : 'dir');

@@ -653,9 +653,9 @@ class RopStore extends GStore {
 			let point = this.boxStack.relCoord(this.inv + k);
 			load.graphic.packages[k].cur.x = this.firstBox.x + point.x;
 			load.graphic.packages[k].cur.y = this.firstBox.y + point.y;
-			load.graphic.packages[k].graphic
-				.moveTo(this.firstBox.x + point.x,
-                        this.firstBox.y + point.y);
+//			load.graphic.packages[k].graphic
+//				.moveTo(this.firstBox.x + point.x,
+//                        this.firstBox.y + point.y);
 		}
 		load.graphic.packages.forEach(p => {
 			p.inBatch = false
@@ -825,18 +825,18 @@ class FlatBed {
 		this.anim = anim;
 		this.reverse = 0;
 	};
-	moveTo(x, y) {
-		this.x = x;//Math.floor(x);
-		this.y = y;//Math.floor(y);
-	};
+//	moveTo(x, y) {
+//		this.x = x;//Math.floor(x);
+//		this.y = y;//Math.floor(y);
+//	};
 	setReverse() {
 		this.reverse = this.anim.truck.cabWidth + this.anim.truck.bedWidth;
     }
-	draw() {
+	draw(cur) {
 		let c = this.anim.stage.foreContext;
 		c.save();
 		if (this.reverse) {
-			c.translate(2 * (this.x) + this.reverse, 0);
+			c.translate(2 * (cur.x) + this.reverse, 0);
 			c.scale(-1, 1);
 		};
 		c.fillStyle = 'lightgrey';
@@ -845,29 +845,29 @@ class FlatBed {
 
 		//body
 		c.beginPath();
-		c.moveTo(this.x, this.y + this.anim.truck.height);
-		c.lineTo(this.x + this.anim.truck.width, this.y + this.anim.truck.height);
-		c.lineTo(this.x + this.anim.truck.width, this.y + this.anim.truck.height - 0.75 * this.anim.box.space);
-		c.lineTo(this.x + this.anim.truck.cabWidth, this.y + this.anim.truck.height - 0.75 * this.anim.box.space);
-		c.lineTo(this.x + this.anim.truck.cabWidth, this.y);
-		c.lineTo(this.x + this.anim.truck.cabWidth / 2, this.y);
-		c.lineTo(this.x, this.y + this.anim.truck.height / 2);
-		c.lineTo(this.x, this.y + this.anim.truck.height);
+		c.moveTo(cur.x, cur.y + this.anim.truck.height);
+		c.lineTo(cur.x + this.anim.truck.width, cur.y + this.anim.truck.height);
+		c.lineTo(cur.x + this.anim.truck.width, cur.y + this.anim.truck.height - 0.75 * this.anim.box.space);
+		c.lineTo(cur.x + this.anim.truck.cabWidth, cur.y + this.anim.truck.height - 0.75 * this.anim.box.space);
+		c.lineTo(cur.x + this.anim.truck.cabWidth, cur.y);
+		c.lineTo(cur.x + this.anim.truck.cabWidth / 2, cur.y);
+		c.lineTo(cur.x, cur.y + this.anim.truck.height / 2);
+		c.lineTo(cur.x, cur.y + this.anim.truck.height);
 		c.closePath();
 		c.stroke();
 		c.fill();
 
 		//wheels  
 		c.beginPath();
-		c.arc(this.x + this.anim.truck.cabWidth / 2,
-			this.y + this.anim.truck.height,
+		c.arc(cur.x + this.anim.truck.cabWidth / 2,
+			cur.y + this.anim.truck.height,
 			this.anim.box.space / 2, 0, pi2);
 		c.stroke();
 		c.fill();
 
 		c.beginPath();
-		c.arc(this.x + this.anim.truck.width - this.anim.truck.cabWidth / 2,
-			this.y + this.anim.truck.height,
+		c.arc(cur.x + this.anim.truck.width - this.anim.truck.cabWidth / 2,
+			cur.y + this.anim.truck.height,
 			this.anim.box.space / 2, 0, pi2);
 		c.stroke();
 		c.fill();
@@ -880,16 +880,16 @@ class LoadOfBoxes extends Item {
 	constructor(omConcept, context, left, bot, quantity, box) {
 		super(omConcept, left, bot);
 		this.graphic = new DisplayBoxes(context,
-            left, bot,
+            /*left, bot,*/
 			quantity, box);
 	};
 };
 
 class DisplayBoxes {
-	constructor(ctxDB, left, bot, quantity, box) {
+	constructor(ctxDB, /*left, bot,*/ quantity, box) {
 		this.ctxDB = ctxDB;
-		this.left = left;
-		this.bot = bot;
+//		cur.x = left;
+//		cur.y = bot;
 		this.box = box;
 		this.packages = [];
 		this.reverse = 0;
@@ -906,21 +906,21 @@ class DisplayBoxes {
                                       hSpace: box.space, vSpace: box.space,
                                       xDir: +1, yDir: -1}); //box, false);
 	};
-	moveTo(left, bot) {
-		this.left = left;//Math.floor(left);
-		this.bot = bot;//Math.floor(bot);
-	};
+//	moveTo(left, bot) {
+//		this.left = left;//Math.floor(left);
+//		cur.y = bot;//Math.floor(bot);
+//	};
 	setReverse(zz) {
 		this.reverse = this.box.space * this.box.perRow;
 	}
-	draw() {
+	draw(cur) {
 		this.ctxDB.save();
 		if (this.reverse) {
-			this.ctxDB.translate(2 * (this.left) + this.reverse, 0);
+			this.ctxDB.translate(2 * (cur.x) + this.reverse, 0);
 			this.ctxDB.scale(-1, 1);
 		};
-        const firstBox = {x: this.left + (this.box.space -this.box.size)/2,
-                         y: this.bot - this.box.space};
+        const firstBox = {x: cur.x + (this.box.space -this.box.size)/2,
+                         y: cur.y - this.box.space};
 		for (let i = 0; i < this.packages.length; i++) {
 			this.ctxDB.fillStyle = this.packages[i].graphic.color;
 			let point = this.boxStack.relCoord(i);
