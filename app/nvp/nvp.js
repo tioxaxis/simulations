@@ -189,6 +189,8 @@ function nvpDefine(){
 		}
 		this.frameNow = this.now;
 		this.clearStageForeground();
+        this.itemCollection.updatePositionAll();
+        this.clearRedrawStage(0,true);
 	}
 };
 
@@ -679,9 +681,9 @@ function nvpHTML(){
                                         10, 50, 20, 0, 2, 1));
     
 	elem.append(empty, genPlayResetBox('nvp'));
-    usrInputs.set('reset', new CheckBox('reset', 'resetque',
+    usrInputs.set('reset', new CheckBox('reset', 'resetnvp',
                 localUpdateFromUser, false) );
-    usrInputs.set('action', new RadioButton('action', 'actionque', 
+    usrInputs.set('action', new RadioButton('action', 'actionnvp', 
                 localUpdateFromUser, ['none','play','pause'], 'none') );
     
 	const speedInput = genRange('speednvp',0,0,5,1);

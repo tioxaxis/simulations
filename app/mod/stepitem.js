@@ -85,6 +85,9 @@ export class Queue {
 		person.ahead = this.lastAdded;
 		if (this.lastAdded) this.lastAdded.behind = person;
 		this.lastAdded = person;
+//        console.log('LINKED ', person.which,' TO ',
+//                    (person.ahead ? person.ahead.which: "NOONE"),
+//                   ' added to queue',this.name);
 
 		this.omConcept.heap.push({
 			time: person.arrivalTime,
@@ -145,6 +148,7 @@ export class WalkAndDestroy {
 		if (this.lastAdded) this.lastAdded.behind = person;
 		this.lastAdded = person;
 
+        
 		this.pushAnim(person);
 
 		this.omConcept.heap.push({
@@ -273,7 +277,11 @@ export class MachineCenter {
     
 	finish(machine) {
         const person = machine.person;
-        if (person.behind) person.behind.ahead = null;
+        if (person.behind) {
+//            console.log('UN-LINKED ', person.behind.which,' TO ', person.which,
+//                       ' from machine ',machine.index, 'MC= ',this.name);
+            person.behind.ahead = null;
+        }
         person.behind = null;
         
         let success = this.nextQueue.push(machine.person);
@@ -489,8 +497,8 @@ export class Item {
 		this.omConcept = omConcept;
 		this.omConcept.itemCollection.push(this);
 		this.which = ++itemCollCount;
-		if (this.ahead) this.ahead.behind = this;
-		this.behind = null;
+//		if (this.ahead) this.ahead.behind = this;
+//		this.behind = null;
 		this.cur = {
 			t: this.omConcept.now,
 			x: x,
@@ -543,14 +551,24 @@ export class Item {
 //		this.draw();
 //	};
     
-    
+//    checkNan(name){
+//        if( isNaN(this.cur.x) || isNaN(this.cur.y) 
+//           || this.cur.x == undefined){
+//                console.log(name,' found NaN or undefined', this.which,
+//                           this.cur.x,this.cur.y)
+//            debugger;
+//            } ;
+//    };
     moveDisplayWithPath(deltaSimuT) {
 		if (this.inBatch) return;
         while (this.pathList.length > 0) {
             const path = this.pathList[0];
             if( path.speedX == undefined ) this.updatePathSpeeds(path);
             
+//            this.checkNan('MDWP before update');
+            
             this.updateCur(deltaSimuT, path);
+//            this.checkNan('MDWP after update');
             
             if( this.cur.t < path.t ) break;
             deltaSimuT = Math.max(0, this.omConcept.now - path.t);
@@ -563,30 +581,34 @@ export class Item {
     //helper function for above and for updateAngle in Person.
     updateCur(deltaSimuT, path){
         
-        const newX = this.cur.x + path.speedX * deltaSimuT;
-//        console.log('UPDATE Cur newX=',newX,this.omConcept.now,
-//                   'deltaT ',deltaSimuT, 'path speedX',path.speedX);
-        const newY = this.cur.y + path.speedY * deltaSimuT;
+        let newX = this.cur.x + path.speedX * deltaSimuT;
+        if (path.speedX >= 0)
+                newX = Math.min(newX, path.x);
+            else
+                newX = Math.max(newX, path.x);
+
+        let newY = this.cur.y + path.speedY * deltaSimuT;
+        if (path.speedY >= 0)
+                newY = Math.min(newY, path.y);
+            else
+                newY = Math.max(newY, path.y);
+        
+        
+        
         if( this.checkAhead && this.ahead){ //only pos-x-direction
-             const aheadX = this.ahead.cur.x - this.width;
-             if( aheadX < newX && aheadX < path.x ){
-                 const dt = (aheadX - this.cur.x) / path.speedX;
-                 this.cur.x = aheadX;
+             const dx = Math.abs( this.ahead.cur.x - newX); 
+             const dy = Math.abs( this.ahead.cur.y - newY); 
+             if( dx < this.gSF.width && dy < this.gSF.height ){
+                 const dt = (this.ahead.cur.x - this.gSF.width 
+                             - this.cur.x) / path.speedX;
+                 this.cur.x = this.ahead.cur.x - this.gSF.width;
                  this.cur.y += path.speedY * dt;
                  return dt;
              }
         }
-        if (path.speedX >= 0){
-            this.cur.x = Math.min(newX, path.x);
-        } else
-            this.cur.x = Math.max(newX, path.x);
-
-
-        if (path.speedY >= 0)
-            this.cur.y = Math.min(newY, path.y);
-        else
-            this.cur.y = Math.max(newY, path.y);
-
+        this.cur.x = newX;
+        this.cur.y = newY;
+        
         this.cur.t = Math.min(this.omConcept.now,path.t);
         return deltaSimuT;
     };
@@ -594,19 +616,6 @@ export class Item {
 	
 	updatePosition(){
 		if (this.inBatch) return;
-        const speed = this.omConcept.stage.normalSpeed;
-		
-		
-//        while (this.pathList.length > 0) {
-//            const path = this.pathList[0];
-//            if( path.speedX == undefined ) this.updatePathSpeeds(path);
-//            
-//            this.updateCur(deltaSimuT, path);
-//            
-//            if( this.cur.t < path.t ) break;
-//            deltaSimuT = Math.max(0, this.omConcept.now - path.t);
-//            this.pathList.shift();
-//        };
         
         while (this.pathList.length > 0) {
 			const path = this.pathList[0];
@@ -617,9 +626,11 @@ export class Item {
 				this.cur.y = path.y;
 				this.pathList.shift();
             } else {
+				const f = (this.omConcept.now - this.cur.t) / (path.t - this.cur.t);
+                this.cur.x = this.cur.x + (path.x - this.cur.x) * f;
+                this.cur.y = this.cur.y + (path.y - this.cur.y) * f;    
 				this.cur.t = this.omConcept.now;
-				if( path.speedX == undefined ) this.updatePathSpeeds(path);
-                this.updateCur(deltaT, path);							   
+                if( path.speedX == undefined ) this.updatePathSpeeds(path);
 				break;
 			};
 		};
@@ -679,6 +690,10 @@ export class Item {
         const deltaT = path.t - this.omConcept.now;
         path.speedX = (path.x - this.cur.x) / Math.max(1,deltaT);
         path.speedY = (path.y - this.cur.y) / Math.max(1,deltaT);
+//        if( path.speedX == 0 ){
+//            alert(' found a speed X of '+path.speedX);
+//            debugger;
+//        }
 //        console.log('in SPEEDS now=',this.omConcept.now,
 //                    'cur=',this.cur,'path=',path);
 //        debugger;
@@ -736,6 +751,8 @@ export class Person extends Item {
     updatePathSpeeds(path){
         super.updatePathSpeeds(path);
         const cur = this.cur;
+//        if( isNaN(cur.x) || isNaN(cur.y)|| cur.x == undefined ){alert('found a cur=NaN'); debugger};
+        
         const deltaT = path.t - cur.t;
         path.armWalking = true;
         if( path.a ) {
@@ -955,7 +972,11 @@ export class NStickFigure {
     draw(cur,now) {
 		// use cur.x,cur.y as starting point and draw the rest of the
 		// parts by translating and rotating from there
-		if ( cur.x < -50 || cur.x > 1050 ) return;
+//		if( isNaN(cur.x) || isNaN(cur.y)){
+//            console.log('In Draw found a cury=NaN');};
+        
+        
+        if ( cur.x < -50 || cur.x > 1050 ) return;
 		let c = this.gSF.context;
         
         const armRadians = cur.a / 360 * pi2;

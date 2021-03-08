@@ -220,6 +220,38 @@ class EconScale extends OmConcept{
         
     };
     
+//    omStatus(title){
+//        console.log('\n\n',title);
+//        const jQ = theSimulation.jQueue;
+//        const sQs = theSimulation.sQueues;
+//        this.printQueue('joint', jQ);
+//        for( let sQ of sQs){
+//            this.printQueue(sQ.name,sQ);
+//        }
+//    };
+    
+    adjustAllQueues(){
+        theSimulation.jQueue.updateWalkingPositions(true);
+        for(let k = 0; k < 4; k++){
+            theSimulation.sQueues[k].updateWalkingPositions(true);
+        }
+    };
+    
+    
+    printQueue(name,aQ){
+        console.log(name, 'now=',eos.now);
+        let q = aQ.q;
+        for(let k = 0; k<q.length; k++){
+            let p = q[k];
+            console.log(k,p.which,' Cur',p.cur.x.toFixed(1),p.cur.t.toFixed(1),
+                        '  Paths',p.pathList.length);
+            for( let j = 0; j < p.pathList.length; j++ ) {
+                let path = p.pathList[j];
+                console.log('   Path',j,' x=',path.x,' t=',path.t.toFixed(0));
+            }
+        }      
+    }
+    
     localReset () {
         // schedule the initial Person to arrive and start the simulation/animation.
         this.redrawBackground();
@@ -397,9 +429,12 @@ class EosQueue extends Queue {
         person.checkAhead = true;
         person.arrivalTime = eos.now + this.walkingTime;
         person.width = this.delta.dx;
-        const sr = Number(eos.usrInputs.get('sr').get());
+        const sr = Number(eos.usrInputs.get('sr').get()) / tioxTimeConv;
         const nLeave = Math.floor(sr * this.nextMachine.numMachines *  this.walkingTime);
         const dist = Math.max(0,(this.q.length - 1 - nLeave)) * this.delta.dx;
+//        if( isNaN(person.cur.x)  || person.cur.x == undefined ){alert('found a cur=NaN'); debugger};
+        
+        
         person.cur.x = anim.person.path.left - dist;
         person.cur.y = this.pathY;
         person.addPath({
@@ -438,19 +473,37 @@ class EosQueue extends Queue {
 					this.delta.dx, this.delta.dy)
         };
         
-        for (let k = this.numSeatsUsed; 
-             k < this.q.length; k++) {
+        
+        this.updateWalkingPositions(false);
+//        for (let k = this.numSeatsUsed; 
+//             k < this.q.length; k++) {
+//			let p = this.q[k];
+//            const sr = Number(eos.usrInputs.get('sr').get());
+//            const nLeave = Math.floor(sr * this.nextMachine.numMachines *(p.arrivalTime - eos.now));
+//            const dist = Math.max(0,(k - nLeave)) * this.delta.dx;
+//            p.updatePath({t: p.pathList[0].t,
+//					      x: Math.max(p.pathList[0].x,
+//                              anim.person.path.headQueue - dist),
+//                          y: this.pathY 
+//                         });
+//        }
+	};
+    
+    updateWalkingPositions(allowMoveBack){
+        for (let k = this.numSeatsUsed; k < this.q.length; k++) {
 			let p = this.q[k];
-            const sr = Number(eos.usrInputs.get('sr').get());
+            const sr = Number(eos.usrInputs.get('sr').get()) / tioxTimeConv;
             const nLeave = Math.floor(sr * this.nextMachine.numMachines *(p.arrivalTime - eos.now));
             const dist = Math.max(0,(k - nLeave)) * this.delta.dx;
+            const minXPos = (allowMoveBack ? 0 : p.pathList[0].x);
+            
             p.updatePath({t: p.pathList[0].t,
-					      x: Math.max(p.pathList[0].x,
+					      x: Math.max(minXPos,
                               anim.person.path.headQueue - dist),
                           y: this.pathY 
                          });
         }
-	};
+    }
     
     checkIdleMachines(){
         if(!eos.usrInputs.get('idle').getValue()) return;
@@ -505,9 +558,11 @@ class EosTSA extends MachineCenter {
 	startAnim (machine, theProcTime) {
         //delink it.
         const p = machine.person;
-        const s = p.ahead;
-        if( s ) s.behind = null;
-        p.ahead = machine.lastFinPerson;
+        
+//        if( isNaN(p.cur.x) || p.cur.x == undefined ){alert('found a cur=NaN'); debugger};
+//        const s = p.ahead;
+//        if( s ) s.behind = null;
+//        p.ahead = machine.lastFinPerson;
         
         const path = anim.person.path;
         const speed = anim.stage.normalSpeed;

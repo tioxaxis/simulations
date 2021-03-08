@@ -190,6 +190,7 @@ export class OmConcept {
 //            console.log('at Play AFId =',this.requestAFId);
 		} else {
 			this.fullSpeedSim();
+            
 			this.pause();
 		}
 	};
@@ -282,11 +283,31 @@ export class OmConcept {
 			event.proc(event.item);
 		}
 		this.now = this.frameNow;
+        // adjust all the queues
+        if( this.adjustAllQueues ) this.adjustAllQueues();
+        
 		this.clearStageForeground();
-		this.itemCollection.updatePositionAll();
+//        this.checkForNaN('in full speed before update');
+//		 this.omStatus('before update Position');
+        this.itemCollection.updatePositionAll();
+//        this.checkForNaN('in full speed after update');
+        this.clearRedrawStage(0,true);
+//        this.checkForNaN('in full speed after redraw');
+//        this.omStatus(' after update and redraw');
 	}
 
-	setSlidersFrom (row){
+//	checkForNaN(name){
+//        for( let k = 0; k < this.itemCollection.length; k++ ){
+//            const item = this.itemCollection[k];
+//            if( isNaN(item.cur.y) ){
+//                console.log(name,'  found NaN');
+//                debugger;
+//            } 
+//        };
+//        console.log(name, 'Nothing Found');
+//    }
+    
+    setSlidersFrom (row){
         const inpsChanged = [];
         for( let [key, inp] of this.usrInputs ){
           if( inp.set(row[key]) ) inpsChanged.push(inp);
