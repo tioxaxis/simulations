@@ -644,7 +644,7 @@ class RopStore extends GStore {
 //
 //        }
 //        console.log('  and... reverse= ', item.load.graphic.reverse);
-//		const n = item.load.graphic.packages.length;
+		const n = item.load.graphic.packages.length;
 		
 		let topOfInventory = anim.store.bot - anim.box.space *
 			Math.ceil(this.invInDoor / anim.box.perRow);
