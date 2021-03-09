@@ -633,7 +633,18 @@ class RopStore extends GStore {
 		item.load.graphic.setReverse();
 		item.load.cur.x -=
 			anim.truck.cabWidth;
-		const n = item.load.graphic.packages.length;
+        if( item.load.pathList.length > 1 ){
+            item.load.pathList[0].x -= anim.truck.cabWidth;
+        } 
+//            
+//        console.log('  Truck at door and path of length',item.load.pathList.length);
+//        console.log('  and... now =',inv.now,' cur=',item.load.cur.x);
+//        for(let path of item.load.pathList ){
+//            console.log('    and... path.x=',path.x,path.y,path.t)
+//
+//        }
+//        console.log('  and... reverse= ', item.load.graphic.reverse);
+//		const n = item.load.graphic.packages.length;
 		
 		let topOfInventory = anim.store.bot - anim.box.space *
 			Math.ceil(this.invInDoor / anim.box.perRow);
@@ -910,10 +921,11 @@ class DisplayBoxes {
 //		this.left = left;//Math.floor(left);
 //		cur.y = bot;//Math.floor(bot);
 //	};
-	setReverse(zz) {
+	setReverse() {
 		this.reverse = this.box.space * this.box.perRow;
 	}
 	draw(cur) {
+//        console.log('In draw of DB reverse=',this.reverse,'cur.x=',cur.x);
 		this.ctxDB.save();
 		if (this.reverse) {
 			this.ctxDB.translate(2 * (cur.x) + this.reverse, 0);

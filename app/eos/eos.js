@@ -213,7 +213,7 @@ class EconScale extends OmConcept{
         super('eos');
         this.usrInputs = usrInputs;
         this.keyNames = ['util','acv','sr','scv',
-                         'num','idle','switch',
+                         'num','idle',/*'switch',*/
                          'speed','action','reset',
                          'leg0','leg1','desc'];
         this.keyIndex = computeKeyIndex(this.keyNames);
@@ -397,8 +397,8 @@ function localUpdate(inp){
             }
             break;
         case 'idle':
-        case 'switch':
-            break;
+//        case 'switch':
+//            break;
         case 'speed':
             eos.adjustSpeed(v,speeds);
             break;
@@ -809,14 +809,14 @@ function eosHTML(){
     addKeyForIds('eos',twoSeparateButtons);
     elem.append(twoSeparateButtons);
     const pauseOnIdleButton = document.getElementById('pauseOnIdleButtoneos');
-    const switchLinesButton = document.getElementById('switchLinesButtoneos');
+//    const switchLinesButton = document.getElementById('switchLinesButtoneos');
     
     usrInputs.set('idle',new ButtonOnOff('idle',pauseOnIdleButton,
                             'pauseOnIdleTurnOneos','pauseOnIdleTurnOffeos',
                             localUpdateFromUser,false));
-    usrInputs.set('switch',new ButtonOnOff('switch',switchLinesButton,
-                            'switchLinesTurnOneos','switchLinesTurnOffeos',
-                            localUpdateFromUser,false));
+//    usrInputs.set('switch',new ButtonOnOff('switch',switchLinesButton,
+//                            'switchLinesTurnOneos','switchLinesTurnOffeos',
+//                            localUpdateFromUser,false));
     
     //now put in the sliders with the play/reset box
     elem.append( genPlayResetBox('eos') );
