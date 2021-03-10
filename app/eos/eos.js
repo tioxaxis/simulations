@@ -169,7 +169,7 @@ anim.person = {
 	path: {
 		left: -100,
 		right: anim.stage.width * 1.1,
-		headQueue: anim.stage.width * 0.7,
+		headQueue: anim.stage.width * 0.65,
 		scanner: anim.stage.width * 0.8,
 		pastScanner: anim.stage.width * .90,
 		y: anim.stage.height/2,
@@ -396,12 +396,13 @@ function localUpdate(inp){
                 theSimulation.sTSAagents[k].active = k < v;
             }
             break;
-        case 'idle':
+//        case 'idle':
 //        case 'switch':
 //            break;
         case 'speed':
             eos.adjustSpeed(v,speeds);
             break;
+        case 'idle':
         case 'action':
         case 'reset':
         case 'leg0':
@@ -572,7 +573,7 @@ class EosTSA extends MachineCenter {
         const tOut = Math.min(0.25 * theProcTime, distOut/speed);
         const tProc = theProcTime - tIn - tOut;
         
-        p.addPath({t: eos.now + tIn, 
+        p.addPath({t: eos.now  + tIn, 
                    x: machine.locx,
                    y: machine.locy
                   });
@@ -582,7 +583,7 @@ class EosTSA extends MachineCenter {
                   });
         p.addPath({t: eos.now + theProcTime,
                    x: path.pastScanner,
-                   y: anim.person.path.y
+                   y: machine.locy
                   });
         
 //        machine.person.setDestWithProcTime(theProcTime,
