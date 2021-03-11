@@ -515,50 +515,6 @@ export class Item {
 		this.graphic.setColor(bodyColor, borderColor);
 	};
 
-//	//old version
-//    moveDisplayWithPath_old(deltaSimuT) {
-//		if (this.inBatch) return;
-//		while (this.pathList.length > 0) {
-//			var path = this.pathList[0];
-//			if (path.t < this.omConcept.now) {
-//				this.cur.t = path.t;
-//				this.cur.x = path.x;
-//				this.cur.y = path.y;
-//				this.pathList.shift();
-//				deltaSimuT = Math.max(0, this.omConcept.now - path.t);
-//			} else {
-//				path.speedX = (path.x - this.cur.x) 
-//                                / (path.t - this.cur.t);
-//                path.speedY = (path.y - this.cur.y)
-//                                / (path.t - this.cur.t);
-//                this.cur.t = this.omConcept.now;
-//                
-//				this.cur.x += path.speedX * deltaSimuT;
-//				if (path.speedX > 0)
-//					this.cur.x = Math.min(this.cur.x, path.x);
-//				else
-//					this.cur.x = Math.max(this.cur.x, path.x);
-//                
-//				this.cur.y += path.speedY * deltaSimuT;
-//				if (path.speedY > 0)
-//					this.cur.y = Math.min(this.cur.y, path.y);
-//				else
-//					this.cur.y = Math.max(this.cur.y, path.y);
-//				break;
-//			};
-//		};
-//        this.graphic.moveTo(this.cur.x, this.cur.y);
-//		this.draw();
-//	};
-    
-//    checkNan(name){
-//        if( isNaN(this.cur.x) || isNaN(this.cur.y) 
-//           || this.cur.x == undefined){
-//                console.log(name,' found NaN or undefined', this.which,
-//                           this.cur.x,this.cur.y)
-//            debugger;
-//            } ;
-//    };
     moveDisplayWithPath(deltaSimuT) {
 		if (this.inBatch) return;
         while (this.pathList.length > 0) {
@@ -568,12 +524,13 @@ export class Item {
 //            this.checkNan('MDWP before update');
             
             this.updateCur(deltaSimuT, path);
-//            this.checkNan('MDWP after update');
+//            this.checkNan('MDfWP after update');
             
             if( this.cur.t < path.t ) break;
             deltaSimuT = Math.max(0, this.omConcept.now - path.t);
             this.pathList.shift();
         };
+        if( this.inWalkQ ) this.updateCurWalkQ(deltaSimuT);
 //        this.graphic.moveTo(this.cur.x, this.cur.y);
 		this.graphic.draw(this.cur, this.omConcept.now);
     };
@@ -613,6 +570,34 @@ export class Item {
         return deltaSimuT;
     };
     
+    updateCurWalkQ(deltaT){
+        const lastX = this.cur.x;
+        const f = Math.min(1,(this.omConcept.now - this.inWalkQ.releaseT) 
+                    / ( this.inWalkQ.arrivalT - this.inWalkQ.releaseT));
+        const absX = this.inWalkQ.endX * f + this.inWalkQ.startX * (1-f);
+        const a = this.ahead;
+        const w = this.inWalkQ;
+        if( a ){
+            //if first in line?
+            if( a.inWalkQ == null 
+               && this.omConcept.now >= w.arrivalT ){
+               const speed = Math.max(this.omConcept.stage.normalSpeed*.5,
+                                      this.width/a.procTime);
+                this.cur.x = Math.min(w.endX,
+                                    this.cur.x + speed * deltaT); 
+            } else {
+                const deltaX = w.initDeltaX * (1-f) + this.width;
+                this.cur.x = Math.min(a.cur.x - deltaX, absX);
+            }
+        } else{
+            this.cur.x = absX;
+        }
+//        console.log('inside Cur Walk Q',this.which, f, this.cur.x)
+        
+        this.cur.w = this.updateW( this.cur.w, this.cur.x - lastX );
+        this.cur.l = this.legAngle( this.cur.w );
+        this.cur.a = this.armAngle( this.cur.l );
+    }
 	
 	updatePosition(){
 		if (this.inBatch) return;
@@ -633,7 +618,10 @@ export class Item {
                 if( path.speedX == undefined ) this.updatePathSpeeds(path);
 				break;
 			};
+            
 		};
+        if( this.inWalkQ ) 
+                this.updateCurWalkQ(1e8);
 		this.graphic.draw(this.cur, this.omConcept.now);
 	};
 		
@@ -937,7 +925,7 @@ export class NStickFigure {
         
 		
 		
-		this.badgeText = null;
+		this.badgeText = 0;
 		this.badgeVisible = false;
 //		this.ratio = this.maxArmAngle / this.maxLegAngle;
 //		this.x = Math.floor(x);

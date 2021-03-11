@@ -261,7 +261,7 @@ class EconScale extends OmConcept{
         for(let inp of inpsChanged){
             localUpdate(inp); 
         };
-        if( match(inpsChanged,['ar','acv','util','scv'])) {
+        if( match(inpsChanged,['util','acv','sr','scv'])) {
             eos.graph.updateForParamChange();
         }
         if( match(inpsChanged,['num'])){
@@ -328,7 +328,7 @@ sPathsY(nMach) {
 function localUpdateFromUser(inp){
     eos.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
-    if( match([inp],['ar','acv','util','scv'])) {
+    if( match([inp],['util','acv','sr','scv'])) {
             eos.graph.updateForParamChange();
         }
     if( inp.key == 'num'){

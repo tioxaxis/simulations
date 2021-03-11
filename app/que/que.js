@@ -197,7 +197,7 @@ class Queueing extends OmConcept{
         //fudge to get animation started quickly
         let t = que.heap.top().time - 1;
         que.now = que.frameNow = t;
-        setHalfServiceEvent();
+//        setHalfServiceEvent();
         document.getElementById('nInQueue').innerHTML = '0';
     };
     localUpdateFromSliders(...inpsChanged){
@@ -258,20 +258,20 @@ function localUpdateFromUser(inp){
             que.graph.updateForParamChange();
         }
 };
-function halfServTime(){
-    const rate = Math.max(.0001,Number(que.usrInputs.get('sr').get()));
-    return (tioxTimeConv / rate) / 2;
-}        
-function setHalfServiceEvent(){
-    
-    que.heap.push({
-        time: que.now + halfServTime(),
-        type: 'adjustWalkers' + que.name,
-        proc: theSimulation.queue.everyHalfServiceTime.
-                        bind(theSimulation.queue),
-        item: null
-    });
-}      
+//function halfServTime(){
+//    const rate = Math.max(.0001,Number(que.usrInputs.get('sr').get()));
+//    return (tioxTimeConv / rate) / 2;
+//}        
+//function setHalfServiceEvent(){
+//    
+//    que.heap.push({
+//        time: que.now + halfServTime(),
+//        type: 'adjustWalkers' + que.name,
+//        proc: theSimulation.queue.everyHalfServiceTime.
+//                        bind(theSimulation.queue),
+//        item: null
+//    });
+//}      
  function localUpdate(inp){
     let v = inp.get();
     switch (inp.key){
@@ -331,23 +331,34 @@ class QueQueue extends Queue {
 
 	push (person) {
         if( !super.push(person, this.walkingTime) ) return false;
-        person.checkAhead = true;
+        person.inWalkQ = {
+            startX:anim.person.path.left,
+            endX: anim.person.path.headQueue,
+            releaseT : que.now,
+            arrivalT : que.now + this.walkingTime
+        };
+        if( person.ahead ){
+            if( person.ahead.inWalkQ )
+                person.inWalkQ.initDeltaX = (que.now - person.ahead.inWalkQ.releaseT) * anim.stage.normalSpeed;
+        }
+        
+//        person.checkAhead = true;
         person.arrivalTime = que.now + this.walkingTime;
         person.width = this.delta.dx;
-        const servRate = Number(que.usrInputs.get('sr').get()) / tioxTimeConv;
-        const nLeave = Math.floor(servRate * this.walkingTime);
-        const dist = Math.max(0,(this.q.length - 1 - nLeave)) * this.delta.dx;
-        person.cur.x = anim.person.path.left - dist;
-        person.addPath({
-                t: que.now + this.walkingTime,
-                x: anim.person.path.headQueue - dist,
-                y: anim.person.path.top
-            });
+//        const servRate = Number(que.usrInputs.get('sr').get()) / tioxTimeConv;
+//        const nLeave = Math.floor(servRate * this.walkingTime);
+//        const dist = Math.max(0,(this.q.length - 1 - nLeave)) * this.delta.dx;
+//        person.cur.x = anim.person.path.left - dist;
+//        person.addPath({
+//                t: que.now + this.walkingTime,
+//                x: anim.person.path.headQueue - dist,
+//                y: anim.person.path.top
+//            });
         
-        person.cur.x = anim.person.path.left - dist;
-		if (person.isThereOverlap()) {
-			person.cur.y = person.ahead.cur.y - 10;
-		}
+//        person.cur.x = anim.person.path.left - dist;
+//		if (person.isThereOverlap()) {
+//			person.cur.y = person.ahead.cur.y - 10;
+//		}
         return true;
 	};
 
@@ -356,51 +367,52 @@ class QueQueue extends Queue {
 			this.numSeatsUsed.toString().padEnd(5,' ');
         
         
-        const queueActual = (anim.person.path.headQueue - person.cur.x)/this.delta.dx+1;
-        const desiredX = anim.person.path.headQueue -
-                    this.delta.dx * (this.numSeatsUsed-1);
-        person.pathList = [];
-        if( person.cur.x >= desiredX ){
-            person.cur.x = desiredX;
-        } else {
-            person.addPath({t: que.now, x: desiredX, y: anim.person.path.top });
-        }
+//        const queueActual = (anim.person.path.headQueue - person.cur.x)/this.delta.dx+1;
+//        const desiredX = anim.person.path.headQueue -
+//                    this.delta.dx * (this.numSeatsUsed-1);
+//        person.pathList = [];
+//        if( person.cur.x >= desiredX ){
+//            person.cur.x = desiredX;
+//        } else {
+//            person.addPath({t: que.now, x: desiredX, y: anim.person.path.top });
+//        }
 	};
 
 	pullAnim (person) {
+        person.inWalkQ = null;
         let walkForOne = this.delta.dx / anim.stage.normalSpeed;
         que.graph.push(que.now, que.now - person.arrivalTime);
         document.getElementById('nInQueue').innerHTML = 
 			this.numSeatsUsed.toString().padEnd(5,' ');
         
-        for( let k = 0; k < this.numSeatsUsed; k++ ){
-            this.q[k].updatePath({
-                t: que.now + Math.min(walkForOne,person.procTime),
-                x: anim.person.path.headQueue - this.delta.dx*k, 
-                y: anim.person.path.top
-            })
-        };
-        this.updateWalkers();
+//        for( let k = 0; k < this.numSeatsUsed; k++ ){
+//            this.q[k].updatePath({
+//                t: que.now + Math.min(walkForOne,person.procTime),
+//                x: anim.person.path.headQueue - this.delta.dx*k, 
+//                y: anim.person.path.top
+//            })
+//        };
+//        this.updateWalkers();
 	};
-    everyHalfServiceTime(){
-        this.updateWalkers();
-        setHalfServiceEvent();
-    };
-    updateWalkers(){
-//        printQ('before adjustment nsu='+this.numSeatsUsed, this.q);
-        const servRate = Number(que.usrInputs.get('sr').get()) / tioxTimeConv;
-        for (let k = this.numSeatsUsed; k < this.q.length; k++) {
-			let p = this.q[k];   
-            const nLeave = Math.floor(servRate * (p.arrivalTime - que.now));
-            const dist = Math.max(0,(k - nLeave)) * this.delta.dx;
-            p.updatePath({t: p.pathList[0].t,
-					      x: anim.person.path.headQueue - dist,
-                          y: anim.person.path.top 
-                         });
-        }
-//        printQ('after adjustment', this.q);
-//        debugger;
-    }
+//    everyHalfServiceTime(){
+//        this.updateWalkers();
+//        setHalfServiceEvent();
+//    };
+//    updateWalkers(){
+////        printQ('before adjustment nsu='+this.numSeatsUsed, this.q);
+//        const servRate = Number(que.usrInputs.get('sr').get()) / tioxTimeConv;
+//        for (let k = this.numSeatsUsed; k < this.q.length; k++) {
+//			let p = this.q[k];   
+//            const nLeave = Math.floor(servRate * (p.arrivalTime - que.now));
+//            const dist = Math.max(0,(k - nLeave)) * this.delta.dx;
+//            p.updatePath({t: p.pathList[0].t,
+//					      x: anim.person.path.headQueue - dist,
+//                          y: anim.person.path.top 
+//                         });
+//        }
+////        printQ('after adjustment', this.q);
+////        debugger;
+//    }
 };
 function printQ(when, q){
     console.log(when,'Now = ',que.now);
