@@ -85,9 +85,6 @@ export class Queue {
 		person.ahead = this.lastAdded;
 		if (this.lastAdded) this.lastAdded.behind = person;
 		this.lastAdded = person;
-//        console.log('LINKED ', person.which,' TO ',
-//                    (person.ahead ? person.ahead.which: "NOONE"),
-//                   ' added to queue',this.name);
 
 		this.omConcept.heap.push({
 			time: person.arrivalTime,
@@ -121,7 +118,6 @@ export class Queue {
 		if (this.q.length < this.maxSeats) {
 			this.previousMachine.knockFromNext();
 		}
-//		if (this.recordLeave) this.recordLeave(person);
 		this.printQueue();
 		return person;
 	};
@@ -262,15 +258,6 @@ export class MachineCenter {
             item: machine
         });
 
-        // does this make sense anymore leave is nonexistant??
-//        if( this.leaveEarly ){
-//            this.omConcept.heap.push({
-//                time: this.omConcept.now + theProcTime - this.leaveEarly,
-//                type: 'leave/' + this.name,
-//                proc: this.leave.bind(this),
-//                item: machine
-//            })
-//        };
         this.numberBusy++;
         return true;
 	};
@@ -278,8 +265,6 @@ export class MachineCenter {
 	finish(machine) {
         const person = machine.person;
         if (person.behind) {
-//            console.log('UN-LINKED ', person.behind.which,' TO ', person.which,
-//                       ' from machine ',machine.index, 'MC= ',this.name);
             person.behind.ahead = null;
         }
         person.behind = null;
@@ -296,8 +281,6 @@ export class MachineCenter {
 		this.numberBusy--;
         if(this.pauseOnIdle && machine.status == 'idle'){
             this.checkForQueue();
-            
-            //  check for switch and call routine.
         } 
 	};
     
@@ -521,17 +504,12 @@ export class Item {
             const path = this.pathList[0];
             if( path.speedX == undefined ) this.updatePathSpeeds(path);
             
-//            this.checkNan('MDWP before update');
-            
             this.updateCur(deltaSimuT, path);
-//            this.checkNan('MDfWP after update');
-            
             if( this.cur.t < path.t ) break;
             deltaSimuT = Math.max(0, this.omConcept.now - path.t);
             this.pathList.shift();
         };
         if( this.inWalkQ ) this.updateCurWalkQ(deltaSimuT);
-//        this.graphic.moveTo(this.cur.x, this.cur.y);
 		this.graphic.draw(this.cur, this.omConcept.now);
     };
     
@@ -592,8 +570,6 @@ export class Item {
         } else{
             this.cur.x = absX;
         }
-//        console.log('inside Cur Walk Q',this.which, f, this.cur.x)
-        
         this.cur.w = this.updateW( this.cur.w, this.cur.x - lastX );
         this.cur.l = this.legAngle( this.cur.w );
         this.cur.a = this.armAngle( this.cur.l );
@@ -672,43 +648,14 @@ export class Item {
 		}
 	};
     updatePathSpeeds(path){
-        
-        
-//        this.cur.t = this.omConcept.now;
         const deltaT = path.t - this.omConcept.now;
         path.speedX = (path.x - this.cur.x) / Math.max(1,deltaT);
         path.speedY = (path.y - this.cur.y) / Math.max(1,deltaT);
-//        if( path.speedX == 0 ){
-//            alert(' found a speed X of '+path.speedX);
-//            debugger;
-//        }
-//        console.log('in SPEEDS now=',this.omConcept.now,
-//                    'cur=',this.cur,'path=',path);
-//        debugger;
     }
 
 	addPath(triple) {
 		this.pathList.push(triple);
-//        if( this.pathList.length == 1 ) 
-//            this.updatePathSpeeds(this.pathList[0])
     };
-//		const n = this.pathList.length;
-//		let last = {};
-//		if (n == 1) {
-//			last = {
-//				t: this.omConcept.now,
-//				x: this.cur.x,
-//				y: this.cur.y
-//			};
-//		} else {
-//			last = this.pathList[n - 2];
-//		}
-//
-//		const path = this.pathList[n - 1];
-//		const deltaT = path.t - last.t;
-//        path.speedX = (path.x - last.x) / Math.max(1,deltaT);
-//        path.speedY = (path.y - last.y) / Math.max(1,deltaT);
-//	};
 
 	destroy() {
 		this.omConcept.itemCollection.remove(this);
@@ -739,7 +686,6 @@ export class Person extends Item {
     updatePathSpeeds(path){
         super.updatePathSpeeds(path);
         const cur = this.cur;
-//        if( isNaN(cur.x) || isNaN(cur.y)|| cur.x == undefined ){alert('found a cur=NaN'); debugger};
         
         const deltaT = path.t - cur.t;
         path.armWalking = true;
@@ -756,34 +702,6 @@ export class Person extends Item {
         }
     }
     
-//    addPath(quintuple) {
-//		super.addPath(quintuple);  //do calc for x,y for item.
-//		const n = this.pathList.length;
-//		let last = {};
-//		if (n == 1) {
-//			last = {
-//				t: this.omConcept.now,
-//				a: this.cur.a,
-//				l: this.cur.l
-//			};
-//		} else {
-//			last = this.pathList[n - 2];
-//		}
-//
-//		const path = this.pathList[n - 1];
-//		const deltaT = path.t - last.t;
-//        path.armWalking = true;
-//        if( path.a ) {
-//            path.speedA = (path.a - last.a) / Math.max(1,deltaT);
-//            path.armWalking = false;
-//        }
-//        path.legWalking = true;
-//        if( path.l ){
-//            path.speedL = (path.l - last.l) / Math.max(1,deltaT); 
-//            path.legWalking = false;
-//        }
-//          
-//	};
     //helper functions for angles of Stick Figure
     deltaW( deltaX ){
         const dw = Math.abs(deltaX) / this.gSF.maxX * this.gSF.maxL / 2;
@@ -829,9 +747,6 @@ export class Person extends Item {
                 this.cur.a = Math.max(newA, path.a);
         };
     };
-    
-    
-    
     
 	isThereOverlap() {
 		// is 'p' graph above the 'a' graph in [0, p.count] ?
@@ -914,22 +829,9 @@ export class NStickFigure {
         let n = Math.floor(Math.random() * tioxColors.length);
 		this.color = tioxColors[n];
 		this.bdaryColor = tioxBorders[n];
-//		this.maxLegAngle = 120;
-//		this.maxArmAngle = 90;
-        //   ???????????????????????
-//		armRadians = null //pi2 / 15;
-//		this.legAngleRadians = Math.random() * pi2/8; //pi2 / 12;
-//		let d = Math.floor( Math.random() * this.maxLegAngle);
-//		this.legAngleDegrees = d;
-//        
-        
-		
 		
 		this.badgeText = 0;
 		this.badgeVisible = false;
-//		this.ratio = this.maxArmAngle / this.maxLegAngle;
-//		this.x = Math.floor(x);
-//		this.y = Math.floor(y);
 		this.packageVisible = false;
 		this.packageColor = null;
 	};
@@ -960,8 +862,6 @@ export class NStickFigure {
     draw(cur,now) {
 		// use cur.x,cur.y as starting point and draw the rest of the
 		// parts by translating and rotating from there
-//		if( isNaN(cur.x) || isNaN(cur.y)){
-//            console.log('In Draw found a cury=NaN');};
         
         
         if ( cur.x < -50 || cur.x > 1050 ) return;
@@ -1123,18 +1023,13 @@ export class GStore {
 	};
 	drawShelves(c, s, b) {
 		let left, right, y;
-//        c.beginPath();
 		for (let k = 0; k < 9; k++) {
 			left = s.left + ((k % 2) == 0 ? 0 : b.space);
 			right = s.left + s.width - ((k % 2) == 0 ? b.space : 0);
 			y = s.bot - (k + 1) * b.space;
-//			c.beginPath();
 			c.moveTo(left, y);
 			c.lineTo(right, y);
-//			c.closePath();
-//			c.stroke();
 		};
-//        c.stroke();
 	};
 	emptyStore() {
 		this.packages.forEach(p => p.destroy());
@@ -1185,7 +1080,6 @@ export class Package extends Item {
 	constructor(omConcept,ctx, color, boxSize, x, y) {
 		super(omConcept,x, y);
 		this.graphic = new ColorBox(ctx, color, boxSize);
-//		this.graphic.moveTo(x, y);
 	};
 };
 
@@ -1195,10 +1089,6 @@ class ColorBox {
 		this.color = color;
 		this.boxSize = boxSize;
 	};
-//	moveTo(x, y) {
-//		this.x = Math.floor(x);
-//		this.y = Math.floor(y);
-//	};
 	draw(cur,now) {
 		this.ctx.fillStyle = this.color;
 		this.ctx.fillRect(cur.x - this.boxSize/2,

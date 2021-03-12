@@ -28,11 +28,7 @@ export const cbColors = {
 	yellow: 'rgb(255,176,0)',
     black: 'rgb(0,0,0)',
     lightYellow: 'rgb(255, 230, 175)',
-	
-	
 };
-
-
 
 export class GammaRV {
 	constructor(rate = 0, CV = 0, minimumTime = 1) {
@@ -113,7 +109,6 @@ export class UniformRV {
 	observe() {
 		let v = this.variance * this.mean;
 		let x = this.mean - v + 2 * v * Math.random();
-		//console.log('in demand RV observe=', x);
 		return x;
 	}
 };
@@ -280,14 +275,6 @@ export class Heap {
 		this.heapify();
         return cnt;
 	}
-    
-//    modifyNextOrder(now,period){
-//        for( let i = 0; i < this.h.length; i++ ){
-//            if( this.h[i].type == 'next order' ){
-//                this.h[i].time = Math.floor((now+period)/period)*period
-//            }
-//        }
-//    }
 }; //end class Heap
 
 
@@ -299,14 +286,6 @@ export class StageOnCanvas{
         this.stage = {width:w, height:h};
     };
     reset(){
-//        const rent = this.canv.parentElement;
-//        const rect = this.canv.getBoundingClientRect();
-//        console.log('Parent height:', rent.clientHeight);
-//        console.log('in StageOnCanvas reset with id=',this.id,
-//                    '  and rect =',rect.width,rect.height,
-//                    ' and computed = ',rect.right-rect.left,rect.bottom-rect.top,
-//                    ' dpr= ',devicePixelRatio.toFixed(1), this.stage.width,this.stage.height);
-        
         this.canv.width = this.canv
             .getBoundingClientRect().width * devicePixelRatio;
         

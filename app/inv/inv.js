@@ -100,7 +100,6 @@ class InvGraph extends TioxGraph {
 	};
 	
 	reset(){
-//		console.log('in Graph Inventory Reset');
         let maxI;
 		if ( inv.whichRule == 'methRop' ){
 			maxI = theSimulation.rop + theSimulation.quantityOrdered + 1;
@@ -108,14 +107,9 @@ class InvGraph extends TioxGraph {
 			maxI = theSimulation.upto+1;
 		};
 		super.reset(maxI);
-//		const v = document.getElementById('speedinv').value;
-//		const f = speeds[v].graph;
-//		this.updateForSpeed(f);
 	};
-//	updateForSpeed (factor){
-//		this.scaleXaxis(factor);
-//	};
-	computePredInv () {
+
+    computePredInv () {
 		let avgInv;
 		
 		const P = theSimulation.period;
@@ -143,11 +137,9 @@ class InvGraph extends TioxGraph {
 	
 		
 	resetRopLine(y){
-//        console.log(' In Graph Inventory ROP LINE');
 		this.setExtraLines(cbColors.yellow,{min:y},null);
 	}
 	resetPeriodLines(x){
-//		console.log(' In Graph Inventory PERIOD LINES');
         this.setExtraLines(cbColors.yellow,null, {min:x,step:x});
 	};
     updateForParamChange(){
@@ -212,8 +204,6 @@ function animSetup(){
 	};
 	anim.truck.cabWidth = anim.truck.height/2;
 	anim.truck.width = anim.truck.bedWidth + anim.truck.cabWidth;
-
-
 };
 
 animSetup();
@@ -238,17 +228,6 @@ function invDefine(){
 	inv.tioxTimeConv = tioxTimeConv;
 };
 
-//function redoStagesGraph(){
-//    anim.stage.foreground.reset();
-//    anim.stage.background.reset();
-//    inv.graph.chart.reset();
-//    
-//    
-//    inv.graph.setupThenRedraw();
-//    inv.clearRedrawStage(0,true);
-//    console.log('in Inventory and called redoStages');
-//};
-
 class Inventory extends OmConcept{
     constructor(usrInputs){
         super('inv');
@@ -258,8 +237,6 @@ class Inventory extends OmConcept{
                          'speed','action','reset',
                          'leg0','leg1','leg2','desc'];
         this.keyIndex = computeKeyIndex(this.keyNames);
-        
-//        this.setupScenarios();    
     }
     localReset () {
         inv.itemCollection.moveDisplayAll(0); 
@@ -280,10 +257,6 @@ class Inventory extends OmConcept{
                 item: null
             });
         }
-//        document.getElementById('lostSales').innerHTML = '0'
-//        ;
-//        document.getElementById('fillRate').innerHTML = '100';
-//        document.getElementById('serviceLevel').innerHTML = '100';
     };
     
     localUpdateFromSliders(...inpsChanged){
@@ -304,7 +277,6 @@ class Inventory extends OmConcept{
         this.redrawBackground();
         this.graph.setupThenRedraw();
         this.clearRedrawStage(0,true);
-//        console.log('in Inventory and called redoStages');
     };
     clearStageForeground(){
         this.stage.foreground.clear();
@@ -467,11 +439,6 @@ class InvCombine  extends Combine {
 				y: anim.person.path.bot - 
                 anim.person.height/2 + person.graphic.gSF.package.y,
 			});
-//            console.log('in start Anim',anim.person.path.right,
-//                       anim.person.path.bot, 
-//                       person.graphic.gSF.package.x,
-//                       person.graphic.gSF.package.y,
-//                       pack.cur.y);
 		}
 	};
 	finishAnim (person, pack) {
@@ -595,10 +562,6 @@ class RopStore extends GStore {
 		this.inv = null;
 		this.invInDoor = null;
 		this.invPosition = null;
-//		this.lostSales = null;
-//		this.totalDemand = null;
-//		this.nRounds = null;
-//		this.roundsWithEnough = null;
 		this.packages = []; //the packages in the store.
 	};
 	reset() {
@@ -615,10 +578,6 @@ class RopStore extends GStore {
 		for (let k = 0; k < this.inv; k++)
 			this.addNew();
         this.resetStats();
-//		this.lostSales = 0;
-//		this.totalDemand = 0;
-//		this.nRounds = 0;
-//		this.roundsWithEnough = 0;
 		this.stockout = false;
 	};
     resetStats(){
@@ -636,14 +595,6 @@ class RopStore extends GStore {
         if( item.load.pathList.length > 1 ){
             item.load.pathList[0].x -= anim.truck.cabWidth;
         } 
-//            
-//        console.log('  Truck at door and path of length',item.load.pathList.length);
-//        console.log('  and... now =',inv.now,' cur=',item.load.cur.x);
-//        for(let path of item.load.pathList ){
-//            console.log('    and... path.x=',path.x,path.y,path.t)
-//
-//        }
-//        console.log('  and... reverse= ', item.load.graphic.reverse);
 		const n = item.load.graphic.packages.length;
 		
 		let topOfInventory = anim.store.bot - anim.box.space *
@@ -664,9 +615,6 @@ class RopStore extends GStore {
 			let point = this.boxStack.relCoord(this.inv + k);
 			load.graphic.packages[k].cur.x = this.firstBox.x + point.x;
 			load.graphic.packages[k].cur.y = this.firstBox.y + point.y;
-//			load.graphic.packages[k].graphic
-//				.moveTo(this.firstBox.x + point.x,
-//                        this.firstBox.y + point.y);
 		}
 		load.graphic.packages.forEach(p => {
 			p.inBatch = false
@@ -680,8 +628,6 @@ class RopStore extends GStore {
 			this.invPosition);
 		// keep track stockouts by round
 		this.servLevel.addItem( !this.stockout ? 1 : 0);
-//        this.nRounds++;
-//		if (!this.stockout) this.roundsWithEnough++;
 		this.stockout = false;
 		document.getElementById('serviceLevel').innerHTML =
 			( 100 * this.servLevel.getAverage() ).toFixed(0);
@@ -691,14 +637,12 @@ class RopStore extends GStore {
 	};
 	pull() { //person arrived at queue, sell one unit.
 		let pack = super.pull();
-//		this.totalDemand++;
         this.lostSales.addItem( pack == null ? 1 : 0);
         document.getElementById('lostSales').innerHTML = this.lostSales.getTotal();
 		document.getElementById('fillRate').innerHTML =
 			((1 - this.lostSales.getAverage()) * 100).toFixed(0);
 		if (pack == null) {
 			this.stockout = true;
-//			this.lostSales++;
 		} else {
 			this.invPosition--;
 			if (this.invPosition <= theSimulation.rop &&
@@ -731,7 +675,6 @@ class RopStore extends GStore {
 	};
 
 	createDelivery(quantity) {
-//		console.log('at create a delivery:', inv.now);
 		this.invPosition += quantity;
 		inv.graph.push(inv.now, this.inv,
 			this.invPosition);
@@ -836,10 +779,6 @@ class FlatBed {
 		this.anim = anim;
 		this.reverse = 0;
 	};
-//	moveTo(x, y) {
-//		this.x = x;//Math.floor(x);
-//		this.y = y;//Math.floor(y);
-//	};
 	setReverse() {
 		this.reverse = this.anim.truck.cabWidth + this.anim.truck.bedWidth;
     }
@@ -944,15 +883,6 @@ class DisplayBoxes {
 		this.ctxDB.restore();
 	};
 };
-
-//export class Person extends Item {
-//	constructor(omConcept, x, y) {
-//		super(omConcept, x, y);
-//		this.graphic = new NStickFigure(gSF, x, y);
-//	};	
-//}; // end class Person
-
-
 
 function invHTML(){	
     let usrInputs = new Map();

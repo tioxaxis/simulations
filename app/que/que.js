@@ -110,7 +110,6 @@ class QueueGraph extends TioxGraph {
 			t: (que.now / tioxTimeConv),
 			p: (pW == Infinity)?null:pW
 		});
-		//this.omConcept.usrInputs.get('leg2').legInput   will avoid the global!!
         this.predWait.setLegendText( 'predicted wait' +
 					   ((pW == Infinity) ? ' = ∞' : ''));
 
@@ -258,21 +257,8 @@ function localUpdateFromUser(inp){
             que.graph.updateForParamChange();
         }
 };
-//function halfServTime(){
-//    const rate = Math.max(.0001,Number(que.usrInputs.get('sr').get()));
-//    return (tioxTimeConv / rate) / 2;
-//}        
-//function setHalfServiceEvent(){
-//    
-//    que.heap.push({
-//        time: que.now + halfServTime(),
-//        type: 'adjustWalkers' + que.name,
-//        proc: theSimulation.queue.everyHalfServiceTime.
-//                        bind(theSimulation.queue),
-//        item: null
-//    });
-//}      
- function localUpdate(inp){
+
+function localUpdate(inp){
     let v = inp.get();
     switch (inp.key){
         case 'ar':
@@ -342,40 +328,14 @@ class QueQueue extends Queue {
                 person.inWalkQ.initDeltaX = (que.now - person.ahead.inWalkQ.releaseT) * anim.stage.normalSpeed;
         }
         
-//        person.checkAhead = true;
         person.arrivalTime = que.now + this.walkingTime;
         person.width = this.delta.dx;
-//        const servRate = Number(que.usrInputs.get('sr').get()) / tioxTimeConv;
-//        const nLeave = Math.floor(servRate * this.walkingTime);
-//        const dist = Math.max(0,(this.q.length - 1 - nLeave)) * this.delta.dx;
-//        person.cur.x = anim.person.path.left - dist;
-//        person.addPath({
-//                t: que.now + this.walkingTime,
-//                x: anim.person.path.headQueue - dist,
-//                y: anim.person.path.top
-//            });
-        
-//        person.cur.x = anim.person.path.left - dist;
-//		if (person.isThereOverlap()) {
-//			person.cur.y = person.ahead.cur.y - 10;
-//		}
         return true;
 	};
 
 	arriveAnim (person) {
         document.getElementById('nInQueue').innerHTML = 
 			this.numSeatsUsed.toString().padEnd(5,' ');
-        
-        
-//        const queueActual = (anim.person.path.headQueue - person.cur.x)/this.delta.dx+1;
-//        const desiredX = anim.person.path.headQueue -
-//                    this.delta.dx * (this.numSeatsUsed-1);
-//        person.pathList = [];
-//        if( person.cur.x >= desiredX ){
-//            person.cur.x = desiredX;
-//        } else {
-//            person.addPath({t: que.now, x: desiredX, y: anim.person.path.top });
-//        }
 	};
 
 	pullAnim (person) {
@@ -384,36 +344,9 @@ class QueQueue extends Queue {
         que.graph.push(que.now, que.now - person.arrivalTime);
         document.getElementById('nInQueue').innerHTML = 
 			this.numSeatsUsed.toString().padEnd(5,' ');
-        
-//        for( let k = 0; k < this.numSeatsUsed; k++ ){
-//            this.q[k].updatePath({
-//                t: que.now + Math.min(walkForOne,person.procTime),
-//                x: anim.person.path.headQueue - this.delta.dx*k, 
-//                y: anim.person.path.top
-//            })
-//        };
-//        this.updateWalkers();
 	};
-//    everyHalfServiceTime(){
-//        this.updateWalkers();
-//        setHalfServiceEvent();
-//    };
-//    updateWalkers(){
-////        printQ('before adjustment nsu='+this.numSeatsUsed, this.q);
-//        const servRate = Number(que.usrInputs.get('sr').get()) / tioxTimeConv;
-//        for (let k = this.numSeatsUsed; k < this.q.length; k++) {
-//			let p = this.q[k];   
-//            const nLeave = Math.floor(servRate * (p.arrivalTime - que.now));
-//            const dist = Math.max(0,(k - nLeave)) * this.delta.dx;
-//            p.updatePath({t: p.pathList[0].t,
-//					      x: anim.person.path.headQueue - dist,
-//                          y: anim.person.path.top 
-//                         });
-//        }
-////        printQ('after adjustment', this.q);
-////        debugger;
-//    }
 };
+
 function printQ(when, q){
     console.log(when,'Now = ',que.now);
     for( let k = 0; k < q.length; k++){
@@ -510,13 +443,6 @@ class QueTSA extends MachineCenter {
             l: 30,
             a: 22,
         });
-         
-        
-        
-//                  machine.person.setDestWithProcTime(theProcTime,
-//			machine.locx, machine.locy);
-//        console.log('in StartAnim TSA queueing', que.now, machine.person.pathList);
-//        debugger;
     };
 
 	finishAnim (machine) {
@@ -588,30 +514,6 @@ class Supplier {
         return last;
 	}
 }; //end class Supplier
-
-
-//export class Person extends Item {
-//	constructor(omConcept, x, y = 100) {
-//		super(omConcept, x, y);
-//		this.graphic = new NStickFigure(gSF, x, y);
-//	};
-//
-//	isThereOverlap() {
-//		// is 'p' graph above the 'a' graph in [0, p.count] ?
-//		let p = this;
-//		let a = this.ahead;
-//		if (!a) return false;
-//		let pPath = p.pathList[0];
-//		let aPath = a.pathList[0];
-//		if (!aPath) return false;
-//		return false;
-////		return (pPath.t < aPath.t + a.width / aPath.speedX)
-//			//        if (  p.cur.x + p.width > a.cur.x ) return true;
-//			//        if ( pPath.deltaX <= aPath.deltaX ) return false;
-//			//        return (a.cur.x - p.width - p.cur.x)/(pPath.deltaX - aPath.deltaX) <= pPath.count;
-//	};
-//}; // end class Person
-
 
 function queHTML(){	
 	let usrInputs = new Map();

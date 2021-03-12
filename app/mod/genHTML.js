@@ -175,7 +175,6 @@ export class NumSlider{
                   min, max, deflt, precision, shortLen, scale){
         this.key = key;
         this.inputElem = domElem(inputElem);
-//        this.disp = document.getElementById('disp' + this.inputElem.id);
         this.localUpdate = localUpdate;
         this.min = min;
         this.max = max;
@@ -203,12 +202,7 @@ export class NumSlider{
     };
 
     encode(x){
-       const y = (x * this.scale);
-//           .toString().padStart(this.shortLen,'0');
-//        if( y.length > this.shortLen ){
-//            alert('data from item='+this.key+'  It should be '+this.shortLen+' characters but is='+y)
-//        }
-        return y;
+       return (x * this.scale);
     };
     decode(x){
         return (x / this.scale).toString();
@@ -483,10 +477,6 @@ export class IntegerInput{
         return this.deflt.toString();
     };
     encode(x){
-//        const y = x.toString().padStart(this.shortLen,'0');
-//        if( y.length > this.shortLen ){
-//            alert('data from item='+this.key+' It should be '+this.shortLen+' characters but is='+y)
-//        }
         return Number(x);
     };
     decode(x){
@@ -498,9 +488,6 @@ export class IntegerInput{
         else if( x > this.max ) event.target.value = this.max;
         else if( x != Math.floor(x)) event.target.value = Math.floor(x);
         this.localUpdate(this);
-//        if( x != event.target.value ) 
-//            console.log(' In integer Input and adjusted value from',x,' to ',
-//                   event.target.value);
     }
 }
 

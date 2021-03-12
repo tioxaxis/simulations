@@ -220,16 +220,6 @@ class EconScale extends OmConcept{
         
     };
     
-//    omStatus(title){
-//        console.log('\n\n',title);
-//        const jQ = theSimulation.jQueue;
-//        const sQs = theSimulation.sQueues;
-//        this.printQueue('joint', jQ);
-//        for( let sQ of sQs){
-//            this.printQueue(sQ.name,sQ);
-//        }
-//    };
-    
     adjustAllQueues(){
         theSimulation.jQueue.updateWalkingPositions(true);
         for(let k = 0; k < 4; k++){
@@ -339,20 +329,6 @@ function localUpdateFromUser(inp){
     }
 };
         
-        
-// function getServRate(){
-//    const a = Number(eos.usrInputs.get('ar').get());
-//    const u = Number(eos.usrInputs.get('util').getValue());
-//    const n = Number(eos.usrInputs.get('num').get());
-//     return a/u/n/tioxTimeConv;
-// };
-//function updateServiceRate(a,u,n){
-//    if(!a) a = Number(eos.usrInputs.get('ar').get());
-//    if(!u) u = Number(eos.usrInputs.get('util').getValue());
-//    if(!n) n = Number(eos.usrInputs.get('num').get());
-//     const s = a/(u * n);
-//    theSimulation.serviceRV.setRate(s / tioxTimeConv);
-// };
 function updateArrivalRate(u,s,n){
     
     if(!u) u = Number(eos.usrInputs.get('util').getValue());
@@ -433,8 +409,6 @@ class EosQueue extends Queue {
         const sr = Number(eos.usrInputs.get('sr').get()) / tioxTimeConv;
         const nLeave = Math.floor(sr * this.nextMachine.numMachines *  this.walkingTime);
         const dist = Math.max(0,(this.q.length - 1 - nLeave)) * this.delta.dx;
-//        if( isNaN(person.cur.x)  || person.cur.x == undefined ){alert('found a cur=NaN'); debugger};
-        
         
         person.cur.x = anim.person.path.left - dist;
         person.cur.y = this.pathY;
@@ -476,18 +450,6 @@ class EosQueue extends Queue {
         
         
         this.updateWalkingPositions(false);
-//        for (let k = this.numSeatsUsed; 
-//             k < this.q.length; k++) {
-//			let p = this.q[k];
-//            const sr = Number(eos.usrInputs.get('sr').get());
-//            const nLeave = Math.floor(sr * this.nextMachine.numMachines *(p.arrivalTime - eos.now));
-//            const dist = Math.max(0,(k - nLeave)) * this.delta.dx;
-//            p.updatePath({t: p.pathList[0].t,
-//					      x: Math.max(p.pathList[0].x,
-//                              anim.person.path.headQueue - dist),
-//                          y: this.pathY 
-//                         });
-//        }
 	};
     
     updateWalkingPositions(allowMoveBack){
@@ -560,11 +522,6 @@ class EosTSA extends MachineCenter {
         //delink it.
         const p = machine.person;
         
-//        if( isNaN(p.cur.x) || p.cur.x == undefined ){alert('found a cur=NaN'); debugger};
-//        const s = p.ahead;
-//        if( s ) s.behind = null;
-//        p.ahead = machine.lastFinPerson;
-        
         const path = anim.person.path;
         const speed = anim.stage.normalSpeed;
         const distIn = machine.locx - path.headQueue;
@@ -602,7 +559,6 @@ class EosTSA extends MachineCenter {
         for( let k = 0; k < n; k++ ){
             if( theSimulation.sQueues[k].numSeatsUsed > 0 ){
                 this.omConcept.pauseImmediately();
-//                console.log('Queue ',k,' is >0 for some departure');
                 return;
             }
         }
@@ -631,7 +587,6 @@ const theSimulation = {
         const acv = eos.usrInputs.get('acv').get();
 		const scv = eos.usrInputs.get('scv').get();
         const ar = util * sr * num;
-//        console.log('in initialization',ar,sr,num, util);
         
         theSimulation.interarrivalRV = new GammaRV(ar / tioxTimeConv, acv);
 		theSimulation.serviceRV = new GammaRV(sr / tioxTimeConv, scv); 
@@ -701,7 +656,7 @@ const theSimulation = {
 };
 
 // SUPPLIER
-class Supplier {///// two suppliers for two stages of gSF.????
+class Supplier {
 	constructor(gSF, x, y) {
         this.gSF = gSF;
 		this.x = x;
@@ -744,26 +699,6 @@ class EosCreator {
 		})
     }
 }
-
-
-//export class Person extends Item {
-//	constructor(omConcept, gSF, x, y = 100) {
-//		super(omConcept, x, y);
-//		this.graphic = new NStickFigure(gSF, x, y);
-//	};
-//
-//	isThereOverlap() {
-//		// is 'p' graph above the 'a' graph in [0, p.count] ?
-//		let p = this;
-//		let a = this.ahead;
-//		if (!a) return false;
-//		let pPath = p.pathList[0];
-//		let aPath = a.pathList[0];
-//		if (!aPath) return false;
-//		return false;
-//	};
-//}; // end class Person
-
 
 function eosHTML(){	
 	let usrInputs = new Map();

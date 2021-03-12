@@ -169,14 +169,6 @@ export class OmConcept {
         debugger;
     };
 
-//	clearStageForeground() {
-////		console.log(' reached clear the FOREground!!',this.key);
-//        this.stage.foreContext.clearRect(0, 0, this.stage.width, this.stage.height);
-//	};
-//    clearStageBackground() {
-////        console.log(' reached clear the background!!',this.key);
-//        this.stage.backContext.clearRect(0, 0, this.stage.width, this.stage.height);
-//	};
 
 	// play, pause, toggle .
 	play() {
@@ -187,7 +179,6 @@ export class OmConcept {
 		if (this.frameSpeed < 100){
 			this.requestAFId = window.requestAnimationFrame(
 					this.eachFrame.bind(this));
-//            console.log('at Play AFId =',this.requestAFId);
 		} else {
 			this.fullSpeedSim();
             
@@ -199,10 +190,8 @@ export class OmConcept {
         this.frameNow = this.now-1;
     }
 	pause() {
-//        console.log('Begin of Pause isRunning=',this.isRunning);
 		if (!this.isRunning) return;
 		displayToggle('playButton' + this.key, 'pauseButton' + this.key);
-//        console.log('at Pause AFId =',this.requestAFId);
 		window.cancelAnimationFrame(this.requestAFId);
 		this.isRunning = false;
 	};
@@ -213,7 +202,6 @@ export class OmConcept {
 	};
 	
 	eachFrame() {
-//        console.log('frames=',framesDone++);
         this.requestAFId = window.requestAnimationFrame(this.eachFrame.bind(this));
         let perfNow = performance.now();
 		let deltaRealTime = Math.min(100, perfNow - this.lastPerfNow);
@@ -290,25 +278,9 @@ export class OmConcept {
         if( this.adjustAllQueues ) this.adjustAllQueues();
         
 		this.clearStageForeground();
-//        this.checkForNaN('in full speed before update');
-//		 this.omStatus('before update Position');
         this.itemCollection.updatePositionAll();
-//        this.checkForNaN('in full speed after update');
         this.clearRedrawStage(0,true);
-//        this.checkForNaN('in full speed after redraw');
-//        this.omStatus(' after update and redraw');
 	}
-
-//	checkForNaN(name){
-//        for( let k = 0; k < this.itemCollection.length; k++ ){
-//            const item = this.itemCollection[k];
-//            if( isNaN(item.cur.y) ){
-//                console.log(name,'  found NaN');
-//                debugger;
-//            } 
-//        };
-//        console.log(name, 'Nothing Found');
-//    }
     
     setSlidersFrom (row){
         const inpsChanged = [];
@@ -334,14 +306,6 @@ export class OmConcept {
         };
         return row;
     };
-//    sEncode(row){
-//        let str = '';
-//        for ( let [key, inp] of this.usrInputs ){
-//            const x = inp.encode(row[key]);
-//            str += x;
-//        }
-//        return str + row['desc'];
-//    };
     
     sEncode(rows){
         const view = new Int8Array(2000);
@@ -377,15 +341,6 @@ export class OmConcept {
         }
         // convert the corect length to 64 bit str via toBase64()
         const str= toBase64(uint8View.subarray(0,ptr));
-        
-        // testing code to see if sDecode will ignore param not in use
-        // and can fill in defaut for those not in the list  it passed.
-//        this.usrInputs.set('d222',new Description('d222'));
-//        this.usrInputs.delete('ar');
-//        console.log('TEST is ar there?=',this.usrInputs.has('ar'));
-//        const rows2 = this.sDecode(str);
-//        console.log('TEST', rows2);
-//        debugger;
         return str;
     };
                 
@@ -579,25 +534,14 @@ export class OmConcept {
 		let search = this.parseSearchString(this.key);
         let rows = await this.threeCases(this.key, search, null);
         
-//        let rows;
-//		if ( this.fromURL ){
-//			let search = this.parseSearchString(this.key);
-//			rows = this.parseURLScenariosToRows(search.scenarios)
-//		} else {
-//			let params = await this.getScenariosFromDefault(this.key);
-//            params = this.verifyParamsObject(params);
-//            rows = params.app.omConcept.scenarios;
-//		};
 		this.setUL(rows);
 		this.currentLi = null;
 		localStorage.removeItem(this.keyForLocalStorage);
-//        this.saveEdit();
 		enableButtonQ('deleteButton'+this.key, false);
 	};
     
 	// called at initiation
     async setupScenarios () {
-//		console.log('in setup scenarios',this.key);
         // get the scenarios from 1) the URL, 2) user specified .json
 		// 3) local storage or 4) default .json file in that order
 		let search = this.parseSearchString(this.key);
@@ -783,15 +727,11 @@ export class OmConcept {
 		this.toastTimer = setTimeout(
 			this.removeToastMessage.bind(this), 4100);
 	};
-//    exportWithJSON () {
-//        copyToClipboard(this.createJSONfromUL());
-//    }
 		
 	liClicked (ev) {
 		if (ev.target == this.currentLi || 
 			ev.target.parentNode == this.currentLi) return;
 
-//		this.saveModifiedDesc();
 		if (ev.target.tagName === 'LI') {
 			this.changeCurrentLiTo(ev.target);
 		};
@@ -832,21 +772,6 @@ export class OmConcept {
 		}
 	};
 
-//	createURLScenarioStr(rows){
-//        const str = this.newSEncode(rows)
-//		return str;
-//	};
-
-	//convert each coded scenario into a row of parameters
-//	parseURLScenariosToRows(str){
-//		let rows = [];
-//		let scens = str.split(';')
-//		for ( let scenario of scens){
-//			rows.push( this.sDecode(scenario) );
-//		}
-//		return rows;
-//	};
-
 	createURL() { //from current UL
 		const result = location.origin + location.pathname +
 			'?scenarios=' +
@@ -869,7 +794,6 @@ export class OmConcept {
 function copyToClipboard(txt){
 	navigator.clipboard.writeText(txt)
 		.then(  function() {
-//			console.log('successful copy to clipboard')
 			}, 
 			function() {
 				alert('failed to copy to clipboard')

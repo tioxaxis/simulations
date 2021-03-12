@@ -50,39 +50,7 @@ import {
 }
 from '../mod/genHTML.js';
 
-//class FacGraph extends TioxGraph {
-//	constructor(){	
-//		super(fac, 'chartfac', 40, {width:200, step:40}, d=>d.t,
-//              1400, 500, true);
-//		const flowtime = new GraphLine(this, d => d.flow, cbColors.blue,
-//					   false, true,  5, 8);
-//		const throughput = new GraphLine(this,d => d.thru, cbColors.yellow,
-//					   false, true,  5, 8, true);
-//                
-//        document.getElementById('leftLegendfac').append(
-//            flowtime.createLegend('Flow time<br>(seconds/card)'));
-//        document.getElementById('rightLegendfac').append(
-//            throughput.createLegend('Throughput<br>(cards/minute)'));
-//
-//        fac.usrInputs.set('leg0', 
-//            new LegendItem('leg0', flowtime, localUpdateFromUser, true));
-//        fac.usrInputs.set('leg1', 
-//            new LegendItem('leg1', throughput, localUpdateFromUser, true));
-//	};
-//	
-//	push (t,flow,thru){
-//		t /= tioxTimeConv;
-//        flow /= tioxTimeConv;
-//        if( thru ) thru *= tioxTimeConv;
-//		let p = {t: t, flow: flow,
-//				 thru: thru
-//                };
-//		this.drawOnePoint(p);
-//	};
-//	reset(){
-//		super.reset(12,12);
-//    }
-//}
+
 class FacGraph {
 	//controls both of the flow time and throughput graphs
     constructor(){	
@@ -92,8 +60,6 @@ class FacGraph {
 		this.flowGraph.setTitle('Flow time','fchartTitle');
 		const flow = new GraphLine(this.flowGraph,
                 d => d.flow, cbColors.blue, false, true,  5, 8);
-//        const avgflow = new GraphLine(this.flowGraph,
-//                d => d.avgflow, cbColors.yellow, false, true,  5, 10);
         
         //throughput graph
         this.thruGraph = new TioxGraph(fac,'tchartCanvasfac',
@@ -104,7 +70,6 @@ class FacGraph {
 		        
         //add legends
         const leg0 = flow.createLegend('Individual Flow Times (seconds/card)');
-//        const leg1 = avgflow.createLegend('Avg. Flow Time');
         const d3 = document.getElementById('pairChartLeftLegendfac');
         d3.classList.add('pairChartLegend');
         d3.append(leg0);
@@ -137,7 +102,6 @@ class FacGraph {
     
 	reset(){
 		this.avgFlow = new Average();
-//		console.log('in graph reset',fac.now, tioxTimeConv);
         this.avgThru = new IRT(fac.now/tioxTimeConv,0);
         this.flowGraph.reset();
 		this.thruGraph.reset();
@@ -154,8 +118,6 @@ class FacGraph {
     updateForParamChange(){
         this.timeFirstThru = null;
         this.count = 0;
-        //        this.avgFlow = new Average();
-//        this.avgThru = new IRT(fac.now/tioxTimeConv,0);
         this.flowGraph.restartGraph(fac.now/tioxTimeConv);
 		this.thruGraph.restartGraph(fac.now/tioxTimeConv);
     };
@@ -347,18 +309,6 @@ function facDefine(){
     return fac;
 };
 
-//function redoStagesGraph(){
-//    anim.stage.foreground.reset();
-//    anim.stage.background.reset();
-//    fac.graph.chart.reset();
-//    
-//    
-//    fac.graph.setupThenRedraw();
-//    fac.clearRedrawStage(0,true);
-//    console.log('in facegame and called redoStages');
-//};
-//
-
 function markCard(){
     theSimulation.creator.machs[0]
         .person.graphic.mark = true;
@@ -480,23 +430,7 @@ class FacQueue  extends Queue{
                 hSpace: this.anim.box.space, vSpace: this.anim.box.space,
                 xDir: -1, yDir: 1})
     };
-//    relCoord(k) {
-//        let row;
-//        let col = Math.floor(k / this.anim.box.perCol);
-//        if (col < this.lanes-1) {
-//            const r = k % this.anim.box.perCol;
-//            row = ( col % 2 == 1) ? 
-//                    this.anim.box.perCol - 1 - r : r;
-//        } else { 
-//            col = this.lanes-1;
-//            row = k - col * this.anim.box.perCol;
-//       }
-//        const delta = this.anim.box.space - this.anim.box.size;
-//        return {
-//            y: this.anim.box.space * row + Math.floor(delta/2),
-//            x: -(this.anim.box.space) * col + delta/2
-//        }
-//    };
+
     setHead(x,y){
         this.x = x;
         this.y = y;
@@ -584,22 +518,16 @@ class FacStage extends MachineCenter {
                 anim.worker[which].x, anim.card.path.y, 
                 4, anim.box);
         this.setup2DrawMC();
-        //
         this.top = anim.card.path.top;
         this.mid = (anim.worker[which].right + anim.worker[which].left)/2;
         this.left = this.mid - 0.5 * anim.GWorker.width ;
         this.leftCard = anim.worker[which].left;
         this.deltaY = anim.GWorker.height + 30;
-        //
         this.lastNumber = 0;
         this.lastStatus = [];
-        //
-        
     };
     reset(){
         super.reset();
-//        this.timeFirstThru = null;
-//        this.count = 0;
         // clear and redraw workers[ at stage this.which] 
         this.setup2DrawMC();
         this.draw();
@@ -819,10 +747,6 @@ export class FaceCard {
             };
         };
     };
-//    moveTo(x, y) {
-//		this.x = Math.floor(x);
-//		this.y = Math.floor(y);
-//	};
     
     draw(cur,now){
         let ctx = this.ctx;
@@ -926,14 +850,11 @@ export class FaceCard {
                     ctx.stroke();
                     ctx.closePath();
                     break;
-                    
             }
         }
         ctx.restore();
     };
 };
-
-
 
 function facHTML(){	
 	let usrInputs = new Map();

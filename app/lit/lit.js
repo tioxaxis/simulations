@@ -183,7 +183,6 @@ function litDefine(){
 };
 
 
-
 class LittlesLaw extends OmConcept{
     constructor(usrInputs){
         super('lit');
@@ -192,7 +191,6 @@ class LittlesLaw extends OmConcept{
                          'speed','action','reset',
                          'leg0','leg1','leg2','desc'];
         this.keyIndex = computeKeyIndex(this.keyNames);
-        
     }
     
     localReset () {
@@ -251,7 +249,6 @@ function localUpdateFromUser(inp){
             lit.graph.updateForParamChange();
         }
 };
-        
         
  function localUpdate(inp){
     let v = inp.get();

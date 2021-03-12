@@ -158,19 +158,11 @@ export class TioxGraph {
 	};
     
 	scaleXaxis(scale){
-//        console.log('inside scale Xaxis  scale=',scale,
-//                    ' this.xScaleFactor=', this.xScaleFactor,
-//                   ' test equality=',scale == this.xScaleFactor);
-        
+       
         this.xInfo.width =this.xOrigWidthStep.width * scale;
         this.xInfo.step =this.xOrigWidthStep.step * scale;
         this.xInfo.max = this.xInfo.min + this.xInfo.width;
         this.xScaleFactor = scale;
-        
-//        horizontalScaleAxis(scale, this.xInfo);
-//		console.log('After....  scale=',scale,
-//                    ' this.xScaleFactor=', this.xScaleFactor,
-//                   ' test equality=',scale == this.xScaleFactor);
         
 		for (let line of this.lines ) {
 			line.dotSize = Math.ceil(line.origDotSize / scale);
@@ -205,8 +197,6 @@ export class TioxGraph {
         for( let line of this.lines ){
              line.data.splice(0,line.data.length - 1);
         }
-//        this.vertCoors.length = 0;
-//        this.vertCoors.push(this.xInfo.min);
         this.setupThenRedraw();
 	}
 	updateYaxis(y){
@@ -219,7 +209,6 @@ export class TioxGraph {
 		this.yInfoRight = verticalAxis(y,this.tableRight);
 		return true; 
 	};
-	
 		
 	cleargraph(){
 		this.ctx.clearRect(0,0,
@@ -247,9 +236,6 @@ export class TioxGraph {
 			this.ctx.fillText(roundedX, xg, this.inner.bot + delta);
 		}
 		
-		//y-axis (if hasRight then also draw the right hand side Yaxis)
-        // loop increments through both y scales
-		
 		this.ctx.textBaseline ='middle';
         for( let y = this.yInfo.min, yRight = this.yInfoRight.min;
             y <= this.yInfo.max;  
@@ -276,7 +262,6 @@ export class TioxGraph {
 		if( horz && !horz.step ) horz.step = Infinity;
 		if( vert && !vert.step ) vert.step = Infinity;
 		this.xl = {horz: horz, vert: vert, color: color};
-//		this.setupThenRedraw();
 	};
 	
 	drawExtraLines(){
@@ -305,7 +290,6 @@ export class TioxGraph {
 	};
 
 	setupThenRedraw(){
-//        console.log('inside graph setup Then Redraw with OM=',this.omConcept.key);
 		this.cleargraph();
 		this.drawGrid();
 		this.drawExtraLines();
@@ -369,8 +353,6 @@ export class TioxGraph {
         };
     };
     restartGraph(t){
-//        console.log('enter restart routine with length=',this.vertCoors.length,this.vertCoors);
-        
         // exit if no new point on first line
         const line0data = this.lines[0].data;
         let k = line0data.length -1;
@@ -379,7 +361,6 @@ export class TioxGraph {
         
         for( let line of this.lines ){
            k = line.data.length - 1;
-//          console.log(line.data.length,line.data);
             
           if( line.data[k].y != null ){
               line.data.push({x:t,y:null});
@@ -388,7 +369,6 @@ export class TioxGraph {
         
         //graph grey veritcal line at t
         this.vertCoors.push(t);
-//        console.log('pushed value ',t, 'on vertical coord list');
         this.ctx.strokeStyle = vertLines.color;
         this.ctx.lineWidth = vertLines.lineWidth;
         this.ctx.beginPath();
@@ -436,8 +416,6 @@ export class GraphLine{
         if( !this.visible ) 
             this.button.classList.add('crossOut');
         elem.append(dot, this.button);
-        
-//        elem.addEventListener('click',this.clickResponse.bind(this));
         return elem;
     };
 	
@@ -472,14 +450,12 @@ export class GraphLine{
                 ctx.lineTo(gx,gLy)
             }
             ctx.lineTo(gx,gy);
-//            ctx.closePath();
             ctx.stroke()
         }
         
         if( this.dotSize > 0) {
             ctx.beginPath();
             ctx.arc(gx, gy, this.dotSize, 0, 2*Math.PI, true);
-//            ctx.closePath();
             ctx.stroke();
             ctx.fill();
         }

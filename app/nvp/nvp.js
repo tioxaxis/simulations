@@ -52,7 +52,6 @@ from '../mod/genHTML.js';
 
 class NVGraph extends TioxGraph {
 	constructor(){
-		
 		super(nvp,'chartCanvasnvp',40, {width:12, step:3}, d=>d.t,
              2000,600,false);
 		this.totalCost = 0;
@@ -158,7 +157,6 @@ anim.walkingTime = ((anim.person.path.right - anim.person.path.left) +
                             anim.stage.normalSpeed;
 
 function nvpDefine(){
-	
 	document.getElementById('nvp').omConcept = nvp;
 	
 	anim.stage.foreground = new StageOnCanvas('foregroundnvp',
@@ -194,17 +192,6 @@ function nvpDefine(){
 	}
 };
 
-//function redoStagesGraph(){
-//    anim.stage.foreground.reset();
-//    anim.stage.background.reset();
-//    nvp.graph.chart.reset();
-//    
-//    
-//    nvp.graph.setupThenRedraw();
-//    nvp.clearRedrawStage(0,true);
-//    console.log('in NewsVendor and called redoStages');
-//};
-
 class NewsVendor extends OmConcept{
     constructor(usrInputs){
         super('nvp');
@@ -223,7 +210,6 @@ class NewsVendor extends OmConcept{
 		let maxOver = theSimulation.Co * 
 				(theSimulation.quantityOrdered - 
 				(1 - theSimulation.demandRV.variance) * theSimulation.demandRV.mean + 1) ;
-	
 	
 		nvp.totCost = 0;
 		nvp.nRounds = 0;
@@ -605,15 +591,6 @@ class RetailStore extends GStore {
 		};
 	};
 };
-
-//export class Person extends Item {
-//	constructor(omConcept, x, y = 60) {
-//		super(omConcept, x, y);
-//		this.graphic = new NStickFigure(gSF, x, y);
-//	};
-//}; // end class Person
-
-
 
 function nvpHTML(){	
 	let usrInputs = new Map();

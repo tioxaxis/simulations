@@ -168,16 +168,5 @@ function switchTo (which){
         redrawBackground();
     }
 };
-    
-    
-    
-
     const h = location.hash;
     switchTo(h != '' ? h.slice(1) : 'dir');
-
-
-
-
-
-
-
