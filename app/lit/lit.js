@@ -307,6 +307,10 @@ class LitQueue  extends Queue{
 			x: this.loc.x,
 			y: this.loc.y
 		});
+        console.log('pushing onto Lit Queue')
+            for(let k = 0; k < person.pathList.length; k++) {
+                console.log('   PathList= ' ,person.which,person.pathList[k].t,person.pathList[k].x)
+            }
         return true;
 	};
     arriveAnim(){};
@@ -332,8 +336,8 @@ class LitCreator extends MachineCenter {
         super(lit, 'creator', 1, theSimulation.interarrivalRV);
     };
 	startAnim (machine, theProcTime) { 
-		machine.person.setDestWithProcTime(theProcTime,
-			anim.person.path.left, anim.person.path.y);
+//		machine.person.setDestWithProcTime(theProcTime,
+//			anim.person.path.left, anim.person.path.y);
 	};
     finishAnim(machine){};
 };

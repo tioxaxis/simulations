@@ -540,15 +540,7 @@ class FacStage extends MachineCenter {
         return this.machs[0].locy;
     }
     
-    draw2(){ //???????????
-        let number = Number(document.getElementById('quantity'+this.which+'fac').value);
-        if( fac.stageTimes[this.which].mean == 0 ) number = 0;
-        super.draw2(number);
-    };
-    
-    
-    
-     startAnim (machine){
+    startAnim (machine){
          const card = machine.person;
          card.graphic.startStage(this.which,fac.now);
          card.updatePath({
@@ -572,9 +564,10 @@ class FacStage extends MachineCenter {
             fac.graph.push(fac.now, fac.now - card.sysEntryTime);
         }
     };
-    draw5(redraw = false){
-        this.draw2();
-        return;
+    draw5(redraw = false){   //this draws FAC workers only as needed. 
+        // currently not used.
+        
+        
         // helper functions: clear, draw, update an individual worker
         const clearIndiv = (j) => {
             ctx.clearRect(this.left-lineWidth, 
