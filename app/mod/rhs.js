@@ -194,7 +194,10 @@ export class OmConcept {
 			this.pause();
 		}
 	};
-
+    pauseImmediately(){
+        this.pause();
+        this.frameNow = this.now-1;
+    }
 	pause() {
 //        console.log('Begin of Pause isRunning=',this.isRunning);
 		if (!this.isRunning) return;
@@ -265,7 +268,7 @@ export class OmConcept {
 		const elem = document.getElementById(
 			'coverAnimation'+this.key);		
         elem.classList.remove('addOpacity');
-	}
+	};
 	
 	fullSpeedSim(){
 		// check last data on graph and if we need to move graph over

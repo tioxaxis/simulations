@@ -511,7 +511,7 @@ class EosQueue extends Queue {
         const n = eos.usrInputs.get('num').get();
         for( let k = 0; k < n; k++ ){
             if( theSimulation.sTSAagents[k].machs[0].status == 'idle' ){
-                this.omConcept.pause();
+                this.omConcept.pauseImmediately();
 //                console.log('machine ',k,' is idle for an arrival');
                 return;
             }
@@ -601,7 +601,7 @@ class EosTSA extends MachineCenter {
         const n = eos.usrInputs.get('num').get();
         for( let k = 0; k < n; k++ ){
             if( theSimulation.sQueues[k].numSeatsUsed > 0 ){
-                this.omConcept.pause();
+                this.omConcept.pauseImmediately();
 //                console.log('Queue ',k,' is >0 for some departure');
                 return;
             }
