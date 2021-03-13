@@ -321,7 +321,7 @@ export class MachineCenter {
         if( !this.active ) return;
         const MaxHeight = this.maxMachines * this.boxHeight 
                         + (this.maxMachines-1)*this.boxSep;
-        this.ctx.clearRect(this.left - this.lineWidth,  this.top,
+        this.ctx.clearRect(this.left - this.lineWidth,  this.top - this.lineWidth,
                         this.boxWidth + 2*this.lineWidth, MaxHeight);
         
         this.ctx.lineWidth = this.lineWidth;

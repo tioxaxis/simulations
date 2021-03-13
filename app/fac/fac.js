@@ -225,10 +225,7 @@ function computeStageTimes(){
     theSimulation.queues[1].setMaxSeats(qlength);
     theSimulation.queues[2].setMaxSeats(qlength);
     
-    for( let m = 0; m < 3; m++ ) {
-        let nMachines = fac.usrInputs.get('quantity'+m).get();
-        theSimulation.workers[m].setNumMachines(nMachines);
-    };
+    
     
     for(let s = 0; s < 3; s++){
         let total = 0;
@@ -267,6 +264,12 @@ function computeStageTimes(){
             fac.lastStage = i;
             break;
         }
+    
+    for( let m = 0; m < 3; m++ ) {
+        let nMachines = fac.usrInputs.get('quantity'+m).get();
+        if( fac.stageTimes[m].mean == 0 ) nMachines = 0; 
+        theSimulation.workers[m].setNumMachines(nMachines);
+    };
     
     // set creator rate and movement based on first stage with nonzero proctime
     const k = fac.firstStage;
