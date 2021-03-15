@@ -240,7 +240,8 @@ class Queueing extends OmConcept{
         const scannerHeight = 84;
         const scannerWidth = 56;
 		for (let k = 0; k < tsa.machs.length; k++) {
-			c.strokeRect(locX - scannerWidth/2, locY - scannerHeight/2,
+			c.strokeRect(locX - scannerWidth/2,
+                         locY - scannerHeight/2,
                          scannerWidth, scannerHeight);
 			tsa.machs[k].locx = locX;
             tsa.machs[k].locy = locY;

@@ -59,6 +59,7 @@ export class TioxGraph {
 		this.lines = [];
         this.vertCoors = [];
         this.hasRight = hasRight;
+        this.lastVertCoor = 0;
 		
 		this.outer= {width: width, height: height}
 		this.margin = {top: this.fontSize, bot: this.fontSize*3/2,
@@ -353,10 +354,14 @@ export class TioxGraph {
         };
     };
     restartGraph(t){
-        // exit if no new point on first line
+        // plot gray line if new point or some time has passed
+        //  which > 1/50 of x-axis spread
+        const dt = t - this.lastVertCoor;
+        this.lastVertCoor = t;
+        const smallX = (this.xInfo.max - this.xInfo.min) / 50;
         const line0data = this.lines[0].data;
         let k = line0data.length -1;
-        if( line0data[k].y == null ) return;
+        if( !( line0data[k].y != null || dt > smallX )) return;
         
         
         for( let line of this.lines ){

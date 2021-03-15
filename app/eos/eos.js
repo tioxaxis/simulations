@@ -305,11 +305,16 @@ sPathsY(nMach) {
         //set queue paths
         theSimulation.jTSAagent.setup2DrawMC();
         theSimulation.jTSAagent.draw()
+        theSimulation.jQueue.drawPath(eos.stage.jBackContext,
+            'lightgrey', 5);
         let pathsY = this.sPathsY(nMach);
         for( let k = 0; k < nMach; k++ ){
             theSimulation.sQueues[k].pathY = pathsY[k];
             theSimulation.sTSAagents[k].setup1DrawMC(eos.stage.sBackContext, cbColors.yellow,
                     15, true, anim.person.path.scanner, pathsY[k], 1, anim.person);
+            theSimulation.sQueues[k].drawPath(
+                eos.stage.sBackContext, 
+                'lightgrey', 5);
             theSimulation.sTSAagents[k].setup2DrawMC();
             theSimulation.sTSAagents[k].draw();
         }
@@ -392,13 +397,14 @@ function localUpdate(inp){
 };
 
 class EosQueue extends Queue {
-	constructor (name){
+	constructor (name, ctx){
         super(eos, name, -1);
         this.delta = {dx: anim.person.width,
 			          dy: 0},
 	    this.dontOverlap = true,
 	    this.walkingTime = (anim.person.path.headQueue 
                             - anim.person.path.left) / anim.stage.normalSpeed;
+        
     };
 
 	push (person) {
@@ -435,6 +441,7 @@ class EosQueue extends Queue {
         } else {
             person.addPath({t: eos.now, x: desiredX, y: this.pathY });
         }
+        
 	};
 
 	pullAnim (person) {
@@ -478,6 +485,18 @@ class EosQueue extends Queue {
                 return;
             }
         }
+    }
+    drawPath(ctx, color, lineWidth){
+        ctx.beginPath();
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = color;
+        ctx.moveTo(0,this.pathY + anim.person.height / 2);
+        ctx.lineTo(anim.person.path.headQueue + 
+                   anim.person.width / 2,
+                   this.pathY + anim.person.height / 2);
+        ctx.stroke();
+        ctx.closePath();
+        
     }
 };
 
@@ -595,14 +614,16 @@ const theSimulation = {
 		this.sSupply = new Supplier(sGSF,anim.person.path.left, anim.person.path.y);
         this.jSupply = new Supplier(jGSF,anim.person.path.left, anim.person.path.y);
 
-		this.jQueue = new EosQueue("jointQ");
+		this.jQueue = new EosQueue("jointQ",
+                        anim.stage.jBackContext);
         this.jQueue.pauseOnIdle = false;
         this.jQueue.pathY = anim.person.path.y;
 		eos.resetCollection.push(this.jQueue);
         
         this.sQueues = [];
         for( let k = 0; k < nServers; k++ ){
-            this.sQueues[k] = new EosQueue("SepQ"+k);
+            this.sQueues[k] = new EosQueue("SepQ"+k,
+                        anim.stage.sBackContext);
             this.sQueues[k].pauseOnIdle = true;
             eos.resetCollection.push(this.sQueues[k]);
             }
