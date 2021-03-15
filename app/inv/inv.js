@@ -845,7 +845,7 @@ class DisplayBoxes {
 		this.reverse = 0;
 
 		for (let k = 0; k < quantity; k++) {
-			let colorIndex = Math.floor(Math.random() * tioxColors.length);
+			let colorIndex = Math.floor(Math.random() * (tioxColors.length - 1));
 			let pack = new Package(inv, this.ctxDB,
 				tioxColors[colorIndex], box.size, 0, 0);
 			this.packages.push(pack);
@@ -897,7 +897,7 @@ function invHTML(){
 	
 	const d1 = document.createElement('div');
 	d1.className ="statDisplay";
-	d1.title = 'number of customers leaving without a package since the start of the simulation';
+	d1.title = 'Number of customers leaving without a package since the start of the simulation';
     const s1 = document.createElement('span');
 	s1.id = 'lostSales'
     
@@ -905,13 +905,13 @@ function invHTML(){
 	
 	const d2 = document.createElement('div');
 	d2.className ="statDisplay";
-	d2.title = 'percentage of customers leaving with a package';const s2 = document.createElement('span');
+	d2.title = 'Percentage of customers leaving with a package';const s2 = document.createElement('span');
 	s2.id = 'fillRate'
 	d2.append('Fill Rate: ',s2,'%');
 	
 	const d3 = document.createElement('div');
 	d3.className ="statDisplay";
-	d3.title = 'percentage of truck arrivals which arrived before lost sales occurred on that cycle';
+	d3.title = 'Percentage of truck arrivals which arrived before lost sales occurred on that cycle';
     const s3 = document.createElement('span');
 	s3.id = 'serviceLevel'
 	
@@ -942,46 +942,46 @@ function invHTML(){
     elem.append(htmlNumSlider(arInput, 'Arrival Rate = ',
                               '5', [1,3,5,7,9]) );
     usrInputs.set('ar', new NumSlider('ar',arInput,
-                localUpdateFromUser, 1, 9, 5, 0,2,1) );
+                localUpdateFromUser, 1, 9, 5, 0, 1) );
     
     const acvInput = genRange('acvinv', 0, 0, 2, .5);
     elem.append(htmlNumSlider(acvInput, 'Arrival CV = ',
                               '0.0', ['0.0','1.0','2.0']) );
     usrInputs.set('acv', new NumSlider('acv', acvInput,
-                localUpdateFromUser, 0, 2, 0, 1,2,10) );
+                localUpdateFromUser, 0, 2, 0, 1, 10) );
     
     const ltInput = genRange('ltinv', '5', 2, 10, 1);
     elem.append(htmlNumSlider(ltInput, 'Lead Time = ',
                               '5', [2,4,6,8,10]) );
     usrInputs.set('lt', new NumSlider('lt',ltInput,
-                localUpdateFromUser, 2, 10, 5, 0,2,1) );
+                localUpdateFromUser, 2, 10, 5, 0, 1) );
     
     const ltcvInput = genRange('ltcvinv', 0, 0, 2, .5);
     elem.append(htmlNumSlider(ltcvInput, 'Lead Time CV = ',
                               '0.0', ['0.0','1.0','2.0']) );
     usrInputs.set('ltcv', new NumSlider('ltcv', ltcvInput,
-                localUpdateFromUser, 0, 2, 0, 1,2,10) );
+                localUpdateFromUser, 0, 2, 0, 1, 10) );
     
     const quanInput = genRange('quaninv', 24, 10,50,1);
     const rop1 = htmlNumSlider(quanInput, 'Order Quantity = ',
                              24, [10,20,30,40,50]);
     rop1.id = 'rop1';
     usrInputs.set('quan', new NumSlider('quan', quanInput,
-               localUpdateFromUser, 10, 50, 24, 0,2,1));
+               localUpdateFromUser, 10, 50, 24, 0, 1));
     
     const ropInput = genRange('ropinv', 10, 5, 85, 1);
     const rop2 = htmlNumSlider(ropInput, 'Reorder Point = ',
                              10, [5,25,45,65,85]);
     rop2.id ='rop2';
     usrInputs.set('rop', new NumSlider('rop', ropInput,
-                localUpdateFromUser, 5, 85, 10, 0,2,1));
+                localUpdateFromUser, 5, 85, 10, 0, 1));
     
     const periodInput = genRange('periodinv', 3, 2, 12, 1);
     const upto1 = htmlNumSlider(periodInput, 'Period = ',
                              3, [2,4,6,8,10,12]);
     upto1.id = 'upto1';
     usrInputs.set('period', new NumSlider('period', periodInput,
-                localUpdateFromUser, 2, 12, 3, 0,1,1));
+                localUpdateFromUser, 2, 12, 3, 0, 1));
     
     
     const uptoInput = genRange('uptoinv', 36, 10, 90, 1);
@@ -989,7 +989,7 @@ function invHTML(){
                              36, [10,30,50,70,90]);
     upto2.id = 'upto2';
     usrInputs.set('upto', new NumSlider('upto', uptoInput,
-                localUpdateFromUser, 10, 90, 36, 0,2,1));
+                localUpdateFromUser, 10, 90, 36, 0, 1));
     elem.append(rop1,rop2,hideNode(upto1),hideNode(upto2));
     
     elem.append( genPlayResetBox('inv') );

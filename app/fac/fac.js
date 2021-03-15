@@ -69,7 +69,7 @@ class FacGraph {
                 d => d.thru, cbColors.yellow, false, true,  5, 8);
 		        
         //add legends
-        const leg0 = flow.createLegend('Individual Flow Times (seconds/card)');
+        const leg0 = flow.createLegend('Individual Flow 2Times (seconds/card)');
         const d3 = document.getElementById('pairChartLeftLegendfac');
         d3.classList.add('pairChartLegend');
         d3.append(leg0);
@@ -878,23 +878,23 @@ function facHTML(){
     usrInputs.set('hair', new RadioButton('hair', 'hairfac',
                 localUpdateFromUser, ['0','1','2'], '2') );
     usrInputs.set('faceTime', new NumSlider('faceTime', 'faceTimefac',
-                localUpdateFromUser, 1, 9, 1, 0,1,1) );
+                localUpdateFromUser, 1, 9, 1, 0, 1) );
     usrInputs.set('eyesTime', new NumSlider('eyesTime', 'eyesTimefac',
-                localUpdateFromUser, 1, 9, 2, 0,1,1) );
+                localUpdateFromUser, 1, 9, 2, 0, 1) );
     usrInputs.set('noseTime', new NumSlider('noseTime', 'noseTimefac',
-                localUpdateFromUser, 1, 9, 1, 0,1,1) );
+                localUpdateFromUser, 1, 9, 1, 0, 1) );
     usrInputs.set('moutTime', new NumSlider('moutTime', 'moutTimefac',
-                localUpdateFromUser, 1, 9, 2, 0,1,1) );
+                localUpdateFromUser, 1, 9, 2, 0, 1) );
     usrInputs.set('earsTime', new NumSlider('earsTime', 'earsTimefac',
-                localUpdateFromUser, 1, 9, 1, 0,1,1) );
+                localUpdateFromUser, 1, 9, 1, 0, 1) );
     usrInputs.set('hairTime', new NumSlider('hairTime', 'hairTimefac',
-                localUpdateFromUser, 1, 9, 2, 0,1,1) );
+                localUpdateFromUser, 1, 9, 2, 0, 1) );
     usrInputs.set('quantity0', new IntegerInput('quantity0', 'quantity0fac',
-                localUpdateFromUser, 1, 3, 1, 1) );
+                localUpdateFromUser, 1, 3, 1) );
     usrInputs.set('quantity1', new IntegerInput('quantity1', 'quantity1fac',
-                localUpdateFromUser, 1, 3, 1, 1) );
+                localUpdateFromUser, 1, 3, 1) );
     usrInputs.set('quantity2', new IntegerInput('quantity2', 'quantity2fac',
-                localUpdateFromUser, 1, 3, 1, 1) );
+                localUpdateFromUser, 1, 3, 1) );
     
     
     let elem = document.getElementById('slidersWrapperfac');

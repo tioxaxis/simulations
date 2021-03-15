@@ -501,24 +501,24 @@ function litHTML(){
     const arInput = genRange('arlit', '1', 1, 6, 1);
     elem.append(htmlNumSlider(arInput, 'Arrival Rate = ', '1', [1,2,3,4,5,6]) );
     usrInputs.set('ar', new NumSlider('ar',arInput,
-                localUpdateFromUser, 1, 6, 1, 0, 1, 1) );
+                localUpdateFromUser, 1, 6, 1, 0,  1) );
     
     const acvInput = genRange('acvlit', 0, 0, 2, .5);
     elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', '0.0',['0.0','1.0','2.0']) );
     
     usrInputs.set('acv', new NumSlider('acv', acvInput,
-                localUpdateFromUser, 0, 2, 0, 1, 2, 10) );
+                localUpdateFromUser, 0, 2, 0, 1, 10) );
     
     
     const stInput = genRange('stlit', '6', 5, 25, 1);
     elem.append(htmlNumSlider(stInput, 'Service Time = ', 6, [5, 15, 25]) );
     usrInputs.set('st', new NumSlider('st',stInput,
-                localUpdateFromUser, 5, 25, 6, 0, 2, 1) );
+                localUpdateFromUser, 5, 25, 6, 0, 1) );
     
     const scvInput = genRange('scvlit', 0, 0, 2, .5);
     elem.append(htmlNumSlider(scvInput, 'Service CV = ', '0.0',['0.0','1.0','2.0']) );
     usrInputs.set('scv', new NumSlider('scv', scvInput,
-                localUpdateFromUser, 0, 2, 0, 1, 2, 10) );
+                localUpdateFromUser, 0, 2, 0, 1, 10) );
 
 	elem.append(genPlayResetBox('lit') );
     usrInputs.set('reset', new CheckBox('reset', 'resetlit',

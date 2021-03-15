@@ -42,7 +42,7 @@ function horizontalScaleAxis(newScale, oldScale, xInfo){
 	xInfo.step = xInfo.step / oldScale * newScale;
 	xInfo.max = xInfo.min + xInfo.width;
 }
-const vertLines = {color: 'grey', lineWidth: 10 };
+const vertLines = {color: 'grey', lineWidth: 6 };
 
 
 export class TioxGraph {
@@ -402,25 +402,26 @@ export class GraphLine{
     };
         
     createLegend(text){
-        const elem = document.createElement('div');
-        elem.classList.add('legendbox');
+        this.button = document.createElement('div');
+        this.button.classList.add('legendbox');
         
         const dot = document.createElement('div');
         dot.classList.add('legendCircle');
         dot.innerHTML = '&#11044;'
         dot.style = 'color:'+this.color;
         
-        this.button = document.createElement('div');
-        this.button.classList.add('legendText');
-        this.button.innerHTML = text ;
+        const txt = document.createElement('div');
+        txt.classList.add('legendText');
+        txt.innerHTML = text ;
+        this.button.append(dot, txt);
         if( !this.visible ) 
             this.button.classList.add('crossOut');
-        elem.append(dot, this.button);
-        return elem;
+        return this.button;
     };
 	
     setLegendText(text){
-        this.button.innerHTML = text;
+        const children = this.button.childNodes;
+        children[1].innerHTML = text;
     };
     
 	clickResponse(){

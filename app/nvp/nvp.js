@@ -505,7 +505,7 @@ const peopleSpacing = 70;
 class DemandCreator {
 	constructor(cycleLength, demandRV) {
 		this.cycleLength = cycleLength;
-		this.timeToNV = ((anim.person.path.right - anim.person.path.left) +
+		this.timeToNV = (2 * (anim.person.path.right - anim.person.path.left) +
 			(anim.person.path.bot - anim.person.path.top)) / anim.stage.normalSpeed;
 		this.demandRV = demandRV;
 		
@@ -635,27 +635,27 @@ function nvpHTML(){
     const drInput = genRange('drnvp', '20', 10, 50, 1);
     elem.append(htmlNumSlider(drInput, 'Demand Rate = ', '20', [10,20,30,40,50]) );
     usrInputs.set('dr', new NumSlider('dr',drInput,
-                localUpdateFromUser, 10, 50, 20, 0, 2, 1) );
+                localUpdateFromUser, 10, 50, 20, 0, 1) );
     
     const dcvInput = genRange('dcvnvp', 0, 0, 1, .1);
     elem.append(htmlNumSlider(dcvInput, 'Demand Variability = ', '0.0',['0.0','0.5','1.0']) );
     usrInputs.set('dcv', new NumSlider('dcv', dcvInput,
-                localUpdateFromUser, 0, 2, 0, 1,2,10) );
+                localUpdateFromUser, 0, 2, 0, 1, 10) );
     
 	const cuInput = genRange('cunvp', '8', 0, 10, 1);
     elem.append( htmlNumSlider(cuInput, 'Underage Cost = ', '8', [0,2,4,6,8,10] )); 
 	usrInputs.set('Cu', new NumSlider('Cu',cuInput, localUpdateFromUser,
-                                      0, 10, 8, 0, 2, 1));
+                                      0, 10, 8, 0, 1));
     
     const coInput = genRange('convp', '1', 0, 10, 1);
     elem.append( htmlNumSlider(coInput, 'Overage Cost = ', '1', [0,2,4,6,8,10] )); 
 	usrInputs.set('Co', new NumSlider('Co',coInput, localUpdateFromUser,
-                                      0, 10, 1, 0, 2, 1));
+                                      0, 10, 1, 0, 1));
     
 	const quanInput = genRange('quannvp', '20', 10, 50, 1);
     elem.append( htmlNumSlider(quanInput, 'Order Quantity = ', '20', [10,20,30,40,50] )); 
 	usrInputs.set('quan', new NumSlider('quan',quanInput, localUpdateFromUser,
-                                        10, 50, 20, 0, 2, 1));
+                                        10, 50, 20, 0, 1));
     
 	elem.append(empty, genPlayResetBox('nvp'));
     usrInputs.set('reset', new CheckBox('reset', 'resetnvp',

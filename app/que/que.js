@@ -327,7 +327,7 @@ class QueQueue extends Queue {
             if( person.ahead.inWalkQ )
                 person.inWalkQ.initDeltaX = (que.now - person.ahead.inWalkQ.releaseT) * anim.stage.normalSpeed;
         }
-        
+//        console.log(' pushed onto Q',person.which,person.cur.x,person.cur.w);
         person.arrivalTime = que.now + this.walkingTime;
         person.width = this.delta.dx;
         return true;
@@ -388,7 +388,9 @@ class QueCreator extends MachineCenter {
         super(que, "creator",1, theSimulation.interarrivalRV); 
     };
     startAnim(machine, theProcTime){};
-    finishAnim(machine){};
+    finishAnim(machine){
+//        console.log('Finish Creator which,x,w=',machine.person.which, machine.person.cur.x,machine.person.cur.w);
+    };
 };
 
 class QueTSA extends MachineCenter {
@@ -539,23 +541,23 @@ function queHTML(){
     const arInput = genRange('arque', '5.0', 0, 10, .1);
     elem.append(htmlNumSlider(arInput, 'Arrival Rate = ', '5.0', [0,2,4,6,8,10]) );
     usrInputs.set('ar', new NumSlider('ar',arInput,
-                localUpdateFromUser, 0, 10, 5, 1,3,10) );
+                localUpdateFromUser, 0, 10, 5, 1, 10) );
     
     const acvInput = genRange('acvque', 0, 0, 2, .5);
     elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', '0.0',['0.0','1.0','2.0']) );
     usrInputs.set('acv', new NumSlider('acv', acvInput,
-                localUpdateFromUser, 0, 2, 0, 1,2,10) );
+                localUpdateFromUser, 0, 2, 0, 1, 10) );
     
     
     const srInput = genRange('srque', '6.0', 0, 10, .1);
     elem.append(htmlNumSlider(srInput, 'Service Rate = ', '6.0',[0,2,4,6,8,10]) );
     usrInputs.set('sr', new NumSlider('sr',srInput,
-                localUpdateFromUser, 0, 10, 6, 1,3,10) );
+                localUpdateFromUser, 0, 10, 6, 1, 10) );
     
     const scvInput = genRange('scvque', 0, 0, 2, .5);
     elem.append(htmlNumSlider(scvInput, 'Service CV = ', '0.0',['0.0','1.0','2.0']) );
     usrInputs.set('scv', new NumSlider('scv', scvInput,
-                localUpdateFromUser, 0, 2, 0, 1,2,10) );
+                localUpdateFromUser, 0, 2, 0, 1, 10) );
     
     elem.append( genPlayResetBox('que') );
     usrInputs.set('reset', new CheckBox('reset', 'resetque',

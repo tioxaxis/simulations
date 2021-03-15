@@ -331,12 +331,12 @@ function localUpdateFromUser(inp){
         
 function updateArrivalRate(u,s,n){
     
-    if(!u) u = Number(eos.usrInputs.get('util').getValue());
-    if(!s) s = Number(eos.usrInputs.get('sr').get());
-    if(!n) n = Number(eos.usrInputs.get('num').get());
+    if(u == null) u = Number(eos.usrInputs.get('util').getValue());
+    if(s == null) s = Number(eos.usrInputs.get('sr').get());
+    if(n == null) n = Number(eos.usrInputs.get('num').get());
      const a = u * s * n;
     theSimulation.interarrivalRV.setRate(a / tioxTimeConv);
-    console.log('a=',a,' s=',s,' n=',n,' u=',u,' computed util=',a/s/n);
+//    console.log('a=',a,' s=',s,' n=',n,' u=',u,' computed util=',a/s/n);
  };
 
 function localUpdate(inp){
@@ -721,24 +721,24 @@ function eosHTML(){
     const acvInput = genRange('acveos', 0, 0, 2, .5);
     elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', '0.0',['0.0','1.0','2.0']) );
     usrInputs.set('acv', new NumSlider('acv', acvInput,
-                localUpdateFromUser, 0, 2, 0, 1, 2, 10) );
+                localUpdateFromUser, 0, 2, 0, 1, 10) );
     
-    const srInput = genRange('sreos', '1.0', 0, 2, .1);
-    elem.append(htmlNumSlider(srInput, 'Service Rate = ', '1.0',
-                              [0, 0.5,1.0,1.5,2.0]) );
+    const srInput = genRange('sreos', '1.0', 1, 3, .1);
+    elem.append(htmlNumSlider(srInput, 'Service Rate = ', '2.0',
+                              [1, 1.5,2.0,2.5,3.0]) );
     usrInputs.set('sr', new NumSlider('sr',srInput,
-                localUpdateFromUser, 0, 2, 1, 1, 3, 10) );
+                localUpdateFromUser, 1, 3, 2, 1, 10) );
     
     
     const scvInput = genRange('scveos', 0, 0, 2, .5);
     elem.append(htmlNumSlider(scvInput, 'Service CV = ', '0.0',['0.0','1.0','2.0']) );
     usrInputs.set('scv', new NumSlider('scv', scvInput,
-                localUpdateFromUser, 0, 2, 0, 1,2,10) );
+                localUpdateFromUser, 0, 2, 0, 1, 10) );
     
     const numInput = genRange('numeos', 2, 2, 4, 1);
     elem.append(htmlNumSlider(numInput, 'Number of Servers = ', '2',['2','3','4']));
     usrInputs.set('num', new NumSlider('num',numInput,
-                                      localUpdateFromUser, 2, 4, 2, 0, 1, 1 ));
+                                      localUpdateFromUser, 2, 4, 2, 0, 1 ));
     
     // fill in HTML for pause on next occurance of an idle slider.
     const twoSeparateButtons = document.getElementById('twoSeparateButtons').cloneNode(true);

@@ -268,7 +268,8 @@ export class MachineCenter {
             person.behind.ahead = null;
         }
         person.behind = null;
-        
+//        if( isNaN(person.cur.x) || isNaN(person.cur.w))
+//            debugger;
         let success = this.nextQueue.push(machine.person);
         if (success) {
 			this.finishAnim(machine);
@@ -282,6 +283,7 @@ export class MachineCenter {
         if(this.pauseOnIdle && machine.status == 'idle'){
             this.checkForQueue();
         } 
+        
 	};
     
     setup1DrawMC(ctx, color, lineWidth, center, stageX, stageY, maxMachines, item){
@@ -549,6 +551,7 @@ export class Item {
     };
     
     updateCurWalkQ(deltaT){
+//        if( isNaN(this.cur.w) ) debugger;
         const lastX = this.cur.x;
         const f = Math.min(1,(this.omConcept.now - this.inWalkQ.releaseT) 
                     / ( this.inWalkQ.arrivalT - this.inWalkQ.releaseT));
@@ -563,14 +566,19 @@ export class Item {
                                       this.width/a.procTime);
                 this.cur.x = Math.min(w.endX,
                                     this.cur.x + speed * deltaT); 
-            } else {
+            } else if( w.initDeltaX ){
                 const deltaX = w.initDeltaX * (1-f) + this.width;
                 this.cur.x = Math.min(a.cur.x - deltaX, absX);
-            }
+            } else 
+                this.cur.x = absX;
         } else{
             this.cur.x = absX;
         }
         this.cur.w = this.updateW( this.cur.w, this.cur.x - lastX );
+//        if( isNaN(this.cur.w)){
+//        	console.log('after update, NaN',this.which,this.cur.x, this.cur.w);
+//        	debugger;
+//        };
         this.cur.l = this.legAngle( this.cur.w );
         this.cur.a = this.armAngle( this.cur.l );
     }
@@ -764,10 +772,11 @@ export class Person extends Item {
 	};
 }; // end class Person
 
-export const tioxColors = ['rgb(28, 62, 203)', 'rgb(80, 212, 146)', 'rgb(151, 78, 224)',
+export const tioxColors = ['rgb(28, 62, 203)',
+     'rgb(80, 212, 146)', 'rgb(151, 78, 224)',
      'rgb(234, 27, 234)', 'rgb(164, 132, 252)', 'rgb(29, 157, 127)',
-     'rgb(0, 0, 0)', 'rgb(74, 26, 204)', 'rgb(6, 190, 234)',
-     'rgb(206, 24, 115)']
+      'rgb(74, 26, 204)', 'rgb(6, 190, 234)',
+     'rgb(206, 24, 115)', 'rgb(0, 0, 0)']
 
 const tioxBorders = ['black', 'black', 'black', 'black',
      'gray', 'black', 'rgb(80, 212, 146)', 'black',
@@ -1042,7 +1051,9 @@ export class GStore {
 	addNew() {
 		let point = this.boxStack.relCoord(this.packages.length);
 		let color = tioxColors[Math.floor(
-			Math.random() *	tioxColors.length)];
+			Math.random() *	(tioxColors.length - 1))];
+            // -1 eliminates "black" boxes because dark gray boxes
+            // are used to indicate boxes that must be thrown out.
 		let pack = new Package(this.omConcept,
 			this.anim.stage.foreContext, color, this.anim.box.size,
 			this.firstBox.x + point.x, this.firstBox.y + point.y);

@@ -172,7 +172,7 @@ function domElem(x){
 export class NumSlider{
     // slider stores a number; receives and returns string
     constructor (key, inputElem, localUpdate, 
-                  min, max, deflt, precision, shortLen, scale){
+                  min, max, deflt, precision, scale){
         this.key = key;
         this.inputElem = domElem(inputElem);
         this.localUpdate = localUpdate;
@@ -180,7 +180,7 @@ export class NumSlider{
         this.max = max;
         this.deflt = deflt;
         this.precision = precision;
-        this.shortLen = shortLen;
+//        this.shortLen = shortLen;
         this.scale = scale;
         this.inputElem.addEventListener('input', this.userUpdate.bind(this));
     };
@@ -243,7 +243,7 @@ export class ArbSlider{
         this.displayValues = displayValues;
         this.values = values;
         this.deflt = deflt;
-        this.shortLen = 1;
+//        this.shortLen = 1;
         this.inputElem.addEventListener('input', this.userUpdate.bind(this));
         if( values.length > 10 )
             alert('ArbSlider class intialized with more than 10 values');
@@ -298,7 +298,7 @@ export class CheckBox{
         this.inputElem = domElem(inputElem);
         this.localUpdate = localUpdate;
         this.deflt = deflt;
-        this.shortLen = 1;
+//        this.shortLen = 1;
         this.inputElem.addEventListener('input', this.userUpdate.bind(this));
     };
     get() {
@@ -336,7 +336,7 @@ export class ButtonOnOff{
         this.offId = offId;
         this.localUpdate = localUpdate;
         this.deflt = deflt;
-        this.shortLen = 1;
+//        this.shortLen = 1;
         this.divElem.addEventListener('click', this.userUpdate.bind(this));
         this.value = this.deflt;
     };
@@ -400,7 +400,7 @@ export class RadioButton{
         this.nodelist = document.getElementsByName(name); 
         this.values = values;
         this.deflt = deflt;
-        this.shortLen = 1;
+//        this.shortLen = 1;
         for( let j = 0; j < this.nodelist.length; j++) {
             this.nodelist[j].addEventListener('click',
                 this.userUpdate.bind(this));
@@ -452,14 +452,14 @@ export class RadioButton{
 export class IntegerInput{
     //returns and receives number
     constructor (key, inputElem, localUpdate,
-                  min, max, deflt, shortLen){
+                  min, max, deflt){
         this.key = key;
         this.inputElem = domElem(inputElem);
         this.localUpdate = localUpdate;
         this.min = min;
         this.max = max;
         this.deflt = deflt;
-        this.shortLen = shortLen;
+//        this.shortLen = shortLen;
         this.inputElem.addEventListener('change',this.userUpdate.bind(this));
     };
 
@@ -499,7 +499,7 @@ export class LegendItem{
         this.line = line;
         this.localUpdate = localUpdate;
         this.deflt = deflt;
-        this.shortLen = 1;
+//        this.shortLen = 1;
         this.line.button.addEventListener('click',
              this.userUpdate.bind(this));
     }
