@@ -504,11 +504,11 @@ export class LegendItem{
              this.userUpdate.bind(this));
     }
     get() {
-         return this.line.visible.toString();
+         return this.line.params.visible.toString();
     };
     set(x){
         const b = (x == 'true');
-        const changed = this.line.visible != b;
+        const changed = this.line.params.visible != b;
         this.line.setVisibility(b);
         return changed;
     };
@@ -539,12 +539,12 @@ export class LegendPair extends LegendItem{
         this.line2 = line2;
     };
     set(x){
-        this.line2.visible = (x == 'true');
+        this.line2.params.visible = (x == 'true');
         this.line2.graph.setupThenRedraw();
         return super.set(x);
     };
     userUpdate(){
-        this.line2.visible = !this.line2.visible;
+        this.line2.params.visible = !this.line2.params.visible;
         this.line2.graph.setupThenRedraw();
         super.userUpdate();
     }

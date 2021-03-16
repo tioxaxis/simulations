@@ -61,14 +61,20 @@ class InvGraph extends TioxGraph {
 	constructor(){
 		super(inv,'chartCanvasinv',40, {width:24, step:6}, d=>d.t,
              2000,600,false);
-		this.predictedInvValue = null;
+		this.predictedInvValue = this.computePredInv();
 		this.setTitle('Inventory','chartTitle');
-		const onhandInv = new GraphLine(this, d => d.i, cbColors.blue,
-					   true, true,  3, 0);
-		const bothInv = new GraphLine(this, d => d.ip, cbColors.red,
-					   true, true,  3, 0);
-		const predInv = new GraphLine(this, d => d.p, cbColors.orange,
-					   true, false,  10, 0);
+		const onhandInv = new GraphLine(this, d => d.i,
+                            {color: cbColors.blue, vertical: true,
+                         visible: true, continuous: false,
+                         lineWidth: 3, dotSize: 0, right: false});
+		const bothInv = new GraphLine(this, d => d.ip,
+                          {color: cbColors.red, vertical: true,
+                         visible: true, continuous: false,
+                         lineWidth: 3, dotSize: 0, right: false});
+		const predInv = new GraphLine(this, d => d.p,
+                          {color: cbColors.orange, vertical: true,
+                         visible: false, continuous: true,
+                         lineWidth: 10, dotSize: 0, right: false});
         
        
         const d4 = document.getElementById('chartLegendinv');
@@ -1016,9 +1022,9 @@ export function invStart() {
     let usrInputs = invHTML();
     inv = new Inventory(usrInputs);
     invDefine();
-    inv.graph = new InvGraph();
     inv.setupScenarios();
     theSimulation.initialize();
+    inv.graph = new InvGraph();
     inv.reset();
 	return inv;
 };

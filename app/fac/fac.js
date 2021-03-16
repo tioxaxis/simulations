@@ -58,15 +58,19 @@ class FacGraph {
         this.flowGraph = new TioxGraph(fac,'fchartCanvasfac',
                 40, {width:200, step:40}, d=>d.t, 1000,370,false);
 		this.flowGraph.setTitle('Flow time','fchartTitle');
-		const flow = new GraphLine(this.flowGraph,
-                d => d.flow, cbColors.blue, false, true,  5, 8);
+		const flow = new GraphLine(this.flowGraph, d => d.flow, 
+                        {color: cbColors.blue, vertical: false,
+                         visible: true, continuous: false,
+                         lineWidth: 5, dotSize: 8, right: false});
         
         //throughput graph
         this.thruGraph = new TioxGraph(fac,'tchartCanvasfac',
                 40, {width:200, step:40}, d=>d.t, 1000,370,false);
 		this.thruGraph.setTitle('Throughput','tchartTitle');
-		const thru = new GraphLine(this.thruGraph,
-                d => d.thru, cbColors.yellow, false, true,  5, 8);
+		const thru = new GraphLine(this.thruGraph, d => d.thru, 
+                        {color: cbColors.yellow, vertical: false,
+                         visible: true, continuous: false,
+                         lineWidth: 5, dotSize: 8, right: false});
 		        
         //add legends
         const leg0 = flow.createLegend('Individual Flow 2Times (seconds/card)');

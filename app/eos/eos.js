@@ -58,19 +58,27 @@ class EosGraph  {
         this.flowGraph = new TioxGraph(eos,'fchartCanvaseos',
                 40, {width:10, step:2}, d=>d.t, 1000,370,false);
 		this.flowGraph.setTitle('Average Flow time','fchartTitle');
-		const sepFlow = new GraphLine(this.flowGraph,
-                d => d.s, cbColors.yellow, false, true,  5, 10);
-		const jointFlow = new GraphLine(this.flowGraph,
-                d => d.j, cbColors.blue, false, true,  5, 10);
+		const sepFlow = new GraphLine(this.flowGraph, d => d.s, 
+                        {color: cbColors.yellow, vertical: false,
+                         visible: true, continuous: false,
+                         lineWidth: 5, dotSize: 10, right: false});
+		const jointFlow = new GraphLine(this.flowGraph, d => d.j, 
+                        {color: cbColors.blue, vertical: false,
+                         visible: true, continuous: false,
+                         lineWidth: 5, dotSize: 10, right: false});
 		        
         //throughput graph
         this.thruGraph = new TioxGraph(eos,'tchartCanvaseos',
                 40, {width:10, step:2}, d=>d.t, 1000,370,false);
 		this.thruGraph.setTitle('Average Throughput','tchartTitle');
-		const sepThru = new GraphLine(this.thruGraph,
-                d => d.s, cbColors.yellow, false, true,  5, 10);
-		const jointThru = new GraphLine(this.thruGraph,
-                d => d.j, cbColors.blue, false, true,  5, 10);
+		const sepThru = new GraphLine(this.thruGraph, d => d.s, 
+                        {color: cbColors.yellow, vertical: false,
+                         visible: true, continuous: false,
+                         lineWidth: 5, dotSize: 10, right: false});
+		const jointThru = new GraphLine(this.thruGraph, d => d.j, 
+                        {color: cbColors.blue, vertical: false,
+                         visible: true, continuous: false,
+                         lineWidth: 5, dotSize: 10, right: false});
         
         //setup legend displays (connected directly to flow graph)
         const leg0 = sepFlow.createLegend('Separate');

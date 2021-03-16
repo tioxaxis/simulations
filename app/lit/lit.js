@@ -56,14 +56,20 @@ class LittleGraph extends TioxGraph {
 	constructor(){
 		super(lit,'chartCanvaslit',40, {width:20, step:5}, d=>d.t,
              2000,600,false);
-		this.predictedInvValue = null;
+		this.predictedInvValue = this.predictedInv();
 		this.setTitle('Inventory','chartTitle');
-		const avgInv = new GraphLine(this, d => d.i, cbColors.blue,
-					   false, true,  3, 10);
-		const avgRT = new GraphLine(this, d => d.rt, cbColors.yellow,
-					   false, true,  3, 10);
-		const predInv = new GraphLine(this, d => d.p, cbColors.red,
-					   true, false,  10, 0);
+		const avgInv = new GraphLine(this, d => d.i,
+                     {color: cbColors.blue, vertical: false,
+                         visible: true, continuous: false,
+                         lineWidth: 3, dotSize: 10, right: false});
+		const avgRT = new GraphLine(this, d => d.rt,
+                      {color: cbColors.yellow, vertical: false,
+                         visible: true, continuous: false,
+                         lineWidth: 3, dotSize: 10, right: false});
+		const predInv = new GraphLine(this, d => d.p,
+                   {color: cbColors.red, vertical: true,
+                         visible: false, continuous: true,
+                         lineWidth: 10, dotSize: 0, right: false});
 //		this.predictedInvValue = this.predictedInv();
          
         const d3 = document.getElementById('chartLegendlit');
@@ -545,9 +551,9 @@ export function litStart() {
     let usrInputs = litHTML();
     lit = new LittlesLaw(usrInputs);
     litDefine();
-    lit.graph = new LittleGraph();
     lit.setupScenarios();
     theSimulation.initialize();
+    lit.graph = new LittleGraph();
 	lit.reset();
 	return lit;
 };

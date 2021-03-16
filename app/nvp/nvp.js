@@ -57,12 +57,18 @@ class NVGraph extends TioxGraph {
 		this.totalCost = 0;
 		this.setTitle('$ of cost per day','chartTitle');
 		
-		const under = new GraphLine(this, d => d.u, cbColors.red,
-					   false, true,  5, 16);
-		const over = new GraphLine(this, d => d.o, cbColors.yellow,
-					   false, true,  5, 16);
-		const average = new GraphLine(this, d => d.a, cbColors.blue,
-					   false, true,  8, 0);
+		const under = new GraphLine(this, d => d.u,
+                        {color: cbColors.red, vertical: false,
+                         visible: true, continuous: false,
+                         lineWidth: 5, dotSize: 16, right: false});
+		const over = new GraphLine(this, d => d.o,
+                        {color: cbColors.yellow, vertical: false,
+                         visible: true, continuous: false,
+                         lineWidth: 5, dotSize: 16, right: false});
+		const average = new GraphLine(this, d => d.a,
+                        {color: cbColors.blue, vertical: false,
+                         visible: true, continuous: false,
+                         lineWidth: 8, dotSize: 0, right: false});
                 
         const d4 = document.getElementById('chartLegendnvp');
         d4.append(under.createLegend('underage cost'),

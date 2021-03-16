@@ -54,13 +54,20 @@ class QueueGraph extends TioxGraph {
 		super(que,'chartCanvasque', 40, {width:10, step:2}, d=>d.t,
              2000,600,false);
 		this.setTitle('Waiting Time','chartTitle');
-		const indivWait = new GraphLine(this, d => d.i, cbColors.blue,
-					                   false, true,  5, 12);
-		const avgWait = new GraphLine(this, d => d.a, cbColors.yellow,
-					                   false, true,  5, 8);
-		this.predWait = new GraphLine(this, d => d.p, cbColors.red,
-					                   true, false,  10, 0);
-		this.predictedWaitValue = null; /*this.predictedWait();*/
+		const indivWait = new GraphLine(this, d => d.i, 
+                        {color: cbColors.blue, vertical: false,
+                         visible: true, continuous: false,
+                         lineWidth: 5, dotSize: 12, right: false});
+		const avgWait = new GraphLine(this, d => d.a, 
+                      {color: cbColors.yellow, vertical: false,
+                         visible: true, continuous: false,
+                         lineWidth: 5, dotSize: 8, right: false});
+		this.predWait = new GraphLine(this, d => d.p,
+                        {color: cbColors.red, vertical: true,
+                         visible: false, continuous: true,
+                         lineWidth: 10, dotSize: 0, right: false});
+		
+        this.predictedWaitValue =  this.predictedWait();
         
         const leg0 = indivWait.createLegend('individual wait');
         const leg1 = avgWait.createLegend('average wait');
@@ -91,6 +98,7 @@ class QueueGraph extends TioxGraph {
 		let yMax = (this.predictedWaitValue == Infinity)?
 			1.5: Math.max(1.5,this.predictedWaitValue * 1.1);
 		super.reset(yMax);
+        this.updatePredictedWait();
 	}
 	predictedWait () {
 			const sr = theSimulation.serviceRV.rate;
@@ -585,10 +593,9 @@ export function queStart() {
 	let usrInputs= queHTML();
     que = new Queueing(usrInputs);
     queDefine();
-    que.graph = new QueueGraph();
     que.setupScenarios();
     theSimulation.initialize();
-    
+    que.graph = new QueueGraph();
 	que.reset();
 	return que;
 };

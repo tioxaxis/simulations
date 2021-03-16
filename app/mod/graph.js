@@ -367,7 +367,7 @@ export class TioxGraph {
         for( let line of this.lines ){
            k = line.data.length - 1;
             
-          if( line.data[k].y != null ){
+          if( line.data[k].y != null && !line.params.continuous){
               line.data.push({x:t,y:null});
           }
         };
@@ -390,19 +390,20 @@ export class GraphLine{
         
     
 	//line constructor, knows its graph and adds obj to set. or do graph.lines.push(new Line)
-    constructor(graph, yAccess, color, vertical,
-				visible,  lineWidth, dotSize, right = false) {
+    constructor(graph, yAccess, params) /*color, vertical,
+				visible,  lineWidth, dotSize, right = false)*/ {
 		this.graph = graph;
         this.graph.lines.push(this);
         this.yAccess = yAccess;
-        this.color = color;
-        this.vertical = vertical;
-        this.visible = visible;
-        this.lineWidth = lineWidth;
-        this.origLineWidth = lineWidth;
-        this.dotSize = dotSize;
-        this.origDotSize = dotSize;
-        this.right = right;
+        this.params = params;
+//        this.params.color = color;
+//        this.vertical = vertical;
+//        this.params.visible = visible;
+//        this.params.lineWidth = lineWidth;
+        this.origLineWidth = params.lineWidth;
+//        this.params.dotSize = dotSize;
+        this.origDotSize = params.dotSize;
+//        this.right = right;
         this.data = [{x:0,y:null}];
     };
         
@@ -413,13 +414,13 @@ export class GraphLine{
         const dot = document.createElement('div');
         dot.classList.add('legendCircle');
         dot.innerHTML = '&#11044;'
-        dot.style = 'color:'+this.color;
+        dot.style = 'color:'+this.params.color;
         
         const txt = document.createElement('div');
         txt.classList.add('legendText');
         txt.innerHTML = text ;
         this.button.append(dot, txt);
-        if( !this.visible ) 
+        if( !this.params.visible ) 
             this.button.classList.add('crossOut');
         return this.button;
     };
@@ -430,12 +431,12 @@ export class GraphLine{
     };
     
 	clickResponse(){
-        this.setVisibility(!this.visible);
+        this.setVisibility(!this.params.visible);
         
     };
     setVisibility(b){
-        this.visible = b;
-        if( this.visible )
+        this.params.visible = b;
+        if( this.params.visible )
             this.button.classList.remove('crossOut');
         else
           this.button.classList.add('crossOut');
@@ -445,34 +446,38 @@ export class GraphLine{
     //process one point for a line for either drawPoint or drawLine.
     processOne(ctx,last,pair){
         const gx = this.graph.xScale(pair.x);
-        const gy = this.graph.yScale(pair.y,this.right);
+        const gy = this.graph.yScale(pair.y,this.params.right);
         if( last.y != null){
             const gLx = this.graph.xScale(last.x);
-            const gLy = this.graph.yScale(last.y,this.right);
+            const gLy = this.graph.yScale(last.y,this.params.right);
             
             ctx.beginPath();
+            ctx.lineWidth = this.params.lineWidth;
             ctx.moveTo(gLx,gLy);
-            if( this.vertical){
+            if( this.params.vertical){
                 ctx.lineTo(gx,gLy)
             }
             ctx.lineTo(gx,gy);
-            ctx.stroke()
+            ctx.stroke();
+            ctx.closePath();
         }
         
-        if( this.dotSize > 0) {
+        if( this.params.dotSize > 0) {
             ctx.beginPath();
-            ctx.arc(gx, gy, this.dotSize, 0, 2*Math.PI, true);
+            ctx.lineWidth = 0
+            ctx.arc(gx, gy, this.params.dotSize, 0, 2*Math.PI, true);
             ctx.stroke();
             ctx.fill();
+            ctx.closePath();
         }
     };
     
     drawPoint(pair){
-        if( !this.visible ) return;
+        if( !this.params.visible ) return;
         const ctx = this.graph.ctx;
-        ctx.fillStyle = this.color;
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = this.lineWidth;
+        ctx.fillStyle = this.params.color;
+        ctx.strokeStyle = this.params.color;
+        ctx.lineWidth = this.params.lineWidth;
         ctx.beginPath();
         
         const k = this.data.length - 1;
@@ -483,11 +488,11 @@ export class GraphLine{
     };
     
     drawLine(){
-        if( !this.visible) return;
+        if( !this.params.visible) return;
         const ctx = this.graph.ctx;
-        ctx.fillStyle = this.color;
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = this.lineWidth;
+        ctx.fillStyle = this.params.color;
+        ctx.strokeStyle = this.params.color;
+        ctx.lineWidth = this.params.lineWidth;
         ctx.beginPath();
         
         let last = {x: null, y: null};
