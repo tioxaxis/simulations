@@ -113,14 +113,6 @@ window.onpopstate = function() {
     switchTo(h != '' ? h.slice(1) : 'dir');
 };
 
-//    if(performance.navigation.type == 2){
-////        alert('  caused a reload');
-//        location.reload(true);
-//        console.log('just did the reload thing')
-//        
-//    }
-    
-//    document.getElementById('dir').addEventListener('click', router);
 
 const possibles = ['dir','que', 'lit', 'nvp', 'inv',
                    'fac','eos'];
@@ -134,7 +126,6 @@ function switchTo (which){
             om.pause();
         }
     }
-//    console.log('in switchTo, stopped previous anim.')
 
     if( !omConcepts[which] ){
         switch (which) {
@@ -160,9 +151,6 @@ function switchTo (which){
                 break;
                 
         }
-//        console.log('in switchTo, started ',which);
-//        if( which != 'dir') 
-//            console.log('in switchTo, om conc', omConcepts[which].key);
     }
     
     let k = possibles.findIndex(key => key == which);
@@ -170,9 +158,7 @@ function switchTo (which){
     currentTab.classList.remove('displayNone');
     if( k > 0 ){
         redrawBackground();
-//        console.log('in switchTo, redraw ',k);
     }
-//    console.log('in switchTo, done ');
 };
     const h = location.hash;
     switchTo(h != '' ? h.slice(1) : 'dir');

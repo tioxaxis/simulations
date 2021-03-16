@@ -76,7 +76,6 @@ export class TioxGraph {
 	}
 	
 	reset(yMax, yMaxRight = null){
-//        console.log('in graph reset with OM=',this.omConcept.key);
 		this.vertCoors = [];
         for( let line of this.lines )
             line.data = [{x:0,y:null}];;
@@ -347,7 +346,7 @@ export class TioxGraph {
         pair.x = this.xAccess(p);
         for( let line of this.lines) {
             pair.y = line.yAccess(p);
-            if( pair.y != undefined ){
+            if( !(pair.y === undefined) ){
                 line.drawPoint(pair);
                 line.data.push({...pair});
             }

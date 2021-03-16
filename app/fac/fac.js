@@ -559,15 +559,6 @@ class FacStage extends MachineCenter {
     finishAnim (machine){
         if(this.which == fac.lastStage){
             const card = machine.person;
-//            let thruput = null;
-//            if( this.timeFirstThru ){
-//                this.count++;
-//                thruput = 60 * this.count/(fac.now - this.timeFirstThru);
-//            } else {
-//                this.timeFirstThru = fac.now
-//            } 
-//            fac.graph.push(fac.now, fac.now - card.sysEntryTime, thruput );
-//            console.log('Sys Entry Time', card.sysEntryTime);
             fac.graph.push(fac.now, fac.now - card.sysEntryTime);
         }
     };
@@ -708,7 +699,6 @@ class Supplier {
 	};
     bumpCount(){
         this.markCount++;
-        console.log('markCount',this.markCount)
     }
 }; //end class Supplier
 

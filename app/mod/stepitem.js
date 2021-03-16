@@ -454,7 +454,6 @@ export class ItemCollection extends Array {
 		this.splice(0, this.length);
 	};
 	moveDisplayAll(deltaSimuTime) {
-//        console.log('movedisplayAll #ofItems=',this.length)
 		this.forEach(p => p.moveDisplayWithPath(deltaSimuTime))
 	}
 	updatePositionAll(){
@@ -575,10 +574,6 @@ export class Item {
             this.cur.x = absX;
         }
         this.cur.w = this.updateW( this.cur.w, this.cur.x - lastX );
-//        if( isNaN(this.cur.w)){
-//        	console.log('after update, NaN',this.which,this.cur.x, this.cur.w);
-//        	debugger;
-//        };
         this.cur.l = this.legAngle( this.cur.w );
         this.cur.a = this.armAngle( this.cur.l );
     }

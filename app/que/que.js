@@ -118,7 +118,6 @@ class QueueGraph extends TioxGraph {
 			t: (que.now / tioxTimeConv),
 			p: (pW == Infinity)?null:pW
 		});
-        console.log(' at Update Predictable now=',que.now);
         this.predWait.setLegendText( 'predicted wait' +
 					   ((pW == Infinity) ? ' = ∞' : ''));
 
@@ -334,7 +333,6 @@ class QueQueue extends Queue {
             if( person.ahead.inWalkQ )
                 person.inWalkQ.initDeltaX = (que.now - person.ahead.inWalkQ.releaseT) * anim.stage.normalSpeed;
         }
-//        console.log(' pushed onto Q',person.which,person.cur.x,person.cur.w);
         person.arrivalTime = que.now + this.walkingTime;
         person.width = this.delta.dx;
         return true;
@@ -396,7 +394,6 @@ class QueCreator extends MachineCenter {
     };
     startAnim(machine, theProcTime){};
     finishAnim(machine){
-//        console.log('Finish Creator which,x,w=',machine.person.which, machine.person.cur.x,machine.person.cur.w);
     };
 };
 

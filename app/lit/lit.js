@@ -313,10 +313,6 @@ class LitQueue  extends Queue{
 			x: this.loc.x,
 			y: this.loc.y
 		});
-//        console.log('pushing onto Lit Queue')
-//            for(let k = 0; k < person.pathList.length; k++) {
-//                console.log('   PathList= ' ,person.which,person.pathList[k].t,person.pathList[k].x)
-//            }
         return true;
 	};
     arriveAnim(){};

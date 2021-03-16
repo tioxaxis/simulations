@@ -100,7 +100,6 @@ class EosGraph  {
 		const avgFlow = this.avgSepFlow.addItem(f);
         this.avgSepThru.out(t);
         const avgThru = this.avgSepThru.avgR();
-//        console.log('Avg throughput Sep', avgThru);
         this.flowGraph.drawOnePoint( {t: t, s: avgFlow} );
         this.thruGraph.drawOnePoint( {t: t, s: avgThru} );
 	};
@@ -110,7 +109,6 @@ class EosGraph  {
 		const avgFlow = this.avgJointFlow.addItem(f);
         this.avgJointThru.out(t);
         const avgThru = this.avgJointThru.avgR();
-//        console.log('Avg throughput Joint', avgThru);
         this.flowGraph.drawOnePoint( {t: t, j: avgFlow} );
         this.thruGraph.drawOnePoint( {t: t, j: avgThru} );
     };
@@ -349,7 +347,6 @@ function updateArrivalRate(u,s,n){
     if(n == null) n = Number(eos.usrInputs.get('num').get());
      const a = u * s * n;
     theSimulation.interarrivalRV.setRate(a / tioxTimeConv);
-//    console.log('a=',a,' s=',s,' n=',n,' u=',u,' computed util=',a/s/n);
  };
 
 function localUpdate(inp){
@@ -489,7 +486,6 @@ class EosQueue extends Queue {
         for( let k = 0; k < n; k++ ){
             if( theSimulation.sTSAagents[k].machs[0].status == 'idle' ){
                 this.omConcept.pauseImmediately();
-//                console.log('machine ',k,' is idle for an arrival');
                 return;
             }
         }

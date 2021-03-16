@@ -504,7 +504,6 @@ export class OmConcept {
     verifyParamsObject(params) {
         //for now we just check each scenario in the params
         if( params == null ) return null;
-//        console.log('verifying params for app=',this.key);
         let scenarios = params.app.omConcept.scenarios;
         for( let s of scenarios ) {
             for( let [key,input] of this.usrInputs ){

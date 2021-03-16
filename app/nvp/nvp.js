@@ -454,7 +454,6 @@ const theSimulation = {
 		const cv = Number(nvp.usrInputs.get('dcv').get());
         const low = Math.floor( r * (1-cv) );
         const high = Math.ceil( r * (1+cv));
-//        console.log('initiation  ',r,cv, low, high);
 		theSimulation.demandRV = new DiscreteUniformRV(low,high);
 		theSimulation.serviceRV =
 			new DeterministicRV(anim.walkingTime2);
@@ -524,7 +523,6 @@ class DemandCreator {
 	reset() {};
 
 	cycle() {
-//		console.log('start of cycle', nvp.now)
 		theSimulation.store.emptyStore();
 		this.curDemand = Math.floor(theSimulation.demandRV.observe());
 		theSimulation.store.addBox(theSimulation.quantityOrdered);
@@ -570,7 +568,6 @@ class DemandCreator {
 		nvp.nRounds++;
         nvp.graph.push(nvp.nRounds, 
             this.underageForDay, this.overageForDay);
-//		console.log(nvp.nRounds,nvp.now);
 		setActual();
         if( nvp.afterNextPointRestartGraph ){
             resetAvgsRestartGraph();

@@ -147,7 +147,6 @@ class InvGraph extends TioxGraph {
 			t: (inv.now / tioxTimeConv),
 			p: pI
 		});
-        console.log(' at Update Predictable now=',pI, inv.now);
 		this.predictedInvValue = pI;
 	};
 		
@@ -364,7 +363,6 @@ function localUpdate(inp){
                 alert('picked inv simulation with nonexistant method ', v);
 			     debugger;
             }
-//            console.log('changing method>'+ v+"<");
             inv.reset();
             break;
         case 'speed':
@@ -880,7 +878,6 @@ class DisplayBoxes {
 		this.reverse = this.box.space * this.box.perRow;
 	}
 	draw(cur) {
-//        console.log('In draw of DB reverse=',this.reverse,'cur.x=',cur.x);
 		this.ctxDB.save();
 		if (this.reverse) {
 			this.ctxDB.translate(2 * (cur.x) + this.reverse, 0);
