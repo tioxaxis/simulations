@@ -347,7 +347,7 @@ export class TioxGraph {
         pair.x = this.xAccess(p);
         for( let line of this.lines) {
             pair.y = line.yAccess(p);
-            if( pair.y != null ){
+            if( pair.y != undefined ){
                 line.drawPoint(pair);
                 line.data.push({...pair});
             }

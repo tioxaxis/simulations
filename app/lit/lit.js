@@ -94,8 +94,8 @@ class LittleGraph extends TioxGraph {
 	};
 	
 	reset(){
-		this.predictedInvValue = this.predictedInv();
         super.reset(this.predictedInvValue * 1.2);
+        this.updatePredictedInv();
 	}
     predictedInv() {
 		return (theSimulation.serviceRV.mean) / 
@@ -109,7 +109,7 @@ class LittleGraph extends TioxGraph {
 		});
 	};
     updateForParamChange(){
-        lit.graph.updatePredictedInv();
+        this.updatePredictedInv();
         irt = new IRT(lit.now, theSimulation.littlesBox.getNumberBusy());
         this.restartGraph(lit.now/tioxTimeConv);
     };
@@ -207,8 +207,8 @@ class LittlesLaw extends OmConcept{
         theSimulation.creator.knockFromPrevious();
 
         //fudge to get animation started quickly
-        let t = lit.heap.top().time - 1;
-        lit.now = lit.frameNow = t;
+//        let t = lit.heap.top().time - 1;
+        lit.now = lit.frameNow = 0;
         irt = new IRT(lit.now, 0);
     };
     

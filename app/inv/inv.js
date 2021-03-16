@@ -113,6 +113,7 @@ class InvGraph extends TioxGraph {
 			maxI = theSimulation.upto+1;
 		};
 		super.reset(maxI);
+        this.updatePredInv();
 	};
 
     computePredInv () {
@@ -140,7 +141,15 @@ class InvGraph extends TioxGraph {
 		}
 		return avgInv;
 	};
-	
+	updatePredInv() {
+		let pI = this.computePredInv();
+		this.drawOnePoint({
+			t: (inv.now / tioxTimeConv),
+			p: pI
+		});
+        console.log(' at Update Predictable now=',pI, inv.now);
+		this.predictedInvValue = pI;
+	};
 		
 	resetRopLine(y){
 		this.setExtraLines(cbColors.yellow,{min:y},null);
@@ -149,6 +158,7 @@ class InvGraph extends TioxGraph {
         this.setExtraLines(cbColors.yellow,null, {min:x,step:x});
 	};
     updateForParamChange(){
+        this.updatePredInv();
         this.restartGraph(inv.now/tioxTimeConv);
     };
     
@@ -252,8 +262,8 @@ class Inventory extends OmConcept{
         theSimulation.creator.knockFromPrevious();
 
         //fudge to get animation started quickly
-        let t = inv.heap.top().time - 1;
-        inv.now = inv.frameNow = t;
+//        let t = inv.heap.top().time - 1;
+        inv.now = inv.frameNow = 0;
         if (inv.whichRule == 'methUpto') {
             inv.heap.push({
                 time: 0 + theSimulation.period,

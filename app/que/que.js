@@ -118,6 +118,7 @@ class QueueGraph extends TioxGraph {
 			t: (que.now / tioxTimeConv),
 			p: (pW == Infinity)?null:pW
 		});
+        console.log(' at Update Predictable now=',que.now);
         this.predWait.setLegendText( 'predicted wait' +
 					   ((pW == Infinity) ? ' = ∞' : ''));
 
@@ -201,10 +202,7 @@ class Queueing extends OmConcept{
         theSimulation.supply.previous = null;
         theSimulation.creator.knockFromPrevious();
 
-        //fudge to get animation started quickly
-        let t = que.heap.top().time - 1;
-        que.now = que.frameNow = t;
-//        setHalfServiceEvent();
+        que.now = que.frameNow = 0;
         document.getElementById('nInQueue').innerHTML = '0';
     };
     localUpdateFromSliders(...inpsChanged){
