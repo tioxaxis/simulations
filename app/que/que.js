@@ -577,7 +577,7 @@ function queHTML(){
 				                [1,2,5,10,25,1000], 0) );   
     
 	const f = document.getElementById('scenariosMidque');
-	f.style = "min-height: 26vw";
+	f.style = "min-height: 24vw";
     
     usrInputs.set('desc', new Description('desc'));
     

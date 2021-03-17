@@ -681,7 +681,7 @@ input[type="radio"]{
 
 .scenariosMid {
 	overflow-y: auto;
-	flex: 0 1 17vw;
+	flex: 0 1 15vw;
 	color: var(--fontColor);
 	
 }
@@ -751,8 +751,8 @@ ul {
 li {
 	position: relative;
 	width: 96%;
-	min-height: 2vw;
-	font-size: 1vw;
+	min-height: 1.8vw;
+	font-size: 1.2vw;
 	font-family: "Times New Roman";
 	cursor: pointer;
 	padding: .1vw 0px .1vw;

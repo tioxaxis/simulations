@@ -915,7 +915,7 @@ function facHTML(){
 				                [1,2,5,10,25], 0) ); 
     	
 	const f = document.getElementById('scenariosMidfac');
-	f.style = "min-height: 16vw";
+	f.style = "min-height: 12vw";
     
     usrInputs.set('desc', new Description('desc'));
     return usrInputs;

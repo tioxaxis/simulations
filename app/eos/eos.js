@@ -794,7 +794,7 @@ function eosHTML(){
 				                [1,2,5,10,25,1000], 0) );   
     
 	const f = document.getElementById('scenariosMideos');
-	f.style = "min-height: 20vw";
+	f.style = "min-height: 18vw";
     
     usrInputs.set('desc', new Description('desc'));
     return usrInputs;

@@ -1020,7 +1020,7 @@ function invHTML(){
 				                [1,2,5,10,25,1000], 0) );  
 	
 	const f = document.getElementById('scenariosMidinv');
-	f.style = "min-height: 17vw";
+	f.style = "min-height: 15vw";
     usrInputs.set('desc', new Description('desc'));
     return usrInputs;
 };

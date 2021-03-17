@@ -675,7 +675,7 @@ function nvpHTML(){
     
     	
 	const f = document.getElementById('scenariosMidnvp');
-	f.style = "min-height: 21vw";
+	f.style = "min-height: 18vw";
     usrInputs.set('desc', new Description('desc'));
     return usrInputs;
 };

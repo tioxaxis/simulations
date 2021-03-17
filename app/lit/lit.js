@@ -537,7 +537,7 @@ function litHTML(){
     
     
     const f = document.getElementById('scenariosMidlit');
-	f.style = "min-height: 26vw";
+	f.style = "min-height: 24vw";
     usrInputs.set('desc', new Description('desc'));
     
     return usrInputs;
