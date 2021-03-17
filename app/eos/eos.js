@@ -738,7 +738,7 @@ function eosHTML(){
     
     const utilInput = genRange('utileos', 2, 0, 4, 1);
     elem.append(htmlArbSlider(utilInput, 'System Utilization = ', '0.9',
-                              [.5,.7,.9,.95,.99]) );
+                              ['.5','.7','.9','.95','.99']) );
     usrInputs.set('util', new ArbSlider('util',utilInput,
                 localUpdateFromUser, [.5,.7,.9,.95,.99],[.5,.7,.9,.95,.99], 2) );
     
