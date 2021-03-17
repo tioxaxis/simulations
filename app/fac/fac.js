@@ -73,7 +73,7 @@ class FacGraph {
                          lineWidth: 5, dotSize: 8, right: false});
 		        
         //add legends
-        const leg0 = flow.createLegend('Individual Flow 2Times (seconds/card)');
+        const leg0 = flow.createLegend('Individual Flow Times (seconds/card)');
         const d3 = document.getElementById('pairChartLeftLegendfac');
         d3.classList.add('pairChartLegend');
         d3.append(leg0);

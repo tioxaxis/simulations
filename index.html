@@ -177,74 +177,73 @@
        <div class='center'><u>1</u></div>
     <div class='center'><u>2</u></div>
     <div class='center'><u>3</u></div>
-    <div>    <u>Processing Time</u> </div>
+    <div class='center'><u>Processing Time</u> </div>
     
     <div class='facepart'>Head:</div>
-        <div><input  type='radio' name='facefac' id='face0' value='0' checked ></div>
-        <div><input  type='radio' name='facefac' id='face1' value='1'></div>
-        <div><input  type='radio' name='facefac' id='face2' value='2'></div>
-        <div class='inputTime'>
-            <input id='faceTime' value='1'  type='range' 
+        <input class='faceRadio' type='radio' name='facefac' id='face0' value='0' checked >
+        <input class='faceRadio' type='radio' name='facefac' id='face1' value='1'>
+        <input class='faceRadio' type='radio' name='facefac' id='face2' value='2'> 
+        <div class='faceRange'>
+            <input  id='faceTime' value='1'  type='range' 
                min='1' max='9' step='1'  >
-            <span id='dispfaceTime'>1</span>
-        </div>
+            <span id='dispfaceTime'>1</span></div>
+        
 	
         <div class='facepart'>Eyes:</div> 
-        <input  type='radio' name='eyesfac' id='eyes0' value='0' >
-        <input  type='radio' name='eyesfac' id='eyes1' value='1' checked>
-        <input  type='radio' name='eyesfac' id='eyes2' value='2'>
-        <div class='inputTime'>
+        <input class='faceRadio' type='radio' name='eyesfac' id='eyes0' value='0' >
+        <input class='faceRadio' type='radio' name='eyesfac' id='eyes1' value='1' checked>
+        <input class='faceRadio' type='radio' name='eyesfac' id='eyes2' value='2'>
+        <div class='faceRange'>
             <input id='eyesTime' value='2' type='range' 
                min='1' max='9' step='1'  >
             <span id='dispeyesTime'>2</span>
         </div>
 	
         <span class='facepart'>Nose: </span> 
-        <input  type='radio' name='nosefac' id='nose0' value='0' >
-        <input  type='radio' name='nosefac' id='nose1' value='1' checked>
-        <input  type='radio' name='nosefac' id='nose2' value='2'>
-        <div class='inputTime'>
+        <input class='faceRadio' type='radio' name='nosefac' id='nose0' value='0' >
+        <input class='faceRadio' type='radio' name='nosefac' id='nose1' value='1' checked>
+        <input class='faceRadio' type='radio' name='nosefac' id='nose2' value='2'>
+        <div class='faceRange'>
             <input id='noseTime' value='1' type='range' 
                min='1' max='9' step='1'  >
             <span id='dispnoseTime'>1</span>
         </div>
 	
 	    <span class='facepart'>Ears: </span>
-        <input  type='radio' name='earsfac' id='ears0' value='0' >
-        <input  type='radio' name='earsfac' id='ears1' value='1' checked>
-        <input  type='radio' name='earsfac' id='ears2' value='2'>
-        <div class='inputTime'>
+        <input class='faceRadio' type='radio' name='earsfac' id='ears0' value='0' >
+        <input class='faceRadio' type='radio' name='earsfac' id='ears1' value='1' checked>
+        <input class='faceRadio' type='radio' name='earsfac' id='ears2' value='2'>
+        <div class='faceRange'>
             <input id='earsTime' value='2' type='range' 
                min='1' max='9' step='1'  >
             <span id='dispearsTime'>2</span>
         </div>
 	
         <span class='facepart'>Mouth: </span> 
-        <input  type='radio' name='moutfac' id='mout0' value='0' >
-        <input  type='radio' name='moutfac' id='mout1' value='1' checked>
-        <input  type='radio' name='moutfac' id='mout2' value='2'>
-        <div class='inputTime'>
+        <input class='faceRadio' type='radio' name='moutfac' id='mout0' value='0' >
+        <input class='faceRadio' type='radio' name='moutfac' id='mout1' value='1' checked>
+        <input class='faceRadio' type='radio' name='moutfac' id='mout2' value='2'>
+        <div class='faceRange'>
             <input id='moutTime' value='1' type='range' 
                min='1' max='9' step='1'  >
             <span id='dispmoutTime'>1</span>
         </div>
 	
 		<span class='facepart'>Hair: </span> 
-        <input  type='radio' name='hairfac' id='hair0' value='0'>
-        <input  type='radio' name='hairfac' id='hair1' value='1'>
-        <input  type='radio' name='hairfac' id='hair2' value='2' checked>
-        <div class='inputTime'>
-            
+        <input class='faceRadio' type='radio' name='hairfac' id='hair0' value='0'>
+        <input class='faceRadio' type='radio' name='hairfac' id='hair1' value='1'>
+        <input class='faceRadio' type='radio' name='hairfac' id='hair2' value='2' checked>
+        <div class='faceRange'>
             <input id='hairTime' value='2' type='range' 
                min='1' max='9' step='1'  >
             <span id='disphairTime'>2</span>
         </div>
     
     <span class='facepart'
-          style='line-height: 20px'>Workers:</span> 
-        <input  type='number' name='quantity' id='quantity0' value='1'
+          style='line-height: 1.4vw'>Workers:</span> 
+        <input class='faceRadio' type='number' name='quantity' id='quantity0' value='1'
                min='1' max='3' step='1'>
-        <input  type='number' name='quantity' id='quantity1' value='1'
+        <input class='faceRadio' type='number' name='quantity' id='quantity1' value='1'
                min='1' max='3' step='1'>
         <input  type='number' name='quantity' id='quantity2' value='1' 
                min='1' max='3' step='1'>

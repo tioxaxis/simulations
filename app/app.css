@@ -183,12 +183,12 @@ A {
 	right: 0;
 */
 	display: grid;
-    grid-template-columns: 20% 12% 12% 12% 40%; 
+    grid-template-columns: 18% 12% 12% 12% 40%; 
     justify-content:end;
     border-bottom: solid var(--fontColor) 1px;
-    padding: 1vw;
+    padding: .5vw;
     
-    flex: 1 1 20%;
+    flex: 1 1 30%;
 	}
 /*********  chart boxes  ************/
 .chartWrapper {
@@ -456,7 +456,7 @@ input[type=number]{
     vertical-align:baseline;
 }
 input[type=radio]{
-    margin: 0vw .7vw 0vw 1.3vw;
+    /* margin: 0vw .7vw 0vw 1.3vw; */
     cursor: pointer;
 }
 input[type=checkbox],
@@ -467,7 +467,7 @@ label {
 }
 input[type=range] {
 	-webkit-appearance: none;
-	margin: .5vw;
+/*	margin: .5vw;*/
 	width: 80%;
 }
 input[type=range]:focus {
@@ -554,8 +554,8 @@ input[type=range]:focus::-ms-fill-upper {
 input.inputTime{
 	padding: 0 0 0 0;
 /*	line-height: 2vw;*/
-	height: .9vw;
-	font-size: .9vw;
+/*	height: .5vw;*/
+	font-size: 1.1vw;
 }
 input[type="radio"]{
 	height: 1vw;
@@ -566,6 +566,20 @@ input[type="radio"]{
 .facepart{
 	font-size: 1.2vw;
 	line-height: 1.1vw;
+	margin:auto;
+    margin-left:0 ;
+}
+.faceRadio{
+    font-size: 1.2vw;
+	line-height: 1.1vw;
+	margin: auto
+}
+.faceRange{
+    font-size: 1.2vw;
+	line-height: 1.1vw;
+    margin-left: 1vw;
+    width: 90%
+/*	margin: auto*/
 }
 
 	
@@ -681,7 +695,7 @@ input[type="radio"]{
 
 .scenariosMid {
 	overflow-y: auto;
-	flex: 0 1 15vw;
+	flex: 0 1 10vw;
 	color: var(--fontColor);
 	
 }
