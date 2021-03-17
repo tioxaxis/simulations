@@ -156,7 +156,7 @@ anim.person = {
 anim.walkOffStageTime = Math.abs(
     anim.person.path.scanner - anim.person.path.right) / anim.stage.normalSpeed;
 anim.scannerDelta = {
-  	dx: 0,
+    dx: 0,
 	dy: anim.person.height * 1.8
 };
 
