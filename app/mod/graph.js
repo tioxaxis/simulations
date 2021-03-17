@@ -76,7 +76,8 @@ export class TioxGraph {
 	}
 	
 	reset(yMax, yMaxRight = null){
-		this.vertCoors = [];
+
+        this.vertCoors = [];
         for( let line of this.lines )
             line.data = [{x:0,y:null}];;
 		//make copy of table
@@ -328,9 +329,11 @@ export class TioxGraph {
 		let x = this.xAccess(p);
 		for( let line of this.lines ){
 			let v = line.yAccess(p);
-			if (v != undefined)
+			if (v != undefined){
+                if(line.params.yLimit) v = Math.min(v,line.params.yLimit);
                 if (line.right) yRight = Math.max(yRight,v);
                 else y = Math.max(y,v);
+            }
 		}
 		let bool1 = this.shiftXaxis(x,1);
 		let bool2 = this.updateYaxis(y);
@@ -346,10 +349,10 @@ export class TioxGraph {
         pair.x = this.xAccess(p);
         for( let line of this.lines) {
             pair.y = line.yAccess(p);
-            if( !(pair.y === undefined) ){
-                line.drawPoint(pair);
-                line.data.push({...pair});
-            }
+            if( !(pair.y === undefined) && pair.y <= this.yInfo.max ){
+                    line.drawPoint(pair);
+                    line.data.push({...pair});
+                }   
         };
     };
     restartGraph(t){
