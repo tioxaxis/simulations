@@ -29,7 +29,7 @@
 //   option 2 is the way to go between the various types.
 //var framesDone  = 0;
 import {
-	Heap, StageOnCanvas, fromBase64, toBase64
+	tioxSpeeds, Heap, StageOnCanvas, fromBase64, toBase64
 }
 from "./util.js";
 import {
@@ -228,12 +228,12 @@ export class OmConcept {
         this.resourceCollection.drawAll(redraw);
     }
     
-	adjustSpeed(v,speeds){
-		if( this.frameSpeed == speeds[v].time) return;
+	adjustSpeed(v){
+		if( this.frameSpeed == tioxSpeeds[v].time) return;
         
         const oldFrameSpeed = this.frameSpeed;
-		this.frameSpeed = speeds[v].time;
-		this.graph.scaleXaxis(speeds[v].graph);
+		this.frameSpeed = tioxSpeeds[v].time;
+		this.graph.scaleXaxis(tioxSpeeds[v]);
         this.graph.setupThenRedraw();
         this.itemCollection.updateForSpeed();
 		if (oldFrameSpeed < 100 && this.frameSpeed > 100 ){

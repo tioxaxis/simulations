@@ -114,14 +114,6 @@ const disappointed = {
 };
 const tioxTimeConv = 1000; //time are in milliseconds
 
-const speeds = [{time:1,graph:1,anim:true},
-				{time:2,graph:1,anim:true},
-				{time:5,graph:2,anim:true},
-				{time:10,graph:2,anim:true},
-				{time:25,graph:5,anim:true},
-			{time:1000,graph:20,anim:false}];
-
-
 anim.stage = {
 	normalSpeed: 0.10, //.25 pixels per millisecond
 	width: 1000,
@@ -312,7 +304,7 @@ function localUpdateFromUser(inp){
 
 
         case 'speed':
-            nvp.adjustSpeed(v,speeds);
+            nvp.adjustSpeed(v);
             break;
         case 'action':
         case 'reset':

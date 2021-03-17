@@ -30,6 +30,15 @@ export const cbColors = {
     lightYellow: 'rgb(255, 230, 175)',
 };
 
+export const tioxSpeeds = [
+    {time:1,    xAxis:1,  dotScale: 1,  lineScale: 1,  anim:true},
+    {time:2,    xAxis:1,  dotScale: 1,  lineScale: 1,  anim:true},
+    {time:5,    xAxis:2,  dotScale: .7, lineScale: .8, anim:true},
+    {time:10,   xAxis:2,  dotScale: .7, lineScale: .8, anim:true},
+    {time:25,   xAxis:5,  dotScale: .5, lineScale: .6, anim:true},
+    {time:1000, xAxis:20, dotScale: .3, lineScale: .5, anim:false}
+];
+
 export class GammaRV {
 	constructor(rate = 0, CV = 0, minimumTime = 1) {
 		this.rate = Number(rate);

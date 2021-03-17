@@ -56,21 +56,21 @@ class FacGraph {
     constructor(){	
 		//flow time graph
         this.flowGraph = new TioxGraph(fac,'fchartCanvasfac',
-                40, {width:200, step:40}, d=>d.t, 1000,370,false);
+                40, {width:100, step:20}, d=>d.t, 1000,370,false);
 		this.flowGraph.setTitle('Flow time','fchartTitle');
 		const flow = new GraphLine(this.flowGraph, d => d.flow, 
                         {color: cbColors.blue, vertical: false,
                          visible: true, continuous: false,
-                         lineWidth: 5, dotSize: 8, right: false});
+                         lineWidth: 3, dotSize: 5, right: false});
         
         //throughput graph
         this.thruGraph = new TioxGraph(fac,'tchartCanvasfac',
-                40, {width:200, step:40}, d=>d.t, 1000,370,false);
+                40, {width:100, step:20}, d=>d.t, 1000,370,false);
 		this.thruGraph.setTitle('Throughput','tchartTitle');
 		const thru = new GraphLine(this.thruGraph, d => d.thru, 
                         {color: cbColors.yellow, vertical: false,
                          visible: true, continuous: false,
-                         lineWidth: 5, dotSize: 8, right: false});
+                         lineWidth: 3, dotSize: 5, right: false});
 		        
         //add legends
         const leg0 = flow.createLegend('Individual Flow Times (seconds/card)');
@@ -146,13 +146,6 @@ var gSF;
 
 const tioxTimeConv = 1000; 
 const moveTime = 0.50 * tioxTimeConv;  //.25 seconds;
-
-const speeds = [{time:1, display:'1x', graph:1, anim:true},
-				{time:2, display:'2x', graph:1, anim:true},
-				{time:5, display:'5x', graph:2, anim:true},
-				{time:10, display:'10x', graph:2, anim:true},
-				{time:25, display:'25x', graph:5, anim:true},
-			   ];
 
 const qlengths = [{qlen: 3, display: 3},
                   {qlen: 6, display: 6},
@@ -387,7 +380,7 @@ class FaceGame extends OmConcept {
                     break;
     
                 case 'speed':
-                    fac.adjustSpeed(v,speeds);
+                    fac.adjustSpeed(v);
                     break;
                 default:
                     alert(' reached part for default, key='+inp.key);
@@ -416,7 +409,7 @@ class FaceGame extends OmConcept {
 function localUpdateFromUser(inp){
     fac.setOrReleaseCurrentLi(inp);
     if( inp.key =='speed')
-        fac.adjustSpeed(inp.get(),speeds);
+        fac.adjustSpeed(inp.get());
     else if( match([inp],needReset) ){
         computeStageTimes();
         fac.partialReset()

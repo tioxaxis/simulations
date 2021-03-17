@@ -66,11 +66,11 @@ class InvGraph extends TioxGraph {
 		const onhandInv = new GraphLine(this, d => d.i,
                             {color: cbColors.blue, vertical: true,
                          visible: true, continuous: false,
-                         lineWidth: 3, dotSize: 0, right: false});
+                         lineWidth: 8, dotSize: 0, right: false});
 		const bothInv = new GraphLine(this, d => d.ip,
                           {color: cbColors.red, vertical: true,
                          visible: true, continuous: false,
-                         lineWidth: 3, dotSize: 0, right: false});
+                         lineWidth: 8, dotSize: 0, right: false});
 		const predInv = new GraphLine(this, d => d.p,
                           {color: cbColors.orange, vertical: true,
                          visible: false, continuous: true,
@@ -366,7 +366,7 @@ function localUpdate(inp){
             inv.reset();
             break;
         case 'speed':
-            inv.adjustSpeed(v,speeds);
+            inv.adjustSpeed(v);
             break;
         case 'action':
         case 'reset':
@@ -381,13 +381,6 @@ function localUpdate(inp){
     }
 };
 
-
-const speeds = [{time:1,graph:1,anim:true},
-				{time:2,graph:1,anim:true},
-				{time:5,graph:2,anim:true},
-				{time:10,graph:2,anim:true},
-				{time:25,graph:5,anim:true},
-			   {time:1000,graph:10,anim:false}];
 
 
 //  One variable for each process step or queue

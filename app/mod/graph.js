@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */	
 import {
-	Average, cbColors, StageOnCanvas
+	tioxSpeeds, Average, cbColors, StageOnCanvas
 }
 from "./util.js";
 function verticalAxis(y,table) {
@@ -72,7 +72,7 @@ export class TioxGraph {
 			 right: this.outer.width- this.margin.right,
 			 height: this.outer.height - this.margin.top - this.margin.bot,
 			 width: this.outer.width - this.margin.left - this.margin.right};
-        this.xScaleFactor = 1;
+        this.CurSpeed = tioxSpeeds[0];
 	}
 	
 	reset(yMax, yMaxRight = null){
@@ -140,7 +140,7 @@ export class TioxGraph {
 		for( let line of this.lines ){
 			line.last ={x:null, y: null}
 		}
-        this.scaleXaxis(this.xScaleFactor);
+        this.scaleXaxis(this.CurSpeed);
 		this.setupThenRedraw();
 	};
 	setTitle(title,id){
@@ -157,19 +157,19 @@ export class TioxGraph {
         return (1- (y-0) / (max - 0) )  * (this.inner.bot - this.inner.top) + this.inner.top;
 	};
     
-	scaleXaxis(scale){
+	scaleXaxis(speed){
        
-        this.xInfo.width =this.xOrigWidthStep.width * scale;
-        this.xInfo.step =this.xOrigWidthStep.step * scale;
+        this.xInfo.width =this.xOrigWidthStep.width * speed.xAxis;
+        this.xInfo.step =this.xOrigWidthStep.step * speed.xAxis;
         this.xInfo.max = this.xInfo.min + this.xInfo.width;
-        this.xScaleFactor = scale;
+        this.CurSpeed = speed;
         
 		for (let line of this.lines ) {
-			line.dotSize = Math.ceil(line.origDotSize / scale);
-			line.lineWidth = Math.ceil(line.origLineWidth / scale);
+			line.params.dotSize = Math.ceil(line.origDotSize * speed.dotScale);
+			line.params.lineWidth = Math.ceil(line.origLineWidth * speed.lineScale);
 		}
 		this.extraLine.width = Math.ceil(
-			this.extraLine.origWidth/scale);
+			this.extraLine.origWidth * speed.lineScale);
 
 		this.shiftXaxis(this.xInfo.lastX, this.xInfo);
 	};
@@ -389,20 +389,13 @@ export class GraphLine{
         
     
 	//line constructor, knows its graph and adds obj to set. or do graph.lines.push(new Line)
-    constructor(graph, yAccess, params) /*color, vertical,
-				visible,  lineWidth, dotSize, right = false)*/ {
+    constructor(graph, yAccess, params) {
 		this.graph = graph;
         this.graph.lines.push(this);
         this.yAccess = yAccess;
         this.params = params;
-//        this.params.color = color;
-//        this.vertical = vertical;
-//        this.params.visible = visible;
-//        this.params.lineWidth = lineWidth;
         this.origLineWidth = params.lineWidth;
-//        this.params.dotSize = dotSize;
         this.origDotSize = params.dotSize;
-//        this.right = right;
         this.data = [{x:0,y:null}];
     };
         

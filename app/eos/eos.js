@@ -155,13 +155,6 @@ var leg2Input ;// allows communication across graph setting up this elem.
 
 const tioxTimeConv = 10000; //rates in tiox are k/10 seconds
 
-const speeds = [{time:1,graph:1,anim:true},
-				{time:2,graph:1,anim:true},
-				{time:5,graph:2,anim:true},
-				{time:10,graph:2,anim:true},
-				{time:25,graph:5,anim:true},
-			   {time:1000,graph:20,anim:false}];
-
 anim.stage = {
 	normalSpeed: .050, 
 	width: 480,
@@ -386,7 +379,7 @@ function localUpdate(inp){
 //        case 'switch':
 //            break;
         case 'speed':
-            eos.adjustSpeed(v,speeds);
+            eos.adjustSpeed(v);
             break;
         case 'idle':
         case 'action':

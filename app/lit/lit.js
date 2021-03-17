@@ -61,11 +61,11 @@ class LittleGraph extends TioxGraph {
 		const avgInv = new GraphLine(this, d => d.i,
                      {color: cbColors.blue, vertical: false,
                          visible: true, continuous: false,
-                         lineWidth: 3, dotSize: 10, right: false});
+                         lineWidth: 5, dotSize: 8, right: false});
 		const avgRT = new GraphLine(this, d => d.rt,
                       {color: cbColors.yellow, vertical: false,
                          visible: true, continuous: false,
-                         lineWidth: 3, dotSize: 10, right: false});
+                         lineWidth: 5, dotSize: 6, right: false});
 		const predInv = new GraphLine(this, d => d.p,
                    {color: cbColors.red, vertical: true,
                          visible: false, continuous: true,
@@ -121,14 +121,6 @@ var gSF;
 var irt;
 
 const tioxTimeConv = 1000; //time are in milliseconds
-
-const speeds = [{time:1,graph:1,anim:true},
-				{time:2,graph:1,anim:true},
-				{time:5,graph:2,anim:true},
-				{time:10,graph:2,anim:true},
-				{time:25,graph:5,anim:true},
-			{time:1000,graph:20,anim:false}];
-
 
 anim.stage = {
 	normalSpeed: .10, 
@@ -279,7 +271,7 @@ function localUpdateFromUser(inp){
             break;
 
         case 'speed':
-            lit.adjustSpeed(v,speeds);
+            lit.adjustSpeed(v);
             break;
             
         case 'action':
