@@ -42,7 +42,12 @@ from './fac/fac.js';
 import {
 	eosStart
 }
-from './eos/eos.js';	
+from './eos/eos.js';
+import {
+    batStart
+}
+from './bat/bat.js';
+
 	
 
 
@@ -115,7 +120,7 @@ window.onpopstate = function() {
 
 
 const possibles = ['dir','que', 'lit', 'nvp', 'inv',
-                   'fac','eos'];
+                   'fac','eos','bat'];
 const omConcepts ={};
 
 function switchTo (which){
@@ -146,6 +151,9 @@ function switchTo (which){
                 break;
             case "eos":
                 omConcepts['eos'] = eosStart();
+                break;
+            case "bat":
+                omConcepts['bat'] = batStart();
                 break;
             default :
                 break;
