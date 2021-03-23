@@ -575,7 +575,9 @@ class RopStore extends GStore {
 		// start with the store filled in the first round.
 		super.reset();
 		if (inv.whichRule == 'methRop')
-			this.inv = Number(inv.usrInputs.get('quan').get());
+			this.inv = Math.max(
+				Number(inv.usrInputs.get('quan').get()),
+				Number(inv.usrInputs.get('rop').get()  )  );
 		else
 			this.inv = Number(inv.usrInputs.get('upto').get());
 
