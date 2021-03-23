@@ -151,9 +151,9 @@ export class OmConcept {
 
 	//this reset routine calls all the other reset()'s eventually
 	reset () {
-		this.partialReset();
 		this.now = 0;
-		this.frameNow = 0;
+        this.frameNow = 0;
+        this.partialReset();
 		this.graph.reset();
 		this.localReset();
 	};

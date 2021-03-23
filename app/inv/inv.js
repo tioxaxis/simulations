@@ -332,6 +332,7 @@ function localUpdate(inp){
             if( inv.whichRule == 'methRop'){
                 inv.graph.resetRopLine(Number(v));
                 inv.graph.setupThenRedraw();
+                theSimulation.store.checkInvPosition();
             }
             break;
         case 'period':
@@ -574,15 +575,18 @@ class RopStore extends GStore {
 	reset() {
 		// start with the store filled in the first round.
 		super.reset();
-		if (inv.whichRule == 'methRop')
+		if (inv.whichRule == 'methRop'){
 			this.inv = Math.max(
 				Number(inv.usrInputs.get('quan').get()),
 				Number(inv.usrInputs.get('rop').get()  )  );
-		else
+				
+		} else {
 			this.inv = Number(inv.usrInputs.get('upto').get());
-
+		}
 		this.invInDoor = this.inv;
 		this.invPosition = this.inv;
+
+		this.checkInvPosition();
 
 		for (let k = 0; k < this.inv; k++)
 			this.addNew();
@@ -654,10 +658,7 @@ class RopStore extends GStore {
 			this.stockout = true;
 		} else {
 			this.invPosition--;
-			if (this.invPosition <= theSimulation.rop &&
-				inv.whichRule == 'methRop') {
-				this.orderQuan();
-			}
+			this.checkInvPosition();
 			this.invInDoor--;
 			this.inv--;
 		};
@@ -667,10 +668,12 @@ class RopStore extends GStore {
 			this.invPosition);
 		return pack;
 	};
-
-	orderQuan() {
-		this.createDelivery(theSimulation.quantityOrdered);
-	};
+    checkInvPosition(){
+        if (this.invPosition <= theSimulation.rop &&
+            inv.whichRule == 'methRop') {
+            this.createDelivery(theSimulation.quantityOrdered);
+        }
+    };
 	orderUpto() {
 		const p = theSimulation.period;
         inv.heap.push({
@@ -703,6 +706,8 @@ class RopStore extends GStore {
 		const splitTime = inv.now + timeTravel + timeMoveDown1;
 		load.arrivalTime = inv.now + truckLT;
 
+        console.log(' create Delivery now=',inv.now,' LT=', truckLT,atDoorTime);
+        
 		inv.heap.push({
 			time: atDoorTime,
 			type: 'truck AtDoor',
