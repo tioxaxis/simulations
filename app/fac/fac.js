@@ -844,7 +844,7 @@ function facHTML(){
     
     addDiv('fac','fac','whole')
 	addDiv('fac', 'leftHandSideBox'+'fac',
-			   'facStageWrapper','pairChartWrapper');
+			   'tallStageWrapper','pairChartWrapper');
     
     // insert the radio button box first
     const radioButtons = document.getElementById('facDataWrapper');

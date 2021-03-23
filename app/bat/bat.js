@@ -46,7 +46,7 @@ import {
 	htmlRadioButton, RadioButton, 
 	IntegerInput, 
 	addKeyForIds, 
-	LegendItem, match, Description
+	LegendItem, LegendPair, match, Description
 }
 from '../mod/genHTML.js';
 
@@ -57,8 +57,8 @@ class BatGraph {
                 40, {width:100, step:20}, d=>d.t, 1000,370,false);
 		this.flowGraph.setTitle('Flow time','fchartTitle');
 		const baseFlow = new GraphLine(this.flowGraph, d => d.flow, 
-                        {color: cbColors.yellow,  false,
-vertical:                         visible: true, continuous: false,
+                        {color: cbColors.yellow,
+						 vertical: false, visible: true, continuous: false,
                          lineWidth: 3, dotSize: 5, right: false});
         const modFlow = new GraphLine(this.flowGraph, d => d.flow, 
                         {color: cbColors.blue, vertical: false,
@@ -79,8 +79,8 @@ vertical:                         visible: true, continuous: false,
                          lineWidth: 3, dotSize: 5, right: false});
 		        
         //add legends
-        const leg0 = flow.createLegend('Base Case');
-		const leg1 = thru.createLegend('Modified');
+        const leg0 = baseFlow.createLegend('Base Case');
+		const leg1 = modFlow.createLegend('Modified');
         const d3 = document.getElementById('pairChartLegendbat');
         d3.classList.add('pairChartLegend');
         d3.append(leg0,'      ', leg1); //option-spaces!!
@@ -232,7 +232,7 @@ class Batch extends OmConcept{
 		
 		bat.graph.reset();
 		
-		theSimulation.supply.previous = null;
+		// theSimulation.supply.previous = null;
 		
 		bat.tioxTimeConv = tioxTimeConv;
 		lastRound = 0;
@@ -249,7 +249,8 @@ class Batch extends OmConcept{
     redoStagesGraph(){
         this.stage.foreground.reset();
         this.stage.background.reset();
-        this.graph.chart.reset();
+        this.graph.flowGraph.chart.reset();
+        this.graph.thruGraph.chart.reset();
 
         this.redrawBackground();
         this.graph.setupThenRedraw();
@@ -259,7 +260,7 @@ class Batch extends OmConcept{
         this.stage.foreground.clear();
     };
     redrawBackground() {
-        theSimulation.store.drawStore();
+        // theSimulation.store.drawStore();
     };
 };
 function localUpdateFromUser(inp){
@@ -412,7 +413,7 @@ const theSimulation = {
 	initialize: function () {
 		// random variables
 		this.ar = Number(bat.usrInputs.get('ar').get());
-		this.pr = Number(bat.usrInputs.get('pr').get());
+		this.pt = Number(bat.usrInputs.get('pt').get());
         this.setup = Number(bat.usrInputs.get('setup').get());
 		this.batch = Number(bat.usrInputs.get('batch').get());
 
@@ -475,8 +476,8 @@ function batHTML(){
     
     addDiv('bat','bat','whole')
 	addDiv('bat', 'leftHandSideBox'+'bat',
-			   'stageWrapper',
-			   'chartWrapper');
+			   'tallStageWrapper',
+			   'pairChartWrapper');
 	 
     
     	
@@ -488,7 +489,7 @@ function batHTML(){
 	
     const arInput = genRange('arbat', '20', 10, 50, 1);
     elem.append(htmlNumSlider(arInput, 'Arrival Rate = ', '20', [10,20,30,40,50]) );
-    usrInputs.set('ar', new NumSlider('dr',arInput,
+    usrInputs.set('ar', new NumSlider('ar',arInput,
                 localUpdateFromUser, 10, 50, 20, 0, 1) );
     
 	const ptInput = genRange('ptbat', '2', 2, 8, 2);
@@ -496,18 +497,18 @@ function batHTML(){
 	usrInputs.set('pt', new NumSlider('pt',ptInput, localUpdateFromUser,
                                       2, 8, 2, 0, 1));
     
-    const setupInput = genRange('setupbat', '1', 0, 10, 1);
+    const setupInput = genRange('setupbat', '2', 2, 8, 1);
     elem.append( htmlNumSlider(setupInput, 'Setup Time = ', '2', [2,4,6,8] )); 
 	usrInputs.set('setup', new NumSlider('setup',setupInput, localUpdateFromUser,
                                       2, 8, 2, 0, 1));
     
-	const batchInput = genRange('batchbat', '20', 10, 50, 1);
-    elem.append( htmlNumSlider(batchInput, 'Batch Size = ', '20', [10,20,30,40,50] )); 
+	const batchInput = genRange('batchbat', 3, 0, 3, 1);
+    elem.append( htmlArbSlider(batchInput, 'Batch Size = ', '16', [4,8,12,16] )); 
 	usrInputs.set('batch', new ArbSlider('batch',batchInput, localUpdateFromUser,
                 ["4",'8','12','16'], [2,4,8,16], 3) );
     
     
-	elem.append(empty, genPlayResetBox('bat'));
+	elem.append( genPlayResetBox('bat'));
     usrInputs.set('reset', new CheckBox('reset', 'resetbat',
                 localUpdateFromUser, false) );
     usrInputs.set('action', new RadioButton('action', 'actionbat', 
@@ -522,7 +523,7 @@ function batHTML(){
     
     	
 	const f = document.getElementById('scenariosMidbat');
-	f.style = "min-height: 18vw";
+	f.style = "min-height:24vw";
     usrInputs.set('desc', new Description('desc'));
     return usrInputs;
 };
