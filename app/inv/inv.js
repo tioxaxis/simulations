@@ -61,7 +61,7 @@ class InvGraph extends TioxGraph {
 	constructor(){
 		super(inv,'chartCanvasinv',40, {width:24, step:6}, d=>d.t,
              2000,600,false);
-		this.predictedInvValue = this.computePredInv();
+		
 		this.setTitle('Inventory','chartTitle');
 		const onhandInv = new GraphLine(this, d => d.i,
                             {color: cbColors.blue, vertical: true,
@@ -89,13 +89,24 @@ class InvGraph extends TioxGraph {
         inv.usrInputs.set('leg2', 
             new LegendItem('leg2', predInv, localUpdateFromUser, false)); 
 	
-		if( inv.whichRule == 'methRop'){
+		
+	};
+	reset(){
+        let maxI;
+		if ( inv.whichRule == 'methRop' ){
+			maxI = theSimulation.rop + theSimulation.quantityOrdered + 1;
+		} else {
+			maxI = theSimulation.upto+1;
+		};
+        if( inv.whichRule == 'methRop'){
 			this.resetRopLine(Number(inv.usrInputs.get('rop').get()));
 		} else {
 			this.resetPeriodLines(Number(inv.usrInputs.get('period').get()));
 		}
+		super.reset(maxI);
+        this.updatePredInv();
 	};
-	
+
 	push (t, inv, invPosition){
 		this.predictedInvValue = this.computePredInv();
 		t /= tioxTimeConv;
@@ -105,17 +116,7 @@ class InvGraph extends TioxGraph {
 		this.drawOnePoint(p);
 	};
 	
-	reset(){
-        let maxI;
-		if ( inv.whichRule == 'methRop' ){
-			maxI = theSimulation.rop + theSimulation.quantityOrdered + 1;
-		} else {
-			maxI = theSimulation.upto+1;
-		};
-		super.reset(maxI);
-        this.updatePredInv();
-	};
-
+	
     computePredInv () {
 		let avgInv;
 		
@@ -706,7 +707,7 @@ class RopStore extends GStore {
 		const splitTime = inv.now + timeTravel + timeMoveDown1;
 		load.arrivalTime = inv.now + truckLT;
 
-        console.log(' create Delivery now=',inv.now,' LT=', truckLT,atDoorTime);
+//        console.log(' create Delivery now=',inv.now,' LT=', truckLT,atDoorTime);
         
 		inv.heap.push({
 			time: atDoorTime,
@@ -1029,9 +1030,10 @@ export function invStart() {
     let usrInputs = invHTML();
     inv = new Inventory(usrInputs);
     invDefine();
+    inv.graph = new InvGraph();
     inv.setupScenarios();
     theSimulation.initialize();
-    inv.graph = new InvGraph();
+    
     inv.reset();
 	return inv;
 };

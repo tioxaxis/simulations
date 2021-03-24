@@ -67,7 +67,6 @@ class QueueGraph extends TioxGraph {
                          visible: false, continuous: true,
                          lineWidth: 10, dotSize: 0, right: false});
 		
-        this.predictedWaitValue =  this.predictedWait();
         
         const leg0 = indivWait.createLegend('individual wait');
         const leg1 = avgWait.createLegend('average wait');
@@ -82,7 +81,15 @@ class QueueGraph extends TioxGraph {
         que.usrInputs.set('leg2', 
             new LegendItem('leg2', this.predWait, localUpdateFromUser, false));
 	};
-	
+    
+	reset(){
+		this.averageWait = new Average();
+		let yMax = (this.predictedWaitValue == Infinity)?
+			1.5: Math.max(1.5,this.predictedWaitValue * 1.1);
+		super.reset(yMax);
+        this.updatePredictedWait();
+	}
+    
 	push (t,w){
 		t /= tioxTimeConv;
 		w /= tioxTimeConv;
@@ -93,13 +100,7 @@ class QueueGraph extends TioxGraph {
 				 p: pW};
 		this.drawOnePoint(p);
 	};
-	reset(){
-		this.averageWait = new Average();
-		let yMax = (this.predictedWaitValue == Infinity)?
-			1.5: Math.max(1.5,this.predictedWaitValue * 1.1);
-		super.reset(yMax);
-        this.updatePredictedWait();
-	}
+	
 	predictedWait () {
 			const sr = theSimulation.serviceRV.rate;
 			const ir = theSimulation.interarrivalRV.rate;
@@ -581,9 +582,9 @@ export function queStart() {
 	let usrInputs= queHTML();
     que = new Queueing(usrInputs);
     queDefine();
+    que.graph = new QueueGraph();
     que.setupScenarios();
     theSimulation.initialize();
-    que.graph = new QueueGraph();
 	que.reset();
 	return que;
 };
