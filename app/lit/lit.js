@@ -56,7 +56,6 @@ class LittleGraph extends TioxGraph {
 	constructor(){
 		super(lit,'chartCanvaslit',40, {width:20, step:5}, d=>d.t,
              2000,600,false);
-		this.predictedInvValue = this.predictedInv();
 		this.setTitle('Inventory','chartTitle');
 		const avgInv = new GraphLine(this, d => d.i,
                      {color: cbColors.blue, vertical: false,
@@ -70,7 +69,6 @@ class LittleGraph extends TioxGraph {
                    {color: cbColors.red, vertical: true,
                          visible: false, continuous: true,
                          lineWidth: 10, dotSize: 0, right: false});
-//		this.predictedInvValue = this.predictedInv();
          
         const d3 = document.getElementById('chartLegendlit');
         d3.append(avgInv.createLegend('avg. inventory'),
@@ -84,7 +82,12 @@ class LittleGraph extends TioxGraph {
         lit.usrInputs.set('leg2', 
             new LegendItem('leg2', predInv, localUpdateFromUser, false));
     };
-	
+    
+	reset(){
+        super.reset(this.predictedInvValue * 1.2);
+        this.updatePredictedInv();
+	};
+    
 	push (t, inv, rt){
 		t /= tioxTimeConv;
 		let p = {t: t, i: inv,
@@ -93,10 +96,6 @@ class LittleGraph extends TioxGraph {
 		this.drawOnePoint(p);
 	};
 	
-	reset(){
-        super.reset(this.predictedInvValue * 1.2);
-        this.updatePredictedInv();
-	}
     predictedInv() {
 		return (theSimulation.serviceRV.mean) / 
 			(theSimulation.interarrivalRV.mean);
@@ -539,9 +538,9 @@ export function litStart() {
     let usrInputs = litHTML();
     lit = new LittlesLaw(usrInputs);
     litDefine();
+    lit.graph = new LittleGraph();
     lit.setupScenarios();
     theSimulation.initialize();
-    lit.graph = new LittleGraph();
 	lit.reset();
 	return lit;
 };
