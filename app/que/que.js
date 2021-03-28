@@ -207,6 +207,7 @@ class Queueing extends OmConcept{
         }
     };
     redoStagesGraph(){
+        console.log('REDO STAGES Graph from app.js');
         this.stage.foreground.reset();
         this.stage.background.reset();
         this.graph.chart.reset();

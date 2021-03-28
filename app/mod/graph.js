@@ -76,6 +76,7 @@ export class TioxGraph {
 	}
 	
 	reset(yMax, yMaxRight = null){
+		// console.log(' inside basic graph, RESET with',this.omConcept.key);
 
         this.vertCoors = [];
         for( let line of this.lines )

@@ -573,6 +573,8 @@ class RopStore extends GStore {
 		this.invPosition = null;
 		this.packages = []; //the packages in the store.
 	};
+
+	
 	reset() {
 		// start with the store filled in the first round.
 		super.reset();

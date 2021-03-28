@@ -196,6 +196,8 @@ function batDefine(){
     anim.stage.foreContext = anim.stage.foreground.context;
 	anim.stage.backContext = anim.stage.background.context;
 	bat.stage = anim.stage;
+
+	
     
     	
 	bat.fullSpeedSim = function(){
@@ -219,7 +221,7 @@ function batDefine(){
 	}
 };
 
-class Batch extends OmConcept{
+class Batching extends OmConcept{
     constructor(usrInputs){
         super('bat');
         this.usrInputs = usrInputs;
@@ -236,6 +238,13 @@ class Batch extends OmConcept{
 		
 		bat.tioxTimeConv = tioxTimeConv;
 		lastRound = 0;
+
+		let test = new Batch(4, 300, 300,
+			anim.stage.foreContext, 'green');
+		test.graphic.draw(300, 200, 4, 9, false);
+
+
+
 
     };
     localUpdateFromSliders(...inpsChanged){
@@ -312,7 +321,7 @@ function localUpdateFromUser(inp){
 //  that contains the functions to do the specific
 //  animation for that process step
 
-class batQueue extends Queue {
+class BatQueue extends Queue {
     constructor(){
         super(bat, "theQueue", -1);
         this.walkingTime = anim.walkingTime;
@@ -337,7 +346,7 @@ class batQueue extends Queue {
 	pullAnim () {};
 };
 
-class  batWalkOffStage extends WalkAndDestroy {
+class  BatWalkOffStage extends WalkAndDestroy {
 	constructor(){
         super(bat, "walkOff", true, anim.walkingTime1);
     };
@@ -353,53 +362,13 @@ class  batWalkOffStage extends WalkAndDestroy {
 };
 
 
-class batMachine extends MachineCenter {
-    constructor(name, rv){
-        super(bat, 'mach' + name, 1, rv);
-    }
-	//adjust for batch machine.
-	
-	// startAnim (person, pack, walkingTime) {
-	// 	person.addPath({ //walk to bot
-	// 		t: bat.now + walkingTime,
-	// 		x: anim.person.path.right,
-	// 		y: anim.person.path.bot
-	// 	});
-	// 	const leftTime = walkingTime / 2;
-	// 	const upTime = walkingTime / 2;
-
-	// 	if (pack) {
-	// 		pack.addPath({
-	// 			t: bat.now + leftTime,
-	// 			x: anim.person.path.right + person.graphic.gSF.package.x,
-	// 			y: pack.cur.y
-	// 		});
-	// 		pack.addPath({ // move up to arm height in other time
-	// 			t: bat.now + walkingTime,
-	// 			x: anim.person.path.right + person.graphic.gSF.package.x,
-	// 			y: anim.person.path.bot - 
-    //             anim.person.height/2 + person.graphic.gSF.package.y,
-	// 		});
-	// 	}
-	// };
-	
-	// finishAnim (person, pack) {
-	// 	if (pack) {
-	// 		person.graphic.packageVisible = true;
-	// 		person.graphic.packageColor = pack.graphic.color;
-	// 	} else {
-	// 		person.graphic.color = disappointed.color;
-	// 		person.graphic.bdaryColor = disappointed.border;
-	// 	}
-	// };
-};
 
 
 const theSimulation = {
 	ar: null,
 	pr: null,
 	setup: null,
-	batch: null,
+	bat: null,
 
 	// the 3 queues and 3 machines for each line.
 	// supply: null,
@@ -415,50 +384,39 @@ const theSimulation = {
 		this.ar = Number(bat.usrInputs.get('ar').get());
 		this.pt = Number(bat.usrInputs.get('pt').get());
         this.setup = Number(bat.usrInputs.get('setup').get());
-		this.batch = Number(bat.usrInputs.get('batch').get());
+		this.nRows = Number(bat.usrInputs.get('batch').get()) / 4;
 
-		//queues
-		// 2 suppliers
-		// 2 creators
-		// 3 queues for each
-		// 3 machines for each
-		// 2 walk off stage.
+		this.base = {};
+		this.base.path ={y:100};
+		this.base.queue = new BatQueue();
+		this.base.walkLeft = new BatWalkOffStage(
+			-100, this.base.path.y);
+		this.base.walkRight = new BatWalkOffStage(
+			1100, this.base.path.y);
 		
-		// this.supply = new Supplier(anim.person.path.left, anim.person.path.top);
-
-		// this.queue = new batQueue();
-		// bat.resetCollection.push(this.queue);
+		this.base = new BatLine(
+			200, this.base.path.y, 100, 0, 3, 4,
+			this.base.queue, this.base.walkLeft, this.base. walkRight);
 		
-		// this.store = new RetailStore();
-		// bat.resetCollection.push(this.store);
 		
-		// this.walkOffStage = new batWalkOffStage();
-		// bat.resetCollection.push(this.walkOffStage);
 
-		// this.demand = new DemandCreator(20000, theSimulation.demandRV);
-		// bat.resetCollection.push(this.demand);
+			
 
-		// this.newsVendor = new batCombine(theSimulation.serviceRV,
-		// 	this.queue, this.store, this.walkOffStage);
-		// bat.resetCollection.push(this.newsVendor);
 
-		//link the queue to machine before and after
-		
-        // this.queue.setPreviousNext(
-		// 	this.creator, this.newsVendor);
 	},
 };
 
 // SUPPLIER
 class Supplier {
-	constructor(x, y) {
+	constructor(x, y, nRows) {
 		this.x = x;
 		this.y = y;
+		this.nRows = nRows;
 	   this.current = null;
 	};
 	front() {
         if( this.current ) return this.current;
-        return this.current = new Person(bat, gSF, this.x, this.y);
+        return this.current = new Batch(bat, this.x, this.y, nRows);
 	};
     pull(){
         const last = this.front();
@@ -468,7 +426,156 @@ class Supplier {
 }; //end class Supplier
 
 
-//
+class BatLine{
+	constructor(x,y,dx,dy,nMachs,nRows,
+		queue,walkLeft,walkRight){
+		this.x = x;
+		this.y = y;
+		this.dx = dx;
+		this.dy = dy;
+		const delta = 100;
+		this.nMachs = nMachs;
+		this.nRows = nRows;
+		this.machs=[];
+		this.queue = queue;
+		this.walkLeft = walkLeft;
+		this.walkRight = walkRight;
+
+		for(let k = 0; k < nMachs; k++){
+			this.machs[k] = {x: x, y: y, 
+							in: new Batch(nRows, x - delta, y, true),
+							out: new Batch(nRows,x + delta, y, false)
+							}
+			x+= dx;
+			y+= dy;
+		}
+		
+	};
+	processOneBox(){
+		// in and out of each machine 
+		this.machs[1].nItems--
+		if (this.machs[1].nItems > 0) ;
+			// schedule next return. 
+	};
+	start(){
+		//schedule finish
+		//schedule movement of one item
+		if( this.machs[1].in.nItems > 0){
+			// schedule movement of one item, item#: nRows*4-nItems 
+			// from in to machine and then machine to out at item#: same position
+		}
+	}
+	knockFromPrevious(){
+		this.machs[1].in = this.queue.pull();
+		this.start();
+	}
+	
+	finish(){
+		//mach 1
+		this.walkLeft.push(this.mach[1].in);
+		this.machs[1].in = this.queue.pull();
+		this.start();
+
+		//mach 2
+		const save1 = this.machs[2].in;
+		// setup movement to this position.
+		this.machs[2].in = this.machs[1].out;
+		// setup movement to this position
+		this.machs[1].out = save1;
+		
+
+
+		// mach 3
+		const save2 = this.machs[3].in;
+		// setup movement to this position.
+		this.machs[3].in = this.machs[2].out;
+		// setup movement to this position
+		this.machs[2].out = save2;
+
+		//end action
+		this.walkRight.push(this.machs[3].out);
+		// setup movement to this.mach[3] out
+		this.machs[3].out = new Batch(this.nRows, x, y, false);
+	}
+	// swap(emptyBatch){
+	// 	const save = this.out;
+	// 	// move emptyBatch into position for this.out
+	// 	this.out = emptyBatch;
+	// 	this.in = this.previous.swap( this.in );
+	// 	// move this.in into position to process
+	// 	return (save);
+	// };
+	// collect(rows){
+	// 	const emptyBatch = new Batch(rows, x, y);  
+	// 	// x,y for off screen;
+	// 	// move to position for out
+	// 	const full = this.previous.swap( emptyBatch );
+	// 	// this.base.walkOffStageRight.push(full);
+	// 	// move the full off stage to right.
+	// };
+};
+
+class Batch extends Item{
+	constructor(rows,x,y,ctx,color){
+		super(bat,x,y);
+		this.nItems = 4 * rows;
+		this.rows = rows;
+		this.graphic = new BatchGraphic(ctx,color);
+	}
+	remove(){
+		this.nItems--
+	};
+	add(){
+		this.nItems++
+	}
+
+	draw(){
+		//draw rectangle 4 wide and rows high 
+		// centered at 
+	}
+};
+var box = {size:40, space:52};
+
+class BatchGraphic {
+	constructor(ctx,color){
+		this.ctx = ctx;
+		this.color = color;
+	}
+	draw(xBatch,yBatch,nRows,nItems,filling){
+		let delta = (box.space - box.size) / 2;
+		this.ctx.strokeStyle = 'black';
+		this.ctx.lineWidth = delta;
+		this.ctx.beginPath();
+		
+		let left = xBatch - 2 * box.space;
+		let top = yBatch - nRows / 2 * box.space;
+		this.ctx.rect(left - 2 * delta, top - 2 * delta,
+			box.space * 4 + 2 * delta, box.space * nRows + 2 * delta);
+		this.ctx.stroke();
+		this.ctx.closePath();
+
+		this.ctx.strokeStyle = this.color;
+		this.ctx.fillStyle = this.color;
+		this.ctx.beginPath();
+		
+		for(let  k = 0; k < nItems; k++ ){
+			let j = (filling ? k : nRows*4 -1 - k);
+			let x = left + (j % 4) * box.space;
+			let y = top + Math.floor( j / 4 ) * box.space;
+			this.ctx.rect(x, y, box.size, box.size);
+
+			
+
+		}
+		this.ctx.stroke();
+		this.ctx.fill();
+		this.ctx.closePath();
+		// draw a rectangle 4 wide by rows high 
+		// centered at x,y with nItems in it
+		// if filling=true then fill from the bottom
+		// else fill from the top
+	}
+}
 
 
 function batHTML(){	
@@ -530,7 +637,7 @@ function batHTML(){
 
 export function batStart() {
     let usrInputs = batHTML();
-    bat = new Batch(usrInputs);
+    bat = new Batching(usrInputs);
     batDefine();
     bat.graph = new BatGraph();
     bat.setupScenarios();

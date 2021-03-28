@@ -151,6 +151,7 @@ export class OmConcept {
 
 	//this reset routine calls all the other reset()'s eventually
 	reset () {
+		// console.log('main reset for', this.key);
 		this.now = 0;
         this.frameNow = 0;
         this.partialReset();
@@ -159,6 +160,7 @@ export class OmConcept {
 	};
     
     partialReset(){
+		// console.log('partial reset for',this.key)
         this.clearStageForeground();
         this.heap.reset();
         this.resetCollection.forEach(obj => obj.reset());

@@ -295,6 +295,7 @@ export class StageOnCanvas{
         this.stage = {width:w, height:h};
     };
     reset(){
+		// console.log(' StageOnCanvas reset', this.id);
         this.canv.width = this.canv
             .getBoundingClientRect().width * devicePixelRatio;
         
@@ -306,6 +307,7 @@ export class StageOnCanvas{
         return this.context;
     };
     clear(){
+		// console.log(' StagesOnCanvas clear', this.id);
         this.context.clearRect(0, 0, this.stage.width, this.stage.height);
     }
 };
