@@ -241,7 +241,8 @@ class Batching extends OmConcept{
 
 		let test = new Batch(4, 300, 300,
 			anim.stage.foreContext, 'green');
-		test.graphic.draw(300, 200, 4, 9, false);
+		const cur = {x:300,y:200,nRows:4,nItems:13,filling:false,marked:true};
+		test.graphic.draw(cur,0);
 
 
 
@@ -534,40 +535,48 @@ class Batch extends Item{
 		// centered at 
 	}
 };
-var box = {size:40, space:52};
+var box = {size: 40, space: 52, length: 5};
 
 class BatchGraphic {
 	constructor(ctx,color){
 		this.ctx = ctx;
 		this.color = color;
 	}
-	draw(xBatch,yBatch,nRows,nItems,filling){
+	draw(cur,now){
 		let delta = (box.space - box.size) / 2;
 		this.ctx.strokeStyle = 'black';
 		this.ctx.lineWidth = delta;
 		this.ctx.beginPath();
 		
-		let left = xBatch - 2 * box.space;
-		let top = yBatch - nRows / 2 * box.space;
+		let left = cur.x - 2 * box.space;
+		let top = cur.y - cur.nRows / 2 * box.space;
 		this.ctx.rect(left - 2 * delta, top - 2 * delta,
-			box.space * 4 + 2 * delta, box.space * nRows + 2 * delta);
+			box.space * box.length + 2 * delta,
+			box.space * cur.nRows + 2 * delta);
 		this.ctx.stroke();
 		this.ctx.closePath();
 
-		this.ctx.strokeStyle = this.color;
 		this.ctx.fillStyle = this.color;
 		this.ctx.beginPath();
 		
-		for(let  k = 0; k < nItems; k++ ){
-			let j = (filling ? k : nRows*4 -1 - k);
-			let x = left + (j % 4) * box.space;
-			let y = top + Math.floor( j / 4 ) * box.space;
+		const start = (cur.filling ? 0 : box.length * cur.nRows - cur.nItems);
+		const end = (cur.filling ? cur.nItems : cur.nRows * box.length);
+		for(let  k = start; k < end; k++ ){
+			// let j = (cur.filling ? k : cur.nRows * box.length - 1 - k);
+			let x = left + (k % box.length) * box.space;
+			let y = top + Math.floor( k / box.length ) * box.space;
 			this.ctx.rect(x, y, box.size, box.size);
 
+			if( k == 0 && cur.marked  ){
+				this.ctx.fillStyle = 'red';
+				this.ctx.fill();
+				this.ctx.closePath();
+				this.ctx.beginPath();
+				this.ctx.fillStyle = this.color;
+			}
 			
 
 		}
-		this.ctx.stroke();
 		this.ctx.fill();
 		this.ctx.closePath();
 		// draw a rectangle 4 wide by rows high 
