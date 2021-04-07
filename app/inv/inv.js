@@ -61,7 +61,7 @@ class InvGraph extends TioxGraph {
 	constructor(){
 		super(inv,'chartCanvasinv',40, {width:24, step:6}, d=>d.t,
              2000,600,false);
-		
+		this.predictedInvValue = this.computePredInv();
 		this.setTitle('Inventory','chartTitle');
 		const onhandInv = new GraphLine(this, d => d.i,
                             {color: cbColors.blue, vertical: true,
@@ -89,24 +89,13 @@ class InvGraph extends TioxGraph {
         inv.usrInputs.set('leg2', 
             new LegendItem('leg2', predInv, localUpdateFromUser, false)); 
 	
-		
-	};
-	reset(){
-        let maxI;
-		if ( inv.whichRule == 'methRop' ){
-			maxI = theSimulation.rop + theSimulation.quantityOrdered + 1;
-		} else {
-			maxI = theSimulation.upto+1;
-		};
-        if( inv.whichRule == 'methRop'){
+		if( inv.whichRule == 'methRop'){
 			this.resetRopLine(Number(inv.usrInputs.get('rop').get()));
 		} else {
 			this.resetPeriodLines(Number(inv.usrInputs.get('period').get()));
 		}
-		super.reset(maxI);
-        this.updatePredInv();
 	};
-
+	
 	push (t, inv, invPosition){
 		this.predictedInvValue = this.computePredInv();
 		t /= tioxTimeConv;
@@ -116,7 +105,17 @@ class InvGraph extends TioxGraph {
 		this.drawOnePoint(p);
 	};
 	
-	
+	reset(){
+        let maxI;
+		if ( inv.whichRule == 'methRop' ){
+			maxI = theSimulation.rop + theSimulation.quantityOrdered + 1;
+		} else {
+			maxI = theSimulation.upto+1;
+		};
+		super.reset(maxI);
+        this.updatePredInv();
+	};
+
     computePredInv () {
 		let avgInv;
 		
@@ -333,7 +332,6 @@ function localUpdate(inp){
             if( inv.whichRule == 'methRop'){
                 inv.graph.resetRopLine(Number(v));
                 inv.graph.setupThenRedraw();
-                theSimulation.store.checkInvPosition();
             }
             break;
         case 'period':
@@ -578,18 +576,15 @@ class RopStore extends GStore {
 	reset() {
 		// start with the store filled in the first round.
 		super.reset();
-		if (inv.whichRule == 'methRop'){
+		if (inv.whichRule == 'methRop')
 			this.inv = Math.max(
 				Number(inv.usrInputs.get('quan').get()),
 				Number(inv.usrInputs.get('rop').get()  )  );
-				
-		} else {
+		else
 			this.inv = Number(inv.usrInputs.get('upto').get());
-		}
+
 		this.invInDoor = this.inv;
 		this.invPosition = this.inv;
-
-		this.checkInvPosition();
 
 		for (let k = 0; k < this.inv; k++)
 			this.addNew();
@@ -661,7 +656,10 @@ class RopStore extends GStore {
 			this.stockout = true;
 		} else {
 			this.invPosition--;
-			this.checkInvPosition();
+			if (this.invPosition <= theSimulation.rop &&
+				inv.whichRule == 'methRop') {
+				this.orderQuan();
+			}
 			this.invInDoor--;
 			this.inv--;
 		};
@@ -671,12 +669,10 @@ class RopStore extends GStore {
 			this.invPosition);
 		return pack;
 	};
-    checkInvPosition(){
-        if (this.invPosition <= theSimulation.rop &&
-            inv.whichRule == 'methRop') {
-            this.createDelivery(theSimulation.quantityOrdered);
-        }
-    };
+
+	orderQuan() {
+		this.createDelivery(theSimulation.quantityOrdered);
+	};
 	orderUpto() {
 		const p = theSimulation.period;
         inv.heap.push({
@@ -709,8 +705,6 @@ class RopStore extends GStore {
 		const splitTime = inv.now + timeTravel + timeMoveDown1;
 		load.arrivalTime = inv.now + truckLT;
 
-//        console.log(' create Delivery now=',inv.now,' LT=', truckLT,atDoorTime);
-        
 		inv.heap.push({
 			time: atDoorTime,
 			type: 'truck AtDoor',
@@ -1032,10 +1026,9 @@ export function invStart() {
     let usrInputs = invHTML();
     inv = new Inventory(usrInputs);
     invDefine();
-    inv.graph = new InvGraph();
     inv.setupScenarios();
     theSimulation.initialize();
-    
+    inv.graph = new InvGraph();
     inv.reset();
 	return inv;
 };

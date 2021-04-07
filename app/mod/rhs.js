@@ -151,10 +151,9 @@ export class OmConcept {
 
 	//this reset routine calls all the other reset()'s eventually
 	reset () {
-		// console.log('main reset for', this.key);
+		this.partialReset();
 		this.now = 0;
-        this.frameNow = 0;
-        this.partialReset();
+		this.frameNow = 0;
 		this.graph.reset();
 		this.localReset();
 	};
@@ -322,7 +321,6 @@ export class OmConcept {
             view[ptr++]= nParams;// number of parameters
             for ( let [key, inp] of this.usrInputs ){
                 const x = inp.encode(row[key]);
-//                console.log('in sENCODE key=',key,'x=',x,' type=',typeof x);
                 view[ptr++] = this.keyIndex[key];
                 //decide if single of multiple byes
                 if( typeof x != "string" ){
@@ -366,12 +364,8 @@ export class OmConcept {
                     const inp = this.usrInputs.get(key);
                     if( typeValue >= 0 ){
                         row[key] = inp.decode(typeValue);
-//                        console.log('in SDecode',
-//                        ' keyIndex=',keyIndex,'typeValue',typeValue,
-//                        'key=',key,'decoded',row[key]);
                     } else {
                         const n = -typeValue;
-//                        console.log('in SDecode with string len=',n);
                         //get n bytes from buffer into LongData
                         row[key] = textDecoder.decode(view.subarray(ptr,ptr+n));
                         ptr += n;
@@ -379,11 +373,7 @@ export class OmConcept {
                 };
             };
             for(let [key,inp] of this.usrInputs){
-                if( row[key] == undefined ) {
-                    row[key] = inp.deflt;
-//                    console.log('in SDecode',
-//                    ' MISSING value SET DEFAULT for',key);
-                }
+                if( row[key] == undefined ) row[key] = inp.deflt;
             }
             rows.push(row);
         };
