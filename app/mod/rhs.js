@@ -215,6 +215,7 @@ export class OmConcept {
 		let theTop;
 		while ((theTop = this.heap.top()) &&
 				theTop.time <= this.frameNow) {
+			console.log('the heap:',this.heap);
 			const event = this.heap.pull();
 			// event on heap is {time: ,proc: ,item: }
 			this.now = event.time;
@@ -225,7 +226,8 @@ export class OmConcept {
 	};
     
     clearRedrawStage(deltaSimuTime, redraw){
-        this.clearStageForeground();
+        // console.log('redrawing screen', this.now);
+		this.clearStageForeground();
 		this.itemCollection.moveDisplayAll(deltaSimuTime);
         this.resourceCollection.drawAll(redraw);
     }

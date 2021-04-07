@@ -30,7 +30,7 @@ from '../mod/rhs.js';
 import {
 	Queue, WalkAndDestroy, MachineCenter,
 	InfiniteMachineCenter, Combine, Item, Person,
-	GStickFigure, NStickFigure, GStore, tioxColors
+	GStickFigure, NStickFigure, GStore, tioxColors, Package, BoxStack
 }
 from "../mod/stepitem.js";
 import {
@@ -149,42 +149,17 @@ const anim = {};
 var bat;
 var lastRound;
 
-const tioxTimeConv = 10000; //rates in tiox are k/10 seconds
+const tioxTimeConv = 1000; //rates in tiox are k/10 seconds
 
 anim.stage = {
 	normalSpeed: .050, 
 	width: 1000,
-	height: 480
+	height: 480,
+	offstageRight: 1100,
+	offstageLeft: -100
 };
-anim.batch = {
-	space: 50,
-	size: 50,
-	perRow: 4
-}
-anim.box = {
-		width: 10,
-		height: 10
-};
+var gBatch, gBox;
 
-
-anim.batch.path = {
-	base:{
-		left: -100,
-		right: 700,
-		// top: anim.store.top + anim.person.height/2,
-		// bot: anim.store.top + anim.person.height/2  + anim.box.space*7
-	},
-	mod:{
-		left: -100,
-		right: 700,
-		// top: anim.store.top + anim.person.height/2,
-		// bot: anim.store.top + anim.person.height/2  + anim.box.space*7
-	}
-};
-
-// anim.batch.path.mid = (anim.person.path.top + anim.person.path.bot) / 2;
-anim.walkingTime = (anim.batch.path.right - anim.batch.path.left) /
-                            anim.stage.normalSpeed;
 
 function batDefine(){
 	document.getElementById('bat').omConcept = bat;
@@ -196,6 +171,9 @@ function batDefine(){
     anim.stage.foreContext = anim.stage.foreground.context;
 	anim.stage.backContext = anim.stage.background.context;
 	bat.stage = anim.stage;
+
+	gBatch = new GBatch(anim.stage.foreContext, 4);
+	gBox = new GBox(anim.stage.foreContext, 15, 17);
 
 	
     
@@ -221,6 +199,7 @@ function batDefine(){
 	}
 };
 
+
 class Batching extends OmConcept{
     constructor(usrInputs){
         super('bat');
@@ -231,21 +210,32 @@ class Batching extends OmConcept{
         this.keyIndex = computeKeyIndex(this.keyNames);
     };
     localReset () {
-		
 		bat.graph.reset();
-		
-		// theSimulation.supply.previous = null;
+		bat.now = bat.frameNow = 0;
 		
 		bat.tioxTimeConv = tioxTimeConv;
 		lastRound = 0;
 
-		let test = new Batch(4, 300, 300,
-			anim.stage.foreContext, 'green');
-		const cur = {x:300,y:200,nRows:4,nItems:13,filling:false,marked:true};
-		test.graphic.draw(cur,0);
+		this.redrawBackground();
+		// // console.log(bat.itemCollection);
+		
+		// for(let k = 0; k < 10; k++){
+		// 	let pack = theSimulation.base.line.machs[0].in.remove();
+		// 	theSimulation.base.line.machs[0].out.add(pack);
+		// 	bat.clearRedrawStage(0,false);
+		// }
 
-
-
+		theSimulation.base.line.reset();
+		theSimulation.mod.line.reset();
+		theSimulation.base.creator.load( null, null ,0);
+		theSimulation.mod.creator.loadT( null, null, 0);
+		const bHead = theSimulation.base.queuehead;
+		theSimulation.base.queue.push(new Batch(cbColors.yellow,
+			 4, -100, 100, true));
+		const mHead = theSimulation.mod.queuehead;
+		theSimulation.mod.queue.push(new Batch(cbColors.blue,
+			bat.usrInputs.get('batch').getValue()/4, -100, 300, true));
+		bat.clearRedrawStage(0, false);
 
     };
     localUpdateFromSliders(...inpsChanged){
@@ -269,9 +259,29 @@ class Batching extends OmConcept{
     clearStageForeground(){
         this.stage.foreground.clear();
     };
-    redrawBackground() {
-        // theSimulation.store.drawStore();
-    };
+	clearStageBackground() {
+		this.stage.background.clear();
+	};
+	redrawBackground() {
+		this.redrawOneBatchLine(theSimulation.base.line);
+		this.redrawOneBatchLine(theSimulation.mod.line);
+	}
+
+	redrawOneBatchLine(line){
+		const c = anim.stage.backContext;
+		c.strokeStyle = 'black';
+		c.lineWidth = 5;
+		c.beginPath();
+		const machHeight = 66;
+		const machWidth = 56;
+		for (let k = 0; k < line.machs.length; k++) {
+			let m = line.machs[k];
+			c.strokeRect(m.x - machWidth / 2,
+				m.y - machHeight / 2,
+				machWidth, machHeight);
+		}
+		c.closePath();
+	};
 };
 function localUpdateFromUser(inp){
     bat.setOrReleaseCurrentLi(inp);
@@ -287,19 +297,21 @@ function localUpdateFromUser(inp){
     let v = inp.get();
     switch (inp.key){
         case 'ar':
-            theSimulation.ar = Number(v);
+			theSimulation.ar = Number(v) / tioxTimeConv;
          	break;
 
-        case 'pr':
-            theSimulation.pr = Number(v);
+        case 'pt':
+			theSimulation.pt = Number(v) * tioxTimeConv;
             break;
 
         case 'setup':
-			theSimulation.setup = Number(v);
+			theSimulation.setup = Number(v) * tioxTimeConv;
             break;
 
         case 'batch':
-            theSimulation.batch = Number(v);
+            theSimulation.batch = inp.getValue();
+			theSimulation.mod.line.nLines = theSimulation.batch/4;
+			this.partialReset();
             break;
 
         case 'speed':
@@ -311,7 +323,7 @@ function localUpdateFromUser(inp){
         case 'leg1':
             break;
         default:
-            alert(' reached part for default id=',key);
+            alert(' reached part for default id=',inp.key);
             debugger;
             break;
     }
@@ -321,25 +333,28 @@ function localUpdateFromUser(inp){
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
 //  animation for that process step
+class BatCreator extends MachineCenter{
+	constructor(timeRV){
+		super(bat,'creator/bat',1,timeRV);
+	};
+	startAnim(batch, theProcTime) { };
+	finishAnim(batch) {};
+};
 
 class BatQueue extends Queue {
-    constructor(){
+    constructor(head){
         super(bat, "theQueue", -1);
-        this.walkingTime = anim.walkingTime;
+        this.walkingTime = tioxTimeConv;
+		this.head = head;
     };
 	//// adjust for batch of various sizes.
-	push(person) {
-        if( !super.push(person, anim.walkingTime) ) return false;
-        const arrivalTime = bat.now + anim.walkingTime;
-		person.addPath({
-			t: arrivalTime - anim.walkingTime2,
-			x: anim.person.path.right,
-			y: anim.person.path.top
-		});
-		person.addPath({
-			t: arrivalTime,
-			x: anim.person.path.right,
-			y: anim.person.path.mid
+	push(batch) {
+        if( !super.push(batch,this.walkingTime) ) return false;
+        
+		batch.addPath({
+			t: bat.now + this.walkingTime,
+			x: this.head.x,
+			y: this.head.y
 		});
         return true;
 	};
@@ -348,17 +363,26 @@ class BatQueue extends Queue {
 };
 
 class  BatWalkOffStage extends WalkAndDestroy {
-	constructor(){
-        super(bat, "walkOff", true, anim.walkingTime1);
+	constructor(time){
+        super(bat, "walkOff", true, time);
     };
 	////   adjust for batch of various sizes.
-	pushAnim (person) {
-		person.addPath({
-			t: bat.now +
-				anim.walkingTime1,
-			x: anim.person.path.left,
-			y: anim.person.path.bot
-		});
+	pushAnim (batch) {
+		// const yDelta = batch.cur.nRows * gBox.space * 0.5 + 3;
+		// const alpha = 0.2;
+		// const alphaBar = 1 - alpha;
+		// const firstBit = alphaBar * batch.cur.x + alpha * this.x;
+		// // const lastBit = alpha * machine.out.cur.x + alphaBar * next.in.cur.x;
+		// batch.addPath({
+		// 	t: bat.now + alpha * this.time,
+		// 	x: firstBit,
+		// 	y: this.y + yDelta
+		// });
+		// batch.addPath({
+		// 	t: bat.now + this.time,
+		// 	x: this.x,
+		// 	y: this.y + yDelta
+		// });
 	}
 };
 
@@ -382,26 +406,86 @@ const theSimulation = {
 
 	initialize: function () {
 		// random variables
-		this.ar = Number(bat.usrInputs.get('ar').get());
-		this.pt = Number(bat.usrInputs.get('pt').get());
-        this.setup = Number(bat.usrInputs.get('setup').get());
+		this.swapEndTime = tioxTimeConv;
+		this.ar = Number(bat.usrInputs.get('ar').get()) / tioxTimeConv;
+		this.pt = Number(bat.usrInputs.get('pt').get()) * tioxTimeConv;
+		this.setup = Number(bat.usrInputs.get('setup').get()) * tioxTimeConv;
 		this.nRows = Number(bat.usrInputs.get('batch').get()) / 4;
 
-		this.base = {};
-		this.base.path ={y:100};
-		this.base.queue = new BatQueue();
-		this.base.walkLeft = new BatWalkOffStage(
-			-100, this.base.path.y);
-		this.base.walkRight = new BatWalkOffStage(
-			1100, this.base.path.y);
-		
-		this.base = new BatLine(
-			200, this.base.path.y, 100, 0, 3, 4,
-			this.base.queue, this.base.walkLeft, this.base. walkRight);
-		
-		
-
+		// local helper function
+		const defineLine = (height,nLines,color) => {
+			let sys = {};
+			sys.path = { m1: 210, m2: 490, m3: 770, y: height, dx: 70 };
 			
+
+			sys.supply = new Supplier(color, nLines,
+				anim.stage.offstageLeft, sys.path.y);
+
+			const interarrivalTime = (this.setup + 4 * nLines * this.pt);
+			sys.timeRV = new DeterministicRV(interarrivalTime)
+			sys.creator = new BatCreator(sys.timeRV);
+			bat.resetCollection.push(sys.creator);
+
+
+			sys.queuehead = {
+				x: sys.path.m1 - sys.path.dx,
+				y: sys.path.y + sys.path.dx + 10
+			};
+			sys.queue = new BatQueue(sys.queuehead);
+			bat.resetCollection.push(sys.queue);
+
+			sys.walkLeft = new BatWalkOffStage(this.swapEndTime);
+			bat.resetCollection.push(sys.walkLeft);
+			sys.walkRight = new BatWalkOffStage(this.swapEndTime);
+			bat.resetCollection.push(sys.walkRight);
+
+			sys.line = new BatLine(sys.path.m1,
+				sys.path.y, sys.path.dx, 0, 3, nLines, color,
+				sys.queue, sys.walkLeft, sys.walkRight);
+			
+			sys.creator.setPreviousNext(sys.supply, sys.queue);
+			sys.queue.setPreviousNext(sys.creator, sys.line);
+			return sys;
+		}
+		const batchRows = bat.usrInputs.get('batch').getValue() / 4;
+		this.base = defineLine(100, 4, cbColors.yellow);
+		this.mod = defineLine(300, batchRows, cbColors.blue);
+
+
+		// this.mod = {};
+		// this.mod.path = { m1: 210, m2: 490, m3: 770, y: 300, dx: 70 };
+		// c
+		
+		// this.mod.supply = new Supplier(cbColors.blue,batchRows,
+		// 	 anim.stage.offstageLeft,this.mod.path.y);
+		
+		// this.mod.timeRV = new DeterministicRV(interarrivalTime * batchRows / 4 );
+		// this.mod.creator = new BatCreator(this.mod.timeRV);
+		// bat.resetCollection.push(this.mod.creator);
+
+		
+		// this.mod.queuehead = {
+		// 	x: this.mod.path.m1 - this.mod.path.dx,
+		// 	y: this.mod.path.y + this.mod.path.dx + 10};
+		
+		// this.mod.queue = new BatQueue(this.mod.queuehead);
+		// bat.resetCollection.push(this.mod.queue);
+
+		// this.mod.walkLeft = new BatWalkOffStage(this.swapEndTime);
+		// bat.resetCollection.push(this.mod.walkLeft);
+		// this.mod.walkRight = new BatWalkOffStage(this.swapEndTime);
+		// bat.resetCollection.push(this.mod.walkRight);
+
+
+		// this.mod.line = new BatLine( this.mod.path.m1,
+		// 	this.mod.path.y, this.mod.path.dx, 0, 3, batchRows, cbColors.blue,
+		// 	this.mod.queue, this.mod.walkLeft, this.mod.walkRight);
+		// // bat.resetCollection.push(this.mod.line);
+
+
+		// this.mod.creator.setPreviousNext(this.mod.supply, this.mod.queue);
+		// this.mod.queue.setPreviousNext(this.mod.creator, this.mod.line);
+		
 
 
 	},
@@ -409,48 +493,66 @@ const theSimulation = {
 
 // SUPPLIER
 class Supplier {
-	constructor(x, y, nRows) {
+	constructor(color, nRows, x, y) {
+		this.color = color;
+		this.nRows = nRows;
 		this.x = x;
 		this.y = y;
-		this.nRows = nRows;
+		
 	   this.current = null;
 	};
 	front() {
         if( this.current ) return this.current;
-        return this.current = new Batch(bat, this.x, this.y, nRows);
+		return this.current = new Batch(this.color, this.nRows, this.x, this.y, true);
 	};
     pull(){
         const last = this.front();
         this.current = null;
+		console.log(' In Supplier ',last.which);
         return last;
 	}
 }; //end class Supplier
 
-
 class BatLine{
-	constructor(x,y,dx,dy,nMachs,nRows,
-		queue,walkLeft,walkRight){
+	constructor( x, y, dx, dy, nMachs, nRows,
+		color,
+		queue, walkLeft, walkRight){
+		this.color = color;
 		this.x = x;
 		this.y = y;
 		this.dx = dx;
 		this.dy = dy;
-		const delta = 100;
 		this.nMachs = nMachs;
 		this.nRows = nRows;
 		this.machs=[];
 		this.queue = queue;
 		this.walkLeft = walkLeft;
 		this.walkRight = walkRight;
+		this.swapTime = tioxTimeConv;
+		this.moveTime = tioxTimeConv / 2;
 
-		for(let k = 0; k < nMachs; k++){
-			this.machs[k] = {x: x, y: y, 
-							in: new Batch(nRows, x - delta, y, true),
-							out: new Batch(nRows,x + delta, y, false)
-							}
-			x+= dx;
-			y+= dy;
+		for (let k = 0; k < this.nMachs; k++) {
+			if (!this.machs[k]) this.machs[k] = {
+				x: x,
+				y: this.y,
+				index: k,
+				// in: (k != 0 ? new Batch(this.color, this.nRows, x - this.dx, this.y, false) : null),
+				// out: new Batch(this.color, this.nRows, x + this.dx, this.y, false)
+			};
+			x += 4 * this.dx;
 		}
 		
+		
+	};
+	reset(){
+		let x = this.x;
+		for (let k = 0; k < this.nMachs; k++) {
+			this.machs[k].in = (k != 0 ? new Batch(this.color, this.nRows,
+								 x - this.dx, this.y, false) : null);
+			this.machs[k].out = new Batch(this.color, this.nRows, x + this.dx,
+											 this.y, false);
+			x += 4 * this.dx;
+		};
 	};
 	processOneBox(){
 		// in and out of each machine 
@@ -458,133 +560,323 @@ class BatLine{
 		if (this.machs[1].nItems > 0) ;
 			// schedule next return. 
 	};
-	start(){
-		//schedule finish
-		//schedule movement of one item
-		if( this.machs[1].in.nItems > 0){
-			// schedule movement of one item, item#: nRows*4-nItems 
-			// from in to machine and then machine to out at item#: same position
+	setupFirst(){
+		const batch = this.queue.pull();
+		const setup = theSimulation.setup ;
+		if( batch != null ) {
+			bat.heap.push({
+				time: bat.now +  setup, //.7 * setup time,
+				type: 'start/bat',
+				proc: this.start.bind(this),
+				item: this.machs[0]
+			});
+			batch.addPath({
+				t: bat.now + tioxTimeConv,
+				x: this.machs[0].x - this.dx,
+				y: this.machs[0].y
+			});
+			this.machs[0].in = batch;
+
 		}
-	}
+	
+	
+	};
+
+	start(machine){
+		const box = machine.in.remove();
+		if( box == null ) {
+			if( machine.index == 0  || machine.index == 1){
+				const next = this.machs[machine.index + 1];
+			
+				bat.heap.push({
+					time: bat.now + tioxTimeConv * 
+							Number(bat.usrInputs.get('setup').get()),
+					type: 'start/bat',
+					proc: this.start.bind(this),
+					item: next
+				});
+				console.log('in Start, created new start event on machine, ',next.index);
+			}
+			
+		} else {
+			box.inBatch = false;
+			box.z = 1;
+			machine.box = box;
+			
+			box.addPath({
+				t: bat.now + this.moveTime,
+				x: machine.x,
+				y: machine.y
+			});
+			bat.heap.push({
+				time: bat.now +  tioxTimeConv * 
+						Number(bat.usrInputs.get('pt').get()),
+				type: 'finish/bat',
+				proc: this.finish.bind(this),
+				item: machine
+			});
+		}
+		// console.log(bat.heap);
+	};
+
 	knockFromPrevious(){
-		this.machs[1].in = this.queue.pull();
-		this.start();
+		this.setupFirst();
+		// this.start(this.machs[1]);
+		// this.start(this.machs[2]);
 	}
 	
-	finish(){
-		//mach 1
-		this.walkLeft.push(this.mach[1].in);
-		this.machs[1].in = this.queue.pull();
-		this.start();
+	finish(machine){
+		const box = machine.box;
+		machine.out.add(box);
+		const point = machine.out.positionLast();
+		box.addPath({
+			t: bat.now + this.moveTime,
+			x: point.x,
+			y: point.y
+		});
+		bat.heap.push({
+			time: bat.now + this.moveTime,
+			type: 'finishPlusOne/bat',
+			proc: this.finishPlusOne.bind(this),
+			item: machine
+		});
+		this.start(machine); // bat.heap.push({
+		// 	time: bat.now + bat.usrInputs.get('pt').get(),
+		// 	type: 'finish/bat',
+		// 	proc: this.start.bind(this),
+		// 	item: machine
+		// })
+		// console.log(bat.heap);
+	};
+	finishPlusOne(machine){
+		const last = machine.out.packages[machine.out.packages.length - 1];
+		last.inBatch = true;
+		last.pathList = [];
+		last.z = 0
+		if( machine.out.isFull() ){
+			const yDelta = this.nRows * gBox.space * 0.5 + 3;
+			const alpha = 0.2;
+			const alphaBar = 1 - alpha;
 
-		//mach 2
-		const save1 = this.machs[2].in;
-		// setup movement to this position.
-		this.machs[2].in = this.machs[1].out;
-		// setup movement to this position
-		this.machs[1].out = save1;
-		
+			if( machine.index == 0 ){
+				// handle moving in offstage, bringing new 'in' from queue, 
+				machine.in.addPath({
+					t: bat.now + alpha * this.swapTime,
+					x: alphaBar * machine.in.cur.x + alpha * anim.stage.offstageLeft,
+					y: machine.out.cur.y - yDelta
+				});
+				machine.in.addPath({
+					t: bat.now + this.swapTime,
+					x: anim.stage.offstageLeft,
+					y: machine.out.cur.y - yDelta
+				});
+				this.walkLeft.push(machine.in);
 
 
-		// mach 3
-		const save2 = this.machs[3].in;
-		// setup movement to this position.
-		this.machs[3].in = this.machs[2].out;
-		// setup movement to this position
-		this.machs[2].out = save2;
 
-		//end action
-		this.walkRight.push(this.machs[3].out);
-		// setup movement to this.mach[3] out
-		this.machs[3].out = new Batch(this.nRows, x, y, false);
+
+
+
+
+
+			};
+			if( machine.index == 0 || machine.index == 1 ){
+				// handle swapping out with next in
+				const next = this.machs[machine.index + 1];
+				
+				const firstBit = alphaBar * machine.out.cur.x + alpha * next.in.cur.x;
+				const lastBit = alpha * machine.out.cur.x + alphaBar * next.in.cur.x;
+
+				next.in.addPath({
+					t: bat.now + this.swapTime * alpha,
+					x: lastBit,
+					y: machine.out.cur.y - yDelta
+				});
+				next.in.addPath({
+					t: bat.now + this.swapTime * alphaBar,
+					x: firstBit,
+					y: machine.out.cur.y - yDelta
+				});
+				next.in.addPath({
+					t: bat.now + this.swapTime,
+					x: machine.out.cur.x,
+					y: machine.out.cur.y
+				});
+
+
+				machine.out.addPath({
+					t: bat.now + this.swapTime * alpha,
+					x: firstBit,
+					y: next.in.cur.y + yDelta
+				});
+				machine.out.addPath({
+					t: bat.now + this.swapTime * alphaBar,
+					x: lastBit,
+					y: next.in.cur.y + yDelta
+				});
+				machine.out.addPath({
+					t: bat.now + this.swapTime,
+					x: next.in.cur.x,
+					y: next.in.cur.y
+				});
+				const temp = next.in;
+				next.in = machine.out;
+				machine.out = temp;
+
+				next.in.cur.inQ = true;
+				machine.out.cur.inQ = false;
+
+			}
+			if (machine.index == 2) {
+				//handle swapping out off stage and get new in from offstage
+				machine.out.addPath({
+					t: bat.now + alpha * this.swapTime,
+					x: alphaBar * machine.out.cur.x + alpha * anim.stage.offstageRight,
+					y: machine.out.cur.y + yDelta
+				});
+				machine.out.addPath({
+					t: bat.now + this.swapTime,
+					x: anim.stage.offstageRight,
+					y: machine.out.cur.y + yDelta
+				});
+				this.walkRight.push(machine.out);
+				
+
+
+				const emptyBatch = new Batch(this.color, this.nRows, 
+					anim.stage.offstageRight, machine.out.cur.y - yDelta,false);
+				emptyBatch.addPath({
+					t: bat.now + alphaBar * this.swapTime,
+					x: machine.out.cur.x + yDelta,
+					y: machine.out.cur.y - yDelta
+				})
+				emptyBatch.addPath({
+					t: bat.now + this.swapTime,
+					x: machine.out.cur.x,
+					y: machine.out.cur.y
+				})
+				machine.out = emptyBatch;
+			};
+		}
+	};
+};
+class GBatch {
+	constructor(context, length) {
+		this.ctx = context;
+		this.length = length;
 	}
-	// swap(emptyBatch){
-	// 	const save = this.out;
-	// 	// move emptyBatch into position for this.out
-	// 	this.out = emptyBatch;
-	// 	this.in = this.previous.swap( this.in );
-	// 	// move this.in into position to process
-	// 	return (save);
-	// };
-	// collect(rows){
-	// 	const emptyBatch = new Batch(rows, x, y);  
-	// 	// x,y for off screen;
-	// 	// move to position for out
-	// 	const full = this.previous.swap( emptyBatch );
-	// 	// this.base.walkOffStageRight.push(full);
-	// 	// move the full off stage to right.
-	// };
+};
+class GBox {
+	constructor(context, size, space){
+		this.ctx = context;
+		this.size = size;
+		this.space = space;
+	}
+};	
+
+
+class Package2 extends Item {
+	constructor(omConcept, color, x, y) {
+		super(omConcept, x, y);
+		this.color = color;
+	};
+	draw(){
+		const ctx = gBox.ctx;
+		ctx.fillStyle = this.color;
+		ctx.strokeStyle = 'black';
+		ctx.lineWidth = 1;
+		ctx.fillRect(this.cur.x - gBox.size / 2,
+			this.cur.y - gBox.size / 2,
+			gBox.size, gBox.size);
+		ctx.strokeRect(this.cur.x - gBox.size / 2,
+			this.cur.y - gBox.size / 2,
+			gBox.size, gBox.size);
+	}
 };
 
 class Batch extends Item{
-	constructor(rows,x,y,ctx,color){
+	constructor(color, nRows, x, y, inQ){
 		super(bat,x,y);
-		this.nItems = 4 * rows;
-		this.rows = rows;
-		this.graphic = new BatchGraphic(ctx,color);
+		this.color = color;
+		this.cur.nRows = nRows;
+		this.cur.inQ = inQ;
+		this.cur.nItems = ( inQ ? 4 * nRows : 0 );
+		this.packages = [];
+		this.boxStack = new BoxStack({
+			isRows: true, isSnake: false,
+			lanes: nRows, laneLength: 4,
+			hSpace: gBox.space,
+			vSpace: gBox.space,
+			xDir: +1, yDir: +1
+		});
+		for( let k = 0; k < this.cur.nItems; k++){
+			let point = this.boxStack.relCoord(k)
+			this.packages[k] = new Package2(bat, this.color, x + point.x, y + point.y);
+			this.packages[k].inBatch = true;
+		}
 	}
 	remove(){
-		this.nItems--
+		if( this.packages.length == 0 ) return null;
+		this.cur.nItems--
+		return this.packages.shift();
 	};
-	add(){
-		this.nItems++
+	add(pack){
+		this.cur.nItems++
+		this.packages.push(pack);
 	}
 
+	positionLast(){
+		const n = this.packages.length;
+		const point = this.boxStack.relCoord(n-1);
+		let left = this.cur.x - 2 * gBox.space + gBox.size/2;
+		let top = this.cur.y - this.cur.nRows / 2 * gBox.space + gBox.size/2;
+		return {x: left + point.x, y: top + point.y};
+	};
+	isFull(){
+		return this.cur.nRows * 4 == this.cur.nItems;
+	};
 	draw(){
-		//draw rectangle 4 wide and rows high 
-		// centered at 
-	}
-};
-var box = {size: 40, space: 52, length: 5};
-
-class BatchGraphic {
-	constructor(ctx,color){
-		this.ctx = ctx;
-		this.color = color;
-	}
-	draw(cur,now){
-		let delta = (box.space - box.size) / 2;
-		this.ctx.strokeStyle = 'black';
-		this.ctx.lineWidth = delta;
-		this.ctx.beginPath();
+		// console.log('in BATCH draw',this.which,this.cur.x,this.cur.y);
+		let ctx = gBatch.ctx;
+		let length = gBatch.length;
+		let size = gBox.size;
+		let space = gBox.space;
 		
-		let left = cur.x - 2 * box.space;
-		let top = cur.y - cur.nRows / 2 * box.space;
-		this.ctx.rect(left - 2 * delta, top - 2 * delta,
-			box.space * box.length + 2 * delta,
-			box.space * cur.nRows + 2 * delta);
-		this.ctx.stroke();
-		this.ctx.closePath();
-
-		this.ctx.fillStyle = this.color;
-		this.ctx.beginPath();
+		let delta = (space - size) / 2;
 		
-		const start = (cur.filling ? 0 : box.length * cur.nRows - cur.nItems);
-		const end = (cur.filling ? cur.nItems : cur.nRows * box.length);
-		for(let  k = start; k < end; k++ ){
-			// let j = (cur.filling ? k : cur.nRows * box.length - 1 - k);
-			let x = left + (k % box.length) * box.space;
-			let y = top + Math.floor( k / box.length ) * box.space;
-			this.ctx.rect(x, y, box.size, box.size);
-
-			if( k == 0 && cur.marked  ){
-				this.ctx.fillStyle = 'red';
-				this.ctx.fill();
-				this.ctx.closePath();
-				this.ctx.beginPath();
-				this.ctx.fillStyle = this.color;
+		
+		//draw black box around the batch.
+		ctx.strokeStyle = 'black';
+		ctx.lineWidth = delta;
+		ctx.beginPath();
+		let left = this.cur.x - 2 * space;
+		let top = this.cur.y - this.cur.nRows / 2 * space;
+		ctx.rect(left - 2 * delta, top - 2 * delta,
+			space * length + 2 * delta,
+			space * this.cur.nRows + 2 * delta);
+		ctx.stroke();
+		ctx.closePath();
+		left += size/2;
+		top += size/2;
+		
+		
+		const start = (this.cur.inQ ?  length * this.cur.nRows - this.cur.nItems : 0);
+		for(let  k = 0; k < this.cur.nItems; k++ ){
+			const p = this.packages[k];
+			if( p.inBatch ) {
+				let point = this.boxStack.relCoord(k + start);
+				p.cur.x = left + point.x;
+				p.cur.y = top + point.y;
+				p.draw();
 			}
-			
-
 		}
-		this.ctx.fill();
-		this.ctx.closePath();
 		// draw a rectangle 4 wide by rows high 
 		// centered at x,y with nItems in it
 		// if filling=true then fill from the bottom
 		// else fill from the top
-	}
-}
+	};
+};
+
 
 
 function batHTML(){	

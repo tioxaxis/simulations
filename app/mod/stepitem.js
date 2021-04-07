@@ -233,34 +233,60 @@ export class MachineCenter {
 	};
 
 	start(machine) {
-		//check if someone is there and assign procTime;
-        const person = this.previousQueue.front();
-        let theProcTime;
-		if( !person ) return false;
-        if( this.procTimeRV ) {
-            theProcTime = person.procTime = this.procTimeRV.observe();
+		// //check if someone is there and assign procTime;
+        // const person = this.previousQueue.front();
+        // let theProcTime;
+		// if( !person ) return false;
+        // if( this.procTimeRV ) {
+        //     theProcTime = person.procTime = this.procTimeRV.observe();
 
-        } else {
-            theProcTime = person.procTime
-        };
-        // now person has procTime you can pull him/her
-        this.previousQueue.pull();
+        // } else {
+        //     theProcTime = person.procTime
+        // };
+        // // now person has procTime you can pull him/her
+        // this.previousQueue.pull();
         
-        person.machine = machine;
-        machine.status = 'busy';
-        machine.person = person;
-        this.startAnim(machine, theProcTime);   
-
-        this.omConcept.heap.push({
-            time: this.omConcept.now + theProcTime,
-            type: 'finish/' + this.name,
-            proc: this.finish.bind(this),
-            item: machine
-        });
-
-        this.numberBusy++;
-        return true;
+		
+		
+		
+		return this.load(null, machine, null);;
 	};
+
+	load(person, machine, time ){
+		if( person == null ) {
+			person = this.previousQueue.pull();
+			if( person == null ) return false;
+		}
+		if( machine == null ){
+			const m = this.findIdle();
+			if( m < 0 ) return false;
+			machine = this.machs[m];
+		};
+		if( time == null ){
+			if( this.procTimeRV )
+				person.procTime = time = this.procTimeRV.observe();
+			else time = person.procTime;
+		}
+		
+		person.machine = machine;
+		machine.status = 'busy';
+		machine.person = person;
+
+		this.omConcept.heap.push({
+			time: this.omConcept.now + time,
+			type: 'finish/' + this.name,
+			proc: this.finish.bind(this),
+			item: machine
+		});
+		this.startAnim(machine, time);
+		this.numberBusy++;
+		return true;
+	};
+	// loadToAvail(person, theProcTime){
+	// 	const machine = this.findIdle();
+	// 	if( machine < 0) return;
+	// 	this.load(person, machine, theProcTime);
+	// }
     
 	finish(machine) {
         const person = machine.person;
@@ -453,9 +479,23 @@ export class ItemCollection extends Array {
 	reset() {
 		this.splice(0, this.length);
 	};
-	moveDisplayAll(deltaSimuTime) {
-		this.forEach(p => p.moveDisplayWithPath(deltaSimuTime))
-	}
+	moveDisplayAll(deltaSimuTime) { 
+		var items = this;
+		let level = 1;
+		while( items.length > 0 ){
+			let next = [];
+			for( let p of items ){
+				if( p.z >= level ){
+					next.push(p);
+				} else {
+					p.moveDisplayWithPath(deltaSimuTime);
+				}
+			}
+			items = next;
+			level++
+		};
+	};
+
 	updatePositionAll(){
 		this.forEach(p => p.updatePosition())
 	};
@@ -511,7 +551,8 @@ export class Item {
             this.pathList.shift();
         };
         if( this.inWalkQ ) this.updateCurWalkQ(deltaSimuT);
-		this.graphic.draw(this.cur, this.omConcept.now);
+		this.draw();
+		// this.graphic.draw(this.cur, this.omConcept.now);
     };
     
     //helper function for above and for updateAngle in Person.
@@ -601,7 +642,8 @@ export class Item {
 		};
         if( this.inWalkQ ) 
                 this.updateCurWalkQ(1e8);
-		this.graphic.draw(this.cur, this.omConcept.now);
+		this.draw();
+		// this.graphic.draw(this.cur, this.omConcept.now);
 	};
 		
 	
@@ -668,7 +710,6 @@ export class Item {
 		if (a) a.behind = b;
 	};
 	draw() {
-		alert('calling draw inside item and should call draw on graphic directly');
         this.graphic.draw(this.cur, this.omConcept.now);
 	}
 }; // end of class Item
