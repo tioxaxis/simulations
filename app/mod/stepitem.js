@@ -254,7 +254,7 @@ export class MachineCenter {
 
 	load(person, machine, time ){
 		if( person == null ) {
-			person = this.previousQueue.pull();
+			person = this.previousQueue.front();
 			if( person == null ) return false;
 		}
 		if( machine == null ){
@@ -267,6 +267,7 @@ export class MachineCenter {
 				person.procTime = time = this.procTimeRV.observe();
 			else time = person.procTime;
 		}
+        this.previousQueue.pull();
 		
 		person.machine = machine;
 		machine.status = 'busy';
@@ -488,7 +489,20 @@ export class ItemCollection extends Array {
 				if( p.z >= level ){
 					next.push(p);
 				} else {
-					p.moveDisplayWithPath(deltaSimuTime);
+//					if( isNaN(p.cur.x) || isNaN(p.cur.y)) {
+//                        alert(' Found a NaN');
+//                        debugger;
+//                    };
+//                    if( p.which == 17){
+//                        console.log(' in MDA ', p.which,
+//                                    p.omConcept.now, p.pathList[0],p.cur.x, p.cur.y);
+//                    }
+                    p.moveDisplayWithPath(deltaSimuTime);
+                    
+                    if( isNaN(p.cur.x) || isNaN(p.cur.y)) {
+                        console.log('FOUND NaN which=',p.which,p.cur.x,p.cur.y);
+                        debugger;
+                    }
 				}
 			}
 			items = next;

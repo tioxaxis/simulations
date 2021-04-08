@@ -214,7 +214,7 @@ export class OmConcept {
 		let theTop;
 		while ((theTop = this.heap.top()) &&
 				theTop.time <= this.frameNow) {
-			console.log('the heap:',this.heap);
+//			console.log('the heap:',this.heap);
 			const event = this.heap.pull();
 			// event on heap is {time: ,proc: ,item: }
 			this.now = event.time;

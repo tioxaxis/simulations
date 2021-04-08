@@ -449,7 +449,8 @@ class EosQueue extends Queue {
 
         for( let k = 0; k < this.numSeatsUsed; k++ ){
             let p = this.q[k];   
-            let pos = p.cur.x
+            let pos = p.cur.x;
+//                console.log('in PullAnim which=',p.which,person.procTime);
                 p.updatePathDelta(
                 eos.now + Math.min(walkForOne,person.procTime),
 					this.delta.dx, this.delta.dy)
@@ -509,6 +510,7 @@ class EosWalkOffStage extends WalkAndDestroy {
 //			x: anim.person.path.pastScanner,
 //			y: anim.person.path.y
 //		});
+//        console.log(' In EOS walkOff which=',person.which, eos.now, anim.walkOffStageTime, 50 / anim.stage.normalSpeed);
 		person.addPath({
 			t: eos.now + anim.walkOffStageTime - 50 / anim.stage.normalSpeed,
 			x: anim.person.path.right,
@@ -518,7 +520,7 @@ class EosWalkOffStage extends WalkAndDestroy {
 		if (person.isThereOverlap()) {
 			person.cur.y = person.ahead.cur.y - 10;
 		}
-	}
+	};
     arriveAnim (person){
     }
 };
