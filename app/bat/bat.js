@@ -226,15 +226,17 @@ class Batching extends OmConcept{
 		// }
 
 		theSimulation.base.line.reset();
-		theSimulation.mod.line.reset();
+		const bb = bat.usrInputs.get('batch').getValue();
+		console.log(' in reset bb',bb,bb/4);
+		theSimulation.mod.line.reset(bat.usrInputs.get('batch').getValue() / 4);
 		theSimulation.base.creator.load( null, null ,0);
-		theSimulation.mod.creator.loadT( null, null, 0);
-		const bHead = theSimulation.base.queuehead;
-		theSimulation.base.queue.push(new Batch(cbColors.yellow,
-			 4, -100, 100, true));
-		const mHead = theSimulation.mod.queuehead;
-		theSimulation.mod.queue.push(new Batch(cbColors.blue,
-			bat.usrInputs.get('batch').getValue()/4, -100, 300, true));
+		theSimulation.mod.creator.load( null, null, 0);
+		// const bHead = theSimulation.base.queuehead;
+		// theSimulation.base.queue.push(new Batch(cbColors.yellow,
+		// 	 4, -100, 100, true));
+		// const mHead = theSimulation.mod.queuehead;
+		// theSimulation.mod.queue.push(new Batch(cbColors.blue,
+		// 	bat.usrInputs.get('batch').getValue()/4, -100, 300, true));
 		bat.clearRedrawStage(0, false);
 
     };
@@ -243,7 +245,9 @@ class Batching extends OmConcept{
             localUpdate(inp); 
         };
         if( match(inpsChanged,['ar', 'pr', 'setup','batch'])){
-           bat.graph.updateForParamChange();
+			this.partialReset();
+			this.localReset();
+			bat.graph.updateForParamChange();
         };
     };
     redoStagesGraph(){
@@ -287,7 +291,9 @@ function localUpdateFromUser(inp){
     bat.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
     if( match([inp],['ar', 'pr', 'setup','batch'])) {
-            bat.graph.updateForParamChange();
+		bat.partialReset();
+		bat.localReset();
+		bat.graph.updateForParamChange();
         }
 };
 
@@ -310,8 +316,8 @@ function localUpdateFromUser(inp){
 
         case 'batch':
             theSimulation.batch = inp.getValue();
-			theSimulation.mod.line.nLines = theSimulation.batch/4;
-			this.partialReset();
+			theSimulation.mod.line.nRows  = theSimulation.batch/4;
+			theSimulation.mod.supply.setNRows(theSimulation.batch/4);
             break;
 
         case 'speed':
@@ -356,9 +362,12 @@ class BatQueue extends Queue {
 			x: this.head.x,
 			y: this.head.y
 		});
+		// console.log('in BatQueue push', bat.now);
         return true;
 	};
-    arriveAnim() {};
+    arriveAnim() {
+		// console.log('in BatQueue arrive', bat.now);
+	};
 	pullAnim () {};
 };
 
@@ -366,23 +375,7 @@ class  BatWalkOffStage extends WalkAndDestroy {
 	constructor(time){
         super(bat, "walkOff", true, time);
     };
-	////   adjust for batch of various sizes.
 	pushAnim (batch) {
-		// const yDelta = batch.cur.nRows * gBox.space * 0.5 + 3;
-		// const alpha = 0.2;
-		// const alphaBar = 1 - alpha;
-		// const firstBit = alphaBar * batch.cur.x + alpha * this.x;
-		// // const lastBit = alpha * machine.out.cur.x + alphaBar * next.in.cur.x;
-		// batch.addPath({
-		// 	t: bat.now + alpha * this.time,
-		// 	x: firstBit,
-		// 	y: this.y + yDelta
-		// });
-		// batch.addPath({
-		// 	t: bat.now + this.time,
-		// 	x: this.x,
-		// 	y: this.y + yDelta
-		// });
 	}
 };
 
@@ -429,7 +422,7 @@ const theSimulation = {
 
 			sys.queuehead = {
 				x: sys.path.m1 - sys.path.dx,
-				y: sys.path.y + sys.path.dx + 10
+				y: sys.path.y + sys.path.dx + 70
 			};
 			sys.queue = new BatQueue(sys.queuehead);
 			bat.resetCollection.push(sys.queue);
@@ -450,44 +443,6 @@ const theSimulation = {
 		const batchRows = bat.usrInputs.get('batch').getValue() / 4;
 		this.base = defineLine(100, 4, cbColors.yellow);
 		this.mod = defineLine(300, batchRows, cbColors.blue);
-
-
-		// this.mod = {};
-		// this.mod.path = { m1: 210, m2: 490, m3: 770, y: 300, dx: 70 };
-		// c
-		
-		// this.mod.supply = new Supplier(cbColors.blue,batchRows,
-		// 	 anim.stage.offstageLeft,this.mod.path.y);
-		
-		// this.mod.timeRV = new DeterministicRV(interarrivalTime * batchRows / 4 );
-		// this.mod.creator = new BatCreator(this.mod.timeRV);
-		// bat.resetCollection.push(this.mod.creator);
-
-		
-		// this.mod.queuehead = {
-		// 	x: this.mod.path.m1 - this.mod.path.dx,
-		// 	y: this.mod.path.y + this.mod.path.dx + 10};
-		
-		// this.mod.queue = new BatQueue(this.mod.queuehead);
-		// bat.resetCollection.push(this.mod.queue);
-
-		// this.mod.walkLeft = new BatWalkOffStage(this.swapEndTime);
-		// bat.resetCollection.push(this.mod.walkLeft);
-		// this.mod.walkRight = new BatWalkOffStage(this.swapEndTime);
-		// bat.resetCollection.push(this.mod.walkRight);
-
-
-		// this.mod.line = new BatLine( this.mod.path.m1,
-		// 	this.mod.path.y, this.mod.path.dx, 0, 3, batchRows, cbColors.blue,
-		// 	this.mod.queue, this.mod.walkLeft, this.mod.walkRight);
-		// // bat.resetCollection.push(this.mod.line);
-
-
-		// this.mod.creator.setPreviousNext(this.mod.supply, this.mod.queue);
-		// this.mod.queue.setPreviousNext(this.mod.creator, this.mod.line);
-		
-
-
 	},
 };
 
@@ -508,8 +463,11 @@ class Supplier {
     pull(){
         const last = this.front();
         this.current = null;
-		console.log(' In Supplier ',last.which);
+		// console.log(' In Supplier ',last.which);
         return last;
+	}
+	setNRows(n){
+		this.nRows = n;
 	}
 }; //end class Supplier
 
@@ -544,7 +502,8 @@ class BatLine{
 		
 		
 	};
-	reset(){
+	reset(n = 4){
+		this.nRows = n;
 		let x = this.x;
 		for (let k = 0; k < this.nMachs; k++) {
 			this.machs[k].in = (k != 0 ? new Batch(this.color, this.nRows,
@@ -554,49 +513,69 @@ class BatLine{
 			x += 4 * this.dx;
 		};
 	};
-	processOneBox(){
-		// in and out of each machine 
-		this.machs[1].nItems--
-		if (this.machs[1].nItems > 0) ;
-			// schedule next return. 
-	};
-	setupFirst(){
+	
+	start(){
 		const batch = this.queue.pull();
-		const setup = theSimulation.setup ;
 		if( batch != null ) {
+
+			const setup = theSimulation.setup;
+			const yDelta = this.nRows * gBox.space * 0.5 + 3;
+			const alpha = 0.2;
+			const alphaBar = 1 - alpha;
+			const machine = this.machs[0];
+
+			if( machine.in ){
+				machine.in.addPath({
+					t: bat.now + alpha * this.swapTime,
+					x: alphaBar * machine.in.cur.x + alpha * anim.stage.offstageLeft,
+					y: machine.out.cur.y - yDelta
+				});
+				machine.in.addPath({
+					t: bat.now + this.swapTime,
+					x: anim.stage.offstageLeft,
+					y: machine.out.cur.y - yDelta
+				});
+				this.walkLeft.push(machine.in);
+			};
+
 			bat.heap.push({
 				time: bat.now +  setup, //.7 * setup time,
-				type: 'start/bat',
-				proc: this.start.bind(this),
-				item: this.machs[0]
+				type: 'startBox/bat',
+				proc: this.startBox.bind(this),
+				item: machine
 			});
 			batch.addPath({
 				t: bat.now + tioxTimeConv,
-				x: this.machs[0].x - this.dx,
-				y: this.machs[0].y
+				x: machine.x - this.dx,
+				y: machine.y
 			});
-			this.machs[0].in = batch;
+			machine.in = batch;
+			
 
 		}
+		// console.log('completed setup at now= ',bat.now);
+		// debugger;
 	
 	
 	};
+	firstBox(machine){
+		if (machine.index == 0 || machine.index == 1) {
+			const next = this.machs[machine.index + 1];
 
-	start(machine){
+			bat.heap.push({
+				time: bat.now + tioxTimeConv *
+					Number(bat.usrInputs.get('setup').get()),
+				type: 'setup/bat',
+				proc: this.startBox.bind(this),
+				item: next
+			});
+			// console.log('in Start, created new start event on machine, ', next.index);
+		};
+	};
+	startBox(machine){
 		const box = machine.in.remove();
 		if( box == null ) {
-			if( machine.index == 0  || machine.index == 1){
-				const next = this.machs[machine.index + 1];
-			
-				bat.heap.push({
-					time: bat.now + tioxTimeConv * 
-							Number(bat.usrInputs.get('setup').get()),
-					type: 'start/bat',
-					proc: this.start.bind(this),
-					item: next
-				});
-				console.log('in Start, created new start event on machine, ',next.index);
-			}
+			alert('removed an null box from a batch');
 			
 		} else {
 			box.inBatch = false;
@@ -611,21 +590,22 @@ class BatLine{
 			bat.heap.push({
 				time: bat.now +  tioxTimeConv * 
 						Number(bat.usrInputs.get('pt').get()),
-				type: 'finish/bat',
-				proc: this.finish.bind(this),
+				type: 'finishBox/bat',
+				proc: this.finishBox.bind(this),
 				item: machine
 			});
+			// console.log('in START ', machine.out.packages.length,' now=',bat.now);
 		}
 		// console.log(bat.heap);
 	};
 
 	knockFromPrevious(){
-		this.setupFirst();
-		// this.start(this.machs[1]);
+		// console.log(' knock from previous on batline ');
+		this.start(this.machs[1]);
 		// this.start(this.machs[2]);
 	}
 	
-	finish(machine){
+	finishBox(machine){
 		const box = machine.box;
 		machine.out.add(box);
 		const point = machine.out.positionLast();
@@ -640,15 +620,14 @@ class BatLine{
 			proc: this.finishPlusOne.bind(this),
 			item: machine
 		});
-		this.start(machine); // bat.heap.push({
-		// 	time: bat.now + bat.usrInputs.get('pt').get(),
-		// 	type: 'finish/bat',
-		// 	proc: this.start.bind(this),
-		// 	item: machine
-		// })
-		// console.log(bat.heap);
+		if( machine.out.isFull() ) 
+			this.firstBox(machine);
+		else 
+			this.startBox(machine);
+		// console.log(' in finishBox',machine.out.packages.length, 'now=',bat.now);
 	};
 	finishPlusOne(machine){
+		// console.log('in FinishPlusONE', machine.out.packages.length,' now=',bat.now);
 		const last = machine.out.packages[machine.out.packages.length - 1];
 		last.inBatch = true;
 		last.pathList = [];
@@ -660,25 +639,7 @@ class BatLine{
 
 			if( machine.index == 0 ){
 				// handle moving in offstage, bringing new 'in' from queue, 
-				machine.in.addPath({
-					t: bat.now + alpha * this.swapTime,
-					x: alphaBar * machine.in.cur.x + alpha * anim.stage.offstageLeft,
-					y: machine.out.cur.y - yDelta
-				});
-				machine.in.addPath({
-					t: bat.now + this.swapTime,
-					x: anim.stage.offstageLeft,
-					y: machine.out.cur.y - yDelta
-				});
-				this.walkLeft.push(machine.in);
-
-
-
-
-
-
-
-
+			
 			};
 			if( machine.index == 0 || machine.index == 1 ){
 				// handle swapping out with next in
@@ -913,7 +874,7 @@ function batHTML(){
 	const batchInput = genRange('batchbat', 3, 0, 3, 1);
     elem.append( htmlArbSlider(batchInput, 'Batch Size = ', '16', [4,8,12,16] )); 
 	usrInputs.set('batch', new ArbSlider('batch',batchInput, localUpdateFromUser,
-                ["4",'8','12','16'], [2,4,8,16], 3) );
+                ["4",'8','12','16'], [4,8,12,16], 3) );
     
     
 	elem.append( genPlayResetBox('bat'));

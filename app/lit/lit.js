@@ -192,7 +192,9 @@ class LittlesLaw extends OmConcept{
     }
     
     localReset () {
-		totInv = totTime = totPeople =  LBRFcount = 0;
+		this.redrawBackground();
+        
+        totInv = totTime = totPeople =  LBRFcount = 0;
 		firstArr = lastArrDep = 3500;
         // schedule the initial Person to arrive and start the simulation/animation.
         theSimulation.supply.previous = null;
@@ -238,6 +240,7 @@ class LittlesLaw extends OmConcept{
         c.fillRect(anim.pathway.left, anim.pathway.y - anim.pathway.height/2, 
                    anim.pathway.width, anim.pathway.height);
         c.closePath();
+        console.log('exiting draw background');
     };
 };
 function localUpdateFromUser(inp){
