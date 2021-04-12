@@ -210,6 +210,9 @@ export class MachineCenter {
 		const n = this.machs.findIndex(x => x.status == 'idle');
         return (n >= this.numMachines ? -1 : n);
 	};
+	on(index){
+		return this.machs[index].person;
+	}
 
 	findBlocked() {
         this.machIndex = (this.machIndex + 1) % this.numMachines;
@@ -1036,6 +1039,13 @@ export class BoxStack {
 //        console.log('in relCoord k=',k,deltaX,deltaY);
         return {x: deltaX, y: deltaY};
     };
+	setSpace(hSpace,vSpace){
+		this.params.hSpace = hSpace;
+		this.params.vSpace = vSpace;
+	}
+	setLaneLength(l){
+		this.params.laneLength = l;
+	}
     
 };
 

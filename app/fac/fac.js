@@ -412,8 +412,8 @@ function localUpdateFromUser(inp){
         fac.adjustSpeed(inp.get());
     else if( match([inp],needReset) ){
         computeStageTimes();
-        fac.partialReset()
-        fac.localReset()
+        fac.partialReset();
+        fac.localReset();
         fac.graph.updateForParamChange();
     }
 }; 
