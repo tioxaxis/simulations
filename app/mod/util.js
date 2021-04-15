@@ -154,6 +154,23 @@ export class Average{
         return this.getAverage();
     }
 }
+export class Thruput{
+	constructor(){
+		this.count = -1;
+	};
+	observe(t){
+		this.count++;
+		if( this.count <= 0 ){
+			this.firstT = t;
+			return undefined;
+		}
+		this.lastT = t;
+		return this.count/(this.lastT - this.firstT);
+	};
+	getThruput(){
+		return this.count / (this.lastT - this.firstT);
+	}
+}
 export class IRT{
     constructor(t,i){
         this.inSys = i;

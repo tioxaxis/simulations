@@ -1,12 +1,12 @@
 {"app": {
     "omConcept":{ "key":"bat","scenarios":
-[{"ar":"20", "pt":"2", "setup":"8", "batch":"3",
+[{ "bSetup":"8","mSetup":"8", "util":"20", "batch":"3", "pt":"2", 
    "speed":"0", "action":"none", "leg0":"true", "leg1":"true", "reset":"false",
   "desc":"A: At the Start"},
- {"ar":"20", "pt":"2", "setup":"8", "batch":"3",
+ {"bSetup":"8","mSetup":"8", "util":"20", "batch":"3", "pt":"2", 
    "speed":"2", "action":"none", "leg0":"true", "leg1":"true",  "reset":"false",
    "desc":"B: Speed It Up"},
- {"ar":"20", "pt":"2", "setup":"8", "batch":"3",
+ {"bSetup":"8","mSetup":"8", "util":"20", "batch":"3", "pt":"2", 
    "speed":"2", "action":"none", "leg0":"true", "leg1":"true",  "reset":"false",
   "desc":"C: Increase Order Quantity"}]
                 }}}

@@ -57,6 +57,7 @@ export function genRange(id, initial, min, max, step){
     inp.min = min;
     inp.max = max;
     inp.step = step;
+    inp.className = 'backDefault';
     inp.setAttribute('value',initial);
     return inp;
 };
@@ -149,10 +150,12 @@ export function htmlNumSlider( inputElem, displayText, initial, sliderValues) {
         sp.id = 'disp' + inputElem.id;
         sp.append(initial);
         const disp = document.createElement('div');
+        
+        
         disp.append(displayText,sp);
 
         const vals = document.createElement('div');
-        vals.className="spreadValues";
+        vals.className = "spreadValues";
         for( let v of sliderValues){
             let s = document.createElement('span');
             s.append(v);
@@ -162,8 +165,26 @@ export function htmlNumSlider( inputElem, displayText, initial, sliderValues) {
         const d = document.createElement('div');
         d.className = "sliderBox columnAroundCenter";
         d.append(disp, inputElem, vals);
+        
         return d;
     };
+
+
+export function htmlNoSlider(id, displayText, initial) {
+    const sp = document.createElement('span');
+    sp.id = 'disp' + id;
+    sp.append(initial);
+    const disp = document.createElement('div');
+    disp.append(displayText, sp);
+    const dummySlider = document.createElement('div');
+    dummySlider.innerHTML = '  '
+    const dummyValues = document.createElement('div');
+    dummyValues.innerHTML = '  '
+    const d = document.createElement('div');
+    d.className = "sliderBox columnAroundCenter";
+    d.append(disp, dummySlider, dummyValues );
+    return d;
+};
 function domElem(x){
     if( typeof x == "string" ) 
         x = document.getElementById(x);
@@ -219,7 +240,8 @@ export function htmlArbSlider(inputElem, displayText, initial, sliderValues){
 		sp.id = 'disp' + inputElem.id;
 		sp.append(initial);
 		const disp = document.createElement('div');
-		disp.append(displayText,sp);
+        disp.id = 'title' + inputElem.id;
+        disp.append(displayText,sp);
 				
 		const vals = document.createElement('div');
 		vals.className = 'spreadValues';
