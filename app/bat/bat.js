@@ -1007,12 +1007,13 @@ function batHTML(){
 	usrInputs.set('mSetup', new NumSlider('mSetup', mSetupInput, localUpdateFromUser,
 		2, 8, 2, 0, 1));
 
-	const utilInput = genRange('utilbat', '3', 0, 3, 1);
+	const utilInput = genRange('utilbat', '2', 0, 3, 1);
 	utilInput.className = 'backYellow';
 	elem.append(htmlArbSlider(utilInput, 'Utilization = ',
-		'1', [0.8, 0.9, 0.95, 1.0]));
+		'.95', [0.8, 0.9, 0.95, 0.99]));
 	usrInputs.set('util', new ArbSlider('util', utilInput,
-		localUpdateFromUser, ["0.8", '0.9', '0.95', '1.0'], [0.8, 0.9, 0.95, 1.0], 3));
+		localUpdateFromUser, ["0.8", '0.9', '0.95', '0.99'],
+		 [0.8, 0.9, 0.95, 0.99], 2));
 
 	
 	// const sp = document.createElement('span');
