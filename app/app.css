@@ -391,6 +391,33 @@ A {
 .sliderBox:nth-child(odd) {
 	border-right:  solid var(--fontColor) 1px;
 }
+.gridHeader {
+	grid-area: header;
+}
+.gridFooter{
+	grid-area: footer;
+}
+.gridLeft {
+	grid-area: left;
+}
+.gridRight {
+	grid-area: right;
+}
+.grid2Columns {
+	display: grid;
+	 grid-template-areas: 
+	 'header header'
+	 'left right '
+	 'left right '
+	 'left right '
+	 'left right '
+	 'left right '
+	 'left right '
+	 'footer footer';
+
+	/* grid-template-columns: 50% 50%; */
+}
+
 .rowAroundEnd{
 	display: flex;
 	flex-wrap: nowrap;
