@@ -47,7 +47,10 @@ import {
     batStart
 }
 from './bat/bat.js';
-
+import {
+    surStart
+}
+from './sur/sur.js';
 	
 
 
@@ -120,7 +123,7 @@ window.onpopstate = function() {
 
 
 const possibles = ['dir','que', 'lit', 'nvp', 'inv',
-                   'fac','eos','bat'];
+                   'fac','eos','bat','sur'];
 const omConcepts ={};
 
 function switchTo (which){
@@ -156,6 +159,9 @@ function switchTo (which){
                 break;
             case "bat":
                 omConcepts['bat'] = batStart();
+                break;
+            case "sur":
+                omConcepts['sur'] = surStart();
                 break;
             default :
                 break;

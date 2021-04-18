@@ -1,0 +1,8 @@
+{"app":{
+  "omConcept":{"key":"bat","scenarios":
+  [{"bSetup":"4","mSetup":"4","util":"1","batch":"3","pt":"2","reset":"false",
+    "action":"none","speed":"1","leg0":"true","leg1":"true","desc":"A: Initial for setup reduction"}
+
+    
+    ]}}} 
+    

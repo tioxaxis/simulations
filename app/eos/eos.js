@@ -83,8 +83,8 @@ class EosGraph  {
                          lineWidth: 5, dotSize: 7, right: false,
                         yLimit: 12});
         //setup legend displays (connected directly to flow graph)
-        const leg0 = sepFlow.createLegend('Separate');
-        const leg1 = jointFlow.createLegend('Joint');
+        const leg0 = sepFlow.createLegend('leg0','Separate');
+        const leg1 = jointFlow.createLegend('leg1','Joint');
         const d3 = document.getElementById('pairChartLegendeos');
         d3.classList.add('pairChartLegend');
         d3.append(leg0,'      ', leg1); //option-spaces!!

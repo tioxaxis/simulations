@@ -73,11 +73,11 @@ class FacGraph {
                          lineWidth: 3, dotSize: 5, right: false});
 		        
         //add legends
-        const leg0 = flow.createLegend('Individual Flow Times (seconds/card)');
+        const leg0 = flow.createLegend('leg0','Individual Flow Times (seconds/card)');
         const d3 = document.getElementById('pairChartLeftLegendfac');
         d3.classList.add('pairChartLegend');
         d3.append(leg0);
-        const leg1 = thru.createLegend('Avg. Throughput (cards/minute)');
+        const leg1 = thru.createLegend('leg1','Avg. Throughput (cards/minute)');
         const d4 = document.getElementById('pairChartRightLegendfac');
         d4.classList.add('pairChartLegend');
         d4.append(leg1);

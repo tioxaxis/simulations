@@ -112,6 +112,7 @@ A {
 
 /********************************************/
 /*********  Left hand side boxes  ***********/
+/**** Stage wrappers:  Regular, Tall, Pair (has left and right) **/
 .stageWrapper {
 	flex: 0 0 41%; 
 	border-bottom:  solid  var(--borderColor) .5vw;
@@ -211,7 +212,7 @@ A {
     
     flex: 1 1 30%;
 	}
-/*********  chart boxes  ************/
+/*********  chart Wrappers: Regular, pair  ************/
 .chartWrapper {
 	flex: 1 0 55%;
 	
@@ -299,18 +300,16 @@ A {
     flex: 0 0 35%;
 	position: relative;
 }
-.pairChartTop{
-    position: relative;
-/*    border: solid 3px purple;*/
-    height: 100%;
-    width: 100%;    
-    
-}
-.pairChartLegend{
-        margin: 0% 0% 2% 0%;
-    height: 10%;
-        width: 80%;
-        
+	.pairChartTop{
+		position: relative;
+	   /* border: solid 3px purple; */
+		height: 100%;
+		width: 100%;    
+	}
+	.pairChartLegend{
+			margin: 0% 0% 2% 0%;
+		height: 10%;
+			width: 80%;
 	}
     .pairChartLeft{
         width: 100%;
@@ -391,6 +390,8 @@ A {
 .sliderBox:nth-child(odd) {
 	border-right:  solid var(--fontColor) 1px;
 }
+
+	/* grid-template-columns: 50% 50%;  for directory page*/
 .gridHeader {
 	grid-area: header;
 }
@@ -412,12 +413,11 @@ A {
 	 'left right '
 	 'left right '
 	 'left right '
-	 'left right '
 	 'footer footer';
-
-	/* grid-template-columns: 50% 50%; */
 }
 
+
+/* flex displays row/column  around/between/center start/end/center/      */
 .rowAroundEnd{
 	display: flex;
 	flex-wrap: nowrap;
@@ -497,6 +497,8 @@ A {
 	text-align: center;
     
 }
+
+/* formats for inputs: number, radio, checkbox, range  */
 input[type=number]{
     width:2.7vw;
     height: 1.3vw;
@@ -620,7 +622,7 @@ input[type="radio"]{
 }
 
 
-
+/* facegame formats for inputs  */
 
 .facepart{
 	font-size: 1.2vw;

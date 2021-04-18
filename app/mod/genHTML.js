@@ -522,8 +522,8 @@ export class LegendItem{
         this.localUpdate = localUpdate;
         this.deflt = deflt;
 //        this.shortLen = 1;
-        this.line.button.addEventListener('click',
-             this.userUpdate.bind(this));
+        document.getElementById(key+line.graph.omConcept.key)
+            .addEventListener('click', this.userUpdate.bind(this));
     }
     get() {
          return this.line.params.visible.toString();

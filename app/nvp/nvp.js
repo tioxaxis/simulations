@@ -71,9 +71,9 @@ class NVGraph extends TioxGraph {
                          lineWidth: 8, dotSize: 0, right: false});
                 
         const d4 = document.getElementById('chartLegendnvp');
-        d4.append(under.createLegend('underage cost'),
-                  over.createLegend('overage cost'),
-                  average.createLegend('average cost')
+        d4.append(under.createLegend('leg0','underage cost'),
+                  over.createLegend('leg1','overage cost'),
+                  average.createLegend('leg2','average cost')
                   );
         nvp.usrInputs.set('leg0', 
             new LegendItem('leg0', under, localUpdateFromUser, true));

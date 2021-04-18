@@ -403,9 +403,10 @@ export class GraphLine{
         this.data = [{x:0,y:null}];
     };
         
-    createLegend(text){
+    createLegend(legKey,text){
         this.button = document.createElement('div');
         this.button.classList.add('legendbox');
+		this.button.id = legKey + this.graph.omConcept.key;
         
         const dot = document.createElement('div');
         dot.classList.add('legendCircle');

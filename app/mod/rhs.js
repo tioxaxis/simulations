@@ -130,7 +130,7 @@ export class OmConcept {
 		document.getElementById('resetScenarios' + this.key)
 			.addEventListener('click', this.resetScenarios.bind(this));
 		document.getElementById(this.key)
-			.addEventListener('click', this.anyClick.bind(this),true);
+			.addEventListener('click', this.anyClick.bind(this));
 
 		// click on scenario name
 		this.ulPointer.addEventListener('click', this.liClicked.bind(this));

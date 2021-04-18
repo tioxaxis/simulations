@@ -69,9 +69,9 @@ class QueueGraph extends TioxGraph {
 		
         this.predictedWaitValue =  this.predictedWait();
         
-        const leg0 = indivWait.createLegend('individual wait');
-        const leg1 = avgWait.createLegend('average wait');
-        const leg2 = this.predWait.createLegend('predicted wait');
+        const leg0 = indivWait.createLegend('leg0','individual wait');
+        const leg1 = avgWait.createLegend('leg1','average wait');
+        const leg2 = this.predWait.createLegend('leg2','predicted wait');
         const d3 = document.getElementById('chartLegendque');
         d3.append(leg0, leg1, leg2);
         
