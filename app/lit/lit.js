@@ -73,9 +73,9 @@ class LittleGraph extends TioxGraph {
 //		this.predictedInvValue = this.predictedInv();
          
         const d3 = document.getElementById('chartLegendlit');
-        d3.append(avgInv.createLegend('leg0','avg. inventory'),
+        d3.append('  ', avgInv.createLegend('leg0','avg. inventory'),
                   avgRT.createLegend('leg1','avg. flow time * avg. throughput'),
-                  predInv.createLegend('leg2','predicted inventory')
+                  predInv.createLegend('leg2','predicted inventory'),'  '
         );
         lit.usrInputs.set('leg0', 
             new LegendItem('leg0', avgInv, localUpdateFromUser, true));

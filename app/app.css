@@ -109,17 +109,35 @@ A {
 	flex-direction: column;
 	align-items:stretch;
 }
+/*    ******  Right Hand Side  *******    */
+.rightHandSideBox {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 32%;
+	bottom: 0;
+
+	border: var(--borderColor) solid;
+	border-width: .5vw 1px;
+
+	display: flex;
+	flex-wrap: nowrap;
+	flex-direction: column;
+	justify-content: space-between;
+	align-items: stretch;
+}
 
 /********************************************/
 /*********  Left hand side boxes  ***********/
+
 /**** Stage wrappers:  Regular, Tall, Pair (has left and right) **/
 .stageWrapper {
-	flex: 0 0 41%; 
+	flex: 1 0 41%; 
 	border-bottom:  solid  var(--borderColor) .5vw;
 	
 }
 .tallStageWrapper{
-    flex: 0 0 65%;
+    flex: 0 1 65%;
 	border-bottom:  solid  var(--borderColor) .5vw;
 }
 .pairStageWrapper{
@@ -129,24 +147,24 @@ A {
     border-bottom:  solid  var(--borderColor) .5vw;
 /*     border: solid green;*/
 }
-.pairStageLeft{
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 47%;
-    height: 65%;
-    border-right: solid  var(--borderColor) 1px;
-/*    border: solid red;*/
-}
-.pairStageRight{
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 47%;
-    height: 65%;
-/*    border: solid blue;*/
-    border-left: solid  var(--borderColor) 1px;
-}
+	.pairStageLeft{
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 47%;
+		height: 65%;
+		border-right: solid  var(--borderColor) 1px;
+	/*    border: solid red;*/
+	}
+	.pairStageRight{
+		position: absolute;
+		top: 0;
+		right: 0;
+		width: 47%;
+		height: 65%;
+	/*    border: solid blue;*/
+		border-left: solid  var(--borderColor) 1px;
+	}
 /*********  stage boxes  **********/
 	.foreground {
 		position: absolute;
@@ -197,24 +215,10 @@ A {
         cursor:context-menu;
 	}
 
-.facDataWrapper{
-/*
-	position: absolute;
-	bottom: 30%;
-	left: 0;
-	right: 0;
-*/
-	display: grid;
-    grid-template-columns: 18% 12% 12% 12% 40%; 
-    justify-content:end;
-    border-bottom: solid var(--fontColor) 1px;
-    padding: .5vw;
-    
-    flex: 1 1 30%;
-	}
+
 /*********  chart Wrappers: Regular, pair  ************/
 .chartWrapper {
-	flex: 1 0 55%;
+	flex:  0 0 52%;
 	
 	display: flex;
 	flex-flow: nowrap;
@@ -222,37 +226,62 @@ A {
 	align-items: center;
 	justify-content: space-between;
 }
+.twoChartWrapper{
+	flex: 0 0 35%;
 
+		display: flex;
+		flex-flow: nowrap;
+		flex-direction: column;
+		align-items: center;
+		justify-content: space-between;
+}
 
+	.twoChartLeft {
+		position: absolute;
+		left: 0;
+		width: 49%;
+		height: 100%;
+				/* border: solid green; */
+	}
+	.twoChartRight {
+		position: absolute;
+		right: 0;
+		width: 49%;
+		height: 100%;
+		/* border: solid blue; */
+	}
+
+/******* chart Pieces:  title, chart, canvas, legend  ******/	
 	.chartTitle{
-		flex: 0 10 7%;
+		flex: 0 1 7%;
 		position: relative;
         margin: 1% 0 0 0;
-		font-size: 1.5vw;
+		width: 100%;
+		font-size: 1.4vw;
 /*        border: solid purple*/
 	}
 	.chart{
-		flex: 0 1 100%;  
+		flex: 10 1 83%;  
 		/* let it shrink to fill rest */
 		position: relative;
 		width: 100%;
-        height: 100%;
-/*        border: solid green;*/
+        /* height: 100%; */
+       /* border: solid purple; */
 	}
 	.chartCanvas{
-		position: absolute;
+		position: relative;
 		top: 0;
 		left: 0;
 		width: 100%;
 		z-index: 0;
-/*        border: black solid*/
+       /* border: black solid 1pt */
 }
 	
 	.chartLegend{
-		flex: 0 10 10%;
+		flex: 0 1 10%;
         position: relative;
-        margin: 0% 0% 2% 0%;
-        width: 80%;
+        margin-bottom: .5vw;
+        width: 100%;
 /*        border: solid red;*/
 	}
 	.legitem {
@@ -278,7 +307,7 @@ A {
             
         }
 
-.dualChartWrapper{
+/* .dualChartWrapper{
    flex: 1 1 0;
 	
 	display: grid;
@@ -294,7 +323,7 @@ A {
 	}
 .dualChartCanvas{
     border: solid green;
-}
+} */
 
 .pairChartWrapper{
     flex: 0 0 35%;
@@ -340,7 +369,17 @@ A {
             z-index: 0;
     /*        border: black solid*/
         }
-	
+
+/********   Right Hand Side Boxes   ********/		
+.facDataWrapper {
+	display: grid;
+	grid-template-columns: 18% 12% 12% 12% 40%;
+	justify-content: end;
+	border-bottom: solid var(--fontColor) 1px;
+	padding: .5vw;
+
+	flex: 1 1 30%;
+}
 
 .inputTime{
     display: inline;
@@ -354,23 +393,7 @@ A {
     max-width: 8vw;
 }
 
-/*    ******  Right Hand Side  *******    */
-.rightHandSideBox {
-	position: absolute;
-	top: 0;
-	right: 0;
-	width: 32%;
-	bottom: 0;
-	
-	border: var(--borderColor) solid;
-	border-width: .5vw 1px;
-	
-	display: flex;
-	flex-wrap: nowrap;
-	flex-direction: column;
-	justify-content:space-between;
-	align-items:stretch;
-}
+
 /*     Right hand side boxes  */	
 .slidersWrapper{
 	flex: 0 0 auto;/* create two columns of sliders */

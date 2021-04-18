@@ -81,8 +81,8 @@ class BatGraph {
         //add legends
         const leg0 = baseFlow.createLegend('leg0','Base Case');
 		const leg1 = modFlow.createLegend('leg1','Modified');
-        const d3 = document.getElementById('pairChartLegendsur');
-        d3.classList.add('pairChartLegend');
+        const d3 = document.getElementById('chartLegendsur');
+        d3.classList.add('rowCenterCenter');
         d3.append(leg0,'      ', leg1); //option-spaces!!
         
         //set up legends as buttons (and includable in URL)
@@ -982,7 +982,7 @@ function surHTML(){
     addDiv('sur','sur','whole')
 	addDiv('sur', 'leftHandSideBox'+'sur',
 			   'tallStageWrapper',
-			   'pairChartWrapper');
+			   'twoChartWrapper');
 	 
     
     	

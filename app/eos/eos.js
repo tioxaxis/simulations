@@ -85,8 +85,8 @@ class EosGraph  {
         //setup legend displays (connected directly to flow graph)
         const leg0 = sepFlow.createLegend('leg0','Separate');
         const leg1 = jointFlow.createLegend('leg1','Joint');
-        const d3 = document.getElementById('pairChartLegendeos');
-        d3.classList.add('pairChartLegend');
+        const d3 = document.getElementById('chartLegendeos');
+       d3.classList.add('rowCenterCenter');
         d3.append(leg0,'      ', leg1); //option-spaces!!
         
         // yet, link the LegendItem to both GraphLines via LegendPair. 
@@ -728,7 +728,7 @@ function eosHTML(){
     addDiv('eos','eos','whole')
 	addDiv('eos', 'leftHandSideBox'+'eos',
 			   'pairStageWrapper', 
-			   'pairChartWrapper');
+			   'twoChartWrapper');
 
 		
 	let elem = document.getElementById('slidersWrappereos');

@@ -271,7 +271,7 @@
 <!--	****** wrapper for chart section-->
     <!--	****** wrapper for standard chart section-->
 <div class='chartWrapper' id="chartWrapper">
-	<div class='chartTitle' id='chartTitle'> title </div>
+	<div class='chartTitle center' id='chartTitle'> title </div>
 	<div class='chart' id='chart'> 
 		<canvas  class="chartCanvas" id="chartCanvas" width='2000' height='600'></canvas>
 	</div>
@@ -294,7 +294,7 @@
         <div class='pairChartTitle' id='fchartTitle'> title </div>
         <div class='pairChart' id='fchart'> 
             <canvas  class="pairChartCanvas" id="fchartCanvas"
-                    width='1000' height='350'></canvas>
+                    width='1000' height='300'></canvas>
         </div>
         <div class='rowCenterCenter' id='pairChartLeftLegend'>
         </div>
@@ -304,13 +304,32 @@
         <div class='pairChartTitle' id='tchartTitle'> title </div>
         <div class='pairChart' id='tchart'> 
             <canvas  class="pairChartCanvas" id="tchartCanvas"
-                    width='1000' height='350'></canvas>
+                    width='1000' height='300'></canvas>
         </div>
         <div class='rowCenterCenter' id='pairChartRightLegend'>
         </div>
     </div>
     </div>
 	<div class=' rowCenterCenter' id='pairChartLegend'></div>
+</div>
+
+<div class='twoChartWrapper' id="twoChartWrapper">
+	<div class='chartTitle rowAroundCenter'>
+        <div id='fchartTitle'> title </div>
+        <div id='tchartTitle'> title </div>
+    </div>
+    <div class='chart rowBetweenCenter'>
+        <div class='twoChartLeft' id='fchart'> 
+            <canvas  class="chartCanvas" id="fchartCanvas"
+                    width='1000' height='380'></canvas>
+        </div>
+        <div class='twoChartRight' id='tchart'> 
+            <canvas  class="chartCanvas" id="tchartCanvas"
+                    width='1000' height='380'></canvas>
+        </div>
+    </div>
+    <div class='chartLegend' id='chartLegend'>
+    </div>
 </div>
 
 

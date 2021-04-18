@@ -73,14 +73,11 @@ class FacGraph {
                          lineWidth: 3, dotSize: 5, right: false});
 		        
         //add legends
+        const d3 = document.getElementById('chartLegendfac');
+        d3.classList.add('rowAroundCenter');
         const leg0 = flow.createLegend('leg0','Individual Flow Times (seconds/card)');
-        const d3 = document.getElementById('pairChartLeftLegendfac');
-        d3.classList.add('pairChartLegend');
-        d3.append(leg0);
         const leg1 = thru.createLegend('leg1','Avg. Throughput (cards/minute)');
-        const d4 = document.getElementById('pairChartRightLegendfac');
-        d4.classList.add('pairChartLegend');
-        d4.append(leg1);
+        d3.append(leg0, leg1);
         
         //set up legends as buttons (and includable in URL)
         fac.usrInputs.set('leg0', 
@@ -844,7 +841,7 @@ function facHTML(){
     
     addDiv('fac','fac','whole')
 	addDiv('fac', 'leftHandSideBox'+'fac',
-			   'tallStageWrapper','pairChartWrapper');
+			   'tallStageWrapper','twoChartWrapper');
     
     // insert the radio button box first
     const radioButtons = document.getElementById('facDataWrapper');

@@ -78,9 +78,9 @@ class InvGraph extends TioxGraph {
         
        
         const d4 = document.getElementById('chartLegendinv');
-		d4.append(onhandInv.createLegend('leg0','On Hand'),
+		d4.append('  ',onhandInv.createLegend('leg0','On Hand'),
 			bothInv.createLegend('leg1','On Hand and On Order'),
-			predInv.createLegend('leg2','Predicted On Hand')
+			predInv.createLegend('leg2','Predicted On Hand'),'  '
                   );
         inv.usrInputs.set('leg0', 
             new LegendItem('leg0', onhandInv, localUpdateFromUser, true));
