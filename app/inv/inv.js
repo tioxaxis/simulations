@@ -75,7 +75,6 @@ class InvGraph extends TioxGraph {
                           {color: cbColors.orange, vertical: true,
                          visible: false, continuous: true,
                          lineWidth: 10, dotSize: 0, right: false});
-        
        
         const d4 = document.getElementById('chartLegendinv');
 		d4.append('  ',onhandInv.createLegend('leg0','On Hand'),
@@ -381,8 +380,6 @@ function localUpdate(inp){
     }
 };
 
-
-
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
 //  animation for that process step
@@ -392,7 +389,6 @@ class InvQueue  extends Queue {
         super (inv,"theQueue", -1)
         this.walkingTime = anim.walkingTime;
     };
-	
 
 	push (person) {
         if( !super.push(person, anim.walkingTime) ) return false;
@@ -458,8 +454,6 @@ class InvCombine  extends Combine {
 		}
 	};
 };
-
-
 
 class InvWalkOffStage extends WalkAndDestroy {
     constructor(){
@@ -541,7 +535,6 @@ const theSimulation = {
 	}, //end of initialize
 };
 
-
 // SUPPLIER
 class Supplier {
 	constructor(x, y) {
@@ -571,7 +564,6 @@ class RopStore extends GStore {
 		this.invPosition = null;
 		this.packages = []; //the packages in the store.
 	};
-
 	
 	reset() {
 		// start with the store filled in the first round.
@@ -756,7 +748,6 @@ class RopStore extends GStore {
 				
 		});
 
-
 		load.addPath({
 			t: splitTime,
 			x: anim.truck.path.left,
@@ -849,8 +840,6 @@ class LoadOfBoxes extends Item {
 class DisplayBoxes {
 	constructor(ctxDB, /*left, bot,*/ quantity, box) {
 		this.ctxDB = ctxDB;
-//		cur.x = left;
-//		cur.y = bot;
 		this.box = box;
 		this.packages = [];
 		this.reverse = 0;
@@ -867,10 +856,6 @@ class DisplayBoxes {
                                       hSpace: box.space, vSpace: box.space,
                                       xDir: +1, yDir: -1}); //box, false);
 	};
-//	moveTo(left, bot) {
-//		this.left = left;//Math.floor(left);
-//		cur.y = bot;//Math.floor(bot);
-//	};
 	setReverse() {
 		this.reverse = this.box.space * this.box.perRow;
 	}

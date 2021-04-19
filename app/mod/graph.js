@@ -149,7 +149,6 @@ export class TioxGraph {
 		document.getElementById(id + this.omConcept.key).innerHTML = title;
 	};
 	
-	
 	xScale (x){
 		return ( (x-this.xInfo.min) / (this.xInfo.max - this.xInfo.min) ) 
 			* (this.inner.right - this.inner.left) + this.inner.left;
@@ -256,7 +255,6 @@ export class TioxGraph {
                 
             }
 		}
-		
 		this.ctx.closePath();
 		this.ctx.stroke();
 	};
@@ -366,7 +364,6 @@ export class TioxGraph {
         let k = line0data.length -1;
         if( !( line0data[k].y != null || dt > smallX )) return;
         
-        
         for( let line of this.lines ){
            k = line.data.length - 1;
             
@@ -390,8 +387,6 @@ export class TioxGraph {
 };
     
 export class GraphLine{
-        
-    
 	//line constructor, knows its graph and adds obj to set. or do graph.lines.push(new Line)
     constructor(graph, yAccess, params) {
 		this.graph = graph;

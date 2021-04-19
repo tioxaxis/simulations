@@ -81,7 +81,6 @@ class NVGraph extends TioxGraph {
             new LegendItem('leg1', over, localUpdateFromUser, true));
         nvp.usrInputs.set('leg2', 
             new LegendItem('leg2', average, localUpdateFromUser, true));
-        
 	};
 	
 	push (n, under, over){
@@ -664,7 +663,6 @@ function nvpHTML(){
     usrInputs.set('speed', new ArbSlider('speed', speedInput, 
                 localUpdateFromUser, ["1x",'2x','5x','10x',"25x",'∞'],
 				                [1,2,5,10,25,1000], 0) );
-    
     	
 	const f = document.getElementById('scenariosMidnvp');
 	f.style = "min-height: 18vw";

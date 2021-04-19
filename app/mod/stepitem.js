@@ -171,7 +171,6 @@ export class MachineCenter {
 		this.procTimeRV = procTimeRV;
         this.active = true;
         this.machIndex = 0;
-
 		this.machs = [];
         for(let k = 0; k < this.numMachines; k++){
             this.machs[k] = {};
@@ -196,7 +195,6 @@ export class MachineCenter {
         };
         this.numMachines = numMachines;
     };
-    
     
     getAverageProcTimeRV() {
 		return this.procTimeRV.mean;
@@ -235,23 +233,7 @@ export class MachineCenter {
 		if (m >= 0) this.finish(this.machs[m]);
 	};
 
-	start(machine) {
-		// //check if someone is there and assign procTime;
-        // const person = this.previousQueue.front();
-        // let theProcTime;
-		// if( !person ) return false;
-        // if( this.procTimeRV ) {
-        //     theProcTime = person.procTime = this.procTimeRV.observe();
-
-        // } else {
-        //     theProcTime = person.procTime
-        // };
-        // // now person has procTime you can pull him/her
-        // this.previousQueue.pull();
-        
-		
-		
-		
+	start(machine) {	
 		return this.load(null, machine, null);;
 	};
 
@@ -286,12 +268,6 @@ export class MachineCenter {
 		this.numberBusy++;
 		return true;
 	};
-	// loadToAvail(person, theProcTime){
-	// 	const machine = this.findIdle();
-	// 	if( machine < 0) return;
-	// 	this.load(person, machine, theProcTime);
-	// }
-    
 	finish(machine) {
         const person = machine.person;
         if (person.behind) {
@@ -313,7 +289,6 @@ export class MachineCenter {
         if(this.pauseOnIdle && machine.status == 'idle'){
             this.checkForQueue();
         } 
-        
 	};
     
     setup1DrawMC(ctx, color, lineWidth, center, stageX, stageY, maxMachines, item){
@@ -380,9 +355,6 @@ export class MachineCenter {
         };
         
     };
-    
-    
-    
 }; //end class MachineCenter
 
 // INFINITE MACHINE CENTER
@@ -394,8 +366,6 @@ export class InfiniteMachineCenter extends MachineCenter {
 			status: 'idle',
 			person: null
 		});
-		
-
 	};
 
 	findIdle() {
@@ -440,7 +410,6 @@ export class Combine {
 				package: pack
 			}
 		});
-
 	};
 	finish(item) {
 		this.finishAnim(item.person, item.package);
@@ -492,14 +461,6 @@ export class ItemCollection extends Array {
 				if( p.z >= level ){
 					next.push(p);
 				} else {
-//					if( isNaN(p.cur.x) || isNaN(p.cur.y)) {
-//                        alert(' Found a NaN');
-//                        debugger;
-//                    };
-//                    if( p.which == 17){
-//                        console.log(' in MDA ', p.which,
-//                                    p.omConcept.now, p.pathList[0],p.cur.x, p.cur.y);
-//                    }
                     p.moveDisplayWithPath(deltaSimuTime);
                     
                     if( isNaN(p.cur.x) || isNaN(p.cur.y)) {
@@ -538,8 +499,6 @@ export class Item {
 		this.omConcept = omConcept;
 		this.omConcept.itemCollection.push(this);
 		this.which = ++itemCollCount;
-//		if (this.ahead) this.ahead.behind = this;
-//		this.behind = null;
 		this.cur = {
 			t: this.omConcept.now,
 			x: x,
@@ -586,8 +545,6 @@ export class Item {
                 newY = Math.min(newY, path.y);
             else
                 newY = Math.max(newY, path.y);
-        
-        
         
         if( this.checkAhead && this.ahead){ //only pos-x-direction
              const dx = Math.abs( this.ahead.cur.x - newX); 
@@ -660,7 +617,6 @@ export class Item {
         if( this.inWalkQ ) 
                 this.updateCurWalkQ(1e8);
 		this.draw();
-		// this.graphic.draw(this.cur, this.omConcept.now);
 	};
 		
 	
@@ -924,8 +880,6 @@ export class NStickFigure {
     draw(cur,now) {
 		// use cur.x,cur.y as starting point and draw the rest of the
 		// parts by translating and rotating from there
-        
-        
         if ( cur.x < -50 || cur.x > 1050 ) return;
 		let c = this.gSF.context;
         
@@ -1010,7 +964,6 @@ export class NStickFigure {
 		}
 		c.restore();
 	};
-
 };
 export class BoxStack {
     constructor(params){
@@ -1048,7 +1001,6 @@ export class BoxStack {
 	}
     
 };
-
 
 export class GStore {
 	constructor(omConcept,anim) {

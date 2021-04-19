@@ -287,7 +287,6 @@ export class Heap {
 			}
 			// after while h[0:k] is organized as a heap.
 		}
-
 	}
 
 	modify(type,timeFunc) {
@@ -302,7 +301,6 @@ export class Heap {
         return cnt;
 	}
 }; //end class Heap
-
 
 export class StageOnCanvas{
     constructor (id, w, h){
@@ -328,7 +326,6 @@ export class StageOnCanvas{
         this.context.clearRect(0, 0, this.stage.width, this.stage.height);
     }
 };
-
 
 export class ItemSplitterRandom {
     constructor(outputs){
@@ -360,4 +357,3 @@ export function fromBase64 (str) {
     return atob(str).split('').map(
         function (c) { return c.charCodeAt(0); });
 }
-

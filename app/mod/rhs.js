@@ -52,8 +52,6 @@ function enableButtonQ(name,bool){
 	}
 };
 
-
-
 export function displayToggle(a,b){
 	if( Array.isArray(a)){
 		for (let elem of a)
@@ -69,7 +67,6 @@ export function displayToggle(a,b){
 		document.getElementById(b).classList.add('displayNone');
 	}
 }
-
 
 export class OmConcept {
 	constructor(key){
@@ -103,13 +100,11 @@ export class OmConcept {
 		this.isRunning = false;
 		this.requestAFId = null; // id for requestAnimationFrame
 
-		
 		this.itemCollection = new ItemCollection();
         this.resourceCollection = new ResourceCollection();
 		this.resetCollection.push(this.itemCollection);
 		
 		//***** Set up event listeners for user interface  ********
-		
 		// buttons
 		document.getElementById('playButton' + this.key)
 			.addEventListener('click', this.play.bind(this));
@@ -554,9 +549,6 @@ export class OmConcept {
 		this.setUL(rows);
 	};
     
-    
-	
-
 	printScenarios () {
 		//console.log(this.ulPointer);
 	};
@@ -755,7 +747,6 @@ export class OmConcept {
 		}
 	};
 	
-
 // ****** A set of routines for manipulating a collection of scenarios (rows)
 	createRowsFromUL(){
 		let rows = [];
@@ -792,7 +783,6 @@ export class OmConcept {
 	};
 };
 
-
 function copyToClipboard(txt){
 	navigator.clipboard.writeText(txt)
 		.then(  function() {
@@ -801,7 +791,6 @@ function copyToClipboard(txt){
 				alert('failed to copy to clipboard')
 			});
 };
-
 
 // three Nodelist routines;
 function getChecked(nodelist) {
@@ -821,4 +810,3 @@ function findId(nodelist, str) {
 	}
 	return -1;
 };
-

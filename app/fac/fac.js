@@ -113,7 +113,6 @@ class FacGraph {
     restartGraph(){
         this.flowGraph.restartGraph();
         this.thruGraph.restartGraph();
-        
     };
 	
     updateForParamChange(){
@@ -219,8 +218,6 @@ function computeStageTimes(){
     theSimulation.queues[1].setMaxSeats(qlength);
     theSimulation.queues[2].setMaxSeats(qlength);
     
-    
-    
     for(let s = 0; s < 3; s++){
         let total = 0;
         let count = 0;
@@ -293,7 +290,6 @@ function facDefine(){
     for( let k = 0; k < 3; k++)
         fac.stageTimes[k] = new DeterministicRV(0);
     fac.creatorTime = new DeterministicRV(0);
-    
 
 	anim.stage.foreground = new StageOnCanvas('foregroundfac',
                                 anim.stage.width, anim.stage.height);
@@ -385,7 +381,6 @@ class FaceGame extends OmConcept {
                     break;
             }
         };
-        
     };
     clearStageForeground(){
         this.stage.foreground.clear();
@@ -414,8 +409,6 @@ function localUpdateFromUser(inp){
         fac.graph.updateForParamChange();
     }
 }; 
-
-
 
 class FacQueue  extends Queue{
 	constructor( which, lanes, anim) {
@@ -644,8 +637,6 @@ const theSimulation = {
         
         for( let j = 0; j < 3; j++){
             this.workers[j] = new FacStage(j);
-//            this.workers[j].setup1DrawMC(fac.stage.backContext,
-//                anim.worker[j].color, 15, false, anim.worker[j].left, 0, anim.box);
             fac.resourceCollection.push(this.workers[j]);
 		    fac.resetCollection.push(this.workers[j]);
             this.queues[j].setHead(anim.queue[j].headX, anim.card.path.y)
@@ -708,8 +699,6 @@ const pi = 3.14159;
 export class FaceCard {
     constructor(ctx,/*x,y,*/w,h){
         this.ctx = ctx;
-//        this.x = x;
-//        this.y = y;
         this.w = w;
         this.h = h;
         this.start = {face:null, eyes:null, nose: null, 

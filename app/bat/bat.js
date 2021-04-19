@@ -197,30 +197,13 @@ class Batching extends OmConcept{
 			.addEventListener('click', markBatch);
     };
     localReset () {
-		// bat.graph.reset();
-		
 		bat.tioxTimeConv = tioxTimeConv;
 		this.redrawBackground();
-		// // console.log(bat.itemCollection);
-		
-		// for(let k = 0; k < 10; k++){
-		// 	let pack = theSimulation.base.line.machs[0].in.remove();
-		// 	theSimulation.base.line.machs[0].out.add(pack);
-		// 	bat.clearRedrawStage(0,false);
-		// }
 
 		theSimulation.base.line.reset();
-		// const bb = bat.usrInputs.get('batch').getValue();
-		// console.log(' in reset bb',bb,bb/4);
 		theSimulation.mod.line.reset(bat.usrInputs.get('batch').getValue() / 4);
 		theSimulation.base.creator.load( null, null ,0);
 		theSimulation.mod.creator.load( null, null, 1);
-		// const bHead = theSimulation.base.queuehead;
-		// theSimulation.base.queue.push(new Batch(cbColors.yellow,
-		// 	 4, -100, 100, true));
-		// const mHead = theSimulation.mod.queuehead;
-		// theSimulation.mod.queue.push(new Batch(cbColors.blue,
-		// 	bat.usrInputs.get('batch').getValue()/4, -100, 300, true));
 		bat.clearRedrawStage(0, false);
 
     };
@@ -292,7 +275,6 @@ function updateTimeRV(){
 }
         
  function localUpdate(inp){
-	let baseInterarrivalTime, modInterarrivalTime;
     let v = inp.get();
     switch (inp.key){
         case 'util':
@@ -374,9 +356,6 @@ class BatQueue extends Queue {
 	push(batch) {
 		const point = this.snake.relCoord(this.q.length);
 		const walkingTime = tioxTimeConv/2; 
-		//Math.max(
-			// this.x + point.x - batch.cur.x,
-			// this.y + point.y - batch.cur.y) / anim.stage.normalSpeed;
 		const arrivalTime = bat.now + walkingTime;
 		if (!super.push(batch, 0)) return false;
 		batch.updatePath({
@@ -434,15 +413,6 @@ const theSimulation = {
 	setup: null,
 	bat: null,
 
-	// the 3 queues and 3 machines for each line.
-	// supply: null,
-	// queue: null,
-	// walkOffStage: null,
-	// demand: null,
-	// newsVendor: null,
-	
-	
-
 	initialize: function () {
 		// random variables
 		this.swapEndTime = tioxTimeConv;
@@ -455,16 +425,13 @@ const theSimulation = {
 		const defineLine = (iATime, height, nLines, color, setupTime, graphPush) => {
 			let sys = {};
 			sys.path = { m1: 260, m2: 520, m3: 790, y: height, dx: 70 };
-			
 
 			sys.supply = new Supplier(color, nLines,
 				anim.stage.offstageLeft, sys.path.y);
-
 			
 			sys.timeRV = new DeterministicRV(iATime)
 			sys.creator = new BatCreator(sys.timeRV);
 			bat.resetCollection.push(sys.creator);
-
 
 			sys.queuehead = {
 				x: sys.path.m1 - sys.path.dx,
@@ -515,7 +482,6 @@ class Supplier {
     pull(){
         const last = this.front();
         this.current = null;
-		// console.log(' In Supplier ',last.which);
 		this.markCount = last.mark(this.markCount);
 		return last;
 	}
@@ -523,17 +489,6 @@ class Supplier {
 		this.nRows = n;
 	}
 
-
-
-	// pull() {
-	// 	const last = this.front();
-	// 	this.current = null;
-	// 	if (this.markCount > 0) {
-	// 		this.markCount--;
-	// 		if (this.markCount > 0) last.mark();
-	// 	}
-	// 	return last;
-	// };
 	bumpCount() {
 		this.markCount++;
 	}
@@ -566,14 +521,9 @@ class BatLine{
 				y: this.y,
 				index: k,
 				color: 'black',
-				
-				// in: (k != 0 ? new Batch(this.color, this.nRows, x - this.dx, this.y, false) : null),
-				// out: new Batch(this.color, this.nRows, x + this.dx, this.y, false)
 			};
 			x += 4 * this.dx;
 		}
-		
-		
 	};
 	reset(n = 4){
 		this.nRows = n;
@@ -631,14 +581,7 @@ class BatLine{
 			machine.in = batch;
 			
 			this.setup(machine);
-			
-			
-
 		}
-		// console.log('completed setup at now= ',bat.now);
-		// debugger;
-	
-	
 	};
 	
 	startBox(machine){
@@ -647,10 +590,6 @@ class BatLine{
 			alert('removed an null box from a batch');
 			
 		} else {
-			// if( this.color = cbColors.blue && machine.index == 1){
-			// 	console.log('StartBox mach',machine.index,bat.now, box.which);
-			// 	console.log(bat.heap);
-			// }
 			machine.status = 'busy';
 			box.inBatch = false;
 			box.z = 1;
@@ -668,9 +607,7 @@ class BatLine{
 				proc: this.finishBox.bind(this),
 				item: machine
 			});
-			// console.log('in START ', machine.out.packages.length,' now=',bat.now);
 		}
-		// console.log(bat.heap);
 	};
 
 	knockFromPrevious(){
@@ -710,10 +647,8 @@ class BatLine{
 			}
 		} else 
 			this.startBox(machine);
-		// console.log(' in finishBox',machine.out.packages.length, 'now=',bat.now);
 	};
 	finishPlusOne(machine){
-		// console.log('in FinishPlusONE', machine.out.packages.length,' now=',bat.now);
 		const last = machine.out.packages[machine.out.packages.length - 1];
 		last.inBatch = true;
 		last.pathList = [];
@@ -791,8 +726,6 @@ class BatLine{
 					y: machine.out.cur.y + yDelta
 				});
 				this.walkRight.push(machine.out);
-				
-
 
 				const emptyBatch = new Batch(this.color, this.nRows, 
 					anim.stage.offstageRight, machine.out.cur.y - yDelta,false);
@@ -864,7 +797,6 @@ class GMachine {
 		this.lineWidth = lineWidth; 
 	};
 };
-
 
 class Package2 extends Item {
 	constructor(omConcept, color, x, y) {
@@ -944,7 +876,6 @@ class Batch extends Item{
 		
 		let delta = (space - size) / 2;
 		
-		
 		//draw black box around the batch.
 		ctx.strokeStyle = 'black';
 		ctx.lineWidth = delta;
@@ -959,8 +890,8 @@ class Batch extends Item{
 		left += size/2;
 		top += size/2;
 		
-		
-		const start = (this.cur.inQ ?  length * this.cur.nRows - this.cur.nItems : 0);
+		const start = (this.cur.inQ ? 
+			length * this.cur.nRows - this.cur.nItems : 0);
 		for(let  k = 0; k < this.cur.nItems; k++ ){
 			const p = this.packages[k];
 			if( p.inBatch ) {
@@ -970,10 +901,6 @@ class Batch extends Item{
 				p.draw();
 			}
 		}
-		// draw a rectangle 4 wide by rows high 
-		// centered at x,y with nItems in it
-		// if filling=true then fill from the bottom
-		// else fill from the top
 	};
 };
 
@@ -986,9 +913,6 @@ function batHTML(){
 	addDiv('bat', 'leftHandSideBox'+'bat',
 			   'tallStageWrapper',
 			   'twoChartWrapper');
-	 
-    
-    	
 	 
 	//now put in the sliders with the play/reset box	
 	let elem = document.getElementById('slidersWrapperbat');
@@ -1013,13 +937,6 @@ function batHTML(){
 		localUpdateFromUser, ["0.8", '0.9', '0.95', '0.99'],
 		 [0.8, 0.9, 0.95, 0.99], 2));
 
-	
-	// const sp = document.createElement('span');
-	// sp.id = 'disploadfactorbat';
-	// sp.append(1);
-	// const LF = document.createElement('div');
-	// LF.className = 'sliderBox columnAroundCenter';
-	// LF.append('Load Factor = ',sp);
 	elem.append(htmlNoSlider('loadbat', 'Load Factor = ', '1'));  
     elem.append(htmlNoSlider('setBatchbat', 'Batch Size = ', '16'));
 	const batchInput = genRange('batchbat', 3, 0, 3, 1);
@@ -1030,10 +947,7 @@ function batHTML(){
     
 	const mark = document.getElementById('markButton').cloneNode(true);
 	addKeyForIds('bat', mark);
-	// const empty = document.createElement('div');
-	// empty.className = "sliderBox"
 	elem.append(mark);
-
 
 	const ptInput = genRange('ptbat', '2', 2, 8, 2);
 	elem.append(htmlNumSlider(ptInput, 'Processing Time = ', '2', [2, 4, 6, 8]));
@@ -1053,7 +967,6 @@ function batHTML(){
     usrInputs.set('speed', new ArbSlider('speed', speedInput, 
                 localUpdateFromUser, ["1x",'2x','5x','10x',"25x"],
 				                [1,2,5,10,25], 0) );
-    
     	
 	const f = document.getElementById('scenariosMidbat');
 	f.style = "min-height:12vw";

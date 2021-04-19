@@ -126,7 +126,6 @@ class EosGraph  {
     restartGraph(){
         this.flowGraph.restartGraph();
         this.thruGraph.restartGraph();
-        
     };
 	
     updateForParamChange(){
@@ -218,7 +217,6 @@ class EconScale extends OmConcept{
                          'speed','action','reset',
                          'leg0','leg1','desc'];
         this.keyIndex = computeKeyIndex(this.keyNames);
-        
     };
     
     adjustAllQueues(){
@@ -227,7 +225,6 @@ class EconScale extends OmConcept{
             theSimulation.sQueues[k].updateWalkingPositions(true);
         }
     };
-    
     
     printQueue(name,aQ){
         console.log(name, 'now=',eos.now);
@@ -377,9 +374,6 @@ function localUpdate(inp){
                 theSimulation.sTSAagents[k].active = k < v;
             }
             break;
-//        case 'idle':
-//        case 'switch':
-//            break;
         case 'speed':
             eos.adjustSpeed(v);
             break;
@@ -455,8 +449,6 @@ class EosQueue extends Queue {
                 eos.now + Math.min(walkForOne,person.procTime),
 					this.delta.dx, this.delta.dy)
         };
-        
-        
         this.updateWalkingPositions(false);
 	};
     
@@ -496,7 +488,6 @@ class EosQueue extends Queue {
                    this.pathY + anim.person.height / 2);
         ctx.stroke();
         ctx.closePath();
-        
     }
 };
 
@@ -505,12 +496,6 @@ class EosWalkOffStage extends WalkAndDestroy {
 	   super(eos, "walkOff", true, anim.walkOffStageTime);
     };
     pushAnim (person) {
-//        person.addPath({
-//			t: eos.now + 50 / anim.stage.normalSpeed,
-//			x: anim.person.path.pastScanner,
-//			y: anim.person.path.y
-//		});
-//        console.log(' In EOS walkOff which=',person.which, eos.now, anim.walkOffStageTime, 50 / anim.stage.normalSpeed);
 		person.addPath({
 			t: eos.now + anim.walkOffStageTime - 50 / anim.stage.normalSpeed,
 			x: anim.person.path.right,
@@ -562,9 +547,6 @@ class EosTSA extends MachineCenter {
                    x: path.pastScanner,
                    y: machine.locy
                   });
-        
-//        machine.person.setDestWithProcTime(theProcTime,
-//			machine.locx, machine.locy);
     };
 
 	finishAnim (machine) {
@@ -584,7 +566,6 @@ class EosTSA extends MachineCenter {
         }
     }
 };
-
 
 const theSimulation = {
 	//  the two random variables in the simulation
@@ -662,8 +643,6 @@ const theSimulation = {
          for( let k = 0; k < 4; k++){
                 theSimulation.sTSAagents[k].active = k < n;
             }
-        
-        
 
 		//link the queue to machine before and after
         this.jQueue.setPreviousNext(this.arrivalSplitter, this.jTSAagent);
@@ -703,7 +682,6 @@ class EosCreator {
         this.sQueue = sQueue;
         this.jQueue = jQueue;
         this.rv = rv;
-        
     };
     create (){
         const sPerson = this.sSupplier.pull();
@@ -729,7 +707,6 @@ function eosHTML(){
 	addDiv('eos', 'leftHandSideBox'+'eos',
 			   'pairStageWrapper', 
 			   'twoChartWrapper');
-
 		
 	let elem = document.getElementById('slidersWrappereos');
     
@@ -772,9 +749,6 @@ function eosHTML(){
     usrInputs.set('idle',new ButtonOnOff('idle',pauseOnIdleButton,
                             'pauseOnIdleTurnOneos','pauseOnIdleTurnOffeos',
                             localUpdateFromUser,false));
-//    usrInputs.set('switch',new ButtonOnOff('switch',switchLinesButton,
-//                            'switchLinesTurnOneos','switchLinesTurnOffeos',
-//                            localUpdateFromUser,false));
     
     //now put in the sliders with the play/reset box
     elem.append( genPlayResetBox('eos') );

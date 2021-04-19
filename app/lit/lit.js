@@ -70,7 +70,6 @@ class LittleGraph extends TioxGraph {
                    {color: cbColors.red, vertical: true,
                          visible: false, continuous: true,
                          lineWidth: 10, dotSize: 0, right: false});
-//		this.predictedInvValue = this.predictedInv();
          
         const d3 = document.getElementById('chartLegendlit');
         d3.append('  ', avgInv.createLegend('leg0','avg. inventory'),
@@ -136,7 +135,6 @@ anim.person = {
 		right: anim.stage.width * 1.1,
 	}
 }
-
 	
 anim.room = {
 		left: 150,
@@ -179,7 +177,6 @@ function litDefine(){
 	gSF = new GStickFigure(anim.stage.foreContext,
 			anim.person.height,0);
 };
-
 
 class LittlesLaw extends OmConcept{
     constructor(usrInputs){
@@ -333,8 +330,6 @@ class LitCreator extends MachineCenter {
         super(lit, 'creator', 1, theSimulation.interarrivalRV);
     };
 	startAnim (machine, theProcTime) { 
-//		machine.person.setDestWithProcTime(theProcTime,
-//			anim.person.path.left, anim.person.path.y);
 	};
     finishAnim(machine){};
 };
@@ -408,8 +403,6 @@ const theSimulation = {
 	TSAagent: null,
 
 	initialize: function () {
-//		setBackground();
-
 		// random variables
 		const ar = lit.usrInputs.get('ar').get();
 		const acv = lit.usrInputs.get('acv').get();
@@ -489,11 +482,9 @@ function litHTML(){
 	//stats line
 	const d2 = document.getElementById('statsWrapperlit');
 	d2.parentNode.removeChild(d2);
-	 
        
 	//now put in the sliders with the play/reset box	
 	let elem = document.getElementById('slidersWrapperlit');
-	
     
     const arInput = genRange('arlit', '1', 1, 6, 1);
     elem.append(htmlNumSlider(arInput, 'Arrival Rate = ', '1', [1,2,3,4,5,6]) );
@@ -529,7 +520,6 @@ function litHTML(){
     usrInputs.set('speed', new ArbSlider('speed', speedInput, 
                 localUpdateFromUser, ["1x",'2x','5x','10x',"25x",'∞'],
 				                [1,2,5,10,25,1000], 0) );
-    
     
     const f = document.getElementById('scenariosMidlit');
 	f.style = "min-height: 24vw";

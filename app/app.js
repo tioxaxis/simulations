@@ -51,22 +51,7 @@ import {
     surStart
 }
 from './sur/sur.js';
-	
 
-
-
-
-//function router(event){
-//	let inputElem = event.target.closest('div');
-//	if (!inputElem) return;
-//	let key = inputElem.id.slice(0,3);
-//	if ( key == 'doc'){
-//		window.location.href="./doc/doc.html";
-//	} else {	
-//		window.history.pushState({tabName:key},'','#'+key);
-//		switchTo(key);
-//	}
-//}
 //handles keyboard entry for all simulations.
 function keyDownFunction(evt) {
 	let omConc = omConcepts[currentTab.id]; 
@@ -109,7 +94,6 @@ document.addEventListener('keydown', keyDownFunction);
 
 var currentTab = null;
 
-
 function redrawBackground(){
     const om = omConcepts[currentTab.id];
     if(om) om.redoStagesGraph();
@@ -120,7 +104,6 @@ window.onpopstate = function() {
 	const h = location.hash;
     switchTo(h != '' ? h.slice(1) : 'dir');
 };
-
 
 const possibles = ['dir','que', 'lit', 'nvp', 'inv',
                    'fac','eos','bat','sur'];
@@ -135,8 +118,6 @@ function switchTo (which){
         }
     }
     const alreadyStarted = omConcepts[which] != null;
-    // console.log(' in APP.js and which',which,alreadyStarted);
-    // console.log(omConcepts);
     if( !alreadyStarted ){
         switch (which) {
             case "que":

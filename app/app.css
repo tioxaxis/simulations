@@ -325,13 +325,12 @@ A {
     border: solid green;
 } */
 
-.pairChartWrapper{
+/* .pairChartWrapper{
     flex: 0 0 35%;
 	position: relative;
 }
 	.pairChartTop{
 		position: relative;
-	   /* border: solid 3px purple; */
 		height: 100%;
 		width: 100%;    
 	}
@@ -348,18 +347,15 @@ A {
     .pairChartRight{
         width: 100%;
         height: 100%;
-/*        border: solid green;*/
     }
         .pairChartTitle{
             margin: 1% 0 0 0;
             font-size: 1.2vw;
-/*    border: solid red*/
         }
         .pairChart{
             position: relative;
             width: 100%;
             height: 100%;
-/*            border: solid green;*/
         }
         .pairChartCanvas{
             position: absolute;
@@ -367,8 +363,7 @@ A {
             left: 0;
             width: 100%;
             z-index: 0;
-    /*        border: black solid*/
-        }
+        } */
 
 /********   Right Hand Side Boxes   ********/		
 .facDataWrapper {
@@ -512,13 +507,11 @@ A {
 }
 .center{
     text-align: center;
-    
 }
 
 .spreadValues span {
 	min-width: 1.5vw;
 	text-align: center;
-    
 }
 
 /* formats for inputs: number, radio, checkbox, range  */
@@ -536,7 +529,6 @@ input[type=checkbox],
 label {
 	height: 1vw;
 	cursor: pointer;
-    
 }
 input[type=range] {
 	-webkit-appearance: none;
@@ -571,8 +563,6 @@ input[type=range]::-webkit-slider-thumb {
 	border-radius: 2vw;
 	background:  #3347FF;
 	cursor: grab;
-	
-/*	margin-bottom:  1vw;*/
 }
 input[type=range]:focus::-webkit-slider-runnable-track {
 	background: #2497E3;
@@ -635,15 +625,12 @@ input[type=range]:focus::-ms-fill-upper {
 }
 input.inputTime{
 	padding: 0 0 0 0;
-/*	line-height: 2vw;*/
-/*	height: .5vw;*/
 	font-size: 1.1vw;
 }
 input[type="radio"]{
 	height: 1vw;
 	width: 1vw;
 }
-
 
 /* facegame formats for inputs  */
 
@@ -740,7 +727,6 @@ input[type="radio"]{
 	min-width: 1.5vw;
 	padding: .2vw .5vw 0;
 }
-
 
 .actionBox{
 	display: flex;
@@ -899,4 +885,3 @@ button:active {
 .displayNone{
 	display:none
 }
-	

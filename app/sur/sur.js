@@ -159,7 +159,6 @@ anim.stage = {
 };
 var gBatch, gBox, gMachine;
 
-
 function surDefine(){
 	document.getElementById('sur').omConcept = sur;
 	
@@ -183,7 +182,6 @@ function markBatch() {
 		theSimulation.mod.supply.bumpCount();
 }
 
-
 class SetupReduc extends OmConcept{
     constructor(usrInputs){
         super('sur');
@@ -197,32 +195,14 @@ class SetupReduc extends OmConcept{
 			.addEventListener('click', markBatch);
     };
     localReset () {
-		// sur.graph.reset();
-		
 		sur.tioxTimeConv = tioxTimeConv;
 		this.redrawBackground();
-		// // console.log(sur.itemCollection);
-		
-		// for(let k = 0; k < 10; k++){
-		// 	let pack = theSimulation.base.line.machs[0].in.remove();
-		// 	theSimulation.base.line.machs[0].out.add(pack);
-		// 	sur.clearRedrawStage(0,false);
-		// }
 
 		theSimulation.base.line.reset();
-		// const bb = sur.usrInputs.get('surch').getValue();
-		// console.log(' in reset bb',bb,bb/4);
 		theSimulation.mod.line.reset(sur.usrInputs.get('batch').getValue() / 4);
 		theSimulation.base.creator.load( null, null ,0);
 		theSimulation.mod.creator.load( null, null, 1);
-		// const bHead = theSimulation.base.queuehead;
-		// theSimulation.base.queue.push(new Batch(cbColors.yellow,
-		// 	 4, -100, 100, true));
-		// const mHead = theSimulation.mod.queuehead;
-		// theSimulation.mod.queue.push(new Batch(cbColors.blue,
-		// 	bat.usrInputs.get('batch').getValue()/4, -100, 300, true));
 		sur.clearRedrawStage(0, false);
-
     };
     localUpdateFromSliders(...inpsChanged){
         for(let inp of inpsChanged){
@@ -284,25 +264,18 @@ function localUpdateFromUser(inp){
 function updateTimeRV(){
 	const bCycle = (theSimulation.bSetup + 16 * theSimulation.pt) ;
 	theSimulation.base.timeRV.setMean(bCycle);
-	const mCycle = (theSimulation.mSetup + 4 * theSimulation.nRows * theSimulation.pt);theSimulation.mod.timeRV.setMean(mCycle);
-	// document.getElementById('disploadsur').innerHTML = 
-	// 	(mCycle/cycle * 4 / theSimulation.nRows).toFixed(2);
+	const mCycle = (theSimulation.mSetup + 4 * theSimulation.nRows * theSimulation.pt);
+	theSimulation.mod.timeRV.setMean(mCycle);
 }
         
  function localUpdate(inp){
 	let baseInterarrivalTime, modInterarrivalTime;
     let v = inp.get();
     switch (inp.key){
-        // case 'util':
-		// 	theSimulation.util = inp.getValue();
-		// 	updateTimeRV();
-        //  	break;
-
         case 'pt':
 			theSimulation.pt = Number(v) * tioxTimeConv;
 			updateTimeRV();
             break;
-
         case 'bSetup':
 			theSimulation.bSetup = Number(v) * tioxTimeConv;
 			theSimulation.base.line.setSetup(theSimulation.bSetup)
@@ -313,7 +286,6 @@ function updateTimeRV(){
 			theSimulation.mod.line.setSetup(theSimulation.mSetup)
 			updateTimeRV();
 			break;
-
         case 'batch':
             theSimulation.nRows = inp.getValue()/4;
 			theSimulation.mod.line.nRows  = theSimulation.nRows;
@@ -321,7 +293,6 @@ function updateTimeRV(){
 			theSimulation.mod.queue.setQAnim(theSimulation.nRows);
 			updateTimeRV();
             break;
-
         case 'speed':
             sur.adjustSpeed(v);
             break;
@@ -336,7 +307,6 @@ function updateTimeRV(){
             break;
     }
 };
-
 
 //  One variable for each process step or queue
 //  that contains the functions to do the specific
@@ -423,23 +393,11 @@ class  BatWalkOffStage extends WalkAndDestroy {
 	}
 };
 
-
-
-
 const theSimulation = {
 	ar: null,
 	pr: null,
 	setup: null,
 	bat: null,
-
-	// the 3 queues and 3 machines for each line.
-	// supply: null,
-	// queue: null,
-	// walkOffStage: null,
-	// demand: null,
-	// newsVendor: null,
-	
-	
 
 	initialize: function () {
 		// random variables
@@ -454,15 +412,12 @@ const theSimulation = {
 			let sys = {};
 			sys.path = { m1: 260, m2: 520, m3: 790, y: height, dx: 70 };
 			
-
 			sys.supply = new Supplier(color, nLines,
 				anim.stage.offstageLeft, sys.path.y);
 
-			
 			sys.timeRV = new DeterministicRV(iATime)
 			sys.creator = new BatCreator(sys.timeRV);
 			sur.resetCollection.push(sys.creator);
-
 
 			sys.queuehead = {
 				x: sys.path.m1 - sys.path.dx,
@@ -502,7 +457,6 @@ class Supplier {
 		this.x = x;
 		this.y = y;
 		this.markCount = 0;
-		
 	   this.current = null;
 	};
 	front() {
@@ -519,18 +473,6 @@ class Supplier {
 	setNRows(n){
 		this.nRows = n;
 	}
-
-
-
-	// pull() {
-	// 	const last = this.front();
-	// 	this.current = null;
-	// 	if (this.markCount > 0) {
-	// 		this.markCount--;
-	// 		if (this.markCount > 0) last.mark();
-	// 	}
-	// 	return last;
-	// };
 	bumpCount() {
 		this.markCount++;
 	}
@@ -563,14 +505,9 @@ class BatLine{
 				y: this.y,
 				index: k,
 				color: 'black',
-				
-				// in: (k != 0 ? new Batch(this.color, this.nRows, x - this.dx, this.y, false) : null),
-				// out: new Batch(this.color, this.nRows, x + this.dx, this.y, false)
 			};
 			x += 4 * this.dx;
 		}
-		
-		
 	};
 	reset(n = 4){
 		this.nRows = n;
@@ -628,14 +565,7 @@ class BatLine{
 			machine.in = batch;
 			
 			this.setup(machine);
-			
-			
-
 		}
-		// console.log('completed setup at now= ',sur.now);
-		// debugger;
-	
-	
 	};
 	
 	startBox(machine){
@@ -665,9 +595,7 @@ class BatLine{
 				proc: this.finishBox.bind(this),
 				item: machine
 			});
-			// console.log('in START ', machine.out.packages.length,' now=',sur.now);
 		}
-		// console.log(sur.heap);
 	};
 
 	knockFromPrevious(){
@@ -707,17 +635,13 @@ class BatLine{
 			}
 		} else 
 			this.startBox(machine);
-		// console.log(' in finishBox',machine.out.packages.length, 'now=',sur.now);
 	};
 	finishPlusOne(machine){
-		// console.log('in FinishPlusONE', machine.out.packages.length,' now=',sur.now);
 		const last = machine.out.packages[machine.out.packages.length - 1];
 		last.inBatch = true;
 		last.pathList = [];
 		last.z = 0
 		if( machine.out.isFull() ){
-
-			
 			const yDelta = this.nRows * gBox.space * 0.5 + 3;
 			const alpha = 0.2;
 			const alphaBar = 1 - alpha;
@@ -748,7 +672,6 @@ class BatLine{
 					x: machine.out.cur.x,
 					y: machine.out.cur.y
 				});
-
 
 				machine.out.addPath({
 					t: sur.now + this.swapTime * alpha,
@@ -788,8 +711,6 @@ class BatLine{
 					y: machine.out.cur.y + yDelta
 				});
 				this.walkRight.push(machine.out);
-				
-
 
 				const emptyBatch = new Batch(this.color, this.nRows, 
 					anim.stage.offstageRight, machine.out.cur.y - yDelta,false);
@@ -861,7 +782,6 @@ class GMachine {
 		this.lineWidth = lineWidth; 
 	};
 };
-
 
 class Package2 extends Item {
 	constructor(omConcept, color, x, y) {
@@ -956,7 +876,6 @@ class Batch extends Item{
 		left += size/2;
 		top += size/2;
 		
-		
 		const start = (this.cur.inQ ?  length * this.cur.nRows - this.cur.nItems : 0);
 		for(let  k = 0; k < this.cur.nItems; k++ ){
 			const p = this.packages[k];
@@ -967,14 +886,8 @@ class Batch extends Item{
 				p.draw();
 			}
 		}
-		// draw a rectangle 4 wide by rows high 
-		// centered at x,y with nItems in it
-		// if filling=true then fill from the bottom
-		// else fill from the top
 	};
 };
-
-
 
 function surHTML(){	
 	let usrInputs = new Map();
@@ -983,9 +896,6 @@ function surHTML(){
 	addDiv('sur', 'leftHandSideBox'+'sur',
 			   'tallStageWrapper',
 			   'twoChartWrapper');
-	 
-    
-    	
 	 
 	//now put in the sliders with the play/reset box	
 	let elem = document.getElementById('slidersWrappersur');
@@ -1002,22 +912,6 @@ function surHTML(){
 	usrInputs.set('mSetup', new NumSlider('mSetup', mSetupInput, localUpdateFromUser,
 		2, 8, 2, 0, 1));
 
-	// const utilInput = genRange('utilsur', '2', 0, 3, 1);
-	// utilInput.className = 'backYellow';
-	// elem.append(htmlArbSlider(utilInput, 'Utilization = ',
-	// 	'.95', [0.8, 0.9, 0.95, 0.99]));
-	// usrInputs.set('util', new ArbSlider('util', utilInput,
-	// 	localUpdateFromUser, ["0.8", '0.9', '0.95', '0.99'],
-	// 	 [0.8, 0.9, 0.95, 0.99], 2));
-
-	
-	// const sp = document.createElement('span');
-	// sp.id = 'disploadfactorsur';
-	// sp.append(1);
-	// const LF = document.createElement('div');
-	// LF.className = 'sliderBox columnAroundCenter';
-	// LF.append('Load Factor = ',sp);
-	// elem.append(htmlNoSlider('loadsur', 'Load Factor = ', '1'));  
     elem.append(htmlNoSlider('setBatchsur', 'Batch Size = ', '16'));
 	const batchInput = genRange('batchsur', 3, 0, 3, 1);
 	batchInput.className = 'backBlue';
@@ -1030,7 +924,6 @@ function surHTML(){
 	// const empty = document.createElement('div');
 	// empty.className = "sliderBox"
 	elem.append(mark);
-
 
 	const ptInput = genRange('ptsur', '2', 2, 8, 2);
 	elem.append(htmlNumSlider(ptInput, 'Processing Time = ', '2', [2, 4, 6, 8]));
@@ -1050,7 +943,6 @@ function surHTML(){
     usrInputs.set('speed', new ArbSlider('speed', speedInput, 
                 localUpdateFromUser, ["1x",'2x','5x','10x',"25x"],
 				                [1,2,5,10,25], 0) );
-    
     	
 	const f = document.getElementById('scenariosMidsur');
 	f.style = "min-height:12vw";

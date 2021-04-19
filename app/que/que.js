@@ -464,7 +464,6 @@ const theSimulation = {
 	TSAagent: null,
 
 	initialize: function () {
-
 		// random variables
 		const ar = que.usrInputs.get('ar').get();
 		const acv = que.usrInputs.get('acv').get();
@@ -478,7 +477,6 @@ const theSimulation = {
 
 		this.queue = new QueQueue();
 		que.resetCollection.push(this.queue);
-        
 
 		this.walkOffStage = new QueWalkOffStage();
 		que.resetCollection.push(this.walkOffStage);
