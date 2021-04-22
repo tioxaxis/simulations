@@ -153,7 +153,7 @@ function switchTo (which){
     let k = possibles.findIndex(key => key == which);
     currentTab = document.getElementById(k >= 0 ? which : 'dir');
     currentTab.classList.remove('displayNone');
-    if( k > 0 && alreadyStarted ){
+    if( k > 0 /* && alreadyStarted */ ){
         redrawBackground();
     }
 };

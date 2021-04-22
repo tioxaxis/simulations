@@ -572,7 +572,7 @@ input[type=range]::-webkit-slider-thumb {
 	cursor: grab;
 }
 input[type=range]:focus::-webkit-slider-runnable-track {
-	background: #2497E3;
+	/* background: #2497E3; */
 }
 input[type=range]::-moz-range-track {
 	width: 100%;
@@ -625,10 +625,10 @@ input[type=range]::-ms-thumb {
 	cursor: grab;
 }
 input[type=range]:focus::-ms-fill-lower {
-	background: #2497E3;
+	/* background: #2497E3; */
 }
 input[type=range]:focus::-ms-fill-upper {
-	background: #2497E3;
+	/* background: #2497E3; */
 }
 input.inputTime{
 	padding: 0 0 0 0;
@@ -687,7 +687,6 @@ input[type="radio"]{
   direction: ltr;
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
-  	
 }
 .actButton{
 	color: rgb(34, 129, 118);

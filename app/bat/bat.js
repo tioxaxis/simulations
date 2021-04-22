@@ -947,6 +947,7 @@ function batHTML(){
     
 	const mark = document.getElementById('markButton').cloneNode(true);
 	addKeyForIds('bat', mark);
+    mark.setAttribute('title','Mark a box');
 	elem.append(mark);
 
 	const ptInput = genRange('ptbat', '2', 2, 8, 2);

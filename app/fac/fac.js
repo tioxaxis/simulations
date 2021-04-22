@@ -873,6 +873,7 @@ function facHTML(){
     let elem = document.getElementById('slidersWrapperfac');
 	const mark = document.getElementById('markButton').cloneNode(true);
     addKeyForIds('fac',mark);
+    mark.setAttribute('title','Mark the card')
     elem.append(mark);
     const qlnInput = genRange('qlnfac',3,0,3,1);
 	elem.append(htmlArbSlider(qlnInput, 'Max Queue Length = ', '∞', ['1','3','5','∞'] ));
