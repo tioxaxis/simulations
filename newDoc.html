@@ -2,31 +2,50 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="./app/app.css">
+
+
 <style>
 body {
-  font-family: "Lato", sans-serif;
+  font-family: "Helvetica";
 }
 .tiox{
+    position: fixed;
+    width: 350px;
+    height: 80px;
+    padding-top: 20px;
+    z-index: 2;
+    top:0;
+    left: 0;
     font-size: 60px;
     text-align: center;
+    background-color: var(--borderColor)/* rgb(6, 185, 170) */;
+    /* border: solid green; */
+}
+.toc1{
+  display:block
 }
 
 /* Fixed sidenav, full height */
 .sidenav {
   height: 100%;
-  width: 300px;
+  width: 350px;
   position: fixed;
   z-index: 1;
-  top: 0;
+  top: 80px;
   left: 0;
-  background-color: rgb(6, 185, 170);
+  background-color: var(--borderColor) /* rgb(6, 185, 170) */;
   overflow-x: hidden;
   padding-top: 20px;
 }
+.sidenav .toc1{
+  padding-left: 40px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
 
 /* Style the sidenav links and the dropdown button */
-.sidenav a, .dropdown-btn {
+.sidenav .toc2, .dropdown-btn {
   padding: 6px 8px 6px 16px;
   text-decoration: none;
   font-size: 20px;
@@ -40,134 +59,318 @@ body {
   outline: none;
 }
 
+.sidenav a:visited,.sidenav a:link{
+  color: #000000;
+  font-size: 20px;
+}
+/* .sidenav .toc2 */
+
 /* On mouse-over */
 .sidenav a:hover, .dropdown-btn:hover {
   color: #f1f1f1;
+  /* background: #a0a7f2; */
 }
 
 /* Main content */
 .main {
-  margin-left: 300px; /* Same as the width of the sidenav */
+  margin-left: 350px; /* Same as the width of the sidenav */
   font-size: 20px; /* Increased text to enable scrolling */
   padding: 0px 10px;
 }
-
-/* Add an active class to the active dropdown button */
-.active {
-  background-color: rgb(15, 77, 82);
-  color: white;
+.entry{
+  margin-left: 50px;
+  width: 50vw;
 }
 
 /* Dropdown container (hidden by default). Optional: add a lighter background color and some left padding to change the design of the dropdown content */
 .dropdown-container {
   display: none;
-  background-color: rgb(140, 226, 219);
-  padding-left: 8px;
+  /* background-color: lightblue; */
+  padding-left: 50px;
+  color: grey;
+  
 }
 
 /* Optional: Style the caret down icon */
-.fa-caret-down {
+/* .fa-caret-down {
   float: right;
   padding-right: 8px;
-}
+  color: black;
+} */
 
 /* Some media queries for responsiveness */
 @media screen and (max-height: 450px) {
   .sidenav {padding-top: 15px;}
   .sidenav a {font-size: 18px;}
 }
+
+h2{
+  color: var(--borderColor);
+  padding-top: 20px;
+}
+h3{
+  padding-top: 20px;
+  color: rgb(100,143,255)
+}
+h4{
+  color: green;
+}
+#blankSpace{
+  padding-bottom: 90vh;
+}
+
 </style>
 </head>
 <body>
 
+<div class='tiox'>TioX</div>
 <div class="sidenav">
-    <div class='tiox'>TioX</div>
-   <button class="dropdown-btn">About 
-    <i class="fa fa-caret-down"></i>
     
-  </button>
+   <a id='aboutTOC' class='toc1' href='#about'>About</a>
   <div class="dropdown-container">
-      <a href="#">What is TioX</a>
-      <a href="#">History and Background</a>
-    </div>
-  <button class="dropdown-btn">Animations 
-    <i class="fa fa-caret-down"></i>
-    
-  </button>
-  <div class="dropdown-container">
-    <a href="#">Queuing</a>
-    <a href="#">Little's Law</a>
-    <a href="#">Face Game</a>
-    <a href="#">Economies of Scale</a>
-    <a href="#">News-Vendor</a>
-    <a href="#">Inventory</a>
-    <a href="#">Batching: Non Bottlenecks</a>
-    <a href="#">Batching: Setup Reduction</a>
-    </div>
-  <button class="dropdown-btn">Future Animations 
-    <i class="fa fa-caret-down"></i>
-  </button>
-  <div class="dropdown-container">
-    <a href="#">Funnel Game</a>
-    <a href="#">Have an Idea?</a>
-    </div>
-  <button class="dropdown-btn">Customization and Use 
-    <i class="fa fa-caret-down"></i>
-  </button>
-  <div class="dropdown-container">
-      <a href="#scenarios">Scenarios</a> 
-  <a href="#speeds">Speeds</a> 
-  <a href="#">Accessibility</a>
+      <a class='toc2' href="#whatistiox">What is TioX</a>
+      <a class='toc2' href="#history">History and Background</a>
   </div>
-    <button class="dropdown-btn">Teaching Notes 
-    <i class="fa fa-caret-down"></i>
-  </button>
+
+  <a id='animationsTOC' class='toc1' href='#animations'>
+      Animations <br> and Teaching Notes</a>
   <div class="dropdown-container">
-     <a href="#">Queuing</a>
-    <a href="#">Little's Law</a>
-    <a href="#">Face Game</a>
-    <a href="#">Economies of Scale</a>
-    <a href="#">News-Vendor</a>
-    <a href="#">Inventory</a>
-    <a href="#">Batching: Non Bottlenecks</a>
-    <a href="#">Batching: Setup Reduction</a>
+    <a class='toc2' href="#queueing">Queuing</a>
+    <a class='toc2' href="#littleslaw">Little's Law</a>
+    <a class='toc2' href="#facegame">Face Game</a>
+    <a class='toc2' href="#economiesofscale">Economies of Scale</a>
+    <a class='toc2' href="#newsvendor">News-Vendor</a>
+    <a class='toc2' href="#inventory">Inventory</a>
+    <a class='toc2' href="#batchingNB">Batching: Non Bottlenecks</a>
+    <a class='toc2' href="#batchingSR">Batching: Setup Reduction</a>
     </div>
-  <a href="#contact">Contact Me</a>
+
+    <a id='futureTOC' class='toc1' href='#future'>
+      Future Animations</a> 
+  <div class="dropdown-container">
+    <a class='toc2' href="#funnelgame">Funnel Game</a>
+    <a class='toc2' href=#matchgame>Match Game</a>
+    <a class='toc2' href="#haveanidea">Have an Idea?</a>
+    </div>
+
+    <a id='customizationTOC' class='toc1' href='#customization'>
+      Customization and Use</a>  
+  <div class="dropdown-container">
+      <a class='toc2' href="#scenarios">Scenarios</a> 
+      <a class='toc2' href="#speeds">Speeds</a> 
+      <a class='toc2' href="#accessibility">Accessibility</a>
+  </div>
+
+  
+
+  <a class='toc1' href="#contact">Contact Me</a>
+  <a class='toc2'>     </a>
 </div>
 
 <div class="main">
-  <h2>Sidebar Dropdown</h2>
-  <p>Click on the dropdown button to open the dropdown menu inside the side navigation.</p>
-  <p>This sidebar is of full height (100%) and always shown.</p>
-  <p>Some random text..</p>
+  <h2 id='about'>About Tiox</h2>
+  <div class='entry'>
+  <h3 id='whatistiox'>What is TioX?  </h3>
+	<p>TioX (/taɪ ɑːks/) is a set of animations for demonstrating some of the main ideas in Operations Management.   These include queueing, bottlenecks, Little's Law, the newsvendor problem, inventory management, economies of scale in queueing, and batching (the impact of batching decisions on flow time and throughput).  </p>
+	<p>Each animation shows people and/or packages moving through a system and is designed as an aid to students' first exposure to these concepts.  Let's take queueing as an example to start. Although one can observe people coming to a store or a bank and see that sometimes people wait to be served, one has no knowledge of or control over the rates of arrivals or the rates of service. The animation provides the student with the opportunity to observe a system knowing the arrival rate of customers and the service rate of the server and see how the system performs.  Crucially, it is then possible to adjust these rates and the variability in these rates and observe how the system performance (waiting time for customers in this case) changes.</p>
+		
+	<p>Many basic concepts in Operations Management involve understanding how sequences of events, such as a customers arriving at store, being served, and being checked out, will interact.  Although many ideas are straightforward, such as the rate a system can handle customers is driven by the slowest stage of a process, it is helpful to actually see this a few times first.</p>
+		
+	<p>These animations are designed to act as a bridge for the students, to allow them to see the phenomenon of a bottleneck of a system limiting throughput, variability causing a queue to form, or inventory in a store allowing customers to be served immediately.</p>
+		
+	<p> These animations are not designed to replace the mathematics Operations Managers use to understand systems. They are not designed to be used to model real systems.  There are plenty of sophisticated commercial simulation systems for modeling real systems.  These animations are meant simply to be a bridge for the first time student.  To understand inventory systems, traditionally one draws a graph of on-hand inventory over time to show customers buying product and delivery of orders from a supplier.  One might say "Inventory is on the y-axis and time is on the x-axis."  Yet, to some first time Operations' students the notion of customers arriving over time and drawing a graph of inventory going down to represent this may be a challenge.  It was that idea, "Time Is On the X-axis" that led to the acronym for these simulations (TioX).  We hope that watching the inventory animation will help students expeditiously understand the connection between the events of customers and orders arriving and the inventory curves we all draw.</p>
+  </div>
+  
+  <div class='entry'>
+  <h3 id='history'>Background and History:</h3>
+	<p>In a 2006 article entitled <a href="https://pubsonline.informs.org/doi/10.1287/ited.7.1.106">"Web-based Simulations for Teaching Queueing, Little's Law, and Inventory Management,"</a> published in <a href="https://pubsonline.informs.org/journal/ited">INFORMS Transactions on Education</a>,  Robert Shumsky and I introduced earlier versions of three of these simulations.  The Flash and Shock-Wave versions of these at some point became unavailable and the link at the publisher no longer worked.   Robert Shumsky and Chris Huston produced an updated Flash version of the animation for Queueing,</a> and I and my sons produced a Java version for all three and several others.</p>
+		
+		<p>Adobe announced that December 2020 is the <a href="https://www.adobe.com/products/flashplayer/end-of-life.html">End-of-Life for Flash</a>.  Java became <a href="https://java.com/en/download/help/enable_browser.xml">problematic for use via a web browser</a> much earlier. <a href="http://tiox.simonnet.rochester.edu/">The Java version is still available</a> and still runs fine on a laptop if you are willing to install the Java Runtime System. Yet, the Java version was designed around a fixed screen size. It can appear small on a modern laptop, and thus small on the projector for class, and adjusting system settings to workaround this difficulty is awkward. </p>
+		
+		<p>  For these reasons among others, I am in the process of rewriting the animations in Javascript. Most are completed and on this site.  The rest are in progress. They run in most modern browsers (Chrome, Safari, FireFox, Opera, and Edge, although Chrome is suggested).</p>
+	
+	<p>The animations that have been reproduced are Queueing, Little's Law, News Vendor, Inventory (handling both the standard Reorder Point/Reorder Quantity model and the Periodic Ordering and Order-up-to model, the "Face Game," (an easy to run game for an early class to demonstrate the notions of flow time and throughput), Economies of Scale (to demonstrate queueing economies of scale), Batching: Non-bottlenecks, and Batching: Setup reduction.  Others will follow including, one entitled the "Match Game", which illustrates how variability affects throughput in queueing systems, and finally "The Funnel Game" which demonstrates <a href="https://deming.org/">  W. Edward Deming's</a> red bead and funnel experiment.</p>
+
+</div>
+
+  <h2 id='animations'>Animations and Teaching Notes</h2>
+
+  <div class='entry'>
+  <h3 id='queueing'>Queueing</h3>
+		<p> An animation of a single server queue, e.g., the scanner at airport security.  Individual, average, and predicted waiting time are graphed.  </p>
+
+
+  <h4 >Teaching Note</h4>
+    <p>Students new to Operations Management are not at ease with rates (of arrival or of service) or with variability in rates.  The most common misconception is that if "people are coming to a server at a rate that is less than the service rate then no queue should form."  Thus, I start with Scenario A: no variability, where customers are arriving at a rate of 5/minute and being served at a rate of 6/minute with no variability in either the interarrival times or the service times.  They see that no one waits and the graph shows zero wait for all customers as then enter service.  
+		</p>
+		<p> Next I switch to Scenario B: arrival variability, in which the CV of arrivals is raised to 1. The key point here is that the average arrival rate has not changed and is still less than the service rate, yet people are arriving in a more clumped fashion and so some of them wait for service.</p>
+		<p> Next I switch to Scenario C: arrival and service variability, so now the CV of service times is 1 as well.  Explain what that means and then run it long enough to observe that waiting times are longer than in the previous scenario.</p>
+		<p>At this point the students should have a sense of what is going on in the animation and what the graph means.  The number of people the server has processed is small so it seems reasonable to speed up time, so I run Scenario D: speed it up, for another minute.</p>
+		<p>I then weave into the story that our TSA agent has been working hard and needs a coffee break.  As I start Scenario E: coffee break, I draw their attention to the statistic showing the number of people in queue, because the number of people waiting soon fills the screen and the rest are off screen to the left.</p>
+		<p>After probably less than a minute of real time, and the simulation operating at speed 5, roughly 100 people have queued, so when I switch to Scenario F: return to work, it takes some time for the queue to return to zero. I ask them, "Why does is it taking so long?  Didn't we just say that the server is operating at a rate faster than the arrivals?  Didn't we see some people waiting no time before in this situation?"  I wait for the class to explain that it is the large queue that built up that must be worked down.  Next I ask them to estimate how long it will take to deplete that queue.</p>
+		<p>Perhaps you end this segment suggesting that highly utilized systems can't afford much downtime without causing significant delays.</p>
+		<p>As described in more detail below, you can switch the scenarios using a "presentation remote" allowing you to roam the class as you discuss the different scenarios.</p>
+	</div>
+  
+  <div class='entry'>
+    <h3 id='littleslaw'>Little's Law</h3>
+		<p> An animation of a room where people enter and leave.  Average inventory, the product of average system time and average throughput, and predicted inventory are graphed.  </p>
+
+
+
+    <h4>Teaching Note</h4>
+		<p>In the deterministic case in which the arrival rate and the service time (or time in system) has no variability then Little's Law is fairly clear.  So, I start with this situation with Scenario A: no variability, and arrival rate of 1, service time is 6, so there are 1 * 6 = 6 people in the system at any one time on average. Mention to the students that the number on each person is the time they have spent in the room.</p> 
+		<p>To make the example a bit more interesting I increase the arrival rate to 2 and the service time to 10.  So, now average inventory <i>I</i> is 20 = 2 * 10.  Here people will spend some of their time waiting at a particular spot in the room.</p>
+		<p>Next I add variability with Scenario C. This adds variability in the arrival rate as well as the service time. Even though some people will zip through the system and others wait much longer in the system, and the arrival pattern is variable the average inventory over time and the average throughput times the average stay in the room are both converging to 20.  Next, I switch to Senario D: speed it up, to run the simulation faster so the students can see that there is convergence of these two average performance measures.  The actual numbers tend to be below the predicted value because the system always starts empty. </p>
+	</div>
+
+  <div class='entry'>
+    <h3 id='newsvendor'>News-vendor</h3>
+		<p> An animation of the clasic news-vendor problem.  Each period the total overage or the total underage cost is graphed.  The average over time of the sum of overage and underage costs is also graphed.</p>
+
+
+
+    <h4>Teaching Note</h4>
+		<p>This animation shows a number of "days" in which the newsvendor orders a given number of parcels which are seen in the "store".  A random number of customers come, one by one, to pick up the parcels.  If there are parcels left over at the end of the day the parcels turn dark before disappearing, to visually indicate these units are waste, incurring a cost of overage.  If there are too many customers then the unsatisfied customers turn "pale" as they leave the store emptyhanded, to visually indicate the underage costs being incurred.  For each day both the underage and the overage costs are plotted.  The blue line represents the average across the days of the two costs.</p>
+		<p>Although to us as instructors it is obvious that each day there is either an overage cost or an underage cost, I feel it is worthwhile pointing this out.  Each day there is either a red dot or a green dot above the x-axis and the other dot is on the x-axis.</p>
+		<p> To someone not comfortable with variability the most common misconception is that setting the order quantity to the averge daily demand is the best choice. Thus I start with Scenario A: At the Start, which has the order quantity equal to the average daily demand. </p>
+		<p>After a few "days" of animation, students are getting bored watching the it so I move to Scenario B: Speed it up, so we can get more data on to the graph.  I typically run it long enough so we feel we have a reasonable estimate of the average cost.  The average cost is about 40.  I then continue to let it run and ask them to suggest what we might do to improve (reduce) the average cost.  Usually several students immediately suggest ordering more but none is quite sure how much more to order.</p>
+		<p>Scenario C: Increase Order Quantity, moves the order quantity from 20 to 30. It also Resets the animation so the graph starts empty and will not be contaminated by the early data points. So, make sure the class knows the average cost in Scenario B was about 40.   With a higher order quantity, you should see an average cost of about 20.  Now the question is how do we determine the optimal quantity.</p>
+		<p>The actual percentage of days that demand was met from inventory is shown above the graph.  The expected percentage and the desired percentage of days is also shown. Thus, if you derive the optimal fractile for the newsvendor problem, you could return here as an empirical observation that setting the expected percentage to the desired percentage seems to minimize costs. If you are curious, for this animation the demand random variable with mean r and variability v is a uniform random variable with range [r(1-v),r(1+v)].</p>
+	</div>
+
+  <div class='entry'>
+    <h3 id='inventory'>Inventory</h3>
+		<p> An animation of customers coming to a store and buying a good.  Two rules for reordering goods can be applied: a reorder point level with a fixed reorder quantity, or a periodic reorder with the quantity based on order-up-to rule.  On hand inventory, inventory position, and predicted average on hand inventory are graphed.  </p>
+
+    <h4>Teaching Note</h4>
+		<p>The inventory simulation is really two simulations for the two ordering systems: ROP and Order-up-to.  This animation is the source of the name I picked for these apps, TioX, time is on the x-axis.  Although a plot of saw-tooth curve of inventory going up and down over time is familiar to all of us, I feel operations students have an easier time connecting the reality of customer purchases and store replenishments to the the sawtooth graph by watching the customers come and take away their parcels, and watching the truck coming with replenishment orders.  The ROP simulation has a horizontal line showing that as inventory crosses this line an order is placed.  The Order-up-to simulation has vertical lines showing which days inventory is reviewed and an order is placed. </p>
+		<p>Scenarios 1A,1B, 2A, 2B, and 2C are for the ROP model.  The students should probably have a bit of understanding about the two costs of holding and setup/ordering before running 1A and 1B.  Scenario 1A: small truck load, has less inventory and more frequent orders.  Scenario 1B: large truck load, has more inventory on average and less frequent orders. The objective is merely to introduce the EOQ trade-off.  Demand is deterministic for these two cases.  The "predicted on-hand inventory" curve, should you decide to click this on, is for the determinisitic demand case. </p>
+		<p> Scenarios 2A and 2B show that one may have two trucks coming at the same time, thus introducing the notion of ordering based on inventory position rather than just on-hand inventory.  Scenario 2C: Add variability, is for showing that once there is some demand variability some customers will be disappointed.  I usually ask them what we should adjust to deal with this. Someone is usually quickly able to articulate that adjusting the order quantity, <i>Q</i> will not help, whereas adjusting the reorder point, <i>ROP</i> will.  Then you can adjust this and the class can see that fewer customers are "lost."</p>
+		<p>I have used Scenarios 3A and 3B to introduce the Order-up-to Model, usually after I have introduced the safety stock decision for ROP.  I have found the graphs, even in the essentially deterministic case, a useful prop for explaining that in the order-up-to model the period of "uncertainty" on which you should decide the order-up-to quantity is based on the period between orders, P, plus the lead time, L.  Pausing the simulation at one ordering time, (note, space-bar on your keyboard is a play-pause toggle) and then talking about having to wait P+L for more inventory, and finally running the simulation for P+L time, helps make this period of "uncertainty" more clear.</p>
+    </div>
+
+  <div class='entry'>
+    <h3 id='facegame'>The Face Game: </h3>
+		<p>  An animation based on a simple 3 stage process that can be done in class with 4 people, drawing a simple face on a 3x5 index card.  It involves the concepts of flowtime, throughput, inventory, quality, and Little's Law.  I've found the physical demonstation quite useful in an early class. Students then make suggestions for improvments.  The animation is useful to allow the class to see whether a suggested improvement affects the intended performance measure.</p>
+
+    <h4>Teaching Note</h4>
+        <p> If you ask a novice operations management student what it means if a process is 'fast' my experience suggests that half will say something about an item or job getting through the system quickly, i.e., low flow time.  The other half will say that the process can produce a lot quickly, i.e., high throughput.  The basics in operations management deals with the trade-offs between these two.  For service systems we want systems that to allow jobs to be processed in a timely fashion, i.e., low flow time, but do not waste money on excess capacity.  For inventory systems we want to keep inventory low, which is related to flow time by Little's Law, yet maintain throughput, i.e., few unsatisfied customers.  So, it is useful early on to help students distinguish these two ideas: flow time and throughput, understand that low flow time and high throughput are both desireable, yet understand what parameters of a system affect which system measure.  </p>
+        <p> I typically run the physical game in class.  The initial scenario in the animation is typically how the game runs.  The first person is pumping many cards into the system.  The second person is the bottleneck and struggles to work the queue of work for him/her.  The third person is idle.  Part way through a special order for a pink card is requested and takes a great deal of time to get through the system because of all the inventory between person 1 and person 2.  After the pink card enters the system, the first person process becomes faulty, yet by the time those faulty cards make it through the system, and are observed by quality control after step 3, there is a large amount of now wasted inventory.  </p>
+        <p> After I run the physical game and we understand what the words flow time and throughput mean for this system, I ask the students to generate improvments.  I am not explicit about which measure they should improve.  I ask them for their change, put it into the animation, and then ask them which measure(s) they hope to improve.   Then we run it and see how well it works.  </p>
+        <p>The animation provides the ability to input the processing time for drawing each feature so you can use either what you think your students did or have them measure the steps in the physical run of the game.  In taking the student suggestions you can assign any feature to any stage (1, 2, or 3) including eliminating a stage.  You can assign two or three people to each stage.  You can limit the inventory that can collect between stages.  Finally you can flag (i.e. mark cards as pink) as they come onto the stage so that the flow time for these cards is more evident.</p>
+    </div>
+
+  <div class='entry'>
+    <h3 id='economiesofscale'>Economies of Scale in Queueing: </h3>
+		<p>  This animation allows one to compare two queueing systems, each with k servers.  The first system has a separate queue for each server. The second system has a joint queue that handles all the servers.  One can compare the two systems on measures of flow time and throughput.</p>
+
+<h4>Teaching Note</h4>
+        <p>The animation allows one to compare two queueing systems. The system on the left is the 'Separate' system in which each server has its own queue and customers pick a server at random and join its queue. The second system is the 'Joint' system in which all demand joins a single queue and customers go to the first available server.  The animation allows you to compare the two systems on the measures of flow time and throughput.  As is well known, if the servers are identical and both serve the same arrival process, the joint system does better on flow time. The throughput will be the same on average. </p>
+        <p> The first scenario (A) has a relatively low utilization (0.7), 2 servers, and no variability in the arrival or service process.  First observe that the arrival process to both systems is identical. The customers are even color coded the same to make this point more obvious.  Because the choice of queue to join for the separate system is random, this randomness is enough to see that the separate system has a higher average flow time. Because Scenario A is operating fairly slowly Scenario B just speeds up time.  Scenario C increases the utilzation (to 0.95).  This increases the arrival rate.  You will probably see a further increase in the flow time for the separate system.  Scenarios D  add servers (from 2 to 4).  This doubles the arrival rate because the utilzation and the service rate per server are set.  You should see an increase in the average flow time for the separate system.  Finally, Scenario E adds variability so the flow time for both systems increases but the separate system is still worse. </p>
+        <p>Why does the separate system perform worse.  Well, I usually find after running a simple scenario for a few minutes a more astute student will point out that in the separate system a server can be idle and yet there is a queue at another server. You can then direct the class to see if they can also see this phenomenon.  This phenomenon cannot happen in the joint system.  Whenever a server in the joint system is idle the queue is empty.  I have found that to observe this without wasting a great deal of class time requires running the animation "fast" but then the situation you want to observe (an idle server and another server with a queue in the separate system) disappears quickly. To aid the presentation, a extra button,<i class="material-icons font15vw">notification_important</i>, has been added.  It is a toggle and once it is on the animation will pause in two situations: 1) whenever a separate server finishes a customer and becomes idle and another separate server has a queue, or 2) whenever a person joins a queue for a separate server (and does not immediatly start service) and another separate server is idle.   Hitting play will cause the animation to continue to the next such event.  Of course you can turn this toggle off at any time.</p>
+    
+	</div>
+
+  <div class='entry'>
+    <h3 id='batchingNB'>Batching: Non-bottlenecks</h3>
+		<p>  This animation shows that for non-bottleneck machines, reducing batch sizes (and increasing setups), does not affect throughput but does improve flow time.  Of course, if one continues to reduce batch sizes, then for a given load, at some point, the load factor is increased above 1 and the machine becomes a bottleneck and the throughput is reduced.</p>
+
+
+        <h4>Teaching Note</h4>
+        <p>In Goldratt's book,"The Goal", he makes the observation that setups on machines are usually setup times vs. setup costs (that result in some cash flow).   In such a situation the opportunity cost of the setup time is the opportunity cost of what the machine could be doing with the time spent setting up the machine.  If the machine is a non-bottleneck (and the labor to setup the machine is also a non-bottleneck), then the opportunity cost of an additional setup is small.  In this case he argues that it would make sense to produce product in smaller batches and let the batches flow through the factory more quickly.  This animation is designed to let you see this fact.  There are three machines that operate in sequence.  The line of machines on top (the orange machines) operate with batches of 16.  The line of machines below (the blue machines) operate with batches of 16, 12, 8, or 4.</p>
+        <p> Although the setup and processing time can be adjusted, the crucial parameters for the demonstration are the utilization of the top machines, which in turn drive the same arrival rate (measured in small boxes) for both lines.  Thus, as you adjust the utilization of the top line you affect the load factor of the bottom line.  It is indicated as "load factor" because it can become greater than 1 depending on the batch size picked for the bottom line.</p>
+        <p>The standard scenarios are designed to show how reducing batch size will at first reduce flow time.  Scenario A shows an initial setup with batches of 16 for both lines.  It runs fairly slowly so one can observe the setup time, the movement of individual boxes through the machine, and then finally see there is some idle time on the machine. A portion of the setup occurs as the batch is travelling to the machine.  Scenario B speeds up time so one can see some results on the graphs, namely, in this case, that the two lines are identical.   Scenario C, D, and E keep reducing the batch size on the bottom line from 16 to 12 and then 8, and then 4.</p>
+        <p> For scenarios C and D one can observe that the flow time for the blue boxes is less than the orange boxes.  To make this more obvious one can use the 
+            <span class="material-icons " >outlined_flag</span> button to mark a box in a batch in both lines. Finally scenario E reduces the batch size enough to cause the load factor for the bottom line to be greater than one.  You can start to see a queue build up before the first machine.  Scenario F speeds up the process even further to make this queue grow more quickly.</p>
+	</div>
+
+  <div class='entry'>
+    <h3 id='batchingSR'>Batching: Setup Reduction</h3>
+		<p>This animations shows machines being loaded fully, i.e., utilization is 1. One can observe three facts: 1) reducing setup time does improve througput and flowtime both slightly, 2) reducing batch size improves flow time but reduces throughput, and 3) reducing setup time (by say 50%) <u>and</u> reducing batch size (by 50%) maintains throughput and cuts flowtime in half.  The last observation was used by companies such as Toyota to reduce flow time and make their processes more JIT.</p>
+
+    <h4>Teaching Note</h4>
+        <p>This animation looks similar to Batching: Non-bottlenecks, but here the arrival rate for each line is set to keep it fully utilized.  The focus here is on the trade-off between flow time and throughput.  In scenario A, both lines are the same.  In scenario B setup time is reduces so for the bottom (blue) line, and flow time and throughput are both improved somewhat.  In scenario C batch size is reduced fro the bottom (blue) line, and so flow time is reduced but throughput is lower.  In scenario D, both setup time and batch size are cut in half.  The result is the same throughput but the flow time is cut in half as well.    </p>
+  </div>
+
+  <h2 id='future'> Future Animations</h2>
+
+  <div class='entry'>
+    <h3 id='funnelgame'>The Funnel Game:</h3>
+		<p>  An animation that allows you to simulate a combination of Deming's red bead experiment and funnel experiment so everyone in the class can participate on their laptops</p>
+	
+   </div>
+  <div class='entry'>
+    <h3 id='matchgame'>The Match Game</h3>
+   <p> In Goldratt's "The Goal" he describes a game that the boys play that demonstrates that the variability in processing time can affect throughput.  This animation shows that when inventory between stages is limited then indeed, variability can cause blocking and starving in the queueing system which reduces throughput.  If the queue lengths are not limited then there is very little impact on long term throughput.  One can generate a graph that shows for different levels of inventory allowed how throughput and inventory rise with the level of inventory.
+
+   </p> 
+		</div>
+  <div class='entry'>
+    <h3 id='haveanidea'>Have an Idea?</h3>
+		<p>    Do you have other ideas?  <a href="#contact">Contact me</a> and make your pitch.  :)</p>
+  </div>
+
+
+  <h2 id='customization'> Customization and Use</h2>  
+
+  <div class='entry'>
+    <h3 id='scenarios'>Scenarios:</h3>
+	<p>If you have used these animations/simulations for a bit you may recognise that to demonstrate some system behaviors in class it is useful to show the animation running for a first set of parameter settings and then switch to a second or third and compare the performance across the various scenarios.  To facilitate this use in a class, a faculty member can predefine a set of scenarios for each animation.</p>
+	<p>Once a collection of scenarios is setup, say for a demonstration in class, then the instructor can switch between the scenarios.  This switching can of course be done by clicking on the different ones in the list.  Alternatively, the web page will move to the next scenario by pushing the downarrow or pagedown key.  These were picked because presentation remotes often use these keyboard codes to move to the next slide in a presentation.  </p>
+	<p>More details:  Of course the uparrow and pageup keys work as well.  Further, each scenario can be set to 1) pause the animation if it is playing, play the animation if it is paused, or "none" meaning leave it in the mode it was currently in: paused or playing.  When a new scenario is picked it can force the animation to reset (as if the reset button were pushed).  A reset causes the animation to begin again from an empty system, and clears the chart of any old data. Play/Pause (by spacebar) and Reset (by letter b) can be controlled from the keyboard or a presentation remote as well.</p>
+		
+	<h4>How do I create my own sequence of scenarios?</h4>
+	<p>The sequence of scenarios can be customized by each instructor.  Hopefully the interface is largely self-explanitory.  Click <i 
+				   class="material-icons font15vw">edit</i> to edit. 
+		The animation will pause. Pick an existing scenario and then changing any of the parameters in the sliders will change that scenario.  All changes are saved immediately.  Double-clicking the name (or typing Return when one is selected) will allow you to change the name of the scenario.  Scenarios are kept in alpha-numeric order, so use a numbering system to put your scenarios in the order you want for your presentation. Adding and deleting scenarios should be a familiar interface with <i class="material-icons font15vw"> add</i> and
+				<i  class="material-icons font15vw" disabled> remove</i> icons at the bottom of the list.  Although only a few will display, you are not limited to the number of scenarios you can create.</p>
+		
+	<h4>Where are they stored and how do I retrieve them?</h4>
+	<p>The mechanism for storing the scenarios is called "Local Storage" for your browser.  It is stored on your machine and for the browser (say Chrome) with which you created them.  If you return to that machine and that browser then loading an animation will load the scenarios you saved previously. This mechanism is simple, and requires no passwords or cloud storage.  Admittedly it does not make sharing them easy. </p>
+		
+	<h4>How do I share them with my colleagues or my students?</h4>
+	<p> If you need to share a collection of scenarios that you have created for one animation, you can create a URL that references the animation and contains all the scenarios encoded in the URL.  Once you are ready, click the <i  class="material-icons font15vw" >link</i> icon.  The URL will be copied to the clipboard so you can pass it to a colleague or post the URL in your learning managment system in an assignment for example. If your colleague wants to keep these scenarios as his/her own in his/her "Local Storage" then he/she needs only to load the URL you sent and then hit the <i  class="material-icons font15vw">edit</i> icon and they will be saved (although they will replace any scenarios she/he currently has saved for that animation).
+	</p>
+
+  </div>
+  <div class='entry'>
+    <h3 id='speeds'>Speeds:</h3>
+		<p> Each of the animations will run at 5 standard speeds: 1x, 2x, 5x, 10x, and 25x.  At the slowest speed the people should look like they are walking.  Yet, this is probably too slow to observe the animation because so little happens at this speed.  So the apps provide four faster speeds.  These speeds are simply labeled from 'slow' to 'fast'.  At the fastest speed the movement of the people is largely a blur and even the movement of the trucks is perhaps too fast to watch but the results in the graph accumulate much faster.  At the faster speeds a longer duration is plotted along the x-axis so more events can be observed.  </p><p>Yet, even so this may seem too slow and too little data so a final speed labeled '∞' is provided.  At '∞' speed the animation is no longer shown, a curtain is pulled over this area of the screen, and the x-axis is expanded further so one can observe more events.  In the queuing animation the x-axis shows 200 units of time.  If you hit 'play' now or you were playing when you hit '∞' speed the graph will fill with 200 units of time and the simulation will pause.  If you hit 'play' again you will get another 200 units of time, from 200 to 400. You can continue this as long as you like.  When you switch back to a slower speed, say 'slow', the graph will show only 10 units time, the curtain will raise so you can see the animation, and the animation will run again when you hit 'play.'</p>
+		
+		</div>
+  <div class='entry'>
+    <h3 id='accessibility'>Accessibility </h3>
+         <p>The colors I have used in the graphs may not seem the most obvious yet I have chosen them to make them more readable to people who have one of the three types of colorblindness.  </p>
+        <p>The first page is a set of links now (it was originally a stack of buttons).  A set of links is more useable by those who have difficulty using a mouse (or trackpad) or who prefer a keyboard.  It also has the advantage that a Command-Click on a link will open a new tab (or window) making it easier to open several copies of a particular animation in several tabs.  Of course if you have used the tab key and have focus on a particular link, say Queueing, then Command-Return will open a copy of this animation in a new tab (or window). </p>
+        </div>
+<h2 id="contact">Contact Information</h2>
+		<p>Gregory (Greg) Dobson</p>
+		<p>Email: <a href="mailto:gdobson@mac.com?Subject=TioX" target="_top">gdobson@mac.com</a></p>
+<h2>
+    <p id='blankSpace'>     </p>
+</h2>
+
 </div>
 
 <script>
-/* Loop through all dropdown buttons to toggle between hiding and showing its dropdown content - This allows the user to have multiple dropdowns without any conflict */
-var dropdown = document.getElementsByClassName("dropdown-btn");
-var i;
 
-for (i = 0; i < dropdown.length; i++) {
-  dropdown[i].addEventListener("click", function (){
-       
-    var dropdownContent = this.nextElementSibling;
-    if (dropdownContent.style.display === "block") {
-    dropdownContent.style.display = "none";
-    } else {
-
-        // for( j = 0; j < dropdown.length; j++){
-        //     dropdown[j].classList.remove("active");
-        //     var ddC = dropdown[j].nextElementSibling;
-        //     if (ddC.style.display === "block") {
-        //         ddC.style.display = "none";
-        //     };
-        // }
-        dropdownContent.style.display = "block";
-        this.classList.toggle("active");
+var toc1 = document.getElementsByClassName('toc1');
+for( let j = 0; j< toc1.length; j++ ){
+  toc1[j].addEventListener('click', openCloseMenu,true);
+};
+function openCloseMenu(event) {
+    const toc = event.target; 
+    if( toc ){
+      var dropdownContent = toc.nextElementSibling;
+      toc.classList.toggle("active");
+      if (dropdownContent.style.display === "block") {
+          dropdownContent.style.display = "none";
+      } else {
+          dropdownContent.style.display = "block";   
     }
-    
-  });
-}
+    }
+  };
 
 </script>
 
