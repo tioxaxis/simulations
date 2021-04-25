@@ -54,7 +54,7 @@ class BatGraph {
 	constructor(){	
 		//flow time graph
         this.flowGraph = new TioxGraph(sur,'fchartCanvassur',
-                40, {width:100, step:20}, d=>d.t, 1000,370,false);
+                40, {width:200, step:50}, d=>d.t, 1000,370,false);
 		this.flowGraph.setTitle('Flow time','fchartTitle');
 		const baseFlow = new GraphLine(this.flowGraph, d => d.base, 
                         {color: cbColors.yellow,
@@ -67,7 +67,7 @@ class BatGraph {
 
         //throughput graph
         this.thruGraph = new TioxGraph(sur,'tchartCanvassur',
-                40, {width:100, step:20}, d=>d.t, 1000,370,false);
+                40, {width:200, step:50}, d=>d.t, 1000,370,false);
 		this.thruGraph.setTitle('Throughput','tchartTitle');
 		const baseThru = new GraphLine(this.thruGraph, d => d.base, 
                         {color: cbColors.yellow, vertical: false,

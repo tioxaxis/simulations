@@ -235,7 +235,6 @@ class LittlesLaw extends OmConcept{
         c.fillRect(anim.pathway.left, anim.pathway.y - anim.pathway.height/2, 
                    anim.pathway.width, anim.pathway.height);
         c.closePath();
-        console.log('exiting draw background');
     };
 };
 function localUpdateFromUser(inp){
