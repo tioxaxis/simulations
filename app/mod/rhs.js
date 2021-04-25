@@ -125,7 +125,7 @@ export class OmConcept {
 		document.getElementById('resetScenarios' + this.key)
 			.addEventListener('click', this.resetScenarios.bind(this));
 		document.getElementById(this.key)
-			.addEventListener('click', this.anyClick.bind(this));
+			.addEventListener('click', this.anyClick.bind(this), true);
 
 		// click on scenario name
 		this.ulPointer.addEventListener('click', this.liClicked.bind(this));
@@ -136,6 +136,7 @@ export class OmConcept {
 		if ( this.toastMode ) this.removeToastMessage();
 		if ( this.textInpBox.contains(event.target) )return;
 		if ( this.textMode ) this.saveModifiedDesc();
+		console.log(' HIT any click');
 	};
 	
 	removeToastMessage() {
@@ -316,8 +317,9 @@ export class OmConcept {
             view[ptr++]= nParams;// number of parameters
             for ( let [key, inp] of this.usrInputs ){
                 const x = inp.encode(row[key]);
+				console.log('In encode:',key,typeof x, 'value of x',x, 'ROW',row.desc);
                 view[ptr++] = this.keyIndex[key];
-                //decide if single of multiple byes
+                //decide if single of multiple bytes
                 if( typeof x != "string" ){
                    view[ptr++] = Number(x);
                 } else {
@@ -355,9 +357,12 @@ export class OmConcept {
                 const keyIndex = view[ptr++];
                 const typeValue = view[ptr++];
                 const key = this.keyNames[keyIndex];
+				console.log('IN sDecode', keyIndex,key,typeValue);
                 if( this.usrInputs.has(key)){
                     const inp = this.usrInputs.get(key);
                     if( typeValue >= 0 ){
+						const zz = inp.decode(typeValue);
+						console.log( 'just callled decode and got ', zz);
                         row[key] = inp.decode(typeValue);
                     } else {
                         const n = -typeValue;
@@ -365,7 +370,7 @@ export class OmConcept {
                         row[key] = textDecoder.decode(view.subarray(ptr,ptr+n));
                         ptr += n;
                     };
-                };
+                } else debugger;
             };
             for(let [key,inp] of this.usrInputs){
                 if( row[key] == undefined ) row[key] = inp.deflt;
@@ -717,9 +722,10 @@ export class OmConcept {
 		message.classList.remove('linkMessageTrigger');
 		void message.offsetWidth;
 		message.classList.add('linkMessageTrigger');
-    	clearTimeout(this.toastTimer);
-		this.toastTimer = setTimeout(
-			this.removeToastMessage.bind(this), 4100);
+    	// clearTimeout(this.toastTimer);
+		// this.toastTimer = setTimeout(
+		// 	this.removeToastMessage.bind(this), 4100);
+		console.log('IN Export with Link');
 	};
 		
 	liClicked (ev) {

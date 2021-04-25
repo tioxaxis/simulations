@@ -61,7 +61,7 @@ class InvGraph extends TioxGraph {
 	constructor(){
 		super(inv,'chartCanvasinv',40, {width:24, step:6}, d=>d.t,
              2000,600,false);
-		this.predictedInvValue = this.computePredInv();
+		// this.predictedInvValue = this.computePredInv();
 		this.setTitle('Inventory','chartTitle');
 		const onhandInv = new GraphLine(this, d => d.i,
                             {color: cbColors.blue, vertical: true,
@@ -1011,9 +1011,10 @@ export function invStart() {
     let usrInputs = invHTML();
     inv = new Inventory(usrInputs);
     invDefine();
+	inv.graph = new InvGraph();
+
     inv.setupScenarios();
     theSimulation.initialize();
-    inv.graph = new InvGraph();
     inv.reset();
 	return inv;
 };

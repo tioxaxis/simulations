@@ -56,7 +56,6 @@ class LittleGraph extends TioxGraph {
 	constructor(){
 		super(lit,'chartCanvaslit',40, {width:20, step:5}, d=>d.t,
              2000,600,false);
-		this.predictedInvValue = this.predictedInv();
 		this.setTitle('Inventory','chartTitle');
 		const avgInv = new GraphLine(this, d => d.i,
                      {color: cbColors.blue, vertical: false,
@@ -88,12 +87,12 @@ class LittleGraph extends TioxGraph {
 		t /= tioxTimeConv;
 		let p = {t: t, i: inv,
 				 rt: rt,
-				 p: this.predictedInvValue};
+				 p: this.predictedInv()};
 		this.drawOnePoint(p);
 	};
 	
 	reset(){
-        super.reset(this.predictedInvValue * 1.2);
+        super.reset(this.predictedInv() * 1.2);
         this.updatePredictedInv();
 	}
     predictedInv() {
@@ -101,10 +100,9 @@ class LittleGraph extends TioxGraph {
 			(theSimulation.interarrivalRV.mean);
 	};
 	updatePredictedInv () {
-		this.predictedInvValue = this.predictedInv();
 		this.drawOnePoint({
 			t: (lit.now / tioxTimeConv),
-			p: this.predictedInvValue
+			p: this.predictedInv()
 		});
 	};
     updateForParamChange(){
@@ -532,9 +530,10 @@ export function litStart() {
     let usrInputs = litHTML();
     lit = new LittlesLaw(usrInputs);
     litDefine();
+    lit.graph = new LittleGraph();
+
     lit.setupScenarios();
     theSimulation.initialize();
-    lit.graph = new LittleGraph();
 	lit.reset();
 	return lit;
 };

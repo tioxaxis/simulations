@@ -544,6 +544,7 @@ export class LegendItem{
     };
     
     decode(x) {
+        console.log('IN LegendItem decode',x);
         return (x == 1 ? 'true' : 'false');
     };
     

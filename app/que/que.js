@@ -67,7 +67,7 @@ class QueueGraph extends TioxGraph {
                          visible: false, continuous: true,
                          lineWidth: 10, dotSize: 0, right: false});
 		
-        this.predictedWaitValue = this.predictedWait();
+        // this.predictedWaitValue = this.predictedWait();
         
         const leg0 = indivWait.createLegend('leg0','individual wait');
         const leg1 = avgWait.createLegend('leg1','average wait');
@@ -95,9 +95,13 @@ class QueueGraph extends TioxGraph {
 	};
 	reset(){
 		this.averageWait = new Average();
-		let yMax = (this.predictedWaitValue == Infinity)?
-			1.5: Math.max(1.5,this.predictedWaitValue * 1.1);
-		super.reset(yMax);
+        
+        let yMax;
+        if ( this.predictedWaitValue ){
+            yMax = (this.predictedWaitValue == Infinity)?
+			    1.5: Math.max(1.5,this.predictedWaitValue * 1.1);
+        } else yMax = 1.5;
+		super.reset(yMax); 
         this.updatePredictedWait();
 	}
 	predictedWait () {
@@ -580,9 +584,10 @@ export function queStart() {
 	let usrInputs= queHTML();
     que = new Queueing(usrInputs);
     queDefine();
+    que.graph = new QueueGraph();
+
     que.setupScenarios();
     theSimulation.initialize();
-    que.graph = new QueueGraph();
 	que.reset();
 	return que;
 };
