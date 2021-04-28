@@ -39,18 +39,24 @@ import {
 	TioxGraph, GraphLine
 }
 from "../mod/graph.js";
+// import {
+// 	genPlayResetBox, genArbSlider, genButton, addDiv,
+//       NumSlider, htmlNumSlider,
+//     ArbSlider, htmlArbSlider,
+//     genRange, 
+//      htmlCheckBox, CheckBox, 
+//     htmlRadioButton, RadioButton, 
+//     IntegerInput, 
+//     addKeyForIds, 
+//     LegendItem, match, Description
+// }
+// from '../mod/genHTML.js';
 import {
-	genPlayResetBox, genArbSlider, genButton, addDiv,
-      NumSlider, htmlNumSlider,
-    ArbSlider, htmlArbSlider,
-    genRange, 
-     htmlCheckBox, CheckBox, 
-    htmlRadioButton, RadioButton, 
-    IntegerInput, 
-    addKeyForIds, 
-    LegendItem, match, Description
+    NumParam, ArbParam, BoolParam, Description, match,
+    NumSlider, ArbSlider, Checkbox, RadioButtons,
+    LegendButton, addDiv, addKeyForIds, genPlayResetBox
 }
-from '../mod/genHTML.js';
+    from '../mod/params.js';
 
 class LittleGraph extends TioxGraph {
 	constructor(){
@@ -70,17 +76,27 @@ class LittleGraph extends TioxGraph {
                          visible: false, continuous: true,
                          lineWidth: 10, dotSize: 0, right: false});
          
+
         const d3 = document.getElementById('chartLegendlit');
-        d3.append('  ', avgInv.createLegend('leg0','avg. inventory'),
-                  avgRT.createLegend('leg1','avg. flow time * avg. throughput'),
-                  predInv.createLegend('leg2','predicted inventory'),'  '
-        );
-        lit.usrInputs.set('leg0', 
-            new LegendItem('leg0', avgInv, localUpdateFromUser, true));
-        lit.usrInputs.set('leg1', 
-            new LegendItem('leg1', avgRT, localUpdateFromUser, true));
-        lit.usrInputs.set('leg2', 
-            new LegendItem('leg2', predInv, localUpdateFromUser, false));
+        d3.append('  ',
+            lit.usrInputs.get('leg0')
+                .create(cbColors.blue, 'avg. inventory', 'lit'),
+            lit.usrInputs.get('leg1')
+                .create(cbColors.yellow, 'avg. flow time * avg. throughput', 'lit'),
+            lit.usrInputs.get('leg2')
+                .create(cbColors.red, 'predicted inventory', 'lit'),
+            '  ');
+        // const d3 = document.getElementById('chartLegendlit');
+        // d3.append('  ', avgInv.createLegend('leg0','avg. inventory'),
+        //           avgRT.createLegend('leg1','avg. flow time * avg. throughput'),
+        //           predInv.createLegend('leg2','predicted inventory'),'  '
+        // );
+        // lit.usrInputs.set('leg0', 
+        //     new LegendItem('leg0', avgInv, localUpdateFromUser, true));
+        // lit.usrInputs.set('leg1', 
+        //     new LegendItem('leg1', avgRT, localUpdateFromUser, true));
+        // lit.usrInputs.set('leg2', 
+        //     new LegendItem('leg2', predInv, localUpdateFromUser, false));
     };
 	
 	push (t, inv, rt){
@@ -237,7 +253,13 @@ class LittlesLaw extends OmConcept{
         c.closePath();
     };
 };
-function localUpdateFromUser(inp){
+
+document.getElementById('lit')
+    .addEventListener('localUpdate', localUpdateFromUser);
+function localUpdateFromUser(event) {
+    const inp = lit.usrInputs.get(event.detail.key);
+    console.log('in LOCAL UPDATE ', inp.key, inp.get());
+
     lit.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
     if( match([inp],['ar','acv','st','scv'])) {
@@ -467,9 +489,24 @@ export class LitPerson extends Person {
 	};
 }; // end class Person
 
-
-function litHTML(){
+function defineParams() {
     let usrInputs = new Map();
+    usrInputs.set('ar',  new NumSlider('ar',  1,  6,  1,  1, 1));
+    usrInputs.set('acv', new NumSlider('acv', 0,  2, .5, 10, 0));
+    usrInputs.set('st',  new NumSlider('st',  5, 25,  1,  1, 6));
+    usrInputs.set('scv', new NumSlider('scv', 0,  2, .5, 10, 0));
+    usrInputs.set('reset', new Checkbox('reset', false));
+    usrInputs.set('action', new RadioButtons('action', ['none', 'play', 'pause'],
+        'none', 'action'));
+    usrInputs.set('speed', new ArbSlider('speed', [1, 2, 5, 10, 25, 1000], 1));
+    usrInputs.set('desc', new Description('desc'));
+    usrInputs.set('leg0', new LegendButton('leg0', true));
+    usrInputs.set('leg1', new LegendButton('leg1', true));
+    usrInputs.set('leg2', new LegendButton('leg2', false));
+    return usrInputs;
+}
+
+function litHTML(usrInputs){
     
 	addDiv('lit','lit','whole')
 	addDiv('lit', 'leftHandSideBox'+'lit',
@@ -483,40 +520,60 @@ function litHTML(){
 	//now put in the sliders with the play/reset box	
 	let elem = document.getElementById('slidersWrapperlit');
     
-    const arInput = genRange('arlit', '1', 1, 6, 1);
-    elem.append(htmlNumSlider(arInput, 'Arrival Rate = ', '1', [1,2,3,4,5,6]) );
-    usrInputs.set('ar', new NumSlider('ar',arInput,
-                localUpdateFromUser, 1, 6, 1, 0,  1) );
-    
-    const acvInput = genRange('acvlit', 0, 0, 2, .5);
-    elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', '0.0',['0.0','1.0','2.0']) );
-    
-    usrInputs.set('acv', new NumSlider('acv', acvInput,
-                localUpdateFromUser, 0, 2, 0, 1, 10) );
-    
-    
-    const stInput = genRange('stlit', '6', 5, 25, 1);
-    elem.append(htmlNumSlider(stInput, 'Service Time = ', 6, [5, 15, 25]) );
-    usrInputs.set('st', new NumSlider('st',stInput,
-                localUpdateFromUser, 5, 25, 6, 0, 1) );
-    
-    const scvInput = genRange('scvlit', 0, 0, 2, .5);
-    elem.append(htmlNumSlider(scvInput, 'Service CV = ', '0.0',['0.0','1.0','2.0']) );
-    usrInputs.set('scv', new NumSlider('scv', scvInput,
-                localUpdateFromUser, 0, 2, 0, 1, 10) );
+    elem.append(usrInputs.get('ar')
+        .create('Arrival Rate = ', [1, 2, 3, 4, 5, 6], 0));
 
-	elem.append(genPlayResetBox('lit') );
-    usrInputs.set('reset', new CheckBox('reset', 'resetlit',
-                localUpdateFromUser, false) );
-    usrInputs.set('action', new RadioButton('action', 'actionlit', 
-                localUpdateFromUser, ['none','play','pause'], 'none') );
+
+    elem.append(usrInputs.get('acv')
+        .create('Arrival CV = ', ['0.0', '1.0', '2.0'], 1));
+
+    elem.append(usrInputs.get('sr')
+        .create('Service Time = ', [5, 15, 25], 0));
+
+    elem.append(usrInputs.get('scv')
+        .create('Service CV = ', ['0.0', '1.0', '2.0'], 1));
+
+    elem.append(genPlayResetBox('lit', usrInputs));
+
+    elem.append(usrInputs.get('speed')
+        .create('Speed = ', ['1x', '2x', '5x', '10x', '25x', '∞'],
+            ["slow", ' ', ' ', ' ', "fast", '∞']));
+
+
+    // const arInput = genRange('arlit', '1', 1, 6, 1);
+    // elem.append(htmlNumSlider(arInput, 'Arrival Rate = ', '1', [1,2,3,4,5,6]) );
+    // usrInputs.set('ar', new NumSlider('ar',arInput,
+    //             localUpdateFromUser, 1, 6, 1, 0,  1) );
     
-    const speedInput = genRange('speedlit',0,0,5,1);
-    elem.append(htmlArbSlider(speedInput, 'Speed = ', '1x',
-                            ["slow",' ',' ',' ',"fast",'∞']) );
-    usrInputs.set('speed', new ArbSlider('speed', speedInput, 
-                localUpdateFromUser, ["1x",'2x','5x','10x',"25x",'∞'],
-				                [1,2,5,10,25,1000], 0) );
+    // const acvInput = genRange('acvlit', 0, 0, 2, .5);
+    // elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', '0.0',['0.0','1.0','2.0']) );
+    
+    // usrInputs.set('acv', new NumSlider('acv', acvInput,
+    //             localUpdateFromUser, 0, 2, 0, 1, 10) );
+    
+    
+    // const stInput = genRange('stlit', '6', 5, 25, 1);
+    // elem.append(htmlNumSlider(stInput, 'Service Time = ', 6, [5, 15, 25]) );
+    // usrInputs.set('st', new NumSlider('st',stInput,
+    //             localUpdateFromUser, 5, 25, 6, 0, 1) );
+    
+    // const scvInput = genRange('scvlit', 0, 0, 2, .5);
+    // elem.append(htmlNumSlider(scvInput, 'Service CV = ', '0.0',['0.0','1.0','2.0']) );
+    // usrInputs.set('scv', new NumSlider('scv', scvInput,
+    //             localUpdateFromUser, 0, 2, 0, 1, 10) );
+
+	// elem.append(genPlayResetBox('lit') );
+    // usrInputs.set('reset', new CheckBox('reset', 'resetlit',
+    //             localUpdateFromUser, false) );
+    // usrInputs.set('action', new RadioButton('action', 'actionlit', 
+    //             localUpdateFromUser, ['none','play','pause'], 'none') );
+    
+    // const speedInput = genRange('speedlit',0,0,5,1);
+    // elem.append(htmlArbSlider(speedInput, 'Speed = ', '1x',
+    //                         ["slow",' ',' ',' ',"fast",'∞']) );
+    // usrInputs.set('speed', new ArbSlider('speed', speedInput, 
+    //             localUpdateFromUser, ["1x",'2x','5x','10x',"25x",'∞'],
+	// 			                [1,2,5,10,25,1000], 0) );
     
     const f = document.getElementById('scenariosMidlit');
 	f.style = "min-height: 24vw";
@@ -526,7 +583,8 @@ function litHTML(){
 };
 
 export function litStart() {
-    let usrInputs = litHTML();
+    let usrInputs = defineParams();
+    litHTML(usrInputs);
     lit = new LittlesLaw(usrInputs);
     litDefine();
     lit.graph = new LittleGraph();

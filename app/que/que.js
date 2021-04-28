@@ -53,7 +53,7 @@ import {
     NumSlider, ArbSlider, Checkbox, RadioButtons,
     LegendButton, addDiv, addKeyForIds, genPlayResetBox
 }
-from '../mod/params.js'
+from '../mod/params.js';
 
 class QueueGraph extends TioxGraph {
 	constructor(){	
