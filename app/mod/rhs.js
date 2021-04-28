@@ -284,7 +284,9 @@ export class OmConcept {
     setSlidersFrom (row){
         const inpsChanged = [];
         for( let [key, inp] of this.usrInputs ){
+			console.log('inSetSliders before',key,row[key]);
           if( inp.set(row[key]) ) inpsChanged.push(inp);
+		  console.log('inSetSliders', key, 'set to',row[key], 'verify', inp.get());
         } 
         
         if (!this.editMode) {

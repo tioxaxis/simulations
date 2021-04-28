@@ -33,26 +33,23 @@ export class NumParam{
         this.deflt = deflt;
         this.value = deflt;
     }
-    get(){
+    getNumber(){
         return this.value;
     };
-    set(x){
+    setNumber(x){
         const changed = this.value != x;
         this.value = x;
-        /* set HTML if avail 
-            set current li[key] = x;
-            call simu(x);    */
         return changed;
     };
-    encode(x){
-        return x * scale;
+    encode(str){
+        return Number(str) * this.scale;
     };
     decode(x){
-        return (x / scale).toString();
+        return (x / this.scale).toString();
     };
-    verify(x){
+    verify(str){
+        const x = Number(str);
         const i = ( x - this.min) / this.step;
-
         if ((this.min <= x) && (x <= this.max)
         && (i == Math.floor(i))) return x.toString();
         reportError(this.key, x);
@@ -60,40 +57,39 @@ export class NumParam{
     }
 };
 export class ArbParam{
-    constructor(key,values,deflt){
+    constructor(key, values, deflt){
         this.key = key;
-        this.values = values;
-        this.deflt = deflt;
+        this.values = values.map( v => v.toString());
+        this.deflt = deflt.toString();
         this.index = values.findIndex( (v) => v == deflt );
     };
-    getValue(){
-        return this.values[this.index];
-    }
-    get(){
+    getIndex(){
         return this.index;
-    };
-    set(i) {
+    }
+    
+    setIndex(i) {
         const changed = this.index != i;
         this.index = i;
-        /* set HTML if avail 
-            set current li[key] = this.values[this.index];
-            call simu(this.values[this.index]);    */
         return changed;
     };
-    encode(x) {
-        return Number(x);
+    encode(str) {
+        const index = this.values.findIndex((v) => v == str);
+        if( index >= 0 ) return index;
+        alert('Couldnt find '+str+' in ArbParm values');
+        debugger;
+        return 0;
     };
-    decode(x) {
-        return x.toString();
+    decode(i) {
+        if( 0 <= i && i < this.values.length ) return this.values[i];
+        alert('index' + i + 'out of bounds in ArbParm');
+        debugger;
+        return this.values[0];
     };
     verify(x) {
-        if ((0 <= x) && (x <= this.values.length))
-             return x.toString();
+        if (this.values.find(v => v == x)) return x.toString();
         reportError(this.key, x);
         return this.deflt.toString();
     };
-
-
 };
 
 export class BoolParam{
@@ -101,15 +97,14 @@ export class BoolParam{
     constructor(key,deflt){
         this.key = key;
         this.deflt = deflt;
-        this.value = deflt == 'true' ? 1 : 0;
+        this.value = deflt;
     }
-    get() {
-        return this.value.toString();
+    getBool() {
+        return this.value;
     };
-    set(x) {
-        const b = x == 'true';
+    setBool(b) {
         const changed = this.value != b;
-        this.value = x == 'true';
+        this.value = b;
         return changed;
     };
     verify(x) {
@@ -123,12 +118,12 @@ export class BoolParam{
     decode(x) {
         return (x == 0 ? 'false' : 'true');
     };
-
 };
 export class Description {
     constructor(key) {
         this.key = key;
         this.deflt = 'default' + key;
+        this.htmlObj = { set: function () {}}
     }
     encode(x) { return x };
     decode(x) { return x };
@@ -144,6 +139,18 @@ function reportError(key, x) {
         console.log('input with key ' + key + ' has a value ' + x + ' which is not an allowed value.  It will be set to the default value');
 };
 
+export function match(inps, keys) {
+    for (let inp of inps) {
+        for (let key of keys) {
+            if (key == inp.key) {
+                return true;
+            }
+        }
+    }
+    return false;
+};
+
+
 class Param{
     constructor(key,deflt){
         this.key = key;
@@ -152,24 +159,24 @@ class Param{
     };
 
 };
-export class HtmlNumSlider{
-    constructor(param, dispText, dispValues){
-        this.param = param;
-        this.dispText = dispText;
-        this.dispValues = dispValues;
+export class NumSlider extends NumParam {
+    constructor(key, min, max, step, scale, deflt){
+        super(key, min, max, step, scale, deflt)
+        this.event = new CustomEvent('localUpdate', { bubbles: true, detail: { key: key } });
     }
-    create(){
+    create(dispText, sliderValues, precision){
+        this.precision = precision;
+
         const sp = document.createElement('span');
-        sp.id = 'disp' + this.param.key;
-        sp.append(this.param.value);
+        sp.append(this.value.toFixed(this.precision));
+        this.display = sp
 
         const disp = document.createElement('div');
-        this.display = disp;
-        disp.append(this.dispText, sp);
+        disp.append(dispText, sp);
 
         const vals = document.createElement('div');
         vals.className = "spreadValues";
-        for (let v of dispValues) {
+        for (let v of sliderValues) {
             let s = document.createElement('span');
             s.append(v);
             vals.append(s);
@@ -177,12 +184,12 @@ export class HtmlNumSlider{
         const inp = document.createElement('input');
         this.input = inp;
         inp.type = 'range';
-        inp.id = this.param.key;
-        inp.min = this.param.min;
-        inp.max = this.param.max;
-        inp.step = this.param.step;
+        inp.id = this.key;
+        inp.min = this.min;
+        inp.max = this.max;
+        inp.step = this.step;
         inp.className = 'backDefault';
-        inp.setAttribute('value', this.param.value);
+        inp.setAttribute('value', this.value);
         inp.addEventListener('input', 
             this.userChange.bind(this));
 
@@ -192,38 +199,46 @@ export class HtmlNumSlider{
 
         return d;
     };
-    get(){
-        return this.input.value;
+    setDisplay(v){
+        this.display.innerHTML = Number(v).toFixed(this.precision);
     };
+    get(){
+        return super.getNumber().toString();
+    }
     set(v){
         this.input.value = v;
-        this.display.innerHTML = v.toFixed(this.precision);
+        this.setDisplay(v);
+        return super.setNumber(Number(v));
     }
     userChange(){
         const v = Number(this.input.value);
-        this.param.set(v);
-        this.display.innerHTML = v.toFixed(this.precision);
+        this.setDisplay(v);
+        super.setNumber(v);
+        this.input.dispatchEvent(this.event);
+    
     };
 };
 
-export class HtmlArbSlider {
-    constructor(param, dispText, dispValues) {
-        this.param = param;
-        this.dispText = dispName;
-        this.dispValues = dispValues;
+export class ArbSlider extends ArbParam {
+    constructor(key, values, deflt) {
+        super(key, values, deflt);
+        this.event = new CustomEvent('localUpdate', { bubbles: true, detail: { key: key } });
     }
-    create() {
+    create(dispText, dispValues, sliderValues) {
+        this.dispValues = dispValues;
+
         const sp = document.createElement('span');
-        sp.id = 'disp' + this.param.key;
-        sp.append(this.param.value);
+        sp.id = 'disp' + this.key;
+        sp.append(this.dispValues[this.index]);
+        this.display = sp;
 
         const disp = document.createElement('div');
-        this.display = disp;
-        disp.append(this.dispText, sp);
+        
+        disp.append(dispText, sp);
 
         const vals = document.createElement('div');
         vals.className = "spreadValues";
-        for (let v of dispValues) {
+        for (let v of sliderValues) {
             let s = document.createElement('span');
             s.append(v);
             vals.append(s);
@@ -231,12 +246,13 @@ export class HtmlArbSlider {
         const inp = document.createElement('input');
         this.input = inp;
         inp.type = 'range';
-        inp.id = this.param.key;
+        inp.id = this.key;
+        inp.value = this.index;
         inp.min = 0;
         inp.max = this.dispValues.length-1;
         inp.step = 1;
         inp.className = 'backDefault';
-        inp.setAttribute('value', this.param.value);
+        inp.setAttribute('value', this.value);
         inp.addEventListener('input',
             this.userChange.bind(this));
 
@@ -246,30 +262,36 @@ export class HtmlArbSlider {
 
         return d;
     };
-    get() {
-        return this.input.value;
-    };
-    set(i) {
-        this.input.value = i;
-        this.display.innerHTML = this.displayValues[i];
+    setDisplay(i){
+        this.display.innerHTML = this.dispValues[i];
+    }
+    get(){
+        return this.values[this.index];
+    }
+    set(str) {
+        const index = this.values.findIndex(v => v == str);
+        this.input.value = index;
+        this.setDisplay(index);
+        return super.setIndex(index);
     }
     userChange() {
         const i = Number(this.input.value);
-        this.param.set(i);
-        this.display.innerHTML = this.displayValues[i];
+        super.setIndex(i);
+        this.setDisplay(i);
+        this.input.dispatchEvent(this.event);
     };
 };
 
-export class HtmlCheckBox{
-    constructor(param) {
-        this.param = param; 
-    };
+export class Checkbox extends BoolParam {
+    constructor(key, deflt) {
+       super(key, deflt);
+       this.event = new CustomEvent('localUpdate', { bubbles: true, detail: { key: this.key } })    };
     create(desc){
         const inp = document.createElement('input');
         this.input = inp;
         inp.type = 'checkbox';
-        inp.id = id;
-        inp.checked = this.param.value =='true' ? true : false;
+        // inp.id = id;
+        inp.checked = this.value;
 
         const label = document.createElement('LABEL');
         label.append(inp, desc);
@@ -277,29 +299,31 @@ export class HtmlCheckBox{
         inp.addEventListener('input', this.userChange.bind(this));
         return label;
     };
-    get() {
-        return this.input.checked.toString();
-    };
+    get(){
+        return super.getBool().toString();
+    }
     set(x) {
         const b = x == 'true';
-        const changed = this.input.checked != b;
-        this.input.checked = x == 'true';
-        return changed;
+        this.input.checked = b;
+        return super.setBool(b);
     };
     userChange() {
-        this.param.set(this.input.checked);
+        super.setBool(this.input.checked);
+        this.input.dispatchEvent(this.event);
     };
+    
 };
-export class HtmlRadioButtons{
-    constructor(param,name) {
-        this.param = param;
+export class RadioButtons extends ArbParam {
+    constructor(key, values, deflt, name) {
+        super(key, values, deflt)
         this.name = name;
-    }
+        this.event = new CustomEvent('localUpdate', { bubbles: true, detail: { key: key } });
+}
     createAButton(value, checked, desc) {
         const inp = document.createElement('input');
         inp.type = 'radio';
         inp.name = this.name;
-        if( this.param.values.findIndex( v => v == value) < 0 ){
+        if( this.values.findIndex( v => v == value) < 0 ){
             alert('creating a radio button with value not in associate list:'+value);
             debugger;
         }
@@ -311,121 +335,219 @@ export class HtmlRadioButtons{
         label.append(inp, desc);
         return label;
     };
-    //     this.nodelist = document.getElementsByName(param.name);
+    //     this.nodelist = document.getElementsByName());
     //     for (let j = 0; j < this.nodelist.length; j++) {
     //         this.nodelist[j].addEventListener('click',
     //             this.userChange.bind(this));
     //     }
     // }
-    create(){
-
+    create(input){
+        this.input = input;
     }
-    get() {
-        for (let j = 0; j < this.nodelist.length; j++) {
-            if (this.nodelist[j].checked) {
-                return this.nodelist[j].value;
-            }
-        }
-        return -1;
+
+    // get() {
+    //     for (let j = 0; j < this.nodelist.length; j++) {
+    //         if (this.nodelist[j].checked) {
+    //             return this.nodelist[j].value;
+    //         }
+    //     }
+    //     return -1;
+    // }
+    get(){
+        return this.values[super.getIndex()];
     }
     set(str) {
+        const index = this.values.findIndex(v => v == str);
+        super.setIndex(index);
+
         // can't be done until html exists!!
+        if( !this.nodelist ) this.nodelist = document.getElementsByName(this.name);
         for (let j = 0; j < this.nodelist.length; j++) {
             if (this.nodelist[j].value == str) {
                 const changed = !this.nodelist[j].checked;
                 this.nodelist[j].checked = true;
+                
                 return changed;
             }
         }
-        alert("can't find the doc elem with name", this.name, " and value ", str);
+        alert("can't find the doc elem with name"+ this.name+ " and value "+ str);
         debugger;
     };
     
     userChange(event) {
         const value = event.target.value ;
         const index = this.values.findIndex( v => v == value );
-        this.param.set(index);
+        // console.log('in userChange Radio',index);
+        super.setIndex(index);
+        this.input.dispatchEvent(this.event);
     };
 
 
 
 
 };
-export class HtmlButtonOnOff{
-    constructor(param, onId, offId){
-        this.param = param;
+export class ButtonToggle extends BoolParam {
+    constructor(key, deflt){
+        super(key, deflt);
+        this.event = new CustomEvent('localUpdate', { bubbles: true, detail: { key: key } });
+}
+    create(input, onId, offId){
+        this.input = input;
         this.onId = onId;
         this.offId = offId;
     }
-    create(input){
-        this.input = input;
-
-    }
-    set(x){
-        if (x) {
+    setDisplay(b){
+        if (b) {
             displayToggle(this.onId, this.offId);
         } else {
             displayToggle(this.offId, this.onId);
         }
     };
+    set(x){
+        const b = ( x == 'true' );
+        this.setDisplay(b);
+        return super.setBool(b);
+    };
     userChange(){
-        if (this.param.value) {
-            displayToggle(this.onId, this.offId);
-        } else {
-            displayToggle(this.offId, this.onId);
-        }
-        this.param.value = !this.param.value;
+        const b = !super.getBool();
+        this.setDisplay(b);
+        super.setBool(b);
+        this.input.dispatchEvent(this.event);
     }
 
 };
-export class HtmlIntegerInput{
-    constructor(param, min, max) {
-        this.param = param;
-        this.min = min;
-        this.max = max;
-        //        this.shortLen = shortLen;
-        
-    };
+export class IntegerInput extends NumParam {
+    constructor(key, min, max) {
+        super(key, min, max, 1, 1, min);
+        this.event = new CustomEvent('localUpdate', { bubbles: true, detail: { key: key } });
+};
     create(input){
         this.input = input;
         this.input.addEventListener('change', this.userChange.bind(this));
     };
 
-    get() {
-        return this.input.value;
-    };
+    verify(x){
+        if (x <= this.min) return this.min;
+        if (x >= this.max) return this.max;
+        if (x != Math.floor(x)) return Math.floor(x);
+        return x;
+    }
+    get(){
+        return super.getNumber();
+    }
     set(x) {
-        const changed = this.input.value != x;
-        this.input.value = x;
-        return changed;
+        const y = this.verify(x);
+        this.input.value = y;
+        return super.setNumber(y);
     };
     userChange(event) {
-        let x = Number(event.target.value);
-        if (x < this.min) event.target.value = this.min;
-        else if (x > this.max) event.target.value = this.max;
-        else if (x != Math.floor(x)) event.target.value = Math.floor(x);
-        this.localUpdate(this);
+        this.input.value = this.verify(this.input.value);
+        super.setNumber(this.input.value);
+        this.input.dispatchEvent(this.event);
     }
 };
-export class HtmlLegendItem{
-    constructor(param) {
-        this.param = param;
+export class LegendButton extends BoolParam {
+    constructor(key, deflt) {
+        super(key, deflt);       
+        this.event = new CustomEvent('localUpdate', { bubbles: true, detail: { key: key } });
+}
+    create(color, text, omKey){
+        this.id = this.key + omKey;
+        this.button = document.createElement('div');
+        this.button.classList.add('legendbox');
+        this.button.id = this.id;
+
+        const dot = document.createElement('div');
+        dot.classList.add('legendCircle');
+        dot.innerHTML = '&#11044;'
+        dot.style = 'color:' + color;
+
+        const txt = document.createElement('div');
+        txt.classList.add('legendText');
+        txt.innerHTML = text;
+        this.button.append(dot, txt);
+        if ( !this.value  )
+            this.button.classList.add('crossOut');
         
+        this.button.addEventListener('click', this.userChange.bind(this));
+        return this.button;
+    };
+
+    setLegendText(text) {
+        const children = this.button.childNodes;
+        children[1].innerHTML = text;
+    };
+    setDisplay(visible){
+        if (visible)
+            this.button.classList.remove('crossOut');
+        else
+            this.button.classList.add('crossOut');
     }
-    create(input){
-        this.input = input;
-        input.addEventListener('click', this.userChange.bind(this));
+    get(){
+        return super.getBool().toString();
     }
     set(x) {
-        const b = (x == 'true');
-        const changed = this.param.get() != b;
-        this.param.set(b);
-        return changed;
+        const b = ( x == 'true' );
+        this.setDisplay(b);
+        return super.setBool(b);
     };
     userChange() {
-        this.param.set(!this.param.get())
+        const visible = !super.getBool();
+        this.setDisplay(visible);
+        super.setBool(visible);
+        this.button.dispatchEvent(this.event);
     }
 
 };
 
+export function genPlayResetBox(key, usrInputs) {
+    const d1 = document.getElementById('playButtons').cloneNode(true);
+    addKeyForIds(key, d1);
 
+    const c1 = document.createElement('div');
+    c1.className = 'columnAroundStart';
+
+    const i11 = document.createElement('label');
+    i11.append('Action:');
+
+    const checkbox = usrInputs.get('reset');
+    c1.append(i11, checkbox.create('Reset'));
+
+    const c2 = document.createElement('div');
+    c2.className = 'columnAroundStart';
+    const radioSet = usrInputs.get('action');
+    const none = radioSet.createAButton('none', true, 'None');
+    const play = radioSet.createAButton('play', false, 'Play');
+    const pause = radioSet.createAButton('pause', false, 'Pause');
+    c2.append(none, pause, play);
+    radioSet.create(c2);
+
+    const d2 = document.createElement('div');
+    d2.className = "rowAroundCenter displayNone";
+    d2.id = 'actionOptions' + key;
+    d2.append(c1, c2);
+
+    const d = document.createElement('div');
+    d.className = 'sliderBox';
+    d.append(d1, d2);
+    return d
+};
+
+export function addDiv(key, toId, ...fromIds) {
+    const d = document.getElementById(toId);
+    for (let from of fromIds) {
+        let elem = document.getElementById(from)
+            .cloneNode(true);
+        addKeyForIds(key, elem);
+        d.append(elem);
+    }
+}
+
+
+export function addKeyForIds(key, node) {
+    if (node.id) node.id += key;
+    const children = node.childNodes;
+    for (let child of children)
+        if (child.tagName)
+            addKeyForIds(key, child);
+}

@@ -36,18 +36,24 @@ import {
 	TioxGraph, GraphLine
 }
 from "../mod/graph.js";
+// import {
+// 	genPlayResetBox, genArbSlider, genButton, addDiv,
+//       NumSlider, htmlNumSlider,
+//     ArbSlider, htmlArbSlider,
+//     genRange, 
+//      htmlCheckBox, CheckBox, 
+//     htmlRadioButton, RadioButton, 
+//     IntegerInput, 
+//     addKeyForIds, 
+//     LegendItem, match, Description
+// }
+// from '../mod/genHTML.js';
 import {
-	genPlayResetBox, genArbSlider, genButton, addDiv,
-      NumSlider, htmlNumSlider,
-    ArbSlider, htmlArbSlider,
-    genRange, 
-     htmlCheckBox, CheckBox, 
-    htmlRadioButton, RadioButton, 
-    IntegerInput, 
-    addKeyForIds, 
-    LegendItem, match, Description
+   NumParam, ArbParam, BoolParam, Description, match,
+    NumSlider, ArbSlider, Checkbox, RadioButtons,
+    LegendButton, addDiv, addKeyForIds, genPlayResetBox
 }
-from '../mod/genHTML.js';
+from '../mod/params.js'
 
 class QueueGraph extends TioxGraph {
 	constructor(){	
@@ -69,18 +75,13 @@ class QueueGraph extends TioxGraph {
 		
         // this.predictedWaitValue = this.predictedWait();
         
-        const leg0 = indivWait.createLegend('leg0','individual wait');
-        const leg1 = avgWait.createLegend('leg1','average wait');
-        const leg2 = this.predWait.createLegend('leg2','predicted wait');
+                     
         const d3 = document.getElementById('chartLegendque');
-        d3.append('  ',leg0, leg1, leg2,'  ');
-        
-        que.usrInputs.set('leg0', 
-            new LegendItem('leg0', indivWait, localUpdateFromUser, true)); 
-        que.usrInputs.set('leg1', 
-            new LegendItem('leg1', avgWait, localUpdateFromUser, true));
-        que.usrInputs.set('leg2', 
-            new LegendItem('leg2', this.predWait, localUpdateFromUser, false));
+        d3.append('  ', 
+            que.usrInputs.get('leg0').create(cbColors.blue, 'individual wait', 'que'),
+            que.usrInputs.get('leg1').create(cbColors.yellow, 'average wait', 'que'),
+            que.usrInputs.get('leg2').create(cbColors.red, 'predicted wait', 'que'),
+            '  ');
 	};
 	
 	push (t,w){
@@ -122,8 +123,8 @@ class QueueGraph extends TioxGraph {
 			t: (que.now / tioxTimeConv),
 			p: (pW == Infinity)?null:pW
 		});
-        this.predWait.setLegendText( 'predicted wait' +
-					   ((pW == Infinity) ? ' = ∞' : ''));
+        que.usrInputs.get('leg2')
+            .setLegendText( 'predicted wait' + ((pW == Infinity) ? ' = ∞' : ''));
 
 		this.predictedWaitValue = pW;
 	};
@@ -136,7 +137,6 @@ class QueueGraph extends TioxGraph {
 const anim = {};
 let que ;
 var gSF;
-var leg2Input ;// allows communication across graph setting up this elem.
 
 const tioxTimeConv = 10000; //rates in tiox are k/10 seconds
 
@@ -254,39 +254,41 @@ class Queueing extends OmConcept{
 		c.closePath();
     };
 };
-function localUpdateFromUser(inp){
+document.getElementById('que')
+    .addEventListener('localUpdate',localUpdateFromUser);
+function localUpdateFromUser(event){
+    const inp = que.usrInputs.get(event.detail.key);
+    console.log('in LOCAL UPDATE ',inp.key,inp.get());
     que.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
     if( match([inp],['ar','acv','sr','scv'])) {
             que.graph.updateForParamChange();
         }
 };
-
 function localUpdate(inp){
-    let v = inp.get();
     switch (inp.key){
         case 'ar':
             theSimulation.interarrivalRV
-                .setRate(v / tioxTimeConv);
+                .setRate(inp.getNumber() / tioxTimeConv);
             que.heap.modify('finish/creator',
                 () => que.now + theSimulation.interarrivalRV.observe());
             break;
         case 'acv':
             theSimulation.interarrivalRV
-                .setCV(v);
+                .setCV(inp.getNumber());
             que.heap.modify('finish/creator',
                 () => que.now + theSimulation.interarrivalRV.observe());
             break;
         case 'sr':
             theSimulation.serviceRV
-                .setRate(v / tioxTimeConv);
+                .setRate(inp.getNumber() / tioxTimeConv);
             que.heap.modify('finish/TSAagent',
                 () => que.now +
                 theSimulation.serviceRV.observe());
            break;
         case 'scv':
             theSimulation.serviceRV
-                .setCV(v);
+                .setCV(inp.getNumber());
             que.heap.modify('finish/TSAagent',
                 () => que.now +
                 theSimulation.serviceRV.observe());
@@ -294,7 +296,7 @@ function localUpdate(inp){
                            () => que.now + halfServiceTime())
             break;
         case 'speed':
-            que.adjustSpeed(v);
+            que.adjustSpeed(inp.getIndex());
             break;
         case 'action':
         case 'reset':
@@ -516,9 +518,23 @@ class Supplier {
         return last;
 	}
 }; //end class Supplier
-
-function queHTML(){	
-	let usrInputs = new Map();
+function defineParams(){
+    let usrInputs = new Map();
+    usrInputs.set('ar', new NumSlider('ar',   0, 10, .1, 10, 5));
+    usrInputs.set('acv', new NumSlider('acv', 0,  2, .5, 10, 0));
+    usrInputs.set('sr', new NumSlider('sr',   0, 10, .1, 10, 6));
+    usrInputs.set('scv', new NumSlider('scv', 0, 2,  .5, 10, 0));
+    usrInputs.set('reset', new Checkbox('reset', false));
+    usrInputs.set('action', new RadioButtons('action', ['none', 'play', 'pause'],
+                                            'none', 'action'));
+    usrInputs.set('speed', new ArbSlider('speed',   [1, 2, 5, 10, 25, 1000], 1));
+    usrInputs.set('desc', new Description('desc'));
+    usrInputs.set('leg0', new LegendButton('leg0', true));
+    usrInputs.set('leg1', new LegendButton('leg1', true));
+    usrInputs.set('leg2', new LegendButton('leg2', false));
+    return usrInputs;
+}
+function queHTML(usrInputs){	
     
     addDiv('que','que','whole')
 	addDiv('que', 'leftHandSideBox'+'que',
@@ -534,54 +550,35 @@ function queHTML(){
 	 d2.append(delem);
     
 
-	//now put in the sliders with the play/reset box	
-	
+		
 	let elem = document.getElementById('slidersWrapperque');
     
-    const arInput = genRange('arque', '5.0', 0, 10, .1);
-    elem.append(htmlNumSlider(arInput, 'Arrival Rate = ', '5.0', [0,2,4,6,8,10]) );
-    usrInputs.set('ar', new NumSlider('ar',arInput,
-                localUpdateFromUser, 0, 10, 5, 1, 10) );
-    
-    const acvInput = genRange('acvque', 0, 0, 2, .5);
-    elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', '0.0',['0.0','1.0','2.0']) );
-    usrInputs.set('acv', new NumSlider('acv', acvInput,
-                localUpdateFromUser, 0, 2, 0, 1, 10) );
+    elem.append(usrInputs.get('ar')
+        .create('Arrival Rate = ', [0, 2, 4, 6, 8, 10], 1));
     
     
-    const srInput = genRange('srque', '6.0', 0, 10, .1);
-    elem.append(htmlNumSlider(srInput, 'Service Rate = ', '6.0',[0,2,4,6,8,10]) );
-    usrInputs.set('sr', new NumSlider('sr',srInput,
-                localUpdateFromUser, 0, 10, 6, 1, 10) );
+    elem.append(usrInputs.get('acv')
+        .create('Arrival CV = ', ['0.0', '1.0', '2.0'], 1));
     
-    const scvInput = genRange('scvque', 0, 0, 2, .5);
-    elem.append(htmlNumSlider(scvInput, 'Service CV = ', '0.0',['0.0','1.0','2.0']) );
-    usrInputs.set('scv', new NumSlider('scv', scvInput,
-                localUpdateFromUser, 0, 2, 0, 1, 10) );
-    
-    elem.append( genPlayResetBox('que') );
-    usrInputs.set('reset', new CheckBox('reset', 'resetque',
-                localUpdateFromUser, false) );
-    usrInputs.set('action', new RadioButton('action', 'actionque', 
-                localUpdateFromUser, ['none','play','pause'], 'none') );
-     
-    const speedInput = genRange('speedque',0,0,5,1);
-    elem.append(htmlArbSlider(speedInput, 'Speed = ', '1x',
-                            ["slow",' ',' ',' ',"fast",'∞']) );
-    usrInputs.set('speed', new ArbSlider('speed', speedInput, 
-                localUpdateFromUser, ["1x",'2x','5x','10x',"25x",'∞'],
-				                [1,2,5,10,25,1000], 0) );   
-    
+    elem.append(usrInputs.get('sr')
+        .create('Service Rate = ', [0, 2, 4, 6, 8, 10], 1));
+
+    elem.append(usrInputs.get('scv')
+        .create('Service CV = ', ['0.0', '1.0', '2.0'], 1));
+
+    elem.append(genPlayResetBox('que',usrInputs));
+
+    elem.append(usrInputs.get('speed')
+        .create('Speed = ', ['1x', '2x', '5x', '10x', '25x', '∞'],
+                ["slow", ' ', ' ', ' ', "fast", '∞']) );
+      
 	const f = document.getElementById('scenariosMidque');
 	f.style = "min-height: 24vw";
-    
-    usrInputs.set('desc', new Description('desc'));
-    
-    return usrInputs;
 };
 
 export function queStart() {
-	let usrInputs= queHTML();
+	let usrInputs = defineParams();
+    queHTML(usrInputs);
     que = new Queueing(usrInputs);
     queDefine();
     que.graph = new QueueGraph();

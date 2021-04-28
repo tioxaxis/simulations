@@ -397,41 +397,9 @@ export class GraphLine{
         this.origDotSize = params.dotSize;
         this.data = [{x:0,y:null}];
     };
-        
-    createLegend(legKey,text){
-        this.button = document.createElement('div');
-        this.button.classList.add('legendbox');
-		this.button.id = legKey + this.graph.omConcept.key;
-        
-        const dot = document.createElement('div');
-        dot.classList.add('legendCircle');
-        dot.innerHTML = '&#11044;'
-        dot.style = 'color:'+this.params.color;
-        
-        const txt = document.createElement('div');
-        txt.classList.add('legendText');
-        txt.innerHTML = text ;
-        this.button.append(dot, txt);
-        if( !this.params.visible ) 
-            this.button.classList.add('crossOut');
-        return this.button;
-    };
-	
-    setLegendText(text){
-        const children = this.button.childNodes;
-        children[1].innerHTML = text;
-    };
+
     
-	clickResponse(){
-        this.setVisibility(!this.params.visible);
-        
-    };
     setVisibility(b){
-        this.params.visible = b;
-        if( this.params.visible )
-            this.button.classList.remove('crossOut');
-        else
-          this.button.classList.add('crossOut');
         this.graph.setupThenRedraw();
     };
     

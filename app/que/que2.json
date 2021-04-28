@@ -1,21 +1,21 @@
 {"app": {
     "omConcept":{ "key":"que","scenarios":
-    [{"ar":"5", "acv":"0", "sr":"6", "scv":"0", "speed":"1", "action":"none",
+    [{"ar":"5", "acv":"0", "sr":"6", "scv":"0", "speed":"0", "action":"none",
   "leg0":"true", "leg1":"true", "leg2":"false", "reset":"false", 
   "desc":"A: No variability"}, 
- {"ar":"5", "acv":"1", "sr":"6", "scv":"0", "speed":"1", "action":"none",
+ {"ar":"5", "acv":"1", "sr":"6", "scv":"0", "speed":"0", "action":"none",
   "leg0":"true", "leg1":"true", "leg2":"false", "reset":"false", 
   "desc":"B: Arrival variability"}, 
- {"ar":"5", "acv":"1", "sr":"6", "scv":"1", "speed":"1", "action":"none", 
+ {"ar":"5", "acv":"1", "sr":"6", "scv":"1", "speed":"0", "action":"none", 
   "leg0":"true", "leg1":"true", "leg2":"false", "reset":"false", 
   "desc":"C: Both have variability"}, 
- {"ar":"5", "acv":"1", "sr":"6", "scv":"1", "speed":"5", "action":"none", 
+ {"ar":"5", "acv":"1", "sr":"6", "scv":"1", "speed":"2", "action":"none", 
   "leg0":"true", "leg1":"true", "leg2":"false", "reset":"false", 
   "desc":"D: Speed it up"}, 
- {"ar":"5", "acv":"1", "sr":"0", "scv":"1", "speed":"5", "action":"none", 
+ {"ar":"5", "acv":"1", "sr":"0", "scv":"1", "speed":"2", "action":"none", 
   "leg0":"true", "leg1":"true", "leg2":"false", "reset":"false", 
   "desc":"E: Coffee break"}, 
- {"ar":"5", "acv":"1", "sr":"6", "scv":"1", "speed":"5", "action":"none", 
+ {"ar":"5", "acv":"1", "sr":"6", "scv":"1", "speed":"2", "action":"none", 
   "leg0":"true", "leg1":"true", "leg2":"false", "reset":"false", 
   "desc":"F: Return to work"}]
                 }}}
