@@ -1,16 +1,16 @@
 {"app":{
   "omConcept":{"key":"bat","scenarios":
-  [{"bSetup":"4","mSetup":"4","util":"1","batch":"3","pt":"2","reset":"false",
-    "action":"none","speed":"1","leg0":"true","leg1":"true","desc":"A: Initial"},
+  [{"bSetup":"4","mSetup":"4","util":".9","batch":"16","pt":"2","reset":"false",
+    "action":"none","speed":"2","leg0":"true","leg1":"true","desc":"A: Initial"},
 
-    {"bSetup":"4","mSetup":"4","util":"1","batch":"3","pt":"2","reset":"false","action":"none","speed":"2","leg0":"true","leg1":"true","desc":"B: Speed It Up"},
+    {"bSetup":"4","mSetup":"4","util":".9","batch":"16","pt":"2","reset":"false","action":"none","speed":"5","leg0":"true","leg1":"true","desc":"B: Speed It Up"},
 
-    {"bSetup":"4","mSetup":"4","util":"1","batch":"2","pt":"2","reset":"false","action":"none","speed":"2","leg0":"true","leg1":"true","desc":"C: Reduce Batch Size to 12"},
+    {"bSetup":"4","mSetup":"4","util":".9","batch":"12","pt":"2","reset":"false","action":"none","speed":"5","leg0":"true","leg1":"true","desc":"C: Reduce Batch Size to 12"},
 
-    {"bSetup":"4","mSetup":"4","util":"1","batch":"1","pt":"2","reset":"false","action":"none","speed":"2","leg0":"true","leg1":"true","desc":"D: Reduce Batch Size to 8"},
+    {"bSetup":"4","mSetup":"4","util":".9","batch":"8","pt":"2","reset":"false","action":"none","speed":"5","leg0":"true","leg1":"true","desc":"D: Reduce Batch Size to 8"},
 
-    {"bSetup":"4","mSetup":"4","util":"1","batch":"0","pt":"2","reset":"false","action":"none","speed":"2","leg0":"true","leg1":"true","desc":"E: Reduce Batch Size to 4"},
+    {"bSetup":"4","mSetup":"4","util":".9","batch":"4","pt":"2","reset":"false","action":"none","speed":"5","leg0":"true","leg1":"true","desc":"E: Reduce Batch Size to 4"},
 
-    {"bSetup":"4","mSetup":"4","util":"1","batch":"0","pt":"2","reset":"false","action":"none","speed":"3","leg0":"true","leg1":"true","desc":"F: Speed up more"}
+    {"bSetup":"4","mSetup":"4","util":".9","batch":"4","pt":"2","reset":"false","action":"none","speed":"10","leg0":"true","leg1":"true","desc":"F: Speed up more"}
     ]}}} 
     

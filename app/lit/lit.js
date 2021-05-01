@@ -65,15 +65,15 @@ class LittleGraph extends TioxGraph {
 		this.setTitle('Inventory','chartTitle');
 		const avgInv = new GraphLine(this, d => d.i,
                      {color: cbColors.blue, vertical: false,
-                         visible: true, continuous: false,
+                         visible: lit.usrInputs.get('leg0'), continuous: false,
                          lineWidth: 5, dotSize: 8, right: false});
 		const avgRT = new GraphLine(this, d => d.rt,
                       {color: cbColors.yellow, vertical: false,
-                         visible: true, continuous: false,
+                          visible: lit.usrInputs.get('leg1'), continuous: false,
                          lineWidth: 5, dotSize: 6, right: false});
 		const predInv = new GraphLine(this, d => d.p,
                    {color: cbColors.red, vertical: true,
-                         visible: false, continuous: true,
+                       visible: lit.usrInputs.get('leg2'), continuous: true,
                          lineWidth: 10, dotSize: 0, right: false});
          
 
@@ -268,36 +268,37 @@ function localUpdateFromUser(event) {
 };
         
  function localUpdate(inp){
-    let v = inp.get();
     switch (inp.key){
         case 'ar':
              theSimulation.interarrivalRV
-                .setRate(v / tioxTimeConv);
+                .setRate(inp.getNumber() / tioxTimeConv);
              lit.graph.updatePredictedInv();
              break;
 
         case 'acv':
-            theSimulation.interarrivalRV.setCV(v);
+            theSimulation.interarrivalRV.setCV(inp.getNumber());
             break;
 
         case 'st':
-            theSimulation.serviceRV.setTime(v * tioxTimeConv);
+            theSimulation.serviceRV.setTime(inp.getNumber() * tioxTimeConv);
             lit.graph.updatePredictedInv();
             break;
 
         case 'scv':
-            theSimulation.serviceRV.setCV(v);
+            theSimulation.serviceRV.setCV(inp.getNumber());
             break;
 
         case 'speed':
-            lit.adjustSpeed(v);
+            lit.adjustSpeed(inp.getIndex());
             break;
             
         case 'action':
         case 'reset':
+            break;
         case 'leg0':
         case 'leg1':
         case 'leg2':
+            lit.graph.setupThenRedraw();
             break;
         default:
             console.log(' reached part for default');
@@ -491,13 +492,13 @@ export class LitPerson extends Person {
 
 function defineParams() {
     let usrInputs = new Map();
-    usrInputs.set('ar',  new NumSlider('ar',  1,  6,  1,  1, 1));
-    usrInputs.set('acv', new NumSlider('acv', 0,  2, .5, 10, 0));
-    usrInputs.set('st',  new NumSlider('st',  5, 25,  1,  1, 6));
-    usrInputs.set('scv', new NumSlider('scv', 0,  2, .5, 10, 0));
+    usrInputs.set('ar',  new NumSlider('ar',  1,  6,  1, 1));
+    usrInputs.set('acv', new NumSlider('acv', 0,  2, .5, 0));
+    usrInputs.set('st',  new NumSlider('st',  5, 25,  1, 6));
+    usrInputs.set('scv', new NumSlider('scv', 0,  2, .5, 0));
     usrInputs.set('reset', new Checkbox('reset', false));
     usrInputs.set('action', new RadioButtons('action', ['none', 'play', 'pause'],
-        'none', 'action'));
+        'none', 'actionlit'));
     usrInputs.set('speed', new ArbSlider('speed', [1, 2, 5, 10, 25, 1000], 1));
     usrInputs.set('desc', new Description('desc'));
     usrInputs.set('leg0', new LegendButton('leg0', true));
@@ -521,17 +522,17 @@ function litHTML(usrInputs){
 	let elem = document.getElementById('slidersWrapperlit');
     
     elem.append(usrInputs.get('ar')
-        .create('Arrival Rate = ', [1, 2, 3, 4, 5, 6], 0));
+        .create('Arrival Rate = ', [1, 2, 3, 4, 5, 6]));
 
 
     elem.append(usrInputs.get('acv')
-        .create('Arrival CV = ', ['0.0', '1.0', '2.0'], 1));
+        .create('Arrival CV = ', ['0.0', '1.0', '2.0']));
 
-    elem.append(usrInputs.get('sr')
-        .create('Service Time = ', [5, 15, 25], 0));
+    elem.append(usrInputs.get('st')
+        .create('Service Time = ', [5, 15, 25]));
 
     elem.append(usrInputs.get('scv')
-        .create('Service CV = ', ['0.0', '1.0', '2.0'], 1));
+        .create('Service CV = ', ['0.0', '1.0', '2.0']));
 
     elem.append(genPlayResetBox('lit', usrInputs));
 
@@ -539,42 +540,6 @@ function litHTML(usrInputs){
         .create('Speed = ', ['1x', '2x', '5x', '10x', '25x', '∞'],
             ["slow", ' ', ' ', ' ', "fast", '∞']));
 
-
-    // const arInput = genRange('arlit', '1', 1, 6, 1);
-    // elem.append(htmlNumSlider(arInput, 'Arrival Rate = ', '1', [1,2,3,4,5,6]) );
-    // usrInputs.set('ar', new NumSlider('ar',arInput,
-    //             localUpdateFromUser, 1, 6, 1, 0,  1) );
-    
-    // const acvInput = genRange('acvlit', 0, 0, 2, .5);
-    // elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', '0.0',['0.0','1.0','2.0']) );
-    
-    // usrInputs.set('acv', new NumSlider('acv', acvInput,
-    //             localUpdateFromUser, 0, 2, 0, 1, 10) );
-    
-    
-    // const stInput = genRange('stlit', '6', 5, 25, 1);
-    // elem.append(htmlNumSlider(stInput, 'Service Time = ', 6, [5, 15, 25]) );
-    // usrInputs.set('st', new NumSlider('st',stInput,
-    //             localUpdateFromUser, 5, 25, 6, 0, 1) );
-    
-    // const scvInput = genRange('scvlit', 0, 0, 2, .5);
-    // elem.append(htmlNumSlider(scvInput, 'Service CV = ', '0.0',['0.0','1.0','2.0']) );
-    // usrInputs.set('scv', new NumSlider('scv', scvInput,
-    //             localUpdateFromUser, 0, 2, 0, 1, 10) );
-
-	// elem.append(genPlayResetBox('lit') );
-    // usrInputs.set('reset', new CheckBox('reset', 'resetlit',
-    //             localUpdateFromUser, false) );
-    // usrInputs.set('action', new RadioButton('action', 'actionlit', 
-    //             localUpdateFromUser, ['none','play','pause'], 'none') );
-    
-    // const speedInput = genRange('speedlit',0,0,5,1);
-    // elem.append(htmlArbSlider(speedInput, 'Speed = ', '1x',
-    //                         ["slow",' ',' ',' ',"fast",'∞']) );
-    // usrInputs.set('speed', new ArbSlider('speed', speedInput, 
-    //             localUpdateFromUser, ["1x",'2x','5x','10x',"25x",'∞'],
-	// 			                [1,2,5,10,25,1000], 0) );
-    
     const f = document.getElementById('scenariosMidlit');
 	f.style = "min-height: 24vw";
     usrInputs.set('desc', new Description('desc'));

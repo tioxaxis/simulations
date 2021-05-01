@@ -37,19 +37,25 @@ import {
 	TioxGraph, GraphLine
 }
 from "../mod/graph.js";
+// import {
+// 	genPlayResetBox, genArbSlider, genButton, addDiv,
+//       NumSlider, htmlNumSlider,
+//     ArbSlider, htmlArbSlider,
+//     genRange, 
+//      htmlCheckBox, CheckBox, 
+//     htmlRadioButton, RadioButton, 
+//     IntegerInput, 
+//     addKeyForIds, 
+//     LegendItem, match, Description
+// }
+// from '../mod/genHTML.js';
 import {
-	genPlayResetBox, genArbSlider, genButton, addDiv,
-      NumSlider, htmlNumSlider,
-    ArbSlider, htmlArbSlider,
-    genRange, 
-     htmlCheckBox, CheckBox, 
-    htmlRadioButton, RadioButton, 
-    IntegerInput, 
-    addKeyForIds, 
-    LegendItem, match, Description
+    NumParam, ArbParam, BoolParam, Description, match,
+    NumSlider, ArbSlider, Checkbox, RadioButtons,
+    LegendButton, addDiv, addKeyForIds, genPlayResetBox,
+    IntegerInput
 }
-from '../mod/genHTML.js';
-
+    from '../mod/params.js';
 
 class FacGraph {
 	//controls both of the flow time and throughput graphs
@@ -60,7 +66,7 @@ class FacGraph {
 		this.flowGraph.setTitle('Flow time','fchartTitle');
 		const flow = new GraphLine(this.flowGraph, d => d.flow, 
                         {color: cbColors.blue, vertical: false,
-                         visible: true, continuous: false,
+                         visible: fac.usrInputs.get('leg0'), continuous: false,
                          lineWidth: 3, dotSize: 5, right: false});
         
         //throughput graph
@@ -69,21 +75,23 @@ class FacGraph {
 		this.thruGraph.setTitle('Throughput','tchartTitle');
 		const thru = new GraphLine(this.thruGraph, d => d.thru, 
                         {color: cbColors.yellow, vertical: false,
-                         visible: true, continuous: false,
+                            visible: fac.usrInputs.get('leg1'), continuous: false,
                          lineWidth: 3, dotSize: 5, right: false});
 		        
         //add legends
         const d3 = document.getElementById('chartLegendfac');
         d3.classList.add('rowAroundCenter');
-        const leg0 = flow.createLegend('leg0','Individual Flow Times (seconds/card)');
-        const leg1 = thru.createLegend('leg1','Avg. Throughput (cards/minute)');
-        d3.append(leg0, leg1);
+        d3.append(
+            fac.usrInputs.get('leg0')
+            .create(cbColors.blue, 'Individual Flow Times (seconds/card)', 'fac'),
+            fac.usrInputs.get('leg1')
+            .create(cbColors.yellow, 'Avg. Throughput (cards/minute)', 'fac'));
         
         //set up legends as buttons (and includable in URL)
-        fac.usrInputs.set('leg0', 
-            new LegendItem('leg0', flow, localUpdateFromUser, true));
-        fac.usrInputs.set('leg1', 
-            new LegendItem('leg1', thru, localUpdateFromUser, true));
+        // fac.usrInputs.set('leg0', 
+        //     new LegendItem('leg0', flow, localUpdateFromUser, true));
+        // fac.usrInputs.set('leg1', 
+        //     new LegendItem('leg1', thru, localUpdateFromUser, true));
 	};
 	    
 	push(t,f){
@@ -214,7 +222,7 @@ anim.worker[2] = {left: 16*c,
 
 function computeStageTimes(){
     
-    let qlength = fac.usrInputs.get('qln').getValue();
+    let qlength = Number(fac.usrInputs.get('qln').get());
     theSimulation.queues[1].setMaxSeats(qlength);
     theSimulation.queues[2].setMaxSeats(qlength);
     
@@ -234,8 +242,8 @@ function computeStageTimes(){
         // adjust the feature time by stage to remove the movetime.
         let delta =  moveTime/count;
         for(let key in fac.features){
-            let stage = fac.usrInputs.get(key).get();
-            let time = fac.usrInputs.get(key+'Time').get()
+            let stage = Number(fac.usrInputs.get(key).get());
+            let time = Number(fac.usrInputs.get(key+'Time').get());
             if( stage == s) {
                 fac.features[key].adjustedTime = time * tioxTimeConv - delta;
                 }
@@ -257,7 +265,7 @@ function computeStageTimes(){
         }
     
     for( let m = 0; m < 3; m++ ) {
-        let nMachines = fac.usrInputs.get('quantity'+m).get();
+        let nMachines = fac.usrInputs.get('quantity'+m).getNumber();
         if( fac.stageTimes[m].mean == 0 ) nMachines = 0; 
         theSimulation.workers[m].setNumMachines(nMachines);
     };
@@ -265,7 +273,7 @@ function computeStageTimes(){
     // set creator rate and movement based on first stage with nonzero proctime
     const k = fac.firstStage;
     fac.creatorTime.setMean( fac.stageTimes[k].mean /
-    fac.usrInputs.get('quantity'+k).get()); 
+        fac.usrInputs.get('quantity'+k).getNumber()); 
     
     anim.firstQueue = {left: anim.queue[k].left, top: anim.queue[k].top};
     
@@ -347,39 +355,7 @@ class FaceGame extends OmConcept {
         }
         
         for(let inp of inpsChanged){
-            let v = inp.get();
-            switch (inp.key){
-                case 'face':
-                case 'eyes':
-                case 'ears':
-                case 'nose':
-                case 'mout':
-                case 'hair':
-                case 'faceTime':
-                case 'eyesTime':
-                case 'earsTime':
-                case 'noseTime':
-                case 'moutTime':
-                case 'hairTime':
-                case 'quantity0':
-                case 'quantity1':
-                case 'quantity2':
-                case 'qln':
-                case 'action':
-                case 'reset':
-                    break;
-                case 'leg0':
-                case 'leg1':
-                    break;
-    
-                case 'speed':
-                    fac.adjustSpeed(v);
-                    break;
-                default:
-                    alert(' reached part for default, key='+inp.key);
-                    console.log(' reached part for default, key=',inp.key);
-                    break;
-            }
+            localUpdate(inp)
         };
     };
     clearStageForeground(){
@@ -398,17 +374,57 @@ class FaceGame extends OmConcept {
     redrawBackground() {
     };
 };
-function localUpdateFromUser(inp){
+
+document.getElementById('fac')
+    .addEventListener('localUpdate', localUpdateFromUser);
+function localUpdateFromUser(event) {
+    const inp = fac.usrInputs.get(event.detail.key);
+    console.log('in LOCAL UPDATE ', inp.key, inp.get());
     fac.setOrReleaseCurrentLi(inp);
-    if( inp.key =='speed')
-        fac.adjustSpeed(inp.get());
-    else if( match([inp],needReset) ){
+    localUpdate(inp);
+    if( match([inp],needReset) ){
         computeStageTimes();
         fac.partialReset();
         fac.localReset();
         fac.graph.updateForParamChange();
     }
 }; 
+
+function localUpdate(inp){
+    switch (inp.key) {
+        case 'face':
+        case 'eyes':
+        case 'ears':
+        case 'nose':
+        case 'mout':
+        case 'hair':
+        case 'faceTime':
+        case 'eyesTime':
+        case 'earsTime':
+        case 'noseTime':
+        case 'moutTime':
+        case 'hairTime':
+        case 'quantity0':
+        case 'quantity1':
+        case 'quantity2':
+        case 'qln':
+        case 'action':
+        case 'reset':
+            break;
+        case 'leg0':
+        case 'leg1':
+            fac.graph.setupThenRedraw();
+            break;
+
+        case 'speed':
+            fac.adjustSpeed(inp.getIndex());
+            break;
+        default:
+            alert(' reached part for default, key=' + inp.key);
+            console.log(' reached part for default, key=', inp.key);
+            break;
+    }
+}
 
 class FacQueue  extends Queue{
 	constructor( which, lanes, anim) {
@@ -824,10 +840,35 @@ export class FaceCard {
         ctx.restore();
     };
 };
-
-function facHTML(){	
-	let usrInputs = new Map();
-    
+function defineParams(){
+    let usrInputs = new Map()
+    usrInputs.set('face', new RadioButtons('face', ['0', '1', '2'], '0', 'facefac'));
+    usrInputs.set('eyes', new RadioButtons('eyes', ['0', '1', '2'], '1', 'eyesfac'));
+    usrInputs.set('nose', new RadioButtons('nose', ['0', '1', '2'], '1', 'nosefac'));
+    usrInputs.set('mout', new RadioButtons('mout', ['0', '1', '2'], '1', 'moutfac'));
+    usrInputs.set('ears', new RadioButtons('ears', ['0', '1', '2'], '1', 'earsfac'));
+    usrInputs.set('hair', new RadioButtons('hair', ['0', '1', '2'], '2', 'hairfac'));
+    usrInputs.set('faceTime', new NumSlider('faceTime',  1, 9, 1, 1));
+    usrInputs.set('eyesTime', new NumSlider('eyesTime',  1, 9, 1, 2));
+    usrInputs.set('noseTime', new NumSlider('noseTime',  1, 9, 1, 1));
+    usrInputs.set('moutTime', new NumSlider('moutTime',  1, 9, 1, 2));
+    usrInputs.set('earsTime', new NumSlider('earsTime',  1, 9, 1, 1));
+    usrInputs.set('hairTime', new NumSlider('hairTime',  1, 9, 1, 2));
+    usrInputs.set('quantity0', new IntegerInput('quantity0', 1, 3, 1));
+    usrInputs.set('quantity1', new IntegerInput('quantity1', 1, 3, 1));
+    usrInputs.set('quantity2', new IntegerInput('quantity2', 1, 3, 1));
+    usrInputs.set('qln', new ArbSlider('qln', [1, 3, 5, -1], -1));
+    usrInputs.set('reset', new Checkbox('reset', false));
+    usrInputs.set('action', new RadioButtons('action', ['none', 'play', 'pause'],
+        'none', 'actionfac'));
+    usrInputs.set('speed', new ArbSlider('speed', [1, 2, 5, 10, 25], 1));
+    usrInputs.set('desc', new Description('desc'));
+    usrInputs.set('leg0', new LegendButton('leg0', true));
+    usrInputs.set('leg1', new LegendButton('leg1', true));
+    return usrInputs;
+}
+function facHTML(usrInputs){	
+	    
     addDiv('fac','fac','whole')
 	addDiv('fac', 'leftHandSideBox'+'fac',
 			   'tallStageWrapper','twoChartWrapper');
@@ -837,37 +878,24 @@ function facHTML(){
     addKeyForIds('fac',radioButtons);
     const rhs = document.getElementById('rightHandSideBoxfac');  
     rhs.insertBefore(radioButtons, rhs.firstChild);
+    usrInputs.get('faceTime').addListener(document.getElementById('faceTimefac'));
+    usrInputs.get('eyesTime').addListener(document.getElementById('eyesTimefac'));
+    usrInputs.get('noseTime').addListener(document.getElementById('noseTimefac'));
+    usrInputs.get('moutTime').addListener(document.getElementById('moutTimefac'));
+    usrInputs.get('earsTime').addListener(document.getElementById('earsTimefac'));
+    usrInputs.get('hairTime').addListener(document.getElementById('hairTimefac'));
+    usrInputs.get('face').addListeners();
+    usrInputs.get('eyes').addListeners();
+    usrInputs.get('nose').addListeners();
+    usrInputs.get('mout').addListeners();
+    usrInputs.get('ears').addListeners();
+    usrInputs.get('hair').addListeners();
+    usrInputs.get('quantity0').addListener(document.getElementById('quantity0fac'));
+    usrInputs.get('quantity1').addListener(document.getElementById('quantity1fac'));
+    usrInputs.get('quantity2').addListener(document.getElementById('quantity2fac'));
+
     
-    usrInputs.set('face', new RadioButton('face', 'facefac',
-                localUpdateFromUser, ['0','1','2'], '0') );
-    usrInputs.set('eyes', new RadioButton('eyes', 'eyesfac',
-                localUpdateFromUser, ['0','1','2'], '1') );
-    usrInputs.set('nose', new RadioButton('nose', 'nosefac',
-                localUpdateFromUser, ['0','1','2'], '1') );
-    usrInputs.set('mout', new RadioButton('mout', 'moutfac',
-                localUpdateFromUser, ['0','1','2'], '1') );
-    usrInputs.set('ears', new RadioButton('ears', 'earsfac',
-                localUpdateFromUser, ['0','1','2'], '1') );
-    usrInputs.set('hair', new RadioButton('hair', 'hairfac',
-                localUpdateFromUser, ['0','1','2'], '2') );
-    usrInputs.set('faceTime', new NumSlider('faceTime', 'faceTimefac',
-                localUpdateFromUser, 1, 9, 1, 0, 1) );
-    usrInputs.set('eyesTime', new NumSlider('eyesTime', 'eyesTimefac',
-                localUpdateFromUser, 1, 9, 2, 0, 1) );
-    usrInputs.set('noseTime', new NumSlider('noseTime', 'noseTimefac',
-                localUpdateFromUser, 1, 9, 1, 0, 1) );
-    usrInputs.set('moutTime', new NumSlider('moutTime', 'moutTimefac',
-                localUpdateFromUser, 1, 9, 2, 0, 1) );
-    usrInputs.set('earsTime', new NumSlider('earsTime', 'earsTimefac',
-                localUpdateFromUser, 1, 9, 1, 0, 1) );
-    usrInputs.set('hairTime', new NumSlider('hairTime', 'hairTimefac',
-                localUpdateFromUser, 1, 9, 2, 0, 1) );
-    usrInputs.set('quantity0', new IntegerInput('quantity0', 'quantity0fac',
-                localUpdateFromUser, 1, 3, 1) );
-    usrInputs.set('quantity1', new IntegerInput('quantity1', 'quantity1fac',
-                localUpdateFromUser, 1, 3, 1) );
-    usrInputs.set('quantity2', new IntegerInput('quantity2', 'quantity2fac',
-                localUpdateFromUser, 1, 3, 1) );
+    //connect radiobuttons and input/number to html via create??
     
     
     let elem = document.getElementById('slidersWrapperfac');
@@ -875,34 +903,24 @@ function facHTML(){
     addKeyForIds('fac',mark);
     mark.setAttribute('title','Mark the card')
     elem.append(mark);
-    const qlnInput = genRange('qlnfac',3,0,3,1);
-	elem.append(htmlArbSlider(qlnInput, 'Max Queue Length = ', '∞', ['1','3','5','∞'] ));
-    usrInputs.set('qln', new ArbSlider('qln', qlnInput, 
-                localUpdateFromUser, ['1','3','5','∞'],
-                                      [1,3,5,-1], 3) );
-		
-    elem.append(genPlayResetBox('fac'));
-	usrInputs.set('reset', new CheckBox('reset', 'resetfac',
-                localUpdateFromUser, false) );
-    usrInputs.set('action', new RadioButton('action', 'actionfac', 
-                localUpdateFromUser, ['none','play','pause'], 'none') );	
-        
-    const speedInput = genRange('speedfac',0,0,4,1);
-    elem.append(htmlArbSlider(speedInput, 'Speed = ', '1x',
-                            ["slow",' ',' ',' ',"fast"]) );
-    usrInputs.set('speed', new ArbSlider('speed', speedInput, 
-                localUpdateFromUser, ["1x",'2x','5x','10x',"25x"],
-				                [1,2,5,10,25], 0) ); 
+
+	elem.append(usrInputs.get('qln')
+        .create('Max Queue Length = ', ['1', '3', '5', '∞'], ['1', '3', '5', '∞'] ));
+    
+    elem.append(genPlayResetBox('fac', usrInputs));
+    // usrInputs.get('action').addListeners();
+
+    elem.append(usrInputs.get('speed')
+        .create('Speed = ', ['1x', '2x', '5x', '10x', '25x'],
+                ["slow", ' ', ' ', ' ', "fast"]));
     	
 	const f = document.getElementById('scenariosMidfac');
 	f.style = "min-height: 12vw";
-    
-    usrInputs.set('desc', new Description('desc'));
-    return usrInputs;
 };
 
 export function facStart() {
-    let usrInputs = facHTML();
+    let usrInputs = defineParams()
+    facHTML(usrInputs);
     fac = new FaceGame(usrInputs);
     facDefine();
     fac.graph = new FacGraph();

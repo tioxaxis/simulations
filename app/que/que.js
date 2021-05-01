@@ -62,15 +62,16 @@ class QueueGraph extends TioxGraph {
 		this.setTitle('Waiting Time','chartTitle');
 		const indivWait = new GraphLine(this, d => d.i, 
                         {color: cbColors.blue, vertical: false,
-                         visible: true, continuous: false,
+                         visible: que.usrInputs.get('leg0'), 
+                         continuous: false,
                          lineWidth: 5, dotSize: 12, right: false});
 		const avgWait = new GraphLine(this, d => d.a, 
                       {color: cbColors.yellow, vertical: false,
-                         visible: true, continuous: false,
+                          visible: que.usrInputs.get('leg1'), continuous: false,
                          lineWidth: 5, dotSize: 8, right: false});
 		this.predWait = new GraphLine(this, d => d.p,
                         {color: cbColors.red, vertical: true,
-                         visible: false, continuous: true,
+                            visible: que.usrInputs.get('leg2'), continuous: true,
                          lineWidth: 10, dotSize: 0, right: false});
 		
         // this.predictedWaitValue = this.predictedWait();
@@ -300,9 +301,11 @@ function localUpdate(inp){
             break;
         case 'action':
         case 'reset':
+            break;
         case 'leg0':
         case 'leg1':
         case 'leg2':
+            que.graph.setupThenRedraw();
             break;
         default:
             alert(' reached part for default, key=',inp.key);
@@ -520,13 +523,13 @@ class Supplier {
 }; //end class Supplier
 function defineParams(){
     let usrInputs = new Map();
-    usrInputs.set('ar', new NumSlider('ar',   0, 10, .1, 10, 5));
-    usrInputs.set('acv', new NumSlider('acv', 0,  2, .5, 10, 0));
-    usrInputs.set('sr', new NumSlider('sr',   0, 10, .1, 10, 6));
-    usrInputs.set('scv', new NumSlider('scv', 0, 2,  .5, 10, 0));
+    usrInputs.set('ar', new NumSlider('ar',   0, 10, .1, 5));
+    usrInputs.set('acv', new NumSlider('acv', 0,  2, .5, 0));
+    usrInputs.set('sr', new NumSlider('sr',   0, 10, .1, 6));
+    usrInputs.set('scv', new NumSlider('scv', 0, 2,  .5, 0));
     usrInputs.set('reset', new Checkbox('reset', false));
     usrInputs.set('action', new RadioButtons('action', ['none', 'play', 'pause'],
-                                            'none', 'action'));
+                                            'none', 'actionque'));
     usrInputs.set('speed', new ArbSlider('speed',   [1, 2, 5, 10, 25, 1000], 1));
     usrInputs.set('desc', new Description('desc'));
     usrInputs.set('leg0', new LegendButton('leg0', true));
@@ -554,17 +557,17 @@ function queHTML(usrInputs){
 	let elem = document.getElementById('slidersWrapperque');
     
     elem.append(usrInputs.get('ar')
-        .create('Arrival Rate = ', [0, 2, 4, 6, 8, 10], 1));
+        .create('Arrival Rate = ', [0, 2, 4, 6, 8, 10]));
     
     
     elem.append(usrInputs.get('acv')
-        .create('Arrival CV = ', ['0.0', '1.0', '2.0'], 1));
+        .create('Arrival CV = ', ['0.0', '1.0', '2.0']));
     
     elem.append(usrInputs.get('sr')
-        .create('Service Rate = ', [0, 2, 4, 6, 8, 10], 1));
+        .create('Service Rate = ', [0, 2, 4, 6, 8, 10]));
 
     elem.append(usrInputs.get('scv')
-        .create('Service CV = ', ['0.0', '1.0', '2.0'], 1));
+        .create('Service CV = ', ['0.0', '1.0', '2.0']));
 
     elem.append(genPlayResetBox('que',usrInputs));
 

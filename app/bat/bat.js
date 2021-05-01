@@ -37,18 +37,26 @@ import {
 	TioxGraph, GraphLine
 }
 from "../mod/graph.js";
+// import {
+// 	genPlayResetBox, genArbSlider, genButton, addDiv,
+//       NumSlider, htmlNumSlider,
+//     ArbSlider, htmlArbSlider, htmlNoSlider,
+//     genRange, 
+// 	htmlCheckBox, CheckBox, 
+// 	htmlRadioButton, RadioButton, 
+// 	IntegerInput, 
+// 	addKeyForIds, 
+// 	LegendItem, LegendPair, match, Description
+// }
+// from '../mod/genHTML.js';
+
 import {
-	genPlayResetBox, genArbSlider, genButton, addDiv,
-      NumSlider, htmlNumSlider,
-    ArbSlider, htmlArbSlider, htmlNoSlider,
-    genRange, 
-	htmlCheckBox, CheckBox, 
-	htmlRadioButton, RadioButton, 
-	IntegerInput, 
-	addKeyForIds, 
-	LegendItem, LegendPair, match, Description
+	NumParam, ArbParam, BoolParam, Description, match,
+	NumSlider, ArbSlider, Checkbox, RadioButtons,
+	LegendButton, addDiv, addKeyForIds, genPlayResetBox,
+	htmlNoSlider
 }
-from '../mod/genHTML.js';
+from '../mod/params.js';
 
 class BatGraph {
 	constructor(){	
@@ -58,11 +66,11 @@ class BatGraph {
 		this.flowGraph.setTitle('Flow time','fchartTitle');
 		const baseFlow = new GraphLine(this.flowGraph, d => d.base, 
                         {color: cbColors.yellow,
-						 vertical: false, visible: true, continuous: false,
+							vertical: false, visible: bat.usrInputs.get('leg0'), continuous: false,
                          lineWidth: 5, dotSize: 15, right: false});
         const modFlow = new GraphLine(this.flowGraph, d => d.mod, 
                         {color: cbColors.blue, vertical: false,
-                         visible: true, continuous: false,
+							visible: bat.usrInputs.get('leg1'), continuous: false,
                          lineWidth: 3, dotSize: 10, right: false});
 
         //throughput graph
@@ -71,25 +79,20 @@ class BatGraph {
 		this.thruGraph.setTitle('Throughput','tchartTitle');
 		const baseThru = new GraphLine(this.thruGraph, d => d.base, 
                         {color: cbColors.yellow, vertical: false,
-                         visible: true, continuous: false,
+							visible: bat.usrInputs.get('leg0'), continuous: false,
                          lineWidth: 5, dotSize: 15, right: false});
 		const modThru = new GraphLine(this.thruGraph, d => d.mod, 
                         {color: cbColors.blue, vertical: false,
-                         visible: true, continuous: false,
+							visible: bat.usrInputs.get('leg1'), continuous: false,
                          lineWidth: 3, dotSize: 10, right: false});
 		        
         //add legends
-		const leg0 = baseFlow.createLegend('leg0','Base Case');
-		const leg1 = modFlow.createLegend('leg1','Modified');
-        const d3 = document.getElementById('chartLegendbat');
+		const d3 = document.getElementById('chartLegendbat');
         d3.classList.add('rowCenterCenter');
-        d3.append(leg0,'      ', leg1); //option-spaces!!
-        
-        //set up legends as buttons (and includable in URL)
-        bat.usrInputs.set('leg0', 
-            new LegendPair('leg0', baseFlow, baseThru, localUpdateFromUser, true)); 
-        bat.usrInputs.set('leg1', 
-            new LegendPair('leg1', modFlow, modThru, localUpdateFromUser, true));
+        d3.append(
+			bat.usrInputs.get('leg0').create(cbColors.yellow, 'Base Case', 'bat'),
+			'     ',
+			bat.usrInputs.get('leg1').create(cbColors.blue, 'Modified', 'bat'));
 	};
 	    
 	pushBase (t,f){
@@ -201,7 +204,7 @@ class Batching extends OmConcept{
 		this.redrawBackground();
 
 		theSimulation.base.line.reset();
-		theSimulation.mod.line.reset(bat.usrInputs.get('batch').getValue() / 4);
+		theSimulation.mod.line.reset(bat.usrInputs.get('batch').getNumber() / 4);
 		theSimulation.base.creator.load( null, null ,0);
 		theSimulation.mod.creator.load( null, null, 1);
 		bat.clearRedrawStage(0, false);
@@ -254,8 +257,13 @@ class Batching extends OmConcept{
 		c.closePath();
 	};
 };
-function localUpdateFromUser(inp){
-    bat.setOrReleaseCurrentLi(inp);
+
+document.getElementById('bat')
+	.addEventListener('localUpdate', localUpdateFromUser);
+function localUpdateFromUser(event) { 
+	const inp = bat.usrInputs.get(event.detail.key);
+	console.log('in LOCAL UPDATE ', inp.key, inp.get());
+	bat.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
 	if (match([inp], ['util', 'pt', 'bSetup', 'mSetup', 'batch'])) {
 		bat.partialReset();
@@ -275,31 +283,31 @@ function updateTimeRV(){
 }
         
  function localUpdate(inp){
-    let v = inp.get();
-    switch (inp.key){
+    let v; 
+	switch (inp.key){
         case 'util':
-			theSimulation.util = inp.getValue();
+			theSimulation.util = inp.getNumber();
 			updateTimeRV();
          	break;
 
         case 'pt':
-			theSimulation.pt = Number(v) * tioxTimeConv;
+			theSimulation.pt = inp.getNumber() * tioxTimeConv;
 			updateTimeRV();
             break;
 
         case 'bSetup':
-			theSimulation.bSetup = Number(v) * tioxTimeConv;
+			theSimulation.bSetup = inp.getNumber() * tioxTimeConv;
 			theSimulation.base.line.setSetup(theSimulation.bSetup)
 			updateTimeRV();
             break;
 		case 'mSetup':
-			theSimulation.mSetup = Number(v) * tioxTimeConv;
+			theSimulation.mSetup = inp.getNumber() * tioxTimeConv;
 			theSimulation.mod.line.setSetup(theSimulation.mSetup)
 			updateTimeRV();
 			break;
 
         case 'batch':
-            theSimulation.nRows = inp.getValue()/4;
+            theSimulation.nRows = inp.getNumber()/4;
 			theSimulation.mod.line.nRows  = theSimulation.nRows;
 			theSimulation.mod.supply.setNRows(theSimulation.nRows);
 			theSimulation.mod.queue.setQAnim(theSimulation.nRows);
@@ -307,12 +315,14 @@ function updateTimeRV(){
             break;
 
         case 'speed':
-            bat.adjustSpeed(v);
+            bat.adjustSpeed(inp.getIndex());
             break;
         case 'action':
         case 'reset':
+			break;
         case 'leg0':
         case 'leg1':
+			bat.graph.setupThenRedraw();
             break;
         default:
             alert(' reached part for default id=',inp.key);
@@ -416,11 +426,11 @@ const theSimulation = {
 	initialize: function () {
 		// random variables
 		this.swapEndTime = tioxTimeConv;
-		this.util = bat.usrInputs.get('util').getValue();
+		this.util = bat.usrInputs.get('util').getNumber();
 		this.pt = Number(bat.usrInputs.get('pt').get()) * tioxTimeConv;
 		this.bSetup = Number(bat.usrInputs.get('bSetup').get()) * tioxTimeConv;
 		this.mSetup = Number(bat.usrInputs.get('mSetup').get()) * tioxTimeConv;
-		this.nRows = bat.usrInputs.get('batch').getValue() / 4;
+		this.nRows = bat.usrInputs.get('batch').getNumber() / 4;
 		// local helper function
 		const defineLine = (iATime, height, nLines, color, setupTime, graphPush) => {
 			let sys = {};
@@ -904,10 +914,25 @@ class Batch extends Item{
 	};
 };
 
-
-
-function batHTML(){	
+function defineParams() {
 	let usrInputs = new Map();
+	usrInputs.set('bSetup', new NumSlider('bSetup', 2, 8, 1, 2));
+	usrInputs.set('mSetup', new NumSlider('mSetup', 2, 8, 1, 2));
+	usrInputs.set('util', new ArbSlider('util', [0.8, 0.9, 0.95, 0.99], .95));
+	usrInputs.set('batch', new ArbSlider('batch', [4, 8, 12, 16], 16));
+	usrInputs.set('pt', new NumSlider('pt', 2, 8, 1, 2));
+	usrInputs.set('reset', new Checkbox('reset', false));
+	usrInputs.set('action', new RadioButtons('action', ['none', 'play', 'pause'],
+		'none', 'actionque'));
+	usrInputs.set('speed', new ArbSlider('speed', [1, 2, 5, 10, 25, 1000], 1));
+	usrInputs.set('desc', new Description('desc'));
+	usrInputs.set('leg0', new LegendButton('leg0', true));
+	usrInputs.set('leg1', new LegendButton('leg1', true));
+	return usrInputs;
+}
+
+
+function batHTML(usrInputs){	
     
     addDiv('bat','bat','whole')
 	addDiv('bat', 'leftHandSideBox'+'bat',
@@ -917,69 +942,43 @@ function batHTML(){
 	//now put in the sliders with the play/reset box	
 	let elem = document.getElementById('slidersWrapperbat');
     
-    const bSetupInput = genRange('bSetupbat', '2', 2, 8, 1);
-	bSetupInput.className = 'backYellow';
-    elem.append( htmlNumSlider(bSetupInput, 'Setup Time = ', '2', [2,4,6,8] )); 
-	usrInputs.set('bSetup', new NumSlider('bSetup',bSetupInput, localUpdateFromUser,
-                                      2, 8, 2, 0, 1));
-
-	const mSetupInput = genRange('mSetupbat', '2', 2, 8, 1);
-	mSetupInput.className = 'backBlue';
-	elem.append(htmlNumSlider(mSetupInput, 'Setup Time = ', '2', [2, 4, 6, 8]));
-	usrInputs.set('mSetup', new NumSlider('mSetup', mSetupInput, localUpdateFromUser,
-		2, 8, 2, 0, 1));
-
-	const utilInput = genRange('utilbat', '2', 0, 3, 1);
-	utilInput.className = 'backYellow';
-	elem.append(htmlArbSlider(utilInput, 'Utilization = ',
-		'.95', [0.8, 0.9, 0.95, 0.99]));
-	usrInputs.set('util', new ArbSlider('util', utilInput,
-		localUpdateFromUser, ["0.8", '0.9', '0.95', '0.99'],
-		 [0.8, 0.9, 0.95, 0.99], 2));
-
+    elem.append(usrInputs.get('bSetup').create('Setup Time = ', [2,4,6,8], 'backYellow')); 
+	
+	elem.append(usrInputs.get('mSetup').create('Setup Time = ', [2, 4, 6, 8], 'backBlue'));
+	elem.append(usrInputs.get('util')
+		.create('Utilization = ', ['0.8', '0.9', '0.95', '0.99'],
+								 ['0.8', '0.9', '0.95', '0.99'], 'backYellow'));
+	
 	elem.append(htmlNoSlider('loadbat', 'Load Factor = ', '1'));  
     elem.append(htmlNoSlider('setBatchbat', 'Batch Size = ', '16'));
-	const batchInput = genRange('batchbat', 3, 0, 3, 1);
+	const batchInput = {};// = genRange('batchbat', 3, 0, 3, 1);
 	batchInput.className = 'backBlue';
-    elem.append( htmlArbSlider(batchInput, 'Batch Size = ', '16', [4,8,12,16] )); 
-	usrInputs.set('batch', new ArbSlider('batch',batchInput, localUpdateFromUser,
-                ["4",'8','12','16'], [4,8,12,16], 3) );
-    
+	elem.append(usrInputs.get('batch').create('Batch Size = ', 
+		[4, 8, 12, 16], [4, 8, 12, 16], 'backBlue' ));
+	    
 	const mark = document.getElementById('markButton').cloneNode(true);
 	addKeyForIds('bat', mark);
     mark.setAttribute('title','Mark a box');
 	elem.append(mark);
 
-	const ptInput = genRange('ptbat', '2', 2, 8, 2);
-	elem.append(htmlNumSlider(ptInput, 'Processing Time = ', '2', [2, 4, 6, 8]));
-	usrInputs.set('pt', new NumSlider('pt', ptInput, localUpdateFromUser,
-		2, 8, 2, 0, 1));
+	elem.append(usrInputs.get('pt').create('Processing Time = ', [2, 4, 6, 8]));
+	
+	elem.append( genPlayResetBox('bat',usrInputs));
+	elem.append(usrInputs.get('speed')
+		.create('Speed = ', ['1x', '2x', '5x', '10x', '25x'],
+			["slow", ' ', ' ', ' ', "fast"]));
     
-	elem.append( genPlayResetBox('bat'));
-    usrInputs.set('reset', new CheckBox('reset', 'resetbat',
-                localUpdateFromUser, false) );
-    usrInputs.set('action', new RadioButton('action', 'actionbat', 
-                localUpdateFromUser, ['none','play','pause'], 'none') );
-    
-	const speedInput = genRange('speedbat',0,0,4,1);
-	speedInput.className ='backDefault';
-    elem.append(htmlArbSlider(speedInput, 'Speed = ', '1x',
-                            ["slow",' ',' ',' ',"fast"]) );
-    usrInputs.set('speed', new ArbSlider('speed', speedInput, 
-                localUpdateFromUser, ["1x",'2x','5x','10x',"25x"],
-				                [1,2,5,10,25], 0) );
-    	
 	const f = document.getElementById('scenariosMidbat');
 	f.style = "min-height:12vw";
-    usrInputs.set('desc', new Description('desc'));
-    return usrInputs;
 };
 
 export function batStart() {
-    let usrInputs = batHTML();
+    let usrInputs = defineParams();
+	batHTML(usrInputs);
     bat = new Batching(usrInputs);
     batDefine();
     bat.graph = new BatGraph();
+
     bat.setupScenarios();
     theSimulation.initialize();
     bat.reset();

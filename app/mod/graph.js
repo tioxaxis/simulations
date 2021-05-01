@@ -399,9 +399,9 @@ export class GraphLine{
     };
 
     
-    setVisibility(b){
-        this.graph.setupThenRedraw();
-    };
+    // setVisibility(b){
+    //     this.graph.setupThenRedraw();
+    // };
     
     //process one point for a line for either drawPoint or drawLine.
     processOne(ctx,last,pair){
@@ -433,7 +433,7 @@ export class GraphLine{
     };
     
     drawPoint(pair){
-        if( !this.params.visible ) return;
+		if (!this.params.visible.getBool() ) return;
         const ctx = this.graph.ctx;
         ctx.fillStyle = this.params.color;
         ctx.strokeStyle = this.params.color;
@@ -448,7 +448,7 @@ export class GraphLine{
     };
     
     drawLine(){
-        if( !this.params.visible) return;
+        if( !this.params.visible.getBool()) return;
         const ctx = this.graph.ctx;
         ctx.fillStyle = this.params.color;
         ctx.strokeStyle = this.params.color;

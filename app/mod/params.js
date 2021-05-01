@@ -24,12 +24,13 @@ import {
 
 
 export class NumParam{
-    constructor(key,min,max,step,scale,deflt){
+    constructor(key,min,max,step,deflt){
         this.key = key;
         this.min = min;
         this.max = max;
         this.step = step;
-        this.scale = scale;
+        this.precision = Math.ceil(-Math.log10(step));
+        this.scale = Math.pow(10, this.precision);
         this.deflt = deflt;
         this.value = deflt;
     }
@@ -59,14 +60,16 @@ export class NumParam{
 export class ArbParam{
     constructor(key, values, deflt){
         this.key = key;
-        this.values = values.map( v => v.toString());
-        this.deflt = deflt.toString();
+        this.values = values; //.map( v => v.toString());
+        this.deflt = deflt; //.toString();
         this.index = values.findIndex( (v) => v == deflt );
     };
     getIndex(){
         return this.index;
     }
-    
+    getNumber(){
+        return this.values[this.index];
+    }
     setIndex(i) {
         const changed = this.index != i;
         this.index = i;
@@ -160,12 +163,12 @@ class Param{
 
 };
 export class NumSlider extends NumParam {
-    constructor(key, min, max, step, scale, deflt){
-        super(key, min, max, step, scale, deflt)
+    constructor(key, min, max, step, deflt){
+        super(key, min, max, step, deflt)
         this.event = new CustomEvent('localUpdate', { bubbles: true, detail: { key: key } });
+        this.display = null;
     }
-    create(dispText, sliderValues, precision){
-        this.precision = precision;
+    create(dispText, sliderValues, bkgndClass = 'backDefault'){
 
         const sp = document.createElement('span');
         sp.append(this.value.toFixed(this.precision));
@@ -188,7 +191,7 @@ export class NumSlider extends NumParam {
         inp.min = this.min;
         inp.max = this.max;
         inp.step = this.step;
-        inp.className = 'backDefault';
+        inp.className = bkgndClass;
         inp.setAttribute('value', this.value);
         inp.addEventListener('input', 
             this.userChange.bind(this));
@@ -199,8 +202,13 @@ export class NumSlider extends NumParam {
 
         return d;
     };
+    addListener(input){
+        this.input = input;
+        input.addEventListener('input', this.userChange.bind(this));
+    };
     setDisplay(v){
-        this.display.innerHTML = Number(v).toFixed(this.precision);
+        if( this.display ) 
+            this.display.innerHTML = Number(v).toFixed(this.precision);
     };
     get(){
         return super.getNumber().toString();
@@ -224,7 +232,7 @@ export class ArbSlider extends ArbParam {
         super(key, values, deflt);
         this.event = new CustomEvent('localUpdate', { bubbles: true, detail: { key: key } });
     }
-    create(dispText, dispValues, sliderValues) {
+    create(dispText, dispValues, sliderValues, bkgndClass = 'backDefault') {
         this.dispValues = dispValues;
 
         const sp = document.createElement('span');
@@ -251,7 +259,7 @@ export class ArbSlider extends ArbParam {
         inp.min = 0;
         inp.max = this.dispValues.length-1;
         inp.step = 1;
-        inp.className = 'backDefault';
+        inp.className = bkgndClass;
         inp.setAttribute('value', this.value);
         inp.addEventListener('input',
             this.userChange.bind(this));
@@ -333,16 +341,16 @@ export class RadioButtons extends ArbParam {
         inp.addEventListener('click', this.userChange.bind(this));
         const label = document.createElement('LABEL');
         label.append(inp, desc);
+        this.input = inp;
         return label;
     };
-    //     this.nodelist = document.getElementsByName());
-    //     for (let j = 0; j < this.nodelist.length; j++) {
-    //         this.nodelist[j].addEventListener('click',
-    //             this.userChange.bind(this));
-    //     }
-    // }
-    create(input){
-        this.input = input;
+    addListeners(){
+        this.nodelist = document.getElementsByName(this.name);
+        this.input = this.nodelist[0];
+        for (let j = 0; j < this.nodelist.length; j++) {
+            this.nodelist[j].addEventListener('click',
+                this.userChange.bind(this));
+        }
     }
 
     // get() {
@@ -377,7 +385,7 @@ export class RadioButtons extends ArbParam {
     userChange(event) {
         const value = event.target.value ;
         const index = this.values.findIndex( v => v == value );
-        // console.log('in userChange Radio',index);
+        console.log('in userChange Radio',this.key, this.name, index);
         super.setIndex(index);
         this.input.dispatchEvent(this.event);
     };
@@ -395,6 +403,8 @@ export class ButtonToggle extends BoolParam {
         this.input = input;
         this.onId = onId;
         this.offId = offId;
+        input.addEventListener('click', this.userChange.bind(this));
+        return input;
     }
     setDisplay(b){
         if (b) {
@@ -403,6 +413,9 @@ export class ButtonToggle extends BoolParam {
             displayToggle(this.offId, this.onId);
         }
     };
+    get(){
+        return super.getBool().toString();
+    }
     set(x){
         const b = ( x == 'true' );
         this.setDisplay(b);
@@ -418,10 +431,10 @@ export class ButtonToggle extends BoolParam {
 };
 export class IntegerInput extends NumParam {
     constructor(key, min, max) {
-        super(key, min, max, 1, 1, min);
+        super(key, min, max, 1, min);
         this.event = new CustomEvent('localUpdate', { bubbles: true, detail: { key: key } });
 };
-    create(input){
+    addListener(input){
         this.input = input;
         this.input.addEventListener('change', this.userChange.bind(this));
     };
@@ -500,6 +513,23 @@ export class LegendButton extends BoolParam {
 
 };
 
+
+export function htmlNoSlider(id, displayText, initial) {
+    const sp = document.createElement('span');
+    sp.id = 'disp' + id;
+    sp.append(initial);
+    const disp = document.createElement('div');
+    disp.append(displayText, sp);
+    const dummySlider = document.createElement('div');
+    dummySlider.innerHTML = '  '
+    const dummyValues = document.createElement('div');
+    dummyValues.innerHTML = '  '
+    const d = document.createElement('div');
+    d.className = "sliderBox columnAroundCenter";
+    d.append(disp, dummySlider, dummyValues);
+    return d;
+};
+
 export function genPlayResetBox(key, usrInputs) {
     const d1 = document.getElementById('playButtons').cloneNode(true);
     addKeyForIds(key, d1);
@@ -520,7 +550,7 @@ export function genPlayResetBox(key, usrInputs) {
     const play = radioSet.createAButton('play', false, 'Play');
     const pause = radioSet.createAButton('pause', false, 'Pause');
     c2.append(none, pause, play);
-    radioSet.create(c2);
+    // radioSet.addListeners();
 
     const d2 = document.createElement('div');
     d2.className = "rowAroundCenter displayNone";
@@ -550,4 +580,9 @@ export function addKeyForIds(key, node) {
     for (let child of children)
         if (child.tagName)
             addKeyForIds(key, child);
+}
+
+export function hideNode(node) {
+    node.classList.add('displayNone');
+    return node;
 }

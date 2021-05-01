@@ -37,18 +37,25 @@ import {
 	TioxGraph, GraphLine
 }
 from "../mod/graph.js";
+// import {
+// 	genPlayResetBox, genArbSlider, genButton, addDiv,
+//       NumSlider, htmlNumSlider,
+//     ArbSlider, htmlArbSlider, htmlNoSlider,
+//     genRange, 
+// 	htmlCheckBox, CheckBox, 
+// 	htmlRadioButton, RadioButton, 
+// 	IntegerInput, 
+// 	addKeyForIds, 
+// 	LegendItem, LegendPair, match, Description
+// }
+// from '../mod/genHTML.js';
 import {
-	genPlayResetBox, genArbSlider, genButton, addDiv,
-      NumSlider, htmlNumSlider,
-    ArbSlider, htmlArbSlider, htmlNoSlider,
-    genRange, 
-	htmlCheckBox, CheckBox, 
-	htmlRadioButton, RadioButton, 
-	IntegerInput, 
-	addKeyForIds, 
-	LegendItem, LegendPair, match, Description
+	NumParam, ArbParam, BoolParam, Description, match,
+	NumSlider, ArbSlider, Checkbox, RadioButtons,
+	LegendButton, addDiv, addKeyForIds, genPlayResetBox,
+	htmlNoSlider
 }
-from '../mod/genHTML.js';
+	from '../mod/params.js';
 
 class BatGraph {
 	constructor(){	
@@ -58,11 +65,11 @@ class BatGraph {
 		this.flowGraph.setTitle('Flow time','fchartTitle');
 		const baseFlow = new GraphLine(this.flowGraph, d => d.base, 
                         {color: cbColors.yellow,
-						 vertical: false, visible: true, continuous: false,
+						 vertical: false, visible: sur.usrInputs.get('leg0'), continuous: false,
                          lineWidth: 5, dotSize: 15, right: false});
         const modFlow = new GraphLine(this.flowGraph, d => d.mod, 
                         {color: cbColors.blue, vertical: false,
-                         visible: true, continuous: false,
+							visible: sur.usrInputs.get('leg1'), continuous: false,
                          lineWidth: 3, dotSize: 10, right: false});
 
         //throughput graph
@@ -71,25 +78,20 @@ class BatGraph {
 		this.thruGraph.setTitle('Throughput','tchartTitle');
 		const baseThru = new GraphLine(this.thruGraph, d => d.base, 
                         {color: cbColors.yellow, vertical: false,
-                         visible: true, continuous: false,
+							visible: sur.usrInputs.get('leg0'), continuous: false,
                          lineWidth: 5, dotSize: 15, right: false});
 		const modThru = new GraphLine(this.thruGraph, d => d.mod, 
                         {color: cbColors.blue, vertical: false,
-                         visible: true, continuous: false,
+							visible: sur.usrInputs.get('leg1'), continuous: false,
                          lineWidth: 3, dotSize: 10, right: false});
 		        
         //add legends
-        const leg0 = baseFlow.createLegend('leg0','Base Case');
-		const leg1 = modFlow.createLegend('leg1','Modified');
-        const d3 = document.getElementById('chartLegendsur');
-        d3.classList.add('rowCenterCenter');
-        d3.append(leg0,'      ', leg1); //option-spaces!!
-        
-        //set up legends as buttons (and includable in URL)
-        sur.usrInputs.set('leg0', 
-            new LegendPair('leg0', baseFlow, baseThru, localUpdateFromUser, true)); 
-        sur.usrInputs.set('leg1', 
-            new LegendPair('leg1', modFlow, modThru, localUpdateFromUser, true));
+		const d3 = document.getElementById('chartLegendsur');
+		d3.classList.add('rowCenterCenter');
+		d3.append(
+			sur.usrInputs.get('leg0').create(cbColors.yellow, 'Base Case', 'sur'),
+			'     ',
+			sur.usrInputs.get('leg1').create(cbColors.blue, 'Modified', 'sur'));
 	};
 	    
 	pushBase (t,f){
@@ -199,7 +201,7 @@ class SetupReduc extends OmConcept{
 		this.redrawBackground();
 
 		theSimulation.base.line.reset();
-		theSimulation.mod.line.reset(sur.usrInputs.get('batch').getValue() / 4);
+		theSimulation.mod.line.reset(sur.usrInputs.get('batch').getNumber() / 4);
 		theSimulation.base.creator.load( null, null ,0);
 		theSimulation.mod.creator.load( null, null, 1);
 		sur.clearRedrawStage(0, false);
@@ -251,8 +253,12 @@ class SetupReduc extends OmConcept{
 		c.closePath();
 	};
 };
-function localUpdateFromUser(inp){
-    sur.setOrReleaseCurrentLi(inp);
+document.getElementById('sur')
+	.addEventListener('localUpdate', localUpdateFromUser);
+function localUpdateFromUser(event) {
+	const inp = sur.usrInputs.get(event.detail.key);
+	console.log('in LOCAL UPDATE ', inp.key, inp.get());
+	sur.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
 	if (match([inp], ['pt', 'bSetup', 'mSetup', 'batch'])) {
 		sur.partialReset();
@@ -273,33 +279,35 @@ function updateTimeRV(){
     let v = inp.get();
     switch (inp.key){
         case 'pt':
-			theSimulation.pt = Number(v) * tioxTimeConv;
+			theSimulation.pt = inp.getNumber() * tioxTimeConv;
 			updateTimeRV();
             break;
         case 'bSetup':
-			theSimulation.bSetup = Number(v) * tioxTimeConv;
+			theSimulation.bSetup = inp.getNumber() * tioxTimeConv;
 			theSimulation.base.line.setSetup(theSimulation.bSetup)
 			updateTimeRV();
             break;
 		case 'mSetup':
-			theSimulation.mSetup = Number(v) * tioxTimeConv;
+			theSimulation.mSetup = inp.getNumber() * tioxTimeConv;
 			theSimulation.mod.line.setSetup(theSimulation.mSetup)
 			updateTimeRV();
 			break;
         case 'batch':
-            theSimulation.nRows = inp.getValue()/4;
+            theSimulation.nRows = inp.getNumber()/4;
 			theSimulation.mod.line.nRows  = theSimulation.nRows;
 			theSimulation.mod.supply.setNRows(theSimulation.nRows);
 			theSimulation.mod.queue.setQAnim(theSimulation.nRows);
 			updateTimeRV();
             break;
         case 'speed':
-            sur.adjustSpeed(v);
+            sur.adjustSpeed(inp.getIndex());
             break;
         case 'action':
         case 'reset':
+			break;
         case 'leg0':
         case 'leg1':
+			sur.graph.setupThenRedraw();
             break;
         default:
             alert(' reached part for default id=',inp.key);
@@ -402,11 +410,11 @@ const theSimulation = {
 	initialize: function () {
 		// random variables
 		this.swapEndTime = tioxTimeConv;
-		// this.util = sur.usrInputs.get('util').getValue();
+		// this.util = sur.usrInputs.get('util').getNumber();
 		this.pt = Number(sur.usrInputs.get('pt').get()) * tioxTimeConv;
 		this.bSetup = Number(sur.usrInputs.get('bSetup').get()) * tioxTimeConv;
 		this.mSetup = Number(sur.usrInputs.get('mSetup').get()) * tioxTimeConv;
-		this.nRows = sur.usrInputs.get('batch').getValue() / 4;
+		this.nRows = sur.usrInputs.get('batch').getNumber() / 4;
 		// local helper function
 		const defineLine = (iATime, height, nLines, color, setupTime, graphPush) => {
 			let sys = {};
@@ -888,9 +896,24 @@ class Batch extends Item{
 		}
 	};
 };
-
-function surHTML(){	
+function defineParams() {
 	let usrInputs = new Map();
+	usrInputs.set('bSetup', new NumSlider('bSetup', 2, 8, 1, 2));
+	usrInputs.set('mSetup', new NumSlider('mSetup', 2, 8, 1, 2));
+	// usrInputs.set('util', new ArbSlider('util', [0.8, 0.9, 0.95, 0.99], .95));
+	usrInputs.set('batch', new ArbSlider('batch', [4, 8, 12, 16], 16));
+	usrInputs.set('pt', new NumSlider('pt', 2, 8, 1, 2));
+	usrInputs.set('reset', new Checkbox('reset', false));
+	usrInputs.set('action', new RadioButtons('action', ['none', 'play', 'pause'],
+		'none', 'actionque'));
+	usrInputs.set('speed', new ArbSlider('speed', [1, 2, 5, 10, 25, 1000], 1));
+	usrInputs.set('desc', new Description('desc'));
+	usrInputs.set('leg0', new LegendButton('leg0', true));
+	usrInputs.set('leg1', new LegendButton('leg1', true));
+	return usrInputs;
+}
+
+function surHTML(usrInputs){
     
     addDiv('sur','sur','whole')
 	addDiv('sur', 'leftHandSideBox'+'sur',
@@ -900,61 +923,40 @@ function surHTML(){
 	//now put in the sliders with the play/reset box	
 	let elem = document.getElementById('slidersWrappersur');
     
-    const bSetupInput = genRange('bSetupsur', '2', 2, 8, 1);
-	bSetupInput.className = 'backYellow';
-    elem.append( htmlNumSlider(bSetupInput, 'Setup Time = ', '2', [2,4,6,8] )); 
-	usrInputs.set('bSetup', new NumSlider('bSetup',bSetupInput, localUpdateFromUser,
-                                      2, 8, 2, 0, 1));
+	elem.append(usrInputs.get('bSetup').create('Setup Time = ', [2, 4, 6, 8], 'backYellow'));
+	elem.append(usrInputs.get('mSetup').create('Setup Time = ', [2, 4, 6, 8], 'backBlue'));
+	// elem.append(usrInputs.get('util')
+	// 	.create('Utilization = ', ['0.8', '0.9', '0.95', '0.99'],
+	// 		['0.8', '0.9', '0.95', '0.99']));
 
-	const mSetupInput = genRange('mSetupsur', '2', 2, 8, 1);
-	mSetupInput.className = 'backBlue';
-	elem.append(htmlNumSlider(mSetupInput, 'Setup Time = ', '2', [2, 4, 6, 8]));
-	usrInputs.set('mSetup', new NumSlider('mSetup', mSetupInput, localUpdateFromUser,
-		2, 8, 2, 0, 1));
+	// elem.append(htmlNoSlider('loadbat', 'Load Factor = ', '1'));
+	elem.append(htmlNoSlider('setBatchbat', 'Batch Size = ', '16'));
+	elem.append(usrInputs.get('batch').create('Batch Size = ', 
+		[4, 8, 12, 16], [4, 8, 12, 16], 'backBlue'));
 
-    elem.append(htmlNoSlider('setBatchsur', 'Batch Size = ', '16'));
-	const batchInput = genRange('batchsur', 3, 0, 3, 1);
-	batchInput.className = 'backBlue';
-    elem.append( htmlArbSlider(batchInput, 'Batch Size = ', '16', [4,8,12,16] )); 
-	usrInputs.set('batch', new ArbSlider('batch',batchInput, localUpdateFromUser,
-                ["4",'8','12','16'], [4,8,12,16], 3) );
-    
 	const mark = document.getElementById('markButton').cloneNode(true);
 	addKeyForIds('sur', mark);
-	// const empty = document.createElement('div');
-	// empty.className = "sliderBox"
+	mark.setAttribute('title', 'Mark a box');
 	elem.append(mark);
 
-	const ptInput = genRange('ptsur', '2', 2, 8, 2);
-	elem.append(htmlNumSlider(ptInput, 'Processing Time = ', '2', [2, 4, 6, 8]));
-	usrInputs.set('pt', new NumSlider('pt', ptInput, localUpdateFromUser,
-		2, 8, 2, 0, 1));
-    
-	elem.append( genPlayResetBox('sur'));
-    usrInputs.set('reset', new CheckBox('reset', 'resetsur',
-                localUpdateFromUser, false) );
-    usrInputs.set('action', new RadioButton('action', 'actionsur', 
-                localUpdateFromUser, ['none','play','pause'], 'none') );
-    
-	const speedInput = genRange('speedsur',0,0,4,1);
-	speedInput.className ='backDefault';
-    elem.append(htmlArbSlider(speedInput, 'Speed = ', '1x',
-                            ["slow",' ',' ',' ',"fast"]) );
-    usrInputs.set('speed', new ArbSlider('speed', speedInput, 
-                localUpdateFromUser, ["1x",'2x','5x','10x',"25x"],
-				                [1,2,5,10,25], 0) );
+	elem.append(usrInputs.get('pt').create('Processing Time = ', [2, 4, 6, 8]));
+
+	elem.append(genPlayResetBox('sur', usrInputs));
+	elem.append(usrInputs.get('speed')
+		.create('Speed = ', ['1x', '2x', '5x', '10x', '25x'],
+			["slow", ' ', ' ', ' ', "fast"]));
     	
 	const f = document.getElementById('scenariosMidsur');
 	f.style = "min-height:12vw";
-    usrInputs.set('desc', new Description('desc'));
-    return usrInputs;
 };
 
 export function surStart() {
-    let usrInputs = surHTML();
+    let usrInputs =defineParams();
+	surHTML(usrInputs);
     sur = new SetupReduc(usrInputs);
     surDefine();
     sur.graph = new BatGraph();
+
     sur.setupScenarios();
     theSimulation.initialize();
     sur.reset();

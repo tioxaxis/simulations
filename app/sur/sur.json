@@ -1,6 +1,10 @@
 {"app":{"omConcept":{"key":"sur","scenarios":
-  [{"bSetup":"8","mSetup":"8","util":"1","batch":"3","pt":"2","reset":"false","action":"none","speed":"2","leg0":"true","leg1":"true","desc":"A: Initial scenario"},
-   {"bSetup":"8","mSetup":"4","batch":"3","pt":"2","reset":"false","action":"none","speed":"2","desc":"B: Reduce Setup Time","leg0":"true","leg1":"true"},
-   {"bSetup":"8","mSetup":"8","batch":"1","pt":"2","reset":"false","action":"none","speed":"2","desc":"C: Reduce Batch Size","leg0":"true","leg1":"true"},
-   {"bSetup":"8","mSetup":"4","batch":"1","pt":"2","reset":"false","action":"none","speed":"2","desc":"D: Reduce Both Batch Size and Setup Time","leg0":"true","leg1":"true"}
+  [{"bSetup":"8","mSetup":"8","batch":"16","pt":"2",
+    "reset":"false","action":"none","speed":"2","leg0":"true","leg1":"true","desc":"A: Initial scenario"},
+   {"bSetup":"8","mSetup":"4","batch":"16","pt":"2",
+    "reset":"false","action":"none","speed":"2","desc":"B: Reduce Setup Time","leg0":"true","leg1":"true"},
+   {"bSetup":"8","mSetup":"8","batch":"8","pt":"2",
+    "reset":"false","action":"none","speed":"2","desc":"C: Reduce Batch Size","leg0":"true","leg1":"true"},
+   {"bSetup":"8","mSetup":"4","batch":"8","pt":"2",
+    "reset":"false","action":"none","speed":"2","desc":"D: Reduce Both Batch Size and Setup Time","leg0":"true","leg1":"true"}
    ]}}}

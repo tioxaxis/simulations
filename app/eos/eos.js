@@ -37,19 +37,27 @@ import {
 	TioxGraph, GraphLine
 }
 from "../mod/graph.js";
+// import {
+// 	genPlayResetBox, genArbSlider, genButton, addDiv,
+//       NumSlider, htmlNumSlider,
+//     ArbSlider, htmlArbSlider,
+//     genRange, 
+//      htmlCheckBox, CheckBox, 
+//     htmlRadioButton, RadioButton, 
+//     IntegerInput, 
+//     addKeyForIds, 
+//     LegendItem, LegendPair, match, ButtonOnOff,
+//     Description
+// }
+// from '../mod/genHTML.js';
+
 import {
-	genPlayResetBox, genArbSlider, genButton, addDiv,
-      NumSlider, htmlNumSlider,
-    ArbSlider, htmlArbSlider,
-    genRange, 
-     htmlCheckBox, CheckBox, 
-    htmlRadioButton, RadioButton, 
-    IntegerInput, 
-    addKeyForIds, 
-    LegendItem, LegendPair, match, ButtonOnOff,
-    Description
+    NumParam, ArbParam, BoolParam, Description, match,
+    NumSlider, ArbSlider, Checkbox, RadioButtons, ButtonToggle,
+    LegendButton, addDiv, addKeyForIds, genPlayResetBox
 }
-from '../mod/genHTML.js';
+from '../mod/params.js';
+
 
 class EosGraph  {
 	//controls both of the flow time and throughput graphs
@@ -61,11 +69,11 @@ class EosGraph  {
 		
 		const jointFlow = new GraphLine(this.flowGraph, d => d.j, 
                         {color: cbColors.blue, vertical: false,
-                         visible: true, continuous: false,
+                         visible: eos.usrInputs.get('leg1'), continuous: false,
                          lineWidth: 5, dotSize: 10, right: false});
 		const sepFlow = new GraphLine(this.flowGraph, d => d.s, 
                         {color: cbColors.yellow, vertical: false,
-                         visible: true, continuous: false,
+                            visible: eos.usrInputs.get('leg0'), continuous: false,
                          lineWidth: 5, dotSize: 7, right: false});        
         //throughput graph
         this.thruGraph = new TioxGraph(eos,'tchartCanvaseos',
@@ -74,26 +82,21 @@ class EosGraph  {
 		
 		const jointThru = new GraphLine(this.thruGraph, d => d.j, 
                         {color: cbColors.blue, vertical: false,
-                         visible: true, continuous: false,
+                            visible: eos.usrInputs.get('leg1'), continuous: false,
                          lineWidth: 5, dotSize: 10, right: false,
                         yLimit: 12});
         const sepThru = new GraphLine(this.thruGraph, d => d.s, 
                         {color: cbColors.yellow, vertical: false,
-                         visible: true, continuous: false,
+                            visible: eos.usrInputs.get('leg0'), continuous: false,
                          lineWidth: 5, dotSize: 7, right: false,
                         yLimit: 12});
-        //setup legend displays (connected directly to flow graph)
-        const leg0 = sepFlow.createLegend('leg0','Separate');
-        const leg1 = jointFlow.createLegend('leg1','Joint');
+
         const d3 = document.getElementById('chartLegendeos');
        d3.classList.add('rowCenterCenter');
-        d3.append(leg0,'      ', leg1); //option-spaces!!
-        
-        // yet, link the LegendItem to both GraphLines via LegendPair. 
-        eos.usrInputs.set('leg0', 
-            new LegendPair('leg0', sepFlow, sepThru, localUpdateFromUser, true)); 
-        eos.usrInputs.set('leg1', 
-            new LegendPair('leg1', jointFlow, jointThru, localUpdateFromUser, true));
+        d3.append(
+            eos.usrInputs.get('leg0').create(cbColors.yellow, 'Separate', 'que'),
+            '      ', //option-spaces!!
+            eos.usrInputs.get('leg1').create(cbColors.blue, 'Joint', 'que') );
 	};
 	
 	pushSep (t,f){
@@ -296,7 +299,7 @@ sPathsY(nMach) {
 }
     redrawBackground() {
         this.clearStageBackground();
-        const nMach = eos.usrInputs.get('num').get();
+        const nMach = eos.usrInputs.get('num').getNumber();
         theSimulation.sepArrivalSplitter.setNumber(nMach);
         theSimulation.jTSAagent.setNumMachines(nMach);
 
@@ -318,7 +321,13 @@ sPathsY(nMach) {
         }
     };
 };
-function localUpdateFromUser(inp){
+
+
+document.getElementById('eos')
+    .addEventListener('localUpdate', localUpdateFromUser);
+function localUpdateFromUser(event) {
+    const inp = eos.usrInputs.get(event.detail.key);
+    console.log('in LOCAL UPDATE ', inp.key, inp.get());
     eos.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
     if( match([inp],['util','acv','sr','scv'])) {
@@ -334,27 +343,28 @@ function localUpdateFromUser(inp){
         
 function updateArrivalRate(u,s,n){
     
-    if(u == null) u = Number(eos.usrInputs.get('util').getValue());
-    if(s == null) s = Number(eos.usrInputs.get('sr').get());
-    if(n == null) n = Number(eos.usrInputs.get('num').get());
+    if(u == null) u = Number(eos.usrInputs.get('util').get());
+    if(s == null) s = eos.usrInputs.get('sr').getNumber();
+    if(n == null) n = eos.usrInputs.get('num').getNumber();
      const a = u * s * n;
     theSimulation.interarrivalRV.setRate(a / tioxTimeConv);
  };
 
 function localUpdate(inp){
-    let v = inp.get();
+    let v;
     switch (inp.key){
         case 'util':
-            updateArrivalRate(inp.getValue(), null, null);
+            updateArrivalRate(Number(inp.get()), null, null);
             eos.heap.modify('finish/creator',
                 () => eos.now + theSimulation.interarrivalRV.observe());
             break;
         case 'acv':
-            theSimulation.interarrivalRV.setCV(v);
+            theSimulation.interarrivalRV.setCV(inp.getNumber());
             eos.heap.modify('finish/creator',
                 () => eos.now + theSimulation.interarrivalRV.observe());
             break;
         case 'sr':
+            v = inp.getNumber();
             updateArrivalRate(null, v, null);
             theSimulation.serviceRV.setRate(v / tioxTimeConv);
             eos.heap.modify('finish/TSAagent',
@@ -362,26 +372,28 @@ function localUpdate(inp){
                 theSimulation.serviceRV.observe());
            break;
         case 'scv':
-            theSimulation.serviceRV.setCV(v);
+            theSimulation.serviceRV.setCV(inp.getNumber());
             eos.heap.modify('finish/TSAagent',
                 () => eos.now +
                 theSimulation.serviceRV.observe());
             break;
         case 'num':
-            v = Number(v);
+            v = inp.getNumber();
             updateArrivalRate( null, null, v); theSimulation.jTSAagent.setNumMachines(v);
             for( let k = 0; k < 4; k++){
                 theSimulation.sTSAagents[k].active = k < v;
             }
             break;
         case 'speed':
-            eos.adjustSpeed(v);
+            eos.adjustSpeed(inp.getIndex());
             break;
         case 'idle':
         case 'action':
         case 'reset':
+            break;
         case 'leg0':
         case 'leg1':
+            eos.graph.setupThenRedraw();
             break;
         default:
             alert(' reached part for default, key=',inp.key);
@@ -406,7 +418,7 @@ class EosQueue extends Queue {
         person.checkAhead = true;
         person.arrivalTime = eos.now + this.walkingTime;
         person.width = this.delta.dx;
-        const sr = Number(eos.usrInputs.get('sr').get()) / tioxTimeConv;
+        const sr = Number(eos.usrInputs.get('sr').getNumber()) / tioxTimeConv;
         const nLeave = Math.floor(sr * this.nextMachine.numMachines *  this.walkingTime);
         const dist = Math.max(0,(this.q.length - 1 - nLeave)) * this.delta.dx;
         
@@ -455,7 +467,7 @@ class EosQueue extends Queue {
     updateWalkingPositions(allowMoveBack){
         for (let k = this.numSeatsUsed; k < this.q.length; k++) {
 			let p = this.q[k];
-            const sr = Number(eos.usrInputs.get('sr').get()) / tioxTimeConv;
+            const sr = Number(eos.usrInputs.get('sr').getNumber()) / tioxTimeConv;
             const nLeave = Math.floor(sr * this.nextMachine.numMachines *(p.arrivalTime - eos.now));
             const dist = Math.max(0,(k - nLeave)) * this.delta.dx;
             const minXPos = (allowMoveBack ? 0 : p.pathList[0].x);
@@ -469,8 +481,8 @@ class EosQueue extends Queue {
     }
     
     checkIdleMachines(){
-        if(!eos.usrInputs.get('idle').getValue()) return;
-        const n = eos.usrInputs.get('num').get();
+        if(!eos.usrInputs.get('idle').getBool()) return;
+        const n = eos.usrInputs.get('num').getNumber();
         for( let k = 0; k < n; k++ ){
             if( theSimulation.sTSAagents[k].machs[0].status == 'idle' ){
                 this.omConcept.pauseImmediately();
@@ -556,8 +568,8 @@ class EosTSA extends MachineCenter {
 	}
     
     checkForQueue(){
-        if(!eos.usrInputs.get('idle').getValue()) return;
-        const n = eos.usrInputs.get('num').get();
+        if(!eos.usrInputs.get('idle').getBool()) return;
+        const n = eos.usrInputs.get('num').getNumber();
         for( let k = 0; k < n; k++ ){
             if( theSimulation.sQueues[k].numSeatsUsed > 0 ){
                 this.omConcept.pauseImmediately();
@@ -582,11 +594,11 @@ const theSimulation = {
 	initialize: function () {
         const nServers = 4;   //maximum possible that can fit on stage.
 		// random variables
-		const util = eos.usrInputs.get('util').getValue();
-        const sr = eos.usrInputs.get('sr').get();
-		const num = eos.usrInputs.get('num').get();
-        const acv = eos.usrInputs.get('acv').get();
-		const scv = eos.usrInputs.get('scv').get();
+		const util = Number(eos.usrInputs.get('util').get());
+        const sr = eos.usrInputs.get('sr').getNumber();
+		const num = eos.usrInputs.get('num').getNumber();
+        const acv = eos.usrInputs.get('acv').getNumber();
+		const scv = eos.usrInputs.get('scv').getNumber();
         const ar = util * sr * num;
         
         theSimulation.interarrivalRV = new GammaRV(ar / tioxTimeConv, acv);
@@ -639,7 +651,7 @@ const theSimulation = {
                 eos.resetCollection.push(this.sTSAagents[k]);
                 eos.resourceCollection.push(this.sTSAagents[k]);
             };
-        const n = eos.usrInputs.get('num').get();
+        const n = eos.usrInputs.get('num').getNumber();
          for( let k = 0; k < 4; k++){
                 theSimulation.sTSAagents[k].active = k < n;
             }
@@ -700,8 +712,25 @@ class EosCreator {
     }
 }
 
-function eosHTML(){	
-	let usrInputs = new Map();
+function defineParams() {
+    let usrInputs = new Map();
+    usrInputs.set('util', new ArbSlider('util', [.5, .7, .9, .95, .99], .9));
+    usrInputs.set('acv', new NumSlider('acv', 0, 2, .5, 0));
+    usrInputs.set('sr', new NumSlider('sr', 1, 3, .1, 6));
+    usrInputs.set('scv', new NumSlider('scv', 0, 2, .5, 0));
+    usrInputs.set('num', new NumSlider('num', 2, 4, 1, 2));
+    usrInputs.set('idle', new ButtonToggle('idle', false));
+    usrInputs.set('reset', new Checkbox('reset', false));
+    usrInputs.set('action', new RadioButtons('action', ['none', 'play', 'pause'],
+        'none', 'actionque'));
+    usrInputs.set('speed', new ArbSlider('speed', [1, 2, 5, 10, 25, 1000], 1));
+    usrInputs.set('desc', new Description('desc'));
+    usrInputs.set('leg0', new LegendButton('leg0', true));
+    usrInputs.set('leg1', new LegendButton('leg1', true));
+    return usrInputs;
+}
+
+function eosHTML(usrInputs){	
     
     addDiv('eos','eos','whole')
 	addDiv('eos', 'leftHandSideBox'+'eos',
@@ -710,69 +739,41 @@ function eosHTML(){
 		
 	let elem = document.getElementById('slidersWrappereos');
     
-    const utilInput = genRange('utileos', 2, 0, 4, 1);
-    elem.append(htmlArbSlider(utilInput, 'System Utilization = ', '0.9',
-                              ['.5','.7','.9','.95','.99']) );
-    usrInputs.set('util', new ArbSlider('util',utilInput,
-                localUpdateFromUser, [.5,.7,.9,.95,.99],[.5,.7,.9,.95,.99], 2) );
+    elem.append(usrInputs.get('util')
+        .create('System Utilization = ', ['.5', '.7', '.9', '.95', '.99'],
+                                        ['.5', '.7', '.9', '.95', '.99']) );
     
+    elem.append(usrInputs.get('acv')
+        .create('Arrival CV = ',['0.0','1.0','2.0']) );
     
-    const acvInput = genRange('acveos', 0, 0, 2, .5);
-    elem.append(htmlNumSlider(acvInput, 'Arrival CV = ', '0.0',['0.0','1.0','2.0']) );
-    usrInputs.set('acv', new NumSlider('acv', acvInput,
-                localUpdateFromUser, 0, 2, 0, 1, 10) );
+    elem.append(usrInputs.get('sr')
+        .create('Service Rate = ', [1, 1.5,2.0,2.5,3.0]) );
     
-    const srInput = genRange('sreos', '1.0', 1, 3, .1);
-    elem.append(htmlNumSlider(srInput, 'Service Rate = ', '2.0',
-                              [1, 1.5,2.0,2.5,3.0]) );
-    usrInputs.set('sr', new NumSlider('sr',srInput,
-                localUpdateFromUser, 1, 3, 2, 1, 10) );
+    elem.append(usrInputs.get('scv')
+        .create('Service CV = ', ['0.0','1.0','2.0']) );
     
-    
-    const scvInput = genRange('scveos', 0, 0, 2, .5);
-    elem.append(htmlNumSlider(scvInput, 'Service CV = ', '0.0',['0.0','1.0','2.0']) );
-    usrInputs.set('scv', new NumSlider('scv', scvInput,
-                localUpdateFromUser, 0, 2, 0, 1, 10) );
-    
-    const numInput = genRange('numeos', 2, 2, 4, 1);
-    elem.append(htmlNumSlider(numInput, 'Number of Servers = ', '2',['2','3','4']));
-    usrInputs.set('num', new NumSlider('num',numInput,
-                                      localUpdateFromUser, 2, 4, 2, 0, 1 ));
+    elem.append(usrInputs.get('num')
+        .create('Number of Servers = ',['2','3','4']));
     
     // fill in HTML for pause on next occurance of an idle slider.
     const twoSeparateButtons = document.getElementById('twoSeparateButtons').cloneNode(true);
     addKeyForIds('eos',twoSeparateButtons);
-    elem.append(twoSeparateButtons);
-    const pauseOnIdleButton = document.getElementById('pauseOnIdleButtoneos');
-//    const switchLinesButton = document.getElementById('switchLinesButtoneos');
+    elem.append(usrInputs.get('idle').create(twoSeparateButtons,
+        'pauseOnIdleTurnOffeos', 'pauseOnIdleTurnOneos'));
     
-    usrInputs.set('idle',new ButtonOnOff('idle',pauseOnIdleButton,
-                            'pauseOnIdleTurnOneos','pauseOnIdleTurnOffeos',
-                            localUpdateFromUser,false));
-    
-    //now put in the sliders with the play/reset box
-    elem.append( genPlayResetBox('eos') );
-    usrInputs.set('reset', new CheckBox('reset', 'reseteos',
-                localUpdateFromUser, false) );
-    usrInputs.set('action', new RadioButton('action', 'actioneos', 
-                localUpdateFromUser, ['none','play','pause'], 'none') );
-     
-    const speedInput = genRange('speedeos',0,0,5,1);
-    elem.append(htmlArbSlider(speedInput, 'Speed = ', '1x',
-                            ["slow",' ',' ',' ',"fast",'∞']) );
-    usrInputs.set('speed', new ArbSlider('speed', speedInput, 
-                localUpdateFromUser, ["1x",'2x','5x','10x',"25x",'∞'],
-				                [1,2,5,10,25,1000], 0) );   
-    
+    elem.append(genPlayResetBox('eos', usrInputs));
+
+    elem.append(usrInputs.get('speed')
+        .create('Speed = ', ['1x', '2x', '5x', '10x', '25x', '∞'],
+            ["slow", ' ', ' ', ' ', "fast", '∞']));
+        
 	const f = document.getElementById('scenariosMideos');
 	f.style = "min-height: 18vw";
-    
-    usrInputs.set('desc', new Description('desc'));
-    return usrInputs;
 };
 
 export function eosStart() {
-	let usrInputs= eosHTML();
+	let usrInputs = defineParams();
+    eosHTML(usrInputs);
     eos = new EconScale(usrInputs);
     eosDefine();
     eos.graph = new EosGraph();
