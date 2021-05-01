@@ -257,7 +257,6 @@ document.getElementById('sur')
 	.addEventListener('localUpdate', localUpdateFromUser);
 function localUpdateFromUser(event) {
 	const inp = sur.usrInputs.get(event.detail.key);
-	console.log('in LOCAL UPDATE ', inp.key, inp.get());
 	sur.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
 	if (match([inp], ['pt', 'bSetup', 'mSetup', 'batch'])) {
@@ -898,9 +897,8 @@ class Batch extends Item{
 };
 function defineParams() {
 	let usrInputs = new Map();
-	usrInputs.set('bSetup', new NumSlider('bSetup', 2, 8, 1, 2));
-	usrInputs.set('mSetup', new NumSlider('mSetup', 2, 8, 1, 2));
-	// usrInputs.set('util', new ArbSlider('util', [0.8, 0.9, 0.95, 0.99], .95));
+	usrInputs.set('bSetup', new NumSlider('bSetup', 2, 8, 1, 8));
+	usrInputs.set('mSetup', new NumSlider('mSetup', 2, 8, 1, 8));
 	usrInputs.set('batch', new ArbSlider('batch', [4, 8, 12, 16], 16));
 	usrInputs.set('pt', new NumSlider('pt', 2, 8, 1, 2));
 	usrInputs.set('reset', new Checkbox('reset', false));
@@ -925,11 +923,6 @@ function surHTML(usrInputs){
     
 	elem.append(usrInputs.get('bSetup').create('Setup Time = ', [2, 4, 6, 8], 'backYellow'));
 	elem.append(usrInputs.get('mSetup').create('Setup Time = ', [2, 4, 6, 8], 'backBlue'));
-	// elem.append(usrInputs.get('util')
-	// 	.create('Utilization = ', ['0.8', '0.9', '0.95', '0.99'],
-	// 		['0.8', '0.9', '0.95', '0.99']));
-
-	// elem.append(htmlNoSlider('loadbat', 'Load Factor = ', '1'));
 	elem.append(htmlNoSlider('setBatchbat', 'Batch Size = ', '16'));
 	elem.append(usrInputs.get('batch').create('Batch Size = ', 
 		[4, 8, 12, 16], [4, 8, 12, 16], 'backBlue'));

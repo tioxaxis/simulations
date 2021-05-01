@@ -306,7 +306,6 @@ document.getElementById('inv')
 	.addEventListener('localUpdate', localUpdateFromUser);
 function localUpdateFromUser(event) {
 	const inp = inv.usrInputs.get(event.detail.key);
-	console.log('in LOCAL UPDATE ', inp.key, inp.get());
 	inv.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
     if( match([inp],['ar','acv','lt','ltcv',
@@ -335,7 +334,7 @@ function localUpdate(inp){
         case 'rop':
 			theSimulation.rop = inp.getNumber();
             if( inv.whichRule == 'methRop'){
-                inv.graph.resetRopLine(Number(v));
+				inv.graph.resetRopLine(inp.getNumber());
                 inv.graph.setupThenRedraw();
             }
             break;
@@ -889,8 +888,8 @@ function defineParams() {
 			 ['methRop', 'methUpto'], 'methRop', 'methodinv'));
 	usrInputs.set('ar', new NumSlider('ar', 1, 9, 1, 5));
 	usrInputs.set('acv', new NumSlider('acv', 0, 2, .5, 0));
-	usrInputs.set('lt', new NumSlider('sr', 2, 10, 1, 6));
-	usrInputs.set('ltcv', new NumSlider('scv', 0, 2, .5, 0));
+	usrInputs.set('lt', new NumSlider('lt', 2, 10, 1, 6));
+	usrInputs.set('ltcv', new NumSlider('ltcv', 0, 2, .5, 0));
 	usrInputs.set('quan', new NumSlider('quan', 10, 50, 1, 24));
 	usrInputs.set('rop', new NumSlider('rop', 5, 85, 1, 10));
 	usrInputs.set('period', new NumSlider('period', 2, 12, 1, 3));

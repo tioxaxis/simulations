@@ -258,8 +258,6 @@ document.getElementById('lit')
     .addEventListener('localUpdate', localUpdateFromUser);
 function localUpdateFromUser(event) {
     const inp = lit.usrInputs.get(event.detail.key);
-    console.log('in LOCAL UPDATE ', inp.key, inp.get());
-
     lit.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
     if( match([inp],['ar','acv','st','scv'])) {

@@ -1,12 +1,12 @@
 {"app": {
     "omConcept":{ "key":"nvp","scenarios":
-[{"dr":"20", "dcv":"1", "Cu":"8", "Co":"1", "quan":"20", "speed":"0", "action":"none",
+[{"dr":"20", "dcv":"1", "Cu":"8", "Co":"1", "quan":"20", "speed":"1", "action":"none",
   "leg0":"true", "leg1":"true", "leg2":"true", "reset":"false",
   "desc":"A: At the Start"},
- {"dr":"20", "dcv":"1", "Cu":"8", "Co":"1", "quan":"20", "speed":"2", "action":"none",
+ {"dr":"20", "dcv":"1", "Cu":"8", "Co":"1", "quan":"20", "speed":"5", "action":"none",
    "leg0":"true", "leg1":"true", "leg2":"true", "reset":"false",
    "desc":"B: Speed It Up"},
- {"dr":"20", "dcv":"1", "Cu":"8", "Co":"1", "quan":"30", "speed":"2", "action":"none",
+ {"dr":"20", "dcv":"1", "Cu":"8", "Co":"1", "quan":"30", "speed":"5", "action":"none",
   "leg0":"true", "leg1":"true", "leg2":"true", "reset":"false",
   "desc":"C: Increase Order Quantity"}]
                 }}}

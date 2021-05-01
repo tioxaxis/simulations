@@ -327,7 +327,6 @@ document.getElementById('eos')
     .addEventListener('localUpdate', localUpdateFromUser);
 function localUpdateFromUser(event) {
     const inp = eos.usrInputs.get(event.detail.key);
-    console.log('in LOCAL UPDATE ', inp.key, inp.get());
     eos.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
     if( match([inp],['util','acv','sr','scv'])) {

@@ -274,7 +274,6 @@ document.getElementById('nvp')
     .addEventListener('localUpdate',localUpdateFromUser);
 function localUpdateFromUser(event){
     const inp = nvp.usrInputs.get(event.detail.key);
-    console.log('in LOCAL UPDATE ',inp.key,inp.get());
     nvp.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
     if( match([inp],['dr','dcv','Cu','Co','quan'])) {

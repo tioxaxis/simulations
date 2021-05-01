@@ -259,7 +259,6 @@ document.getElementById('que')
     .addEventListener('localUpdate',localUpdateFromUser);
 function localUpdateFromUser(event){
     const inp = que.usrInputs.get(event.detail.key);
-    console.log('in LOCAL UPDATE ',inp.key,inp.get());
     que.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
     if( match([inp],['ar','acv','sr','scv'])) {
