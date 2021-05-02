@@ -337,6 +337,7 @@ function localUpdate(inp){
 				inv.graph.resetRopLine(inp.getNumber());
                 inv.graph.setupThenRedraw();
             }
+			theSimulation.store.checkInvPosition();
             break;
         case 'period':
 			theSimulation.period = inp.getNumber() * tioxTimeConv;
@@ -579,6 +580,7 @@ class RopStore extends GStore {
 
 		this.invInDoor = this.inv;
 		this.invPosition = this.inv;
+		this.checkInvPosition()
 
 		for (let k = 0; k < this.inv; k++)
 			this.addNew();
@@ -650,10 +652,11 @@ class RopStore extends GStore {
 			this.stockout = true;
 		} else {
 			this.invPosition--;
-			if (this.invPosition <= theSimulation.rop &&
-				inv.whichRule == 'methRop') {
-				this.orderQuan();
-			}
+			// if (this.invPosition <= theSimulation.rop &&
+			// 	inv.whichRule == 'methRop') {
+			// 	this.orderQuan();
+			// }
+			this.checkInvPosition();
 			this.invInDoor--;
 			this.inv--;
 		};
@@ -666,6 +669,12 @@ class RopStore extends GStore {
 
 	orderQuan() {
 		this.createDelivery(theSimulation.quantityOrdered);
+	};
+	checkInvPosition() {
+		if (this.invPosition <= theSimulation.rop &&
+			inv.whichRule == 'methRop') {
+			this.createDelivery(theSimulation.quantityOrdered);
+		}
 	};
 	orderUpto() {
 		const p = theSimulation.period;
