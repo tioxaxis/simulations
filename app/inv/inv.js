@@ -336,8 +336,9 @@ function localUpdate(inp){
             if( inv.whichRule == 'methRop'){
 				inv.graph.resetRopLine(inp.getNumber());
                 inv.graph.setupThenRedraw();
+				theSimulation.store.checkInvPosition();
             }
-			theSimulation.store.checkInvPosition();
+			
             break;
         case 'period':
 			theSimulation.period = inp.getNumber() * tioxTimeConv;
