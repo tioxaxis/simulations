@@ -214,7 +214,7 @@ class Batching extends OmConcept{
         for(let inp of inpsChanged){
             localUpdate(inp); 
         };
-		if (match(inpsChanged, ['util', 'pt', 'bSetup', 'mSetup', 'batch'])){
+		if (match(inpsChanged, [/* 'util', 'pt', 'bSetup', 'mSetup',  */'batch'])){
 			this.partialReset();
 			this.localReset();
 			bat.graph.updateForParamChange();
@@ -264,7 +264,7 @@ function localUpdateFromUser(event) {
 	const inp = bat.usrInputs.get(event.detail.key);
 	bat.setOrReleaseCurrentLi(inp);
     localUpdate(inp);
-	if (match([inp], ['util', 'pt', 'bSetup', 'mSetup', 'batch'])) {
+	if (match([inp], [/* 'util', 'pt', 'bSetup', 'mSetup', */ 'batch'])) {
 		bat.partialReset();
 		bat.localReset();
 		bat.graph.updateForParamChange();
@@ -948,10 +948,10 @@ function batHTML(usrInputs){
 		.create('Utilization = ', ['0.8', '0.9', '0.95', '0.99'],
 								 ['0.8', '0.9', '0.95', '0.99'], 'backYellow'));
 	
-	elem.append(htmlNoSlider('loadbat', 'Load Factor = ', '1'));  
-    elem.append(htmlNoSlider('setBatchbat', 'Batch Size = ', '16'));
-	const batchInput = {};// = genRange('batchbat', 3, 0, 3, 1);
-	batchInput.className = 'backBlue';
+	elem.append(htmlNoSlider('loadbat', 'Load Factor = ', '1')); 
+	const dummyBatch = new ArbSlider('batch', [4, 8, 12, 16], 16);
+	elem.append(dummyBatch.create('Batch Size = ', [' ', ' ', ' ', 16], [' ', ' ', ' ',  16], 'backYellow'));
+	dummyBatch.input.disabled = true;
 	elem.append(usrInputs.get('batch').create('Batch Size = ', 
 		[4, 8, 12, 16], [4, 8, 12, 16], 'backBlue' ));
 	    

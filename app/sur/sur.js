@@ -923,8 +923,12 @@ function surHTML(usrInputs){
     
 	elem.append(usrInputs.get('bSetup').create('Setup Time = ', [2, 4, 6, 8], 'backYellow'));
 	elem.append(usrInputs.get('mSetup').create('Setup Time = ', [2, 4, 6, 8], 'backBlue'));
-	elem.append(htmlNoSlider('setBatchbat', 'Batch Size = ', '16'));
-	elem.append(usrInputs.get('batch').create('Batch Size = ', 
+	// elem.append(htmlNoSlider('setBatchbat', 'Batch Size = ', '16'));
+	const dummyBatch = new ArbSlider('batch', [4, 8, 12, 16], 16);
+	elem.append(dummyBatch.create('Batch Size = ', [' ', ' ', ' ', 16], [' ', ' ', ' ', 16], 'backYellow'));
+	dummyBatch.input.disabled = true;
+	
+	elem.append(usrInputs.get('batch').create('Batch Size = ',
 		[4, 8, 12, 16], [4, 8, 12, 16], 'backBlue'));
 
 	const mark = document.getElementById('markButton').cloneNode(true);

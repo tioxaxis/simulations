@@ -3,6 +3,7 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" type="text/css" href="../app/app.css">
+<link rel="shortcut icon" href="../app/res/tiox3.png">
 
 <style>
 body {
@@ -85,7 +86,7 @@ body {
 
 /* Dropdown container (hidden by default) */
 .dropdown-container {
-  display: none;
+  display: block;
   padding-left: 50px;
 }
 
@@ -108,6 +109,9 @@ h4{
 }
 #blankSpace{
   padding-bottom: 90vh;
+}
+.fontMaterial{
+	font-size: 20px;
 }
 
 </style>
@@ -162,7 +166,12 @@ h4{
 <h2 id='about'>About TioX</h2>
   	<div class='entry'>
   	<h3 id='whatistiox'>What is TioX?  </h3>
-	<p>TioX (/taɪ ɑːks/) is a set of animations for demonstrating some of the main ideas in Operations Management.   These include queueing, bottlenecks, Little's Law, the newsvendor problem, inventory management, economies of scale in queueing, and batching (the impact of batching decisions on flow time and throughput).  </p>
+	<p>TioX (t&#299; &#466;x or 'TIE OX' or /taɪ ɑːks/) is a set of animations for demonstrating
+		some of
+		the main ideas in
+		Operations Management. These include queueing, bottlenecks, Little's Law, the newsvendor problem, inventory
+		management, economies of scale in queueing, and batching (the impact of batching decisions on flow time and
+		throughput). </p>
 	<p>Each animation shows people and/or packages moving through a system and is designed as an aid to students' first exposure to these concepts.  Let's take queueing as an example to start. Although one can observe people coming to a store or a bank and see that sometimes people wait to be served, one has no knowledge of or control over the rates of arrivals or the rates of service. The animation provides the student with the opportunity to observe a system knowing the arrival rate of customers and the service rate of the server and see how the system performs.  Crucially, it is then possible to adjust these rates and the variability in these rates and observe how the system performance (waiting time for customers in this case) changes.</p>
 		
 	<p>Many basic concepts in Operations Management involve understanding how sequences of events, such as a customers arriving at store, being served, and being checked out, will interact.  Although many ideas are straightforward, such as the rate a system can handle customers is driven by the slowest stage of a process, it is helpful to actually see this a few times first.</p>
@@ -173,7 +182,7 @@ h4{
   	</div>
   
   	<div class='entry'>
-  	<h3 id='history'>Background and History:</h3>
+  	<h3 id='history'>History and Background:</h3>
 	<p>In a 2006 article entitled <a href="https://pubsonline.informs.org/doi/10.1287/ited.7.1.106">"Web-based Simulations for Teaching Queueing, Little's Law, and Inventory Management,"</a> published in <a href="https://pubsonline.informs.org/journal/ited">INFORMS Transactions on Education</a>,  Robert Shumsky and I introduced earlier versions of three of these simulations.  The Flash and Shock-Wave versions of these at some point became unavailable and the link at the publisher no longer worked.   Robert Shumsky and Chris Huston produced an updated Flash version of the animation for Queueing,</a> and I and my sons produced a Java version for all three and several others.</p>
 		
 	<p>Adobe announced that December 2020 is the <a href="https://www.adobe.com/products/flashplayer/end-of-life.html">End-of-Life for Flash</a>.  Java became <a href="https://java.com/en/download/help/enable_browser.xml">problematic for use via a web browser</a> much earlier. <a href="http://tiox.simonnet.rochester.edu/">The Java version is still available</a> and still runs fine on a laptop if you are willing to install the Java Runtime System. Yet, the Java version was designed around a fixed screen size. It can appear small on a modern laptop, and thus small on the projector for class, and adjusting system settings to workaround this difficulty is awkward. </p>
@@ -258,7 +267,7 @@ h4{
 		<h4>Teaching Note</h4>
         <p>The animation allows one to compare two queueing systems. The system on the left is the 'Separate' system in which each server has its own queue and customers pick a server at random and join its queue. The second system is the 'Joint' system in which all demand joins a single queue and customers go to the first available server.  The animation allows you to compare the two systems on the measures of flow time and throughput.  As is well known, if the servers are identical and both serve the same arrival process, the joint system does better on flow time. The throughput will be the same on average. </p>
         <p> The first scenario (A) has a relatively low utilization (0.7), 2 servers, and no variability in the arrival or service process.  First observe that the arrival process to both systems is identical. The customers are even color coded the same to make this point more obvious.  Because the choice of queue to join for the separate system is random, this randomness is enough to see that the separate system has a higher average flow time. Because Scenario A is operating fairly slowly Scenario B just speeds up time.  Scenario C increases the utilzation (to 0.95).  This increases the arrival rate.  You will probably see a further increase in the flow time for the separate system.  Scenarios D  add servers (from 2 to 4).  This doubles the arrival rate because the utilzation and the service rate per server are set.  You should see an increase in the average flow time for the separate system.  Finally, Scenario E adds variability so the flow time for both systems increases but the separate system is still worse. </p>
-        <p>Why does the separate system perform worse.  Well, I usually find after running a simple scenario for a few minutes a more astute student will point out that in the separate system a server can be idle and yet there is a queue at another server. You can then direct the class to see if they can also see this phenomenon.  This phenomenon cannot happen in the joint system.  Whenever a server in the joint system is idle the queue is empty.  I have found that to observe this without wasting a great deal of class time requires running the animation "fast" but then the situation you want to observe (an idle server and another server with a queue in the separate system) disappears quickly. To aid the presentation, a extra button,<i class="material-icons font15vw">notification_important</i>, has been added.  It is a toggle and once it is on the animation will pause in two situations: 1) whenever a separate server finishes a customer and becomes idle and another separate server has a queue, or 2) whenever a person joins a queue for a separate server (and does not immediatly start service) and another separate server is idle.   Hitting play will cause the animation to continue to the next such event.  Of course you can turn this toggle off at any time.</p>
+        <p>Why does the separate system perform worse.  Well, I usually find after running a simple scenario for a few minutes a more astute student will point out that in the separate system a server can be idle and yet there is a queue at another server. You can then direct the class to see if they can also see this phenomenon.  This phenomenon cannot happen in the joint system.  Whenever a server in the joint system is idle the queue is empty.  I have found that to observe this without wasting a great deal of class time requires running the animation "fast" but then the situation you want to observe (an idle server and another server with a queue in the separate system) disappears quickly. To aid the presentation, a extra button,with the <i class="material-icons fontMaterial">notification_important</i> icon, has been added.  It is a toggle and once it is on the animation will pause in two situations: 1) whenever a separate server finishes a customer and becomes idle and another separate server has a queue, or 2) whenever a person joins a queue for a separate server (and does not immediatly start service) and another separate server is idle.   Hitting play will cause the animation to continue to the next such event.  Of course you can turn this toggle off at any time.</p>
 	</div>
 
   	<div class='entry'>
@@ -271,7 +280,7 @@ h4{
         <p> Although the setup and processing time can be adjusted, the crucial parameters for the demonstration are the utilization of the top machines, which in turn drive the same arrival rate (measured in small boxes) for both lines.  Thus, as you adjust the utilization of the top line you affect the load factor of the bottom line.  It is indicated as "load factor" because it can become greater than 1 depending on the batch size picked for the bottom line.</p>
         <p>The standard scenarios are designed to show how reducing batch size will at first reduce flow time.  Scenario A shows an initial setup with batches of 16 for both lines.  It runs fairly slowly so one can observe the setup time, the movement of individual boxes through the machine, and then finally see there is some idle time on the machine. A portion of the setup occurs as the batch is travelling to the machine.  Scenario B speeds up time so one can see some results on the graphs, namely, in this case, that the two lines are identical.   Scenario C, D, and E keep reducing the batch size on the bottom line from 16 to 12 and then 8, and then 4.</p>
         <p> For scenarios C and D one can observe that the flow time for the blue boxes is less than the orange boxes.  To make this more obvious one can use the 
-            <span class="material-icons " >outlined_flag</span> button to mark a box in a batch in both lines. Finally scenario E reduces the batch size enough to cause the load factor for the bottom line to be greater than one.  You can start to see a queue build up before the first machine.  Scenario F speeds up the process even further to make this queue grow more quickly.</p>
+            <span class="material-icons fontMaterial" >outlined_flag</span> button to mark a box in a batch in both lines. Finally scenario E reduces the batch size enough to cause the load factor for the bottom line to be greater than one.  You can start to see a queue build up before the first machine.  Scenario F speeds up the process even further to make this queue grow more quickly.</p>
 	</div>
 
   	<div class='entry'>
@@ -311,16 +320,16 @@ h4{
 	<p>More details:  Of course the uparrow and pageup keys work as well.  Further, each scenario can be set to 1) pause the animation if it is playing, play the animation if it is paused, or "none" meaning leave it in the mode it was currently in: paused or playing.  When a new scenario is picked it can force the animation to reset (as if the reset button were pushed).  A reset causes the animation to begin again from an empty system, and clears the chart of any old data. Play/Pause (by spacebar) and Reset (by letter b) can be controlled from the keyboard or a presentation remote as well.</p>
 		
 	<h4>How do I create my own sequence of scenarios?</h4>
-	<p>The sequence of scenarios can be customized by each instructor.  Hopefully the interface is largely self-explanitory.  Click <i 
-				   class="material-icons font15vw">edit</i> to edit. 
-		The animation will pause. Pick an existing scenario and then changing any of the parameters in the sliders will change that scenario.  All changes are saved immediately.  Double-clicking the name (or typing Return when one is selected) will allow you to change the name of the scenario.  Scenarios are kept in alpha-numeric order, so use a numbering system to put your scenarios in the order you want for your presentation. Adding and deleting scenarios should be a familiar interface with <i class="material-icons font15vw"> add</i> and
-				<i  class="material-icons font15vw" disabled> remove</i> icons at the bottom of the list.  Although only a few will display, you are not limited to the number of scenarios you can create.</p>
+	<p>The sequence of scenarios can be customized by each instructor.  Hopefully the interface is largely self-explanitory.  Click the <i 
+				    class="material-icons fontMaterial">edit</i> button to edit. 
+		The animation will pause. Pick an existing scenario and then changing any of the parameters in the sliders will change that scenario.  All changes are saved immediately.  Double-clicking the name (or typing Return when one is selected) will allow you to change the name of the scenario.  Scenarios are kept in alpha-numeric order, so use a numbering system to put your scenarios in the order you want for your presentation. Adding and deleting scenarios should be a familiar interface with the <i class="material-icons fontMaterial"> add</i> and
+				<i  class="material-icons fontMaterial" disabled> remove</i> icons at the bottom of the list.  Although only a few will display, you are not limited to the number of scenarios you can create.</p>
 		
 	<h4>Where are they stored and how do I retrieve them?</h4>
 	<p>The mechanism for storing the scenarios is called "Local Storage" for your browser.  It is stored on your machine and for the browser (say Chrome) with which you created them.  If you return to that machine and that browser then loading an animation will load the scenarios you saved previously. This mechanism is simple, and requires no passwords or cloud storage.  Admittedly it does not make sharing them easy. </p>
 		
 	<h4>How do I share them with my colleagues or my students?</h4>
-	<p> If you need to share a collection of scenarios that you have created for one animation, you can create a URL that references the animation and contains all the scenarios encoded in the URL.  Once you are ready, click the <i  class="material-icons font15vw" >link</i> icon.  The URL will be copied to the clipboard so you can pass it to a colleague or post the URL in your learning managment system in an assignment for example. If your colleague wants to keep these scenarios as his/her own in his/her "Local Storage" then he/she needs only to load the URL you sent and then hit the <i  class="material-icons font15vw">edit</i> icon and they will be saved (although they will replace any scenarios she/he currently has saved for that animation).
+	<p> If you need to share a collection of scenarios that you have created for one animation, you can create a URL that references the animation and contains all the scenarios encoded in the URL.  Once you are ready, click the <i  class="material-icons fontMaterial" >link</i> icon.  The URL will be copied to the clipboard so you can pass it to a colleague or post the URL in your learning managment system in an assignment for example. If your colleague wants to keep these scenarios as his/her own in his/her "Local Storage" then he/she needs only to load the URL you sent and then hit the <i  class="material-icons fontMaterial">edit</i> icon and they will be saved (although they will replace any scenarios she/he currently has saved for that animation).
 	</p>
   	</div>
 
@@ -343,21 +352,21 @@ h4{
 </div>
 
 <script>
-var toc1 = document.getElementsByClassName('toc1');
-for( let j = 0; j< toc1.length; j++ ){
-  toc1[j].addEventListener('click', openCloseMenu,true);
-};
-function openCloseMenu(event) {
-    const toc = event.target; 
-    if( toc ){
-      var dropdownContent = toc.nextElementSibling;
-      if (dropdownContent.style.display === "block") {
-          dropdownContent.style.display = "none";
-      } else {
-          dropdownContent.style.display = "block";   
-    }
-    }
-  };
+// var toc1 = document.getElementsByClassName('toc1');
+// for( let j = 0; j< toc1.length; j++ ){
+//   toc1[j].addEventListener('click', openCloseMenu,true);
+// };
+// function openCloseMenu(event) {
+//     const toc = event.target; 
+//     if( toc ){
+//       var dropdownContent = toc.nextElementSibling;
+//       if (dropdownContent.style.display === "block") {
+//           dropdownContent.style.display = "none";
+//       } else {
+//           dropdownContent.style.display = "block";   
+//     }
+//     }
+//   };
 
 </script>
 </body>
