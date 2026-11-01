@@ -983,6 +983,7 @@ export class BoxStack {
         if( this.params.isSnake && r % 2 == 1 ){
             c = this.params.laneLength - 1 - c;
         }
+		// console.log('in ROWCOL',k,r,c);
         return ( this.params.isRows ? {r:r,c:c} : {r:c,c:r} );
     };
     relCoord(k){
@@ -997,7 +998,7 @@ export class BoxStack {
 		this.params.vSpace = vSpace;
 	}
 	setLaneLength(l){
-		this.params.laneLength = l;
+		this.params.laneLength = Math.floor(l);
 	}
     
 };

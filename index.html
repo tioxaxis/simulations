@@ -52,22 +52,22 @@
     
 <!--	****** beginning of generic sections-->
 <div class='displayNone'>
-<div id='genericPlayResetBox'>
-	<div class='rowAroundEnd' id="playButtons">
-		<div id='pauseButton' class='displayNone'>
-		<i class="material-icons actButton font35vw" 
-		   title="Pause the animation">pause_circle_outline</i>
-		</div>
-		<div id='playButton'>
-		<i class="material-icons actButton font35vw" 
-		   title="Play the animation">play_circle_outline</i>
-		</div>
-		<div id='resetButton'>
-		<i class="material-icons actButton font35vw"
-		   title ="Reset the animation">replay</i>
-		</div>
-	</div>
-</div>
+    <div id='genericPlayResetBox'>
+        <div class='rowAroundEnd' id="playButtons">
+            <div id='pauseButton' class='displayNone'>
+            <i class="material-icons actButton font35vw" 
+            title="Pause the animation">pause_circle_outline</i>
+            </div>
+            <div id='playButton'>
+            <i class="material-icons actButton font35vw" 
+            title="Play the animation">play_circle_outline</i>
+            </div>
+            <div id='resetButton'>
+            <i class="material-icons actButton font35vw"
+            title ="Reset the animation">replay</i>
+            </div>
+        </div>
+    </div>
     
     <!--	****** mark Button for face game -->
     <div class="sliderBox columnAroundCenter" id='markButton'>
@@ -108,231 +108,233 @@
 
 <!--	****** wrapper for main page-->
     <div class="wrapper2by1" id='whole'>	
-	<div class='leftHandSideBox' id='leftHandSideBox'>	
-	</div>
+        <div class='leftHandSideBox' id='leftHandSideBox'>	
+        </div>
 
-	<div class='rightHandSideBox' id='rightHandSideBox'>
-		<div class='slidersWrapper' id='slidersWrapper'>	</div>
-		<div class="scenariosPre"></div>
-		<div class='scenariosWrapper' id='scenariosWrapper'>
-			<div  id="linkMessage" class='linkMessage'>
-					Copied to clipboard:<br>
-					A link (URL) with all the current scenarios.
-				</div>
-			
-			<div class="scenariosTop rowBetweenCenter" id="scenariosTop">
-				<div>  Scenarios</div>
-				<div><i id='linkButton' class="material-icons actButton font15vw"
-						title='Copy link to clipboard' >link</i>
-				<i id='resetScenarios' class="material-icons actButton font15vw"
-						title='Reset all scenarios' >replay</i>
-				<i id='editButton' 
-				   title="Edit, add, or delete scenarios"
-				   class="material-icons actButton font15vw"
-				   >edit</i>
-				<i id='exitButton'
-				   title='Exit edit mode'
-				   class="material-icons actButton font15vw revButton displayNone">edit</i>
-					</div>
-				
-			</div>
-			
-			<div class="scenariosMid" id="scenariosMid">	
-				<ul id="ULScenarioList"></ul>
-			</div>
-			<div class="scenariosBot displayNone" id="scenariosBot" > 
-				<i id="addButton" class="material-icons actButton font15vw"> add</i>
-				<i id="deleteButton" class="material-icons disButton font15vw"> remove</i>
-			</div>
-			
-		</div>
-		<div class="scenariosPost"></div>
-	</div> 	<!-- end of rightHandSideBox  -->
-</div>	<!-- end of wrapper2to1 -->
+        <div class='rightHandSideBox' id='rightHandSideBox'>
+            <div class='slidersWrapper' id='slidersWrapper'>	</div>
+            <div class="scenariosPre"></div>
+            <div class='scenariosWrapper' id='scenariosWrapper'>
+                <div  id="linkMessage" class='linkMessage'>
+                        Copied to clipboard:<br>
+                        A link (URL) with all the current scenarios.
+                    </div>
+                
+                <div class="scenariosTop rowBetweenCenter" id="scenariosTop">
+                    <div>  Scenarios</div>
+                    <div><i id='linkButton' class="material-icons actButton font15vw"
+                            title='Copy link to clipboard' >link</i>
+                    <i id='resetScenarios' class="material-icons actButton font15vw"
+                            title='Reset all scenarios' >replay</i>
+                    <i id='editButton' 
+                    title="Edit, add, or delete scenarios"
+                    class="material-icons actButton font15vw"
+                    >edit</i>
+                    <i id='exitButton'
+                    title='Exit edit mode'
+                    class="material-icons actButton font15vw revButton displayNone">edit</i>
+                        </div>
+                    
+                </div>
+                
+                <div class="scenariosMid" id="scenariosMid">	
+                    <ul id="ULScenarioList"></ul>
+                </div>
+                <div class="scenariosBot displayNone" id="scenariosBot" > 
+                    <i id="addButton" class="material-icons actButton font15vw"> add</i>
+                    <i id="deleteButton" class="material-icons disButton font15vw"> remove</i>
+                </div>
+                
+            </div>
+            <div class="scenariosPost"></div>
+        </div> 	<!-- end of rightHandSideBox  -->
+    </div>	<!-- end of wrapper2to1 -->
 	
 	
-<!--	****** wrapper for stage section-->
-<div class='stageWrapper' id="stageWrapper" >
-	<canvas class="theStage foreground" id="foreground" width=1000 height=300></canvas>
-	<canvas class="theStage background" id="background" width=1000 height=300></canvas>
-	<div id='coverAnimation' class='coverAnimation' ></div>
-</div>
+    <!--	****** wrapper for stage section-->
+    <div class='stageWrapper' id="stageWrapper" >
+        <canvas class="theStage foreground" id="foreground" width=1000 height=300></canvas>
+        <canvas class="theStage background" id="background" width=1000 height=300></canvas>
+        <div id='coverAnimation' class='coverAnimation' ></div>
+    </div>
 	
-<!--	****** wrapper for fac stage-->
-<div class='tallStageWrapper' id="tallStageWrapper" >
-	<canvas class="theStage foreground" id="foreground" width=1000 height=480></canvas>
-	<canvas class="theStage background" id="background" width=1000 height=480></canvas>
-</div>
+    <!--	****** wrapper for fac stage-->
+    <div class='tallStageWrapper' id="tallStageWrapper" >
+        <canvas class="theStage foreground" id="foreground" width=1000 height=480></canvas>
+        <canvas class="theStage background" id="background" width=1000 height=480></canvas>
+    </div>
 
     
-<!--	****** wrapper for fac graphs-->
+    <!--	****** wrapper for fac graphs-->
     
     
     
-<!--	****** wrapper for fac for data-->
-<div class='facDataWrapper' id="facDataWrapper" >
-    <div class='facepart'><u>Station:</u></div>
-       <div class='center'><u>1</u></div>
-    <div class='center'><u>2</u></div>
-    <div class='center'><u>3</u></div>
-    <div class='center'><u>Processing Time</u> </div>
-    
-    <div class='facepart'>Head:</div>
+    <!--	****** wrapper for fac for data-->
+    <div class='facDataWrapper' id="facDataWrapper" >
+        <div class='facepart'><u>Station:</u></div>
+        <div class='center'><u>1</u></div>
+        <div class='center'><u>2</u></div>
+        <div class='center'><u>3</u></div>
+        <div class='center'><u>Processing Time</u> </div>
+        
+        <div class='facepart'>Head:</div>
         <input class='faceRadio' type='radio' name='facefac' id='face0' value='0' checked >
         <input class='faceRadio' type='radio' name='facefac' id='face1' value='1'>
         <input class='faceRadio' type='radio' name='facefac' id='face2' value='2'> 
         <div class='faceRange'>
             <input  id='faceTime' value='1'  type='range' 
-               min='1' max='9' step='1'  >
-            <span id='dispfaceTime'>1</span></div>
+            min='1' max='9' step='1'  >
+            <span id='dispfaceTime'>1</span>
+        </div>
+            
         
-	
         <div class='facepart'>Eyes:</div> 
         <input class='faceRadio' type='radio' name='eyesfac' id='eyes0' value='0' >
         <input class='faceRadio' type='radio' name='eyesfac' id='eyes1' value='1' checked>
         <input class='faceRadio' type='radio' name='eyesfac' id='eyes2' value='2'>
         <div class='faceRange'>
             <input id='eyesTime' value='2' type='range' 
-               min='1' max='9' step='1'  >
+            min='1' max='9' step='1'  >
             <span id='dispeyesTime'>2</span>
         </div>
-	
+        
         <span class='facepart'>Nose: </span> 
         <input class='faceRadio' type='radio' name='nosefac' id='nose0' value='0' >
         <input class='faceRadio' type='radio' name='nosefac' id='nose1' value='1' checked>
         <input class='faceRadio' type='radio' name='nosefac' id='nose2' value='2'>
         <div class='faceRange'>
             <input id='noseTime' value='1' type='range' 
-               min='1' max='9' step='1'  >
+            min='1' max='9' step='1'  >
             <span id='dispnoseTime'>1</span>
         </div>
-	
-	    <span class='facepart'>Ears: </span>
+        
+        <span class='facepart'>Ears: </span>
         <input class='faceRadio' type='radio' name='earsfac' id='ears0' value='0' >
         <input class='faceRadio' type='radio' name='earsfac' id='ears1' value='1' checked>
         <input class='faceRadio' type='radio' name='earsfac' id='ears2' value='2'>
         <div class='faceRange'>
             <input id='earsTime' value='2' type='range' 
-               min='1' max='9' step='1'  >
+            min='1' max='9' step='1'  >
             <span id='dispearsTime'>2</span>
         </div>
-	
+        
         <span class='facepart'>Mouth: </span> 
         <input class='faceRadio' type='radio' name='moutfac' id='mout0' value='0' >
         <input class='faceRadio' type='radio' name='moutfac' id='mout1' value='1' checked>
         <input class='faceRadio' type='radio' name='moutfac' id='mout2' value='2'>
         <div class='faceRange'>
             <input id='moutTime' value='1' type='range' 
-               min='1' max='9' step='1'  >
+            min='1' max='9' step='1'  >
             <span id='dispmoutTime'>1</span>
         </div>
-	
-		<span class='facepart'>Hair: </span> 
+        
+        <span class='facepart'>Hair: </span> 
         <input class='faceRadio' type='radio' name='hairfac' id='hair0' value='0'>
         <input class='faceRadio' type='radio' name='hairfac' id='hair1' value='1'>
         <input class='faceRadio' type='radio' name='hairfac' id='hair2' value='2' checked>
         <div class='faceRange'>
             <input id='hairTime' value='2' type='range' 
-               min='1' max='9' step='1'  >
+            min='1' max='9' step='1'  >
             <span id='disphairTime'>2</span>
         </div>
-    
-    <span class='facepart'
-          style='line-height: 1.4vw'>Workers:</span> 
-        <input class='faceRadio' type='number' name='quantity' id='quantity0' value='1'
-               min='1' max='3' step='1'>
-        <input class='faceRadio' type='number' name='quantity' id='quantity1' value='1'
-               min='1' max='3' step='1'>
-        <input  type='number' name='quantity' id='quantity2' value='1' 
-               min='1' max='3' step='1'>
-	</div>
-	
-<!--	****** wrapper for eos stage-->    
-<div class='pairStageWrapper' id="pairStageWrapper" >
-    <div class='pairStageLeft'>
-        <canvas class="theStage foreground" id="sForeground"
-                width=480 height=480></canvas>
-        <canvas class="theStage background" id="sBackground"
-                width=480 height=480></canvas>
         
+        <span class='facepart'
+        style='line-height: 1.4vw'>Workers:</span> 
+        <input class='faceRadio' type='number' name='quantity' id='quantity0' value='1'
+            min='1' max='3' step='1'>
+        <input class='faceRadio' type='number' name='quantity' id='quantity1' value='1'
+            min='1' max='3' step='1'>
+        <input  type='number' name='quantity' id='quantity2' value='1' 
+            min='1' max='3' step='1'>
     </div>
-    <div class='pairStageRight'>
-        <canvas class="theStage foreground" id="jForeground"
-                width=480 height=480></canvas>
-        <canvas class="theStage background" id="jBackground"
-                width=480 height=480></canvas>
+        
+    <!--	****** wrapper for eos stage-->    
+    <div class='pairStageWrapper' id="pairStageWrapper" >
+        <div class='pairStageLeft'>
+            <canvas class="theStage foreground" id="sForeground"
+                    width=480 height=480></canvas>
+            <canvas class="theStage background" id="sBackground"
+                    width=480 height=480></canvas>
+            
+        </div>
+        <div class='pairStageRight'>
+            <canvas class="theStage foreground" id="jForeground"
+                    width=480 height=480></canvas>
+            <canvas class="theStage background" id="jBackground"
+                    width=480 height=480></canvas>
+        </div>
+        <div id='coverAnimation' class='coverAnimation' ></div>
     </div>
-    <div id='coverAnimation' class='coverAnimation' ></div>
-</div>
 
 	
 
-<!--	****** wrapper for stats section-->
-<div class='statsWrapper'  id='statsWrapper' ></div>
+    <!--	****** wrapper for stats section-->
+    <div class='statsWrapper'  id='statsWrapper' ></div>
 
-<!--	****** wrapper for chart section-->
-    <!--	****** wrapper for standard chart section-->
-<div class='chartWrapper' id="chartWrapper">
-	<div class='chartTitle center' id='chartTitle'> title </div>
-	<div class='chart' id='chart'> 
-		<canvas  class="chartCanvas" id="chartCanvas" width='2000' height='600'></canvas>
-	</div>
-	<div class='chartLegend rowAroundCenter' id='chartLegend'></div>
-</div>
+    <!--	****** wrapper for chart section-->
+        <!--	****** wrapper for standard chart section-->
+    <div class='chartWrapper' id="chartWrapper">
+        <div class='chartTitle center' id='chartTitle'> title </div>
+        <div class='chart' id='chart'> 
+            <canvas  class="chartCanvas" id="chartCanvas" width='2000' height='600'></canvas>
+        </div>
+        <div class='chartLegend rowAroundCenter' id='chartLegend'></div>
+    </div>
  
     <!--	****** wrapper for fac chart with a dual chart -->
-<div class='dualChartWrapper' id='dualChartWrapper'>
-    <div class='dualChartTitle legitem rowAroundCenter' id='leftLegend'></div>
-    <div class='dualChart' id='dualChart'>
-        <canvas  class="chartCanvas" id="chart" width='1400' height='500'></canvas>
-    </div>
-    <div class='dualChartTitle legitem rowAroundCenter' id='rightLegend'></div>
+    <div class='dualChartWrapper' id='dualChartWrapper'>
+        <div class='dualChartTitle legitem rowAroundCenter' id='leftLegend'></div>
+        <div class='dualChart' id='dualChart'>
+            <canvas  class="chartCanvas" id="chart" width='1400' height='500'></canvas>
+        </div>
+        <div class='dualChartTitle legitem rowAroundCenter' id='rightLegend'></div>
     </div>
     
     <!--	****** wrapper for eos chart with a pair of charts -->
-<div class='pairChartWrapper columnBetweenCenter' id="pairChartWrapper">
-	<div class='pairChartTop rowAroundCenter'>
-    <div class='pairChartLeft columnBetweenCenter'>
-        <div class='pairChartTitle' id='fchartTitle'> title </div>
-        <div class='pairChart' id='fchart'> 
-            <canvas  class="pairChartCanvas" id="fchartCanvas"
-                    width='1000' height='300'></canvas>
+    <div class='pairChartWrapper columnBetweenCenter' id="pairChartWrapper">
+        <div class='pairChartTop rowAroundCenter'>
+            <div class='pairChartLeft columnBetweenCenter'>
+                <div class='pairChartTitle' id='fchartTitle'> title </div>
+                <div class='pairChart' id='fchart'> 
+                    <canvas  class="pairChartCanvas" id="fchartCanvas"
+                            width='1000' height='300'></canvas>
+                </div>
+                <div class='rowCenterCenter' id='pairChartLeftLegend'>
+                </div>
+            </div>
+        
+            <div class='pairChartRight columnAroundCenter'>
+                <div class='pairChartTitle' id='tchartTitle'> title </div>
+                <div class='pairChart' id='tchart'> 
+                    <canvas  class="pairChartCanvas" id="tchartCanvas"
+                            width='1000' height='300'></canvas>
+                </div>
+                <div class='rowCenterCenter' id='pairChartRightLegend'>
+                </div>
+            </div>
         </div>
-        <div class='rowCenterCenter' id='pairChartLeftLegend'>
-        </div>
-    </div>
-	
-    <div class='pairChartRight columnAroundCenter'>
-        <div class='pairChartTitle' id='tchartTitle'> title </div>
-        <div class='pairChart' id='tchart'> 
-            <canvas  class="pairChartCanvas" id="tchartCanvas"
-                    width='1000' height='300'></canvas>
-        </div>
-        <div class='rowCenterCenter' id='pairChartRightLegend'>
-        </div>
-    </div>
-    </div>
-	<div class=' rowCenterCenter' id='pairChartLegend'></div>
-</div>
 
-<div class='twoChartWrapper' id="twoChartWrapper">
-	<div class='chartTitle rowAroundCenter'>
-        <div id='fchartTitle'> title </div>
-        <div id='tchartTitle'> title </div>
+        <div class=' rowCenterCenter' id='pairChartLegend'></div>
     </div>
-    <div class='chart rowBetweenCenter'>
-        <div class='twoChartLeft' id='fchart'> 
-            <canvas  class="chartCanvas" id="fchartCanvas"
-                    width='1000' height='380'></canvas>
+
+    <div class='twoChartWrapper' id="twoChartWrapper">
+        <div class='chartTitle rowAroundCenter'>
+            <div id='fchartTitle'> title </div>
+            <div id='tchartTitle'> title </div>
         </div>
-        <div class='twoChartRight' id='tchart'> 
-            <canvas  class="chartCanvas" id="tchartCanvas"
-                    width='1000' height='380'></canvas>
+        <div class='chart rowBetweenCenter'>
+            <div class='twoChartLeft' id='fchart'> 
+                <canvas  class="chartCanvas" id="fchartCanvas"
+                        width='1000' height='380'></canvas>
+            </div>
+            <div class='twoChartRight' id='tchart'> 
+                <canvas  class="chartCanvas" id="tchartCanvas"
+                        width='1000' height='380'></canvas>
+            </div>
+        </div>
+        <div class='chartLegend' id='chartLegend'>
         </div>
     </div>
-    <div class='chartLegend' id='chartLegend'>
-    </div>
-</div>
 
 
 
@@ -365,13 +367,17 @@
         <a href="./#eos" 
            class='appLink '>Economies of Scale</a>
          <a href="./#sur"
-         class='appLink '>Batching: Setup Reduction</a>
+           class='appLink '>Batching: Setup Reduction</a>
         <a class='appLink '></a>
            
     </div>
+
     <div class='center'><a href="./doc/doc.html" target="_blank" rel="noopener noreferrer"
-           class='appLink'>Documentation</a></div>
+           class='appLink'>Documentation</a>
+    </div>
+
 </div>
+
 <div id='que' class='displayNone'></div>
 <div id='lit' class='displayNone'></div>
 <div id='nvp' class='displayNone'></div>

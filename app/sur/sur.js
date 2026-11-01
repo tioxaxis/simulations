@@ -91,7 +91,7 @@ class BatGraph {
 		d3.append(
 			sur.usrInputs.get('leg0').create(cbColors.yellow, 'Base Case', 'sur'),
 			'     ',
-			sur.usrInputs.get('leg1').create(cbColors.blue, 'Modified', 'sur'));
+			sur.usrInputs.get('leg1').create(cbColors.blue, 'Modified Case', 'sur'));
 	};
 	    
 	pushBase (t,f){
@@ -271,7 +271,9 @@ function updateTimeRV(){
 	theSimulation.base.timeRV.setMean(bCycle);
 	const mCycle = (theSimulation.mSetup + 4 * theSimulation.nRows * theSimulation.pt);
 	theSimulation.mod.timeRV.setMean(mCycle);
+	
 }
+
         
  function localUpdate(inp){
 	let baseInterarrivalTime, modInterarrivalTime;
@@ -915,17 +917,35 @@ function surHTML(usrInputs){
     
     addDiv('sur','sur','whole')
 	addDiv('sur', 'leftHandSideBox'+'sur',
-			   'tallStageWrapper',
+		'tallStageWrapper', 'statsWrapper',
 			   'twoChartWrapper');
-	 
+	
+	const d = document.getElementById('statsWrappersur');
+	const d1 = document.createElement('div');
+	d1.className = "statDisplay";
+	d1.title = 'Utilization of the base case (yellow) system';
+	const s1 = document.createElement('span');
+	// s1.id = 'baseCaseLF';
+	d1.append('Base Case Utilization = 100%');
+
+	const d2 = document.createElement('div');
+	d2.className = "statDisplay";
+	d2.title = 'Utilization of the modified case (blue) system';
+	const s2 = document.createElement('span');
+	// s2.id = 'modifiedCaseLF';
+	d2.append('Modified Case Utilization = 100%');
+	d.append(d1, d2);
+
 	//now put in the sliders with the play/reset box	
 	let elem = document.getElementById('slidersWrappersur');
     
-	elem.append(usrInputs.get('bSetup').create('Setup Time = ', [2, 4, 6, 8], 'backYellow'));
-	elem.append(usrInputs.get('mSetup').create('Setup Time = ', [2, 4, 6, 8], 'backBlue'));
+	elem.append(usrInputs.get('bSetup').create('Setup Time = ', [2, 4, 6, 8],
+												'backYellow', ' sec.'));
+	elem.append(usrInputs.get('mSetup').create('Setup Time = ', [2, 4, 6, 8], 
+												'backBlue', ' sec.'));
 	// elem.append(htmlNoSlider('setBatchbat', 'Batch Size = ', '16'));
 	const dummyBatch = new ArbSlider('batch', [4, 8, 12, 16], 16);
-	elem.append(dummyBatch.create('Batch Size = ', [' ', ' ', ' ', 16], [' ', ' ', ' ', 16], 'backYellow'));
+	elem.append(dummyBatch.create('Batch Size = ', [' ', ' ', ' ', 16], [' ', ' ', ' ', 16], 'backGreyYellow'));
 	dummyBatch.input.disabled = true;
 	
 	elem.append(usrInputs.get('batch').create('Batch Size = ',
@@ -936,7 +956,8 @@ function surHTML(usrInputs){
 	mark.setAttribute('title', 'Mark a box');
 	elem.append(mark);
 
-	elem.append(usrInputs.get('pt').create('Processing Time = ', [2, 4, 6, 8]));
+	elem.append(usrInputs.get('pt').create('Processing Time = ', [2, 4, 6, 8],
+										'backDefault', ' sec.'));
 
 	elem.append(genPlayResetBox('sur', usrInputs));
 	elem.append(usrInputs.get('speed')

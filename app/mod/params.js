@@ -23,7 +23,7 @@ import {
     from '../mod/rhs.js';
 
 
-export class NumParam{
+export class  NumParam{
     constructor(key,min,max,step,deflt){
         this.key = key;
         this.min = min;
@@ -142,6 +142,8 @@ function reportError(key, x) {
         console.log('input with key ' + key + ' has a value ' + x + ' which is not an allowed value.  It will be set to the default value');
 };
 
+// one value in keys appears in one element of inps (as an .key) then return true
+// if no value in keys appears anywhere in inps then return false
 export function match(inps, keys) {
     for (let inp of inps) {
         for (let key of keys) {
@@ -168,14 +170,14 @@ export class NumSlider extends NumParam {
         this.event = new CustomEvent('localUpdate', { bubbles: true, detail: { key: key } });
         this.display = null;
     }
-    create(dispText, sliderValues, bkgndClass = 'backDefault'){
+    create(dispText, sliderValues, bkgndClass = 'backDefault',units=''){
 
         const sp = document.createElement('span');
         sp.append(this.value.toFixed(this.precision));
         this.display = sp
 
         const disp = document.createElement('div');
-        disp.append(dispText, sp);
+        disp.append(dispText, sp,units);
 
         const vals = document.createElement('div');
         vals.className = "spreadValues";

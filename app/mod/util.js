@@ -290,7 +290,7 @@ export class Heap {
 	}
 
 	modify(type,timeFunc) {
-        let cnt = 0;
+         let cnt = 0;
 		for (let i = 0; i < this.h.length; i++) {
 			if (this.h[i].type == type) {
 				this.h[i].time = timeFunc();

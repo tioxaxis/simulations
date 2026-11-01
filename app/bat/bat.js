@@ -20,7 +20,7 @@
 
 import {
 	GammaRV, UniformRV, DiscreteUniformRV, DeterministicRV, 
-    Heap, cbColors, Average, Thruput, StageOnCanvas, computeKeyIndex
+    Heap, cbColors, Average, Thruput, StageOnCanvas, computeKeyIndex, tioxSpeeds
 }
 from '../mod/util.js';
 import {
@@ -92,7 +92,7 @@ class BatGraph {
         d3.append(
 			bat.usrInputs.get('leg0').create(cbColors.yellow, 'Base Case', 'bat'),
 			'     ',
-			bat.usrInputs.get('leg1').create(cbColors.blue, 'Modified', 'bat'));
+			bat.usrInputs.get('leg1').create(cbColors.blue, 'Modified Case', 'bat'));
 	};
 	    
 	pushBase (t,f){
@@ -175,8 +175,8 @@ function batDefine(){
 	bat.stage = anim.stage;
 
 	gBatch = new GBatch(anim.stage.foreContext, 4);
-	gBox = new GBox(anim.stage.foreContext, 15, 17);
-	gMachine = new GMachine(anim.stage.backContext, gBox.space * 4 - 20, gBox.space * 4, 10);
+	gBox = new GBox(anim.stage.foreContext, 13, 15);
+	gMachine = new GMachine(anim.stage.backContext, gBox.space * 4 - 10, gBox.space * 4, 10);
 };
 
 function markBatch() {
@@ -191,7 +191,7 @@ class Batching extends OmConcept{
     constructor(usrInputs){
         super('bat');
         this.usrInputs = usrInputs;
-		this.keyNames = ['util', 'pt', 'bSetup', 'mSetup','batch',
+		this.keyNames = ['ar', 'pt', 'bSetup', 'mSetup','batch',
                          'speed','action','reset',
                          'leg0','leg1','desc'];
         this.keyIndex = computeKeyIndex(this.keyNames);
@@ -272,20 +272,32 @@ function localUpdateFromUser(event) {
 };
 
 function updateTimeRV(){
-	const cycle = (theSimulation.bSetup + 16 * theSimulation.pt) / theSimulation.util
+	const cycle = 16 * 60 / theSimulation.ar * tioxTimeConv; 
+	//(theSimulation.bSetup + 16 * theSimulation.pt) / theSimulation.util
 	theSimulation.base.timeRV.setMean(cycle);
 	theSimulation.mod.timeRV.setMean(cycle * theSimulation.nRows / 4);
-	const mCycle = (theSimulation.mSetup + 4 * theSimulation.nRows * theSimulation.pt);
+	//const mCycle = (theSimulation.mSetup + 4 * theSimulation.nRows * theSimulation.pt);
 
-	document.getElementById('disploadbat').innerHTML = 
-		(mCycle/cycle * 4 / theSimulation.nRows).toFixed(2);
+	// document.getElementById('disploadbat').innerHTML = 
+	// 	(mCycle/cycle * 4 / theSimulation.nRows).toFixed(2);
+	updateLoadFactors();
+}
+function updateLoadFactors(){
+	const bLF = theSimulation.ar / 60 * (theSimulation.bSetup + 16 * theSimulation.pt) /16 
+	 / tioxTimeConv;
+	const mLF = theSimulation.ar / 60 * (theSimulation.mSetup + theSimulation.batch * theSimulation.pt) / theSimulation.batch / tioxTimeConv;
+
+	document.getElementById('baseCaseLF').innerHTML = 
+		(bLF <= 1 ? 'Utilization':'Load Factor') + ' = '+ (100 * bLF).toFixed(0);
+	document.getElementById('modifiedCaseLF').innerHTML = 
+		(mLF <= 1 ? 'Utilization' : 'Load Factor') + ' = ' + (100 * mLF).toFixed(0);
 }
         
  function localUpdate(inp){
     let v; 
 	switch (inp.key){
-        case 'util':
-			theSimulation.util = inp.getNumber();
+        case 'ar':
+			theSimulation.ar = inp.getNumber();
 			updateTimeRV();
          	break;
 
@@ -306,6 +318,7 @@ function updateTimeRV(){
 			break;
 
         case 'batch':
+			theSimulation.batch = inp.getNumber();
             theSimulation.nRows = inp.getNumber()/4;
 			theSimulation.mod.line.nRows  = theSimulation.nRows;
 			theSimulation.mod.supply.setNRows(theSimulation.nRows);
@@ -347,7 +360,7 @@ class BatQueue extends Queue {
 		super(bat, "queue" , -1 );
 		this.snake = new BoxStack({
 			isRows: false, isSnake: true,
-			lanes: 3, laneLength: 6 / nRows,
+			lanes: 4, laneLength:  Math.floor(6 / nRows),
 			hSpace: null, vSpace: null,
 			xDir: -1, yDir: 1
 		})
@@ -425,15 +438,21 @@ const theSimulation = {
 	initialize: function () {
 		// random variables
 		this.swapEndTime = tioxTimeConv;
-		this.util = bat.usrInputs.get('util').getNumber();
+		this.ar = bat.usrInputs.get('ar').getNumber();
 		this.pt = Number(bat.usrInputs.get('pt').get()) * tioxTimeConv;
 		this.bSetup = Number(bat.usrInputs.get('bSetup').get()) * tioxTimeConv;
 		this.mSetup = Number(bat.usrInputs.get('mSetup').get()) * tioxTimeConv;
-		this.nRows = bat.usrInputs.get('batch').getNumber() / 4;
+		this.batch = bat.usrInputs.get('batch').getNumber()
+		this.nRows =  this.batch / 4;
+
+		
+
+		updateLoadFactors();
+
 		// local helper function
 		const defineLine = (iATime, height, nLines, color, setupTime, graphPush) => {
 			let sys = {};
-			sys.path = { m1: 260, m2: 520, m3: 790, y: height, dx: 70 };
+			sys.path = { m1: 300, m2: 500, m3: 700, y: height, dx: 66 };
 
 			sys.supply = new Supplier(color, nLines,
 				anim.stage.offstageLeft, sys.path.y);
@@ -444,7 +463,7 @@ const theSimulation = {
 
 			sys.queuehead = {
 				x: sys.path.m1 - sys.path.dx,
-				y: sys.path.y + sys.path.dx + 20
+				y: sys.path.y + sys.path.dx 
 			};
 			sys.queue = new BatQueue(sys.path.m1,sys.path.y,4);
 			bat.resetCollection.push(sys.queue);
@@ -463,12 +482,12 @@ const theSimulation = {
 			sys.queue.setPreviousNext(sys.creator, sys.line);
 			return sys;
 		}
-		const interarrivalTime = (this.bSetup + 16 * this.pt) / this.util;
+		//const interarrivalTime = 16/this.ar;//(this.bSetup + 16 * this.pt) / this.util;
 		
-		this.base = defineLine( interarrivalTime, 100, 4, cbColors.yellow,
+		this.base = defineLine(16 * 60 / this.ar * tioxTimeConv, 117, 4, cbColors.yellow,
 								this.bSetup, bat.graph.pushBase.bind(bat.graph));
-		this.mod = defineLine( interarrivalTime * theSimulation.nRows / 4,
-									300, theSimulation.nRows, cbColors.blue,
+		this.mod = defineLine(this.batch * 60 / this.ar * tioxTimeConv,
+									333, theSimulation.nRows, cbColors.blue,
 									this.mSetup, bat.graph.pushMod.bind(bat.graph));
 	},
 };
@@ -761,8 +780,8 @@ class BatLine{
 		const ctx = gMachine.ctx;
 		const dx = gMachine.w; 
 		const dy = gMachine.h;
-		const dxBig = dx + gMachine.lineWidth * 2;
-		const dyBig = dy + + gMachine.lineWidth * 2;
+		const dxBig = dx + gMachine.lineWidth * 3;
+		const dyBig = dy + + gMachine.lineWidth * 3;
 		ctx.clearRect(machine.x - dxBig/2, machine.y - dyBig/2, dxBig, dyBig);
 
 		ctx.lineWidth = gMachine.lineWidth;
@@ -779,7 +798,7 @@ class BatLine{
 			ctx.beginPath();
 			ctx.textAlign = 'center';
 			ctx.fillStyle = 'black';
-			ctx.font = "20px Arial";
+			ctx.font = "18px Arial";
 			ctx.fillText(status, machine.x, machine.y + dy/4);
 			ctx.closePath();
 		};
@@ -915,9 +934,9 @@ class Batch extends Item{
 
 function defineParams() {
 	let usrInputs = new Map();
-	usrInputs.set('bSetup', new NumSlider('bSetup', 2, 8, 1, 4));
-	usrInputs.set('mSetup', new NumSlider('mSetup', 2, 8, 1, 4));
-	usrInputs.set('util', new ArbSlider('util', [0.8, 0.9, 0.95, 0.99], .9));
+	usrInputs.set('bSetup', new NumSlider('bSetup', 2, 8, 1, 6));
+	usrInputs.set('mSetup', new NumSlider('mSetup', 2, 8, 1, 6));
+	usrInputs.set('ar', new NumSlider('ar', 10, 25, 1, 20));
 	usrInputs.set('batch', new ArbSlider('batch', [4, 8, 12, 16], 16));
 	usrInputs.set('pt', new NumSlider('pt', 2, 8, 1, 2));
 	usrInputs.set('reset', new Checkbox('reset', false));
@@ -935,32 +954,55 @@ function batHTML(usrInputs){
     
     addDiv('bat','bat','whole')
 	addDiv('bat', 'leftHandSideBox'+'bat',
-			   'tallStageWrapper',
+			   'tallStageWrapper','statsWrapper',
 			   'twoChartWrapper');
+
+	const d = document.getElementById('statsWrapperbat');
+	const d1 = document.createElement('div');
+	d1.className = "statDisplay";
+	d1.title = 'Utilization of the base case (yellow) system';
+	const s1 = document.createElement('span');
+	s1.id = 'baseCaseLF';
+	d1.append('Base Case ', s1, '%');
+
+	const d2 = document.createElement('div');
+	d2.className = "statDisplay";
+	d2.title = 'Utilization of the modified case (blue) system';
+	const s2 = document.createElement('span');
+	s2.id = 'modifiedCaseLF';
+	d2.append('Modified Case ', s2, '%');
+	d.append(d1, d2);
 	 
 	//now put in the sliders with the play/reset box	
 	let elem = document.getElementById('slidersWrapperbat');
     
-    elem.append(usrInputs.get('bSetup').create('Setup Time = ', [2,4,6,8], 'backYellow')); 
+    elem.append(usrInputs.get('bSetup').create('Setup Time = ', [2,4,6,8],
+												 'backYellow',' sec.')); 
+	elem.append(usrInputs.get('mSetup').create('Setup Time = ', [2, 4, 6, 8],
+												 'backBlue', ' sec.'));
 	
-	elem.append(usrInputs.get('mSetup').create('Setup Time = ', [2, 4, 6, 8], 'backBlue'));
-	elem.append(usrInputs.get('util')
-		.create('Utilization = ', ['0.8', '0.9', '0.95', '0.99'],
-								 ['0.8', '0.9', '0.95', '0.99'], 'backYellow'));
-	
-	elem.append(htmlNoSlider('loadbat', 'Load Factor = ', '1')); 
+	// elem.append(htmlNoSlider('loadbat', 'Load Factor = ', '1')); 
 	const dummyBatch = new ArbSlider('batch', [4, 8, 12, 16], 16);
-	elem.append(dummyBatch.create('Batch Size = ', [' ', ' ', ' ', 16], [' ', ' ', ' ',  16], 'backYellow'));
+	elem.append(dummyBatch.create('Batch Size = ', [' ', ' ', ' ', 16], [' ', ' ', ' ', 16], 'backGreyYellow'));
 	dummyBatch.input.disabled = true;
 	elem.append(usrInputs.get('batch').create('Batch Size = ', 
 		[4, 8, 12, 16], [4, 8, 12, 16], 'backBlue' ));
-	    
+	
+	elem.append(usrInputs.get('ar')
+		.create('Arrival Rate = ', [10, 15, 20, 25], 'backDefault','/min.'));
+	elem.append(usrInputs.get('pt').create('Processing Time = ', [2, 4, 6, 8],
+		'backDefault', ' sec.'));
+
 	const mark = document.getElementById('markButton').cloneNode(true);
 	addKeyForIds('bat', mark);
     mark.setAttribute('title','Mark a box');
 	elem.append(mark);
 
-	elem.append(usrInputs.get('pt').create('Processing Time = ', [2, 4, 6, 8]));
+	const empty = document.createElement('div');
+	empty.className = "sliderBox";
+	elem.append(empty);
+
+	
 	
 	elem.append( genPlayResetBox('bat',usrInputs));
 	elem.append(usrInputs.get('speed')
