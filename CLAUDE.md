@@ -19,6 +19,17 @@ Serve the repo root over HTTP. You can't use `file://`, because ES modules and t
 - `index.html#que`, `#lit`, `#nvp`, `#inv`, `#fac`, `#eos`, `#bat`, `#sur` open a single simulation. A bare `index.html` shows the directory page (`#dir`).
 - `unittests/index.html` is an old, manual browser page for the `Heap`. It imports `../modules/utility.js`, which no longer exists (the code is now `app/mod/util.js`), so it is stale.
 
+## Deployment
+
+This repo is `github.com/tioxaxis/simulations`. There are two live sites, both on GitHub Pages under the tiox.org domain:
+
+- **tiox.org/simulations** is the test site. It is served directly from this repo's `master` branch, so **pushing `master` publishes immediately.** Do feature work on a branch, merge it into `master`, then push to test it live.
+- **tiox.org** is the stable site that professors use. It comes from the separate sibling repo `../tioxaxis.github.io`, whose `index.html` redirects to `./stable/`. `stable`, `v1`, `v1.1`, `v1.2` and `v1.3` are git submodules of this repo, each pinned to a commit on a branch named in `.gitmodules` (`stable` tracks `v1.3`). They are only updated by running that repo's `updatesubbranch.sh` (or `newsubbranch.sh` for a new version) and pushing it. Pushing branches here never changes tiox.org.
+
+Both sites are the same origin, so they **share `localStorage`** (`Tiox-<key>`). Scenarios edited while testing on /simulations also appear on tiox.org in the same browser. Anything the test version saves must remain readable by the stable version.
+
+Never push `master`, or touch `../tioxaxis.github.io`, unless the user asks.
+
 ## Architecture
 
 **Single page, hash routing.** `index.html` holds all markup. Its top `displayNone` section holds *generic templates* (play/reset box, `whole` 2-column wrapper, `stageWrapper` canvases, scenarios panel), plus an empty `<div id='<key>'>` for each simulation. `app/app.js` reads `location.hash` and lazily calls `<key>Start()` the first time a tab is shown. It keeps the instances in `omConcepts`, pauses the old tab on switch, and routes keyboard shortcuts (Space play/pause, B reset, arrows to move between scenarios, Enter/Escape for edit mode) to the active instance.
