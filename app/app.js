@@ -50,6 +50,10 @@ import {
     surStart
 }
 from './sur/sur.js';
+import {
+    exportScenarios
+}
+from './mod/scenarioFile.js';
 
 //handles keyboard entry for all simulations.
 function keyDownFunction(evt) {
@@ -113,7 +117,7 @@ document.addEventListener('click', (evt) => {
 });
 
 // hamburger menu on the home page: Documentation, Export, Import.
-// Export and Import do nothing yet; clicking any item closes the menu.
+// Import does nothing yet; clicking any item closes the menu.
 const homeMenuButton = document.getElementById('homeMenuButton');
 const homeMenuList = document.getElementById('homeMenuList');
 homeMenuButton.addEventListener('click', () =>
@@ -127,6 +131,15 @@ document.addEventListener('click', (evt) => {
         !homeMenuList.contains(evt.target))
         homeMenuList.classList.add('displayNone');
 });
+
+// display names of the animations, in menu order, taken from the TioX menu
+const animationNames = {};
+for (let link of tioxMenuList.querySelectorAll('a'))
+    if (link.dataset.key != 'dir')
+        animationNames[link.dataset.key] = link.textContent;
+
+document.getElementById('exportScenarios')
+    .addEventListener('click', () => exportScenarios(animationNames));
 
 // Escape closes either menu
 document.addEventListener('keydown', (evt) => {
