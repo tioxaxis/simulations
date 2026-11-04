@@ -132,6 +132,25 @@ A {
 	padding: .5vw 1vw;
 	font-size: 1.5vw;
 	color: var(--borderColor);
+	cursor: pointer;
+}
+.tioxMenuList hr {
+	width: 90%;
+	margin: .3vw auto;
+	border: none;
+	border-top: var(--borderColor) solid 1px;
+}
+
+/*************  Hamburger menu on the home page  **************/
+.homeMenu {
+	position: absolute;
+	top: 1vw;
+	right: 1.5vw;
+}
+.homeMenuList {
+	top: 4.5vw;
+	left: auto;
+	right: 0;
 }
 .tioxMenuList a:hover {
 	color: rgb(0, 172, 152);

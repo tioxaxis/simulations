@@ -112,6 +112,30 @@ document.addEventListener('click', (evt) => {
         tioxMenuList.classList.add('displayNone');
 });
 
+// hamburger menu on the home page: Documentation, Export, Import.
+// Export and Import do nothing yet; clicking any item closes the menu.
+const homeMenuButton = document.getElementById('homeMenuButton');
+const homeMenuList = document.getElementById('homeMenuList');
+homeMenuButton.addEventListener('click', () =>
+    homeMenuList.classList.toggle('displayNone'));
+homeMenuList.addEventListener('click', (evt) => {
+    if (evt.target.tagName == 'A')
+        homeMenuList.classList.add('displayNone');
+});
+document.addEventListener('click', (evt) => {
+    if (!homeMenuButton.contains(evt.target) &&
+        !homeMenuList.contains(evt.target))
+        homeMenuList.classList.add('displayNone');
+});
+
+// Escape closes either menu
+document.addEventListener('keydown', (evt) => {
+    if (evt.code == 'Escape') {
+        tioxMenuList.classList.add('displayNone');
+        homeMenuList.classList.add('displayNone');
+    }
+});
+
 function updateHeader(which){
     const header = document.getElementById('tioxHeader');
     if (which == 'dir') {
