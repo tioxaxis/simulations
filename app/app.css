@@ -94,6 +94,52 @@ A {
 .appLink:active{
     color: blue;
 }
+
+/*************  Header with menu to switch animations  **************/
+.tioxHeader {
+	display: flex;
+	align-items: center;
+	height: 3.5vw;
+	padding: 0 .5vw;
+}
+.tioxMenu {
+	position: relative;
+}
+.tioxMenuButton {
+	display: block;
+	height: 3vw;
+	width: 3vw;
+	cursor: pointer;
+}
+.tioxHeaderTitle {
+	margin-left: 1vw;
+	font-size: 2vw;
+	color: var(--borderColor);
+}
+.tioxMenuList {
+	position: absolute;
+	top: 3.2vw;
+	left: 0;
+	z-index: 10;
+	display: flex;
+	flex-direction: column;
+	min-width: 20vw;
+	background: white;
+	border: var(--borderColor) solid 1px;
+	box-shadow: .2vw .2vw .6vw rgba(0, 0, 0, .3);
+}
+.tioxMenuList a {
+	padding: .5vw 1vw;
+	font-size: 1.5vw;
+	color: var(--borderColor);
+}
+.tioxMenuList a:hover {
+	color: rgb(0, 172, 152);
+	background: rgb(240, 240, 240);
+}
+.tioxMenuList a.currentApp {
+	font-weight: bold;
+}
 /*
 .verticalCenter{
 	padding: 0vh 2vh 0vh 2vh;

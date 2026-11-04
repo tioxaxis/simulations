@@ -99,6 +99,35 @@ function redrawBackground(){
 };
 window.addEventListener('resize', redrawBackground);
 
+// header menu (TioX icon) for switching between animations.
+// The links just change the hash; onpopstate below calls switchTo.
+const tioxMenuButton = document.getElementById('tioxMenuButton');
+const tioxMenuList = document.getElementById('tioxMenuList');
+tioxMenuButton.addEventListener('click', () =>
+    tioxMenuList.classList.toggle('displayNone'));
+tioxMenuList.addEventListener('click', () =>
+    tioxMenuList.classList.add('displayNone'));
+document.addEventListener('click', (evt) => {
+    if (!tioxMenuButton.contains(evt.target))
+        tioxMenuList.classList.add('displayNone');
+});
+
+function updateHeader(which){
+    const header = document.getElementById('tioxHeader');
+    if (which == 'dir') {
+        header.classList.add('displayNone');
+        return;
+    }
+    header.classList.remove('displayNone');
+    for (let link of tioxMenuList.querySelectorAll('a')) {
+        const isCurrent = link.dataset.key == which;
+        link.classList.toggle('currentApp', isCurrent);
+        if (isCurrent)
+            document.getElementById('tioxHeaderTitle')
+                .textContent = link.textContent;
+    }
+};
+
 window.onpopstate = function() {
 	const h = location.hash;
     switchTo(h != '' ? h.slice(1) : 'dir');
@@ -152,6 +181,7 @@ function switchTo (which){
     let k = possibles.findIndex(key => key == which);
     currentTab = document.getElementById(k >= 0 ? which : 'dir');
     currentTab.classList.remove('displayNone');
+    updateHeader(currentTab.id);
     if( k > 0 /* && alreadyStarted */ ){
         redrawBackground();
     }
