@@ -152,6 +152,64 @@ A {
 	left: auto;
 	right: 0;
 }
+
+/*************  Import scenarios dialog  **************/
+.tioxDialog {
+	min-width: 32vw;
+	padding: 1.5vw 2vw;
+	border: var(--borderColor) solid 2px;
+	border-radius: .5vw;
+	color: var(--fontColor);
+	font-size: 1.3vw;
+}
+.tioxDialog::backdrop {
+	background: rgba(0, 0, 0, .3);
+}
+.dialogTitle {
+	font-size: 1.8vw;
+	color: var(--borderColor);
+}
+.dialogButtons {
+	display: flex;
+	justify-content: flex-end;
+	gap: 1vw;
+	margin-top: 1.5vw;
+}
+.dialogButtons button {
+	font-size: 1.3vw;
+	padding: .3vw 1.2vw;
+	cursor: pointer;
+}
+.dialogButtons button.dialogDefault {
+	color: white;
+	background: var(--borderColor);
+	border: var(--borderColor) solid 1px;
+	border-radius: .3vw;
+}
+.dialogButtons button:disabled {
+	opacity: .4;
+	cursor: default;
+}
+.importTable {
+	border-collapse: collapse;
+	width: 100%;
+}
+.importTable th {
+	text-align: left;
+	border-bottom: var(--borderColor) solid 1px;
+	padding: .3vw 1vw .3vw 0;
+}
+.importTable td {
+	padding: .3vw 1vw .3vw 0;
+}
+.importTable input {
+	width: 1.3vw;
+	height: 1.3vw;
+}
+.importRemains  { color: rgb(1, 54, 189); }
+.importReplaces { color: rgb(200, 30, 30); }
+.importAdds     { color: rgb(0, 130, 60); }
+.importSkipped  { color: grey; }
 .tioxMenuList a:hover {
 	color: rgb(0, 172, 152);
 	background: rgb(240, 240, 240);

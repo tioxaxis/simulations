@@ -51,7 +51,7 @@ import {
 }
 from './sur/sur.js';
 import {
-    exportScenarios
+    exportScenarios, setupImport
 }
 from './mod/scenarioFile.js';
 
@@ -117,7 +117,7 @@ document.addEventListener('click', (evt) => {
 });
 
 // hamburger menu on the home page: Documentation, Export, Import.
-// Import does nothing yet; clicking any item closes the menu.
+// Clicking any item closes the menu.
 const homeMenuButton = document.getElementById('homeMenuButton');
 const homeMenuList = document.getElementById('homeMenuList');
 homeMenuButton.addEventListener('click', () =>
@@ -140,6 +140,7 @@ for (let link of tioxMenuList.querySelectorAll('a'))
 
 document.getElementById('exportScenarios')
     .addEventListener('click', () => exportScenarios(animationNames));
+setupImport(animationNames);
 
 // Escape closes either menu
 document.addEventListener('keydown', (evt) => {

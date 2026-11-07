@@ -417,6 +417,25 @@
 <div id='bat' class='displayNone'></div>
 <div id='sur' class='displayNone'></div>
 
+<!--	****** Import scenarios (home page menu): the browser's file
+     window, then this dialog -->
+<input type='file' id='importFile' class='displayNone'
+       accept='.json,application/json'>
+<dialog id='importDialog' class='tioxDialog'>
+    <div class='dialogTitle'>Import scenarios</div>
+    <p id='importFileName'></p>
+    <table class='importTable'>
+        <thead>
+            <tr><th>Import?</th><th>Animation</th><th>Status</th></tr>
+        </thead>
+        <tbody id='importRows'></tbody>
+    </table>
+    <div class='dialogButtons'>
+        <button id='importCancel' tabindex='0'>Cancel</button>
+        <button id='importGo' class='dialogDefault' tabindex='0'>Import</button>
+    </div>
+</dialog>
+
 </body>
 </html>
 

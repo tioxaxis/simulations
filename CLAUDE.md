@@ -8,7 +8,7 @@ TioX is a set of browser-based animated simulations for teaching Operations Mana
 
 TioX stands for "Time is on (the) X-axis". The core teaching idea is that students watch the animation and, at the same moment, see the time-based graph of what's happening being drawn below it. Keep the stage and the graph in sync. The graph's x-axis is simulated time (`now / tioxTimeConv`).
 
-The typical user is a professor demonstrating concepts live to a class. Professors who don't like the default scenarios set up their own; those are kept in that browser's localStorage and come back on reload. Moving them to another machine or browser, or giving them to students, is done with the copy-link button. Changes to the scenario-handling code must not lose a professor's saved scenarios.
+The typical user is a professor demonstrating concepts live to a class. Professors who don't like the default scenarios set up their own; those are kept in that browser's localStorage and come back on reload. Moving them to another machine or browser, or giving them to students, is done with Export/Import scenarios in the home page's hamburger menu (all animations in one file), or with the copy-link button (one animation). Changes to the scenario-handling code must not lose a professor's saved scenarios.
 
 Plain vanilla JavaScript using ES modules: no build step, no package manager, no linter, no test runner. Third-party libraries are vendored minified in `app/res/` (`jstat.min.js` for random distributions, `seedrandom.min.js`, which makes `Math.random()` seeded).
 
@@ -96,7 +96,11 @@ On a slider change, the simulation's `localUpdate` calls `setRate`/`setCV` and t
   - any numeric max × scale above 127, which overflows `Int8`.
 
   When a link is decoded, a field it lacks gets that input's `deflt`. Decoded URL rows skip `verify()`.
-- *Getting JSON out.* Alt+Shift+Cmd-clicking the link button copies the current scenarios as JSON in the default-file format. This is the way to author a new `<key>.json`.
+- *Export/Import file* (`app/mod/scenarioFile.js`, from the home page's hamburger menu).
+  - **Export** writes every `Tiox-<key>` entry, converted to the current format, into `{"tiox":{"version":1,"exported":"yyyy-mm-dd","animations":{"<key>":<default-json shape>}}}`. Chrome/Edge show a Save As dialog; other browsers download the file.
+  - **Import** accepts only files in that format. The menu item opens the browser's own file window via a hidden `<input type=file>`. An invalid file gives an alert. A valid one opens a `<dialog>` with a table of animations (Import?/Animation/Status, where Status is Remains, Replaces or Adds). It replaces each checked animation's whole record in localStorage, leaves the others alone, and then reloads the page at `#dir` without any `?scenarios=` query.
+  - Bump `version` if the file format changes, and keep reading older versions.
+  - The old hidden Alt+Shift+Cmd-click JSON copy on the link button has been removed. To author a new `<key>.json`, export and copy that animation's entry.
 
 **Colors.** Stage items and graph lines are chosen to work for the major types of color blindness while still looking normal to everyone else. Use `cbColors` from `app/mod/util.js` (blue, purple, red/magenta, orange, yellow, which match the IBM color-blind-safe palette, plus black and lightYellow) rather than new color literals. A few hard-coded named colors remain (e.g. `strokeStyle = 'blue'` for the `que` scanner, `'pink'`, greys). The maintainer wants to revisit the color choices later.
 
