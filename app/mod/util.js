@@ -23,12 +23,12 @@ const tioxInfinity = 5000000000000;
 export const cbColors = {
 	blue: 'rgb(100,143,255)',
 	darkBlue: 'rgb(1,54,189)',  // outlines that must stand out on the stage
-	purple: 'rgb(120,94,240)',
+	purple: 'rgb(120,94,240)',  // currently unused
 	red: 'rgb(220, 38, 127)',
-	orange: 'rgb(254,97,0)',
+	orange: 'rgb(254,97,0)',  // currently unused
 	yellow: 'rgb(230,159,0)',  // Okabe-Ito gold; was rgb(255,176,0), too pale on white
     black: 'rgb(0,0,0)',
-    lightYellow: 'rgb(255, 230, 175)',
+    lightYellow: 'rgb(255, 230, 175)',  // currently unused
 };
 
 export const tioxSpeeds = [

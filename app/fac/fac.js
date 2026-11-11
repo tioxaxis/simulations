@@ -748,7 +748,7 @@ export class FaceCard {
         ctx.rect(0,0,this.w,this.h);
         if( this.mark ){
 //            ctx.font = "30px Material-icons";
-            ctx.fillStyle = 'pink';
+            ctx.fillStyle = cbColors.yellow;  // marked card; was 'pink'
 //            ctx.fillText('\u153',0,0);
            
         };
