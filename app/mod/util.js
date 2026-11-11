@@ -22,6 +22,7 @@ const tioxInfinity = 5000000000000;
 
 export const cbColors = {
 	blue: 'rgb(100,143,255)',
+	darkBlue: 'rgb(1,54,189)',  // outlines that must stand out on the stage
 	purple: 'rgb(120,94,240)',
 	red: 'rgb(220, 38, 127)',
 	orange: 'rgb(254,97,0)',

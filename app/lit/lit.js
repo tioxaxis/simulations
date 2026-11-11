@@ -156,7 +156,7 @@ anim.room = {
 		width: 700,
 		height: 250,
 		fill: 'white',
-		stroke: 'blue',
+		stroke: cbColors.darkBlue,
 		strokeWidth: 3,		
 }
 anim.person.path.entry = anim.room.left;

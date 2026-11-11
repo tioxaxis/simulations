@@ -124,7 +124,7 @@ var lastRound;
 
 const disappointed = {
 	color: 'rgb(235, 230, 230)',
-	border: 'rgb(31, 105, 245)'
+	border: cbColors.darkBlue
 };
 const tioxTimeConv = 1000; //time are in milliseconds
 

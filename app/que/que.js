@@ -238,7 +238,7 @@ class Queueing extends OmConcept{
 		let locY = anim.person.path.top;
 		const c = anim.stage.backContext;
 	    const numMachines = 1;
-		c.strokeStyle = 'blue';
+		c.strokeStyle = cbColors.darkBlue;
 		c.lineWidth = 5;
 		c.beginPath();
         const scannerHeight = 84;

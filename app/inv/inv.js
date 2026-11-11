@@ -21,7 +21,7 @@
 // declaration of Globals
 const disappointed = {
 	color: 'rgb(235, 230, 230)',
-	border: 'rgb(31, 105, 245)',
+	border: cbColors.darkBlue,
 };
 const tioxTimeConv = 10000; //time are in milliseconds/10
 import {
