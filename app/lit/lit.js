@@ -73,7 +73,7 @@ class LittleGraph extends TioxGraph {
                          lineWidth: 5, dotSize: 6, right: false});
 		const predInv = new GraphLine(this, d => d.p,
                    {color: cbColors.red, vertical: true,
-                       visible: lit.usrInputs.get('leg2'), continuous: true,
+                       visible: lit.usrInputs.get('leg2'), continuous: true, dashed: true,
                          lineWidth: 10, dotSize: 0, right: false});
          
 

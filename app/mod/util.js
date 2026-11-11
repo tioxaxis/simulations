@@ -25,7 +25,7 @@ export const cbColors = {
 	purple: 'rgb(120,94,240)',
 	red: 'rgb(220, 38, 127)',
 	orange: 'rgb(254,97,0)',
-	yellow: 'rgb(255,176,0)',
+	yellow: 'rgb(230,159,0)',  // Okabe-Ito gold; was rgb(255,176,0), too pale on white
     black: 'rgb(0,0,0)',
     lightYellow: 'rgb(255, 230, 175)',
 };

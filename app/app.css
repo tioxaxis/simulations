@@ -24,7 +24,7 @@
 	--borderColor: rgb(122, 141, 208);
 	
 	--colorBlue: rgb(100,143,255)  /* rgb(1, 54, 189) */;
-	--colorYellow: rgb(255,176,0)  /*rgb(197, 137, 6)*/ ;
+	--colorYellow: rgb(230,159,0)  /* same as cbColors.yellow in util.js */ ;
 	--colorOrangy: rgb(213,56,0);
 	--colorPurply: rgb(204,121,167);
 	font-family: "Arial";

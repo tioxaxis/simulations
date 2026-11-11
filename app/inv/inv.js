@@ -80,7 +80,7 @@ class InvGraph extends TioxGraph {
 							  visible: inv.usrInputs.get('leg1'), continuous: false,
                          lineWidth: 8, dotSize: 0, right: false});
 		const predInv = new GraphLine(this, d => d.p,
-                          {color: cbColors.orange, vertical: true,
+                          {color: cbColors.black, vertical: true, dashed: true,
 							  visible: inv.usrInputs.get('leg2'), continuous: true,
                          lineWidth: 10, dotSize: 0, right: false});
        
@@ -88,7 +88,7 @@ class InvGraph extends TioxGraph {
 		d4.append('  ',
 			inv.usrInputs.get('leg0').create(cbColors.blue, 'On Hand', 'inv'),
 			inv.usrInputs.get('leg1').create(cbColors.red, 'On Hand and On Order', 'inv'),
-			inv.usrInputs.get('leg2').create(cbColors.orange, 'Predicted On Hand', 'inv'),'  '); 
+			inv.usrInputs.get('leg2').create(cbColors.black, 'Predicted On Hand', 'inv'),'  '); 
 	
 		if( inv.whichRule == 'methRop'){
 			this.resetRopLine(Number(inv.usrInputs.get('rop').getNumber()));

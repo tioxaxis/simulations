@@ -71,7 +71,7 @@ class QueueGraph extends TioxGraph {
                          lineWidth: 5, dotSize: 8, right: false});
 		this.predWait = new GraphLine(this, d => d.p,
                         {color: cbColors.red, vertical: true,
-                            visible: que.usrInputs.get('leg2'), continuous: true,
+                            visible: que.usrInputs.get('leg2'), continuous: true, dashed: true,
                          lineWidth: 10, dotSize: 0, right: false});
 		
         // this.predictedWaitValue = this.predictedWait();

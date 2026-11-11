@@ -396,6 +396,10 @@ export class GraphLine{
         this.origLineWidth = params.lineWidth;
         this.origDotSize = params.dotSize;
         this.data = [{x:0,y:null}];
+        // params.dashed: draw the line dashed (e.g. predicted values), so
+        // it is recognizable without color.  dashOffset carries the dash
+        // pattern on from one short segment to the next.
+        this.dashOffset = 0;
     };
 
     
@@ -413,6 +417,14 @@ export class GraphLine{
             
             ctx.beginPath();
             ctx.lineWidth = this.params.lineWidth;
+            if (this.params.dashed) {
+                const w = this.params.lineWidth;
+                ctx.setLineDash([3 * w, 2 * w]);
+                ctx.lineDashOffset = this.dashOffset;
+                this.dashOffset += this.params.vertical ?
+                    Math.abs(gx - gLx) + Math.abs(gy - gLy) :
+                    Math.hypot(gx - gLx, gy - gLy);
+            }
             ctx.moveTo(gLx,gLy);
             if( this.params.vertical){
                 ctx.lineTo(gx,gLy)
@@ -420,6 +432,7 @@ export class GraphLine{
             ctx.lineTo(gx,gy);
             ctx.stroke();
             ctx.closePath();
+            ctx.setLineDash([]);
         }
         
         if( this.params.dotSize > 0) {
@@ -454,7 +467,8 @@ export class GraphLine{
         ctx.strokeStyle = this.params.color;
         ctx.lineWidth = this.params.lineWidth;
         ctx.beginPath();
-        
+        this.dashOffset = 0;
+
         let last = {x: null, y: null};
         for( let pair of this.data ){
             if( pair.y != null ){
