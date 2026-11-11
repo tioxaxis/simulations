@@ -79,26 +79,17 @@ On a slider change, the simulation's `localUpdate` calls `setRate`/`setCV` and t
   - Enter or a double-click renames the selected row; an empty name becomes "(no name)".
 - *Sorting and saving.* Every edit calls `saveEdit()`. It sorts the `<li>` rows by name (`innerHTML.localeCompare`, hence the A:, B:, ... prefixes) and writes the whole list to `localStorage['Tiox-<key>']`. Rows are *not* sorted on load, so keep each default JSON file in alphabetical order.
 - *Loading.* At startup, `setupScenarios` takes the first of:
-  1. the `?scenarios=` URL parameter, used only when the hash matches the key;
+  1. a link's `?s=` (or old `?scenarios=`) URL parameter, used only when the hash matches the key;
   2. `localStorage['Tiox-<key>']`;
   3. the default `app/<key>/<key>.json`, shaped `{"app":{"omConcept":{"key":..., "scenarios":[...]}}}`.
 
   Consequences: once a browser has saved scenarios, later edits to the default `.json` don't reach it until the user presses reset-scenarios. localStorage is per origin, so `localhost:5500` and `tiox.org` keep separate copies. Every value passes through each input's `verify()`. The reset-scenarios button removes the localStorage copy and reloads the list from the URL or the default file. `getlocalStoreAndParse` contains migration shims for older localStorage formats (`inv`: `which`→`method`; `lit`: `sr`→`st`). If you rename a scenario field, add a similar shim and update the default JSON.
-- *Link export.* This is meant for a professor to send a custom set of scenarios to students by email or on the course website. The maintainer doesn't know of any professor actually using custom scenarios or links, and none has reported bugs, so don't go fixing latent problems here unprompted. Still, don't break the feature. **Links must keep working across deploys for at least a whole term.** The link button calls `sEncode`, which writes a compact binary base64 string. Each field is stored as its index in `keyNames` plus either a one-byte code from `inp.encode()` or a UTF-8 string of up to 127 bytes. The encoding warns above about 1500 bytes. Each code is a signed `Int8`, -128..127:
-  - `NumParam`: value × 10^precision, where precision comes from `step`;
-  - `ArbParam`/`RadioButtons`: an index into `values`;
-  - `BoolParam`: 0 or 1.
-
-  Things that break existing links:
-  - reordering or removing `keyNames` entries (appending is safe);
-  - changing a slider's `step` (which changes its scale);
-  - reordering an `ArbParam`'s `values`;
-  - any numeric max × scale above 127, which overflows `Int8`.
-
-  When a link is decoded, a field it lacks gets that input's `deflt`. Decoded URL rows skip `verify()`.
+- *Link export.* This is meant for a professor to send a custom set of scenarios to students by email or on the course website. The maintainer doesn't know of any professor actually using custom scenarios or links, and none has reported bugs, so don't go fixing latent problems here unprompted. Still, don't break the feature. **Links must keep working across deploys for at least a whole term.**
+  - **Current links** (`?s=`, `app/mod/scenarioLink.js`). `createURL` calls `encodeLink`, which writes base64url bytes: a version byte (`linkVersion`), the animation key, each parameter name once, each distinct value string once, then one byte per scenario per name (an index into the values). Values are the scenarios' own strings, so these links don't depend on `keyNames` order, slider `step`s or the order of a list of choices. `rowsFromLink` (`rhs.js`) ignores unknown names, gives missing names their `deflt`, runs every value through `verify()`, and on a damaged link, a newer `linkVersion` or another animation's key, alerts and falls back to localStorage/default. The link button alerts (after copying) when the URL is over 2000 characters. If the byte layout changes, bump `linkVersion` and keep decoding the old versions. Older TioX code ignores `?s=`, so it just shows its usual scenarios.
+  - **Old links** (`?scenarios=`, made before 1.4) are still decoded by `sDecode`, which is kept unchanged (the old encoder `sEncode` is gone). Each field there is its index in `keyNames` plus a signed `Int8` code from `inp.encode()` (`NumParam`: value × 10^precision from `step`; `ArbParam`/`RadioButtons`: an index into `values`; `BoolParam`: 0 or 1) or a UTF-8 string of up to 127 bytes. A field the link lacks gets `deflt`; these rows skip `verify()`. To keep old links working, never reorder or remove `keyNames` entries (only append), and don't change the `step` of a slider or the order of an `ArbParam`'s `values`.
 - *Export/Import file* (`app/mod/scenarioFile.js`, from the home page's hamburger menu).
   - **Export** writes every `Tiox-<key>` entry, converted to the current format, into `{"tiox":{"version":1,"exported":"yyyy-mm-dd","animations":{"<key>":<default-json shape>}}}`. Chrome/Edge show a Save As dialog; other browsers download the file.
-  - **Import** accepts only files in that format. The menu item opens the browser's own file window via a hidden `<input type=file>`. An invalid file gives an alert. A valid one opens a `<dialog>` with a table of animations (Import?/Animation/Status, where Status is Remains, Replaces or Adds). It replaces each checked animation's whole record in localStorage, leaves the others alone, and then reloads the page at `#dir` without any `?scenarios=` query.
+  - **Import** accepts only files in that format. The menu item opens the browser's own file window via a hidden `<input type=file>`. An invalid file gives an alert. A valid one opens a `<dialog>` with a table of animations (Import?/Animation/Status, where Status is Remains, Replaces or Adds). It replaces each checked animation's whole record in localStorage, leaves the others alone, and then reloads the page at `#dir` without any link query.
   - Bump `version` if the file format changes, and keep reading older versions.
   - The old hidden Alt+Shift+Cmd-click JSON copy on the link button has been removed. To author a new `<key>.json`, export and copy that animation's entry.
 

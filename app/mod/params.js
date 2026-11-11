@@ -51,8 +51,9 @@ export class  NumParam{
     verify(str){
         const x = Number(str);
         const i = ( x - this.min) / this.step;
+        // allow for rounding: 5.3 / 0.1 is 52.99999999999999
         if ((this.min <= x) && (x <= this.max)
-        && (i == Math.floor(i))) return x.toString();
+        && (Math.abs(i - Math.round(i)) < 1e-6)) return x.toString();
         reportError(this.key, x);
         return this.deflt.toString();
     }

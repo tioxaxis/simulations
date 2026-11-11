@@ -29,9 +29,13 @@
 //   option 2 is the way to go between the various types.
 //var framesDone  = 0;
 import {
-	tioxSpeeds, Heap, StageOnCanvas, fromBase64, toBase64
+	tioxSpeeds, Heap, StageOnCanvas, fromBase64
 }
 from "./util.js";
+import {
+	encodeLink, decodeLink
+}
+from "./scenarioLink.js";
 import {
 	ItemCollection, ResourceCollection
 }
@@ -306,44 +310,35 @@ export class OmConcept {
         return row;
     };
     
-    sEncode(rows){
-        const view = new Int8Array(2000);
-        const uint8View = new Uint8Array(view.buffer);
-        const textEncoder = new TextEncoder();
-        let ptr = 0;
-        view[ptr++] = rows.length;
-        const nParams = this.usrInputs.size;
-        for(let row of rows ){
-            view[ptr++]= nParams;// number of parameters
-            for ( let [key, inp] of this.usrInputs ){
-                const x = inp.encode(row[key]);
-				// console.log('In encode:',key,typeof x, 'value of x',x, 'ROW',row.desc);
-                view[ptr++] = this.keyIndex[key];
-                //decide if single of multiple bytes
-                if( typeof x != "string" ){
-                   view[ptr++] = Number(x);
-                } else {
-                    let uint8Str = textEncoder.encode(x);               
-                    let n = uint8Str.length;
-                    if( n > 127 ){
-                        n = 127;
-                        uint8Str = uint8Str.subarray(0,n);
-                    }
-                    view[ptr++] = -n;
-                    view.set(uint8Str, ptr);
-                    ptr += n;
-                }
-            }
-            if( ptr > 1500 ){
-                alert('You have too many scenarios.  They will generated a URL with more than 2000 characters and that may fail on some browsers, notable IE. Your scenarios will continue to work but you can not use the URL button with this set');
-            break;
-            }
+    // scenarios from a link made by encodeLink (?s=, see scenarioLink.js).
+    // Names this animation doesn't have are ignored, missing ones get
+    // their default, and every value is verified.
+    // Returns null (after telling the user) if the link can't be used.
+    rowsFromLink(code){
+        let link;
+        try {
+            link = decodeLink(code);
+        } catch (e) {
+            alert(e.message);
+            return null;
         }
-        // convert the corect length to 64 bit str via toBase64()
-        const str= toBase64(uint8View.subarray(0,ptr));
-        return str;
+        if (link.key != this.key) {
+            alert('This link holds scenarios for a different animation, ' +
+                  'so the usual scenarios are shown instead.');
+            return null;
+        }
+        return link.rows.map(linkRow => {
+            const row = {};
+            for (let [key, inp] of this.usrInputs) {
+                row[key] = inp.verify(linkRow[key] !== undefined ?
+                                      linkRow[key] : inp.deflt);
+            }
+            return row;
+        });
     };
-                
+
+    // decodes the links made before this change (?scenarios=), so they
+    // still work.  They depend on the order of keyNames: only append to it.
     sDecode(searchStr){
         const textDecoder = new TextDecoder();
         let view = new Int8Array(fromBase64(searchStr));
@@ -518,7 +513,14 @@ export class OmConcept {
     
     // pick the source 1)URL, 2) localStorage, 3) Default on server
     async threeCases(key, search, lsObject ){
-		if ( search.scenarios ){
+		if ( search.s ){
+			const rows = this.rowsFromLink(search.s);
+			if (rows) {
+				this.fromURL = true;
+				return rows;
+			}
+		}
+		else if ( search.scenarios ){
 			this.fromURL = true;
 			return this.sDecode(search.scenarios)
         }
@@ -548,9 +550,9 @@ export class OmConcept {
 		// 3) local storage or 4) default .json file in that order
 		let search = this.parseSearchString(this.key);
 		let lsObject = this.getlocalStoreAndParse(this.keyForLocalStorage);
-		this.warningLSandScens = search.scenarios  && lsObject;
-		
 		let rows = await this.threeCases(this.key, search, lsObject);
+		// scenarios came from a link and the user also has stored ones
+		this.warningLSandScens = this.fromURL && lsObject;
 		this.setUL(rows);
 	};
     
@@ -710,7 +712,19 @@ export class OmConcept {
 	exportWithLink (event) {
         //create the URL link
         this.toastMode = true;
-		copyToClipboard(this.createURL());
+		let url;
+		try {
+			url = this.createURL();
+		} catch (e) {
+			alert(e.message);
+			return;
+		}
+		copyToClipboard(url);
+		if (url.length > 2000)
+			alert('This link is ' + url.length + ' characters long. ' +
+				  'Some email programs and course websites break links ' +
+				  'longer than about 2000 characters, so try the link ' +
+				  'before you send it.');
 		const message = document.
 			getElementById('linkMessage'+this.key);
 		message.classList.remove('linkMessageTrigger');
@@ -767,8 +781,9 @@ export class OmConcept {
 
 	createURL() { //from current UL
 		const result = location.origin + location.pathname +
-			'?scenarios=' +
-			this.sEncode(this.createRowsFromUL()) +
+			'?s=' +
+			encodeLink(this.key, [...this.usrInputs.keys()],
+					   this.createRowsFromUL()) +
 			  '#' + this.key;
 		const encResult =  encodeURI(result);
 		return encResult;
