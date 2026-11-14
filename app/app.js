@@ -51,6 +51,10 @@ import {
 }
 from './sur/sur.js';
 import {
+    matStart
+}
+from './mat/mat.js';
+import {
     exportScenarios, setupImport
 }
 from './mod/scenarioFile.js';
@@ -172,7 +176,7 @@ window.onpopstate = function() {
 };
 
 const possibles = ['dir','que', 'lit', 'nvp', 'inv',
-                   'fac','eos','bat','sur'];
+                   'fac','eos','bat','sur','mat'];
 const omConcepts ={};
 
 function switchTo (which){
@@ -209,6 +213,9 @@ function switchTo (which){
                 break;
             case "sur":
                 omConcepts['sur'] = surStart();
+                break;
+            case "mat":
+                omConcepts['mat'] = matStart();
                 break;
             default :
                 break;

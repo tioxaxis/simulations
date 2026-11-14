@@ -131,7 +131,11 @@ export class TioxGraph {
 					  step: this.xOrigWidthStep.step,
 					  width: this.xOrigWidthStep.width,
 					  lastX: 0};
-        this.yInfo = {min:0, 
+        // Can set the y-axis so it does not expand beyond a given value. 
+		// I use this for the Matches game so the y-axis does not expand beyond 4, so
+		// the expected value of 3.5 is visiblle between 3 and 4.
+		// default value for yFixed is null, which means the y-axis can expand as needed.
+		this.yInfo = this.yFixed ? {...this.yFixed} : {min:0, 
                       max: this.table[0].max,
 					  step: this.table[0].step};
         this.yInfoRight = {min:0, 
@@ -200,8 +204,13 @@ export class TioxGraph {
         }
         this.setupThenRedraw();
 	}
+	// keep the left y-axis at 0..max; points above max are not drawn on graph.
+	// currently I only use this for the Matches game, so the expected value of 3.5 is visible between 3 and 4.
+	fixYaxis(max, step){
+		this.yFixed = {min: 0, max: max, step: step};
+	};
 	updateYaxis(y){
-		if ( y <= this.yInfo.max ) return false;
+		if ( this.yFixed || y <= this.yInfo.max ) return false;
 		this.yInfo = verticalAxis(y,this.table);
 		return true; 
 	};

@@ -94,6 +94,11 @@ A {
 .appLink:active{
     color: blue;
 }
+/* listed on the home page but not available yet */
+.appLinkSoon, .appLinkSoon:hover, .appLinkSoon:active {
+	color: lightgrey;
+	cursor: default;
+}
 
 /*************  Header with menu to switch animations  **************/
 .tioxHeader {
@@ -323,7 +328,7 @@ A {
 		z-index: 2;
 	}
     /*   different height for EOS 65% vs 41% for standard apps */
-    #coverAnimationeos{
+    #coverAnimationeos, #coverAnimationmat{
         height:65%;
     }
 	.addOpacity{

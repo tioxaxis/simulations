@@ -1,0 +1,8 @@
+{"app": {
+    "omConcept":{ "key":"mat","scenarios":
+[{"max":"10","init":"0","speed":"1","action":"none","reset":"true","leg0":"true","leg1":"true","leg2":"true","desc":"A: start with empty system"},
+ {"max":"10","init":"0","speed":"2","action":"play","reset":"false","leg0":"true","leg1":"true","leg2":"true","desc":"B: speed it up"},
+ {"max":"1","init":"1","speed":"2","action":"play","reset":"true","leg0":"true","leg1":"true","leg2":"true","desc":"C: limit inventory to 1"},
+ {"max":"10","init":"10","speed":"2","action":"play","reset":"true","leg0":"true","leg1":"true","leg2":"true","desc":"D: limit inventory to 10"},
+ {"max":"20","init":"20","speed":"2","action":"play","reset":"true","leg0":"true","leg1":"true","leg2":"true","desc":"E: limit inventory to 20"}]
+}}}
