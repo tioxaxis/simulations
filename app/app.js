@@ -55,6 +55,10 @@ import {
 }
 from './mat/mat.js';
 import {
+    fexStart
+}
+from './fex/fex.js';
+import {
     exportScenarios, setupImport
 }
 from './mod/scenarioFile.js';
@@ -94,6 +98,13 @@ function keyDownFunction(evt) {
 		case "PageUp":
 			evt.preventDefault();
 			omConc.previousRow();
+			break;
+		case "ArrowLeft":
+		case "ArrowRight":
+			// only an animation that uses them (the funnel) has arrowLeftRight
+			if (omConc.editMode || !omConc.arrowLeftRight) return;
+			if (omConc.arrowLeftRight(evt.code == "ArrowRight" ? 1 : -1))
+				evt.preventDefault();
 			break;
 	};
 };
@@ -176,7 +187,7 @@ window.onpopstate = function() {
 };
 
 const possibles = ['dir','que', 'lit', 'nvp', 'inv',
-                   'fac','eos','bat','sur','mat'];
+                   'fac','eos','bat','sur','mat','fex'];
 const omConcepts ={};
 
 function switchTo (which){
@@ -216,6 +227,9 @@ function switchTo (which){
                 break;
             case "mat":
                 omConcepts['mat'] = matStart();
+                break;
+            case "fex":
+                omConcepts['fex'] = fexStart();
                 break;
             default :
                 break;

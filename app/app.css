@@ -1020,3 +1020,77 @@ button:active {
 .displayNone{
 	display:none
 }
+/*    ******  Funnel Experiment  *******    */
+/* left hand side: the stage over the history, beside the graph */
+.leftHandSideBox.fexLeft {
+	flex-direction: row;
+}
+.fexStageColumn {
+	flex: 0 0 62%;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	border-right: solid var(--borderColor) .5vw;
+}
+.fexStage {
+	position: relative;
+	flex: 0 0 auto;
+	width: 100%;
+	aspect-ratio: 600 / 390;
+}
+.fexHistory {
+	flex: 1 1 0;
+	min-height: 0;
+	overflow-y: auto;
+	border-top: solid var(--borderColor) .5vw;
+}
+.fexHistoryTray {
+	display: block;
+	width: 100%;
+	border-bottom: 1px solid lightgrey;
+}
+.fexChartColumn {
+	flex: 1 1 0;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+}
+.fexChart {
+	position: relative;
+	width: 100%;
+}
+/* right hand side: the dial spans both columns */
+.slidersWrapper .fexDialBox {
+	grid-column: 1 / span 2;
+	border-right: none;
+	/* two equal halves: the dial ends just left of the row's middle and the
+	   value starts just right of it */
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	column-gap: 1.5vw;
+	align-items: center;
+}
+.slidersWrapper .fexDialBox .fexDial {
+	justify-self: end;
+}
+.slidersWrapper .fexDialBox .fexDialValue {
+	justify-self: start;
+}
+.slidersWrapper .fexLeftBox {
+	border-right: solid var(--fontColor) 1px;
+}
+.slidersWrapper .fexRightBox {
+	border-right: none;
+}
+.fexDial {
+	width: 5vw;
+	height: 5vw;
+	cursor: grab;
+}
+.fexDialValue {
+	font-size: 1.5vw;
+}
+.fexSelect {
+	font-size: 1.2vw;
+	margin-top: .5vw;
+}

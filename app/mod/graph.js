@@ -205,7 +205,8 @@ export class TioxGraph {
         this.setupThenRedraw();
 	}
 	// keep the left y-axis at 0..max; points above max are not drawn on graph.
-	// currently I only use this for the Matches game, so the expected value of 3.5 is visible between 3 and 4.
+	// Used by the Matches game (0-4, so the expected 3.5 is easy to read) and
+	// the Funnel Experiment (0-10 good parts per round).
 	fixYaxis(max, step){
 		this.yFixed = {min: 0, max: max, step: step};
 	};
