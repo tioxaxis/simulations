@@ -37,6 +37,10 @@ import {
 }
 from "./scenarioLink.js";
 import {
+	storageKey, readStored, clearStored
+}
+from "./scenarioStore.js";
+import {
 	ItemCollection, ResourceCollection
 }
 from "./stepitem.js";
@@ -78,7 +82,7 @@ export class OmConcept {
 		this.resetCollection = [];
 		
 		
-		this.keyForLocalStorage = 'Tiox-' + key;
+		this.keyForLocalStorage = storageKey(key);
 		Math.seedrandom('this is a Simulation');
 		
 		this.textInpBox = document.createElement("INPUT");
@@ -458,34 +462,10 @@ export class OmConcept {
     };
 	
 	
-	// option 2 get scenarios from localStorage
-    getlocalStoreAndParse( key ){
-        let lsString = localStorage.getItem( key );
-        let lsObject = (lsString != '' ? JSON.parse(lsString) : null);
-        //fix compatibility problems
-        if( Array.isArray(lsObject) ){
-            //fix the 'which' parameter
-            if( this.key == 'inv' ){
-                for( let s of lsObject ) {
-                    s.method = s.which;
-                    delete s.which
-                }
-            }
-            //fix the 'sr' parameter
-            if( this.key == 'lit' ){
-                for ( let s of lsObject ) {
-                    s.st = s.sr;
-                    delete s.sr;
-                }
-            }
-            // add outer wrapper of object
-            lsObject = {app:{omConcept:{
-                key: this.key,
-                scenarios: lsObject}}};
-            lsString = JSON.stringify(lsObject);
-            localStorage.setItem( key, lsString );
-        }
-        return lsObject;
+	// option 2 get scenarios from localStorage (see scenarioStore.js:
+	// v1.3 scenarios are converted the first time)
+    getlocalStoreAndParse(){
+        return readStored(this.key);
     }
     
     // option 3 get default scenarios from 'key'.json file on server
@@ -540,7 +520,7 @@ export class OmConcept {
         
 		this.setUL(rows);
 		this.currentLi = null;
-		localStorage.removeItem(this.keyForLocalStorage);
+		clearStored(this.key);
 		enableButtonQ('deleteButton'+this.key, false);
 	};
     
@@ -549,7 +529,7 @@ export class OmConcept {
         // get the scenarios from 1) the URL, 2) user specified .json
 		// 3) local storage or 4) default .json file in that order
 		let search = this.parseSearchString(this.key);
-		let lsObject = this.getlocalStoreAndParse(this.keyForLocalStorage);
+		let lsObject = this.getlocalStoreAndParse();
 		let rows = await this.threeCases(this.key, search, lsObject);
 		// scenarios came from a link and the user also has stored ones
 		this.warningLSandScens = this.fromURL && lsObject;

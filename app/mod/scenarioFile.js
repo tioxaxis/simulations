@@ -23,43 +23,20 @@
 //   {"tiox": {"version": 1, "exported": "yyyy-mm-dd",
 //             "animations": {"que": {"app": {"omConcept": {...}}}, ...}}}
 // Each animation's entry has the same shape as its default <key>.json.
-// An animation has custom scenarios exactly when localStorage has
-// 'Tiox-<key>' (written by OmConcept.saveEdit in rhs.js).
+// The scenarios are read and written through scenarioStore.js, which
+// also converts ones saved by v1.3.
+
+import {
+    currentFormat, readStored, writeStored
+}
+from './scenarioStore.js';
 
 const fileVersion = 1;
-
-// Bring an older localStorage format up to date, matching the
-// conversions in OmConcept.getlocalStoreAndParse (rhs.js).
-function currentFormat(key, stored) {
-    if (Array.isArray(stored)) {
-        for (let s of stored) {
-            if (key == 'inv' && s.which !== undefined) {
-                s.method = s.which;
-                delete s.which;
-            }
-            if (key == 'lit' && s.sr !== undefined) {
-                s.st = s.sr;
-                delete s.sr;
-            }
-        }
-        return {app: {omConcept: {key: key, scenarios: stored}}};
-    }
-    if (stored && stored.app && stored.app.omConcept &&
-        Array.isArray(stored.app.omConcept.scenarios))
-        return stored;
-    return null;
-}
 
 function customScenarios(keys) {
     const animations = {};
     for (let key of keys) {
-        let stored = null;
-        try {
-            stored = JSON.parse(localStorage.getItem('Tiox-' + key));
-        } catch (e) {
-            console.log('could not read stored scenarios for', key, e);
-        }
-        const params = currentFormat(key, stored);
+        const params = readStored(key);
         if (params) animations[key] = params;
     }
     return animations;
@@ -140,7 +117,7 @@ export async function exportScenarios(names) {
 //   in both, unchecked             'Remains'  (blue)
 //   only in the file, checked      'Adds'     (green)
 //   only in the file, unchecked    ''         (name grey)
-// Import writes each checked animation's whole record to 'Tiox-<key>'
+// Import writes each checked animation's whole record to localStorage
 // (same format as OmConcept.saveEdit) and reloads the home page.
 // The file is only read inside the browser; nothing is sent anywhere.
 
@@ -256,8 +233,7 @@ export function setupImport(names) {
         try {
             for (let box of tbody.querySelectorAll('input:checked')) {
                 const key = box.dataset.key;
-                localStorage.setItem('Tiox-' + key,
-                                     JSON.stringify(records[key]));
+                writeStored(key, records[key]);
             }
         } catch (e) {
             alert('The scenarios could not be saved in this browser: ' +
