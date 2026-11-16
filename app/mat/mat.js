@@ -22,13 +22,13 @@
 // Five stations in a line.  An endless supply of work waits on the left;
 // between stations are queues limited to 'max' items (a station whose
 // finished item has no room downstream is blocked), each starting with
-// 'init' items.  A station's time per item comes from a die: on a roll of
-// k it works at k items per round, with k weighted so that one station
-// alone averages 3.5 items per round (as in the earlier Java version).
-// Graph time is in rounds: tioxTimeConv is the length of a round in ms.
+// 'init' items.  A station's time per item is Gamma with CV 'scv' and a
+// mean of 12 s, so one station alone averages 5 items per minute.
+// Graph time is in minutes: tioxTimeConv is the length of a simulated
+// minute in ms (18 s of real time at speed 1x).
 
 import {
-	cbColors, StageOnCanvas, Average, Thruput, computeKeyIndex
+	cbColors, StageOnCanvas, Average, Thruput, computeKeyIndex, GammaRV
 }
 from "../mod/util.js";
 import {
@@ -49,8 +49,9 @@ import {
 }
 from '../mod/params.js';
 
-const tioxTimeConv = 18000;  // one round of the game, in ms of simulated time
-const expectedThruput = 3.5; // items per round for one station alone
+const tioxTimeConv = 18000;  // one simulated minute, in ms
+const expectedThruput = 5;   // items per minute for one station alone
+const meanTime = tioxTimeConv / expectedThruput; // ms of work per item
 const nStations = 5;
 
 let mat;
@@ -78,18 +79,6 @@ const maxQueue = 20;    // the largest queue must fit vertically on the stage
 function travelTime(item, x, y) {
 	return Math.max(Math.abs(x - item.cur.x), Math.abs(y - item.cur.y))
 		/ anim.stage.normalSpeed;
-}
-
-// ****** the die: a roll of k means k items per round, chosen with weight k
-class DieRV {
-	constructor() {
-		this.times = [];
-		for (let k = 1; k <= 6; k++)
-			for (let j = 0; j < k; j++) this.times.push(tioxTimeConv / k);
-	}
-	observe() {
-		return this.times[Math.floor(Math.random() * this.times.length)];
-	}
 }
 
 // ****** an item of work: a small blue box, gold when marked
@@ -196,10 +185,10 @@ class MatQueue extends Queue {
 	}
 }
 
-// ****** a station: green when working, yellow with 'idle' or 'blocked'
+// ****** a station: green when working, light yellow 'idle', magenta 'blocked'
 class Station extends MachineCenter {
 	constructor(which) {
-		super(mat, 'station' + which, 1, mat.die);
+		super(mat, 'station' + which, 1, mat.serviceRV);
 		this.which = which;
 		this.x = anim.stationX[which];
 		this.ctx = anim.stage.backContext;
@@ -220,13 +209,14 @@ class Station extends MachineCenter {
 		const ctx = this.ctx;
 		ctx.clearRect(left - 4, top - 4, w + 8, h + 8);
 		const status = this.machs[0].status;
-		ctx.fillStyle = (status == 'busy' ? '#54ed77' : 'lightyellow');
+		ctx.fillStyle = status == 'busy' ? '#54ed77'
+			: status == 'blocked' ? cbColors.red : 'lightyellow';
 		ctx.strokeStyle = cbColors.darkBlue;
 		ctx.lineWidth = 3;
 		ctx.fillRect(left, top, w, h);
 		ctx.strokeRect(left, top, w, h);
 		if (status != 'busy') {
-			ctx.fillStyle = 'black';
+			ctx.fillStyle = status == 'blocked' ? 'white' : 'black';
 			ctx.font = '20px Arial';
 			ctx.textAlign = 'center';
 			ctx.fillText(status, this.x, top + 24);
@@ -282,7 +272,7 @@ function queueSizes() {
 	return {max, init};
 }
 
-// ****** graphs: flow time and throughput, both against rounds
+// ****** graphs: flow time and throughput, both against minutes
 class MatGraph {
 	constructor() {
 		this.flowGraph = new TioxGraph(mat, 'fchartCanvasmat',
@@ -300,7 +290,7 @@ class MatGraph {
 		this.thruGraph = new TioxGraph(mat, 'tchartCanvasmat',
 				40, {width: 40, step: 10}, d => d.t, 1000, 370, false);
 		this.thruGraph.setTitle('Throughput', 'tchartTitle');
-		this.thruGraph.fixYaxis(4, 1);
+		this.thruGraph.fixYaxis(6, 1);
 		new GraphLine(this.thruGraph, d => d.a,
 			{color: cbColors.yellow, vertical: false,
 			 visible: mat.usrInputs.get('leg1'), continuous: false,
@@ -318,7 +308,7 @@ class MatGraph {
 			mat.usrInputs.get('leg1').create(cbColors.yellow,
 				'Average', 'mat'),
 			mat.usrInputs.get('leg2').create(cbColors.red,
-				'Expected throughput (3.5)', 'mat'));
+				'Expected throughput', 'mat'));
 	}
 	// an item has left station 5 at time now
 	push(now, item) {
@@ -341,7 +331,7 @@ class MatGraph {
 	}
 	reset() {
 		this.startStats();
-		this.flowGraph.reset();
+		this.flowGraph.reset(2);  // start the flow time axis at 0..2
 		this.thruGraph.reset();
 		this.xInfo = this.flowGraph.xInfo;
 	}
@@ -372,10 +362,11 @@ class MatchesGame extends OmConcept {
 		super('mat');
 		this.usrInputs = usrInputs;
 		this.keyNames = ['max', 'init', 'speed', 'action', 'reset',
-						 'leg0', 'leg1', 'leg2', 'desc'];
+						 'leg0', 'leg1', 'leg2', 'desc', 'scv'];
 		this.keyIndex = computeKeyIndex(this.keyNames);
 		this.tioxTimeConv = tioxTimeConv;
-		this.die = new DieRV();
+		this.serviceRV = new GammaRV(1 / meanTime,
+			usrInputs.get('scv').getNumber());
 		document.getElementById('markButtonmat')
 			.addEventListener('click', () => theSimulation.supply.mark());
 	}
@@ -441,6 +432,9 @@ function localUpdate(inp) {
 		case 'action':
 		case 'reset':
 			break;
+		case 'scv':  // used from the next item each station starts
+			mat.serviceRV.setCV(inp.getNumber());
+			break;
 		case 'speed':
 			mat.adjustSpeed(inp.getIndex());
 			break;
@@ -459,6 +453,7 @@ function defineParams() {
 	const usrInputs = new Map();
 	usrInputs.set('max', new NumSlider('max', 1, maxQueue, 1, 10));
 	usrInputs.set('init', new NumSlider('init', 0, maxQueue, 1, 0));
+	usrInputs.set('scv', new NumSlider('scv', 0, 2, .5, 1));
 	usrInputs.set('reset', new Checkbox('reset', false));
 	usrInputs.set('action', new RadioButtons('action',
 		['none', 'play', 'pause'], 'none', 'actionmat'));
@@ -490,9 +485,8 @@ function matHTML(usrInputs) {
 	addKeyForIds('mat', mark);
 	mark.setAttribute('title', 'Mark the next item');
 	elem.append(mark);
-	const empty = document.createElement('div');
-	empty.className = 'sliderBox';
-	elem.append(empty);
+	elem.append(usrInputs.get('scv')
+		.create('Service CV = ', ['0.0', '1.0', '2.0']));
 
 	elem.append(genPlayResetBox('mat', usrInputs));
 	elem.append(usrInputs.get('speed')

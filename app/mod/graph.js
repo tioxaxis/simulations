@@ -132,8 +132,8 @@ export class TioxGraph {
 					  width: this.xOrigWidthStep.width,
 					  lastX: 0};
         // Can set the y-axis so it does not expand beyond a given value. 
-		// I use this for the Matches game so the y-axis does not expand beyond 4, so
-		// the expected value of 3.5 is visiblle between 3 and 4.
+		// I use this for the Matches game so the y-axis does not expand beyond 6, so
+		// the expected value of 5 stays visible.
 		// default value for yFixed is null, which means the y-axis can expand as needed.
 		this.yInfo = this.yFixed ? {...this.yFixed} : {min:0, 
                       max: this.table[0].max,
