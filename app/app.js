@@ -63,6 +63,11 @@ import {
 }
 from './mod/scenarioFile.js';
 
+// The release number of this code.  Update it when cutting a new
+// release branch (v1.4, v1.5, ...); it is shown at the bottom of the
+// home page's hamburger menu.
+export const tioxVersion = '1.4';
+
 //handles keyboard entry for all simulations.
 function keyDownFunction(evt) {
 	let omConc = omConcepts[currentTab.id]; 
@@ -135,6 +140,8 @@ document.addEventListener('click', (evt) => {
 // Clicking any item closes the menu.
 const homeMenuButton = document.getElementById('homeMenuButton');
 const homeMenuList = document.getElementById('homeMenuList');
+document.getElementById('tioxVersion').textContent =
+    'TioX version ' + tioxVersion;
 homeMenuButton.addEventListener('click', () =>
     homeMenuList.classList.toggle('displayNone'));
 homeMenuList.addEventListener('click', (evt) => {

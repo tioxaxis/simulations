@@ -157,6 +157,11 @@ A {
 	left: auto;
 	right: 0;
 }
+.tioxVersion {
+	padding: .3vw 1vw .5vw;
+	font-size: 1.1vw;
+	color: grey;
+}
 
 /*************  Import scenarios dialog  **************/
 .tioxDialog {
