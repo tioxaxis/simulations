@@ -140,15 +140,17 @@ h4{
 		<a class='toc2' href="#inventory">Inventory</a>
 		<a class='toc2' href="#batchingNB">Batching: Non Bottlenecks</a>
 		<a class='toc2' href="#batchingSR">Batching: Setup Reduction</a>
+		<a class='toc2' href="#matchgame">Match Game</a>
+		<a class='toc2' href="#funnelgame">Funnel Experiment</a>
+		
     </div>
 
-<a id='futureTOC' class='toc1' href='#future'>
+<!-- <a id='futureTOC' class='toc1' href='#future'>
       Future Animations</a> 
 	<div class="dropdown-container">
-		<a class='toc2' href="#funnelgame">Funnel Game</a>
-		<a class='toc2' href=#matchgame>Match Game</a>
+		
 		<a class='toc2' href="#haveanidea">Have an Idea?</a>
-	</div>
+	</div> -->
 
 <a id='customizationTOC' class='toc1' href='#customization'>
       Customization and Use</a>  
@@ -294,25 +296,51 @@ h4{
         <p>This animation looks similar to Batching: Non-bottlenecks, but here the arrival rate for each line is set to keep it fully utilized.  The focus here is on the trade-off between flow time and throughput.  In scenario A, both lines are the same.  In scenario B setup time is reduces so for the bottom (blue) line, and flow time and throughput are both improved somewhat.  In scenario C batch size is reduced for the bottom (blue) line, and so flow time is reduced but throughput is lower.  In scenario D, both setup time and batch size are cut in half.  The result is the same throughput but the flow time is cut in half as well.    </p>
   	</div>
 
-<h2 id='future'> Future Animations</h2>
 
   	<div class='entry'>
-    <h3 id='funnelgame'>The Funnel Game:</h3>
-		<p>  An animation that allows you to simulate a combination of Deming's red bead experiment and funnel experiment so everyone in the class can participate on their laptops</p>
-	
-   	</div>
-
-  	<div class='entry'>
-    <h3 id='matchgame'>The Match Game</h3>
-	<p> In Goldratt's "The Goal" he describes a game that the boys play that demonstrates that the variability in processing time can affect throughput.  This animation shows that when inventory between stages is limited then indeed, variability can cause blocking and starving in the queueing system which reduces throughput.  If the queue lengths are not limited then there is very little impact on long term throughput.  One can generate a graph that shows for different levels of inventory allowed how throughput and inventory rise with the level of inventory.
-
+    <h3 id='matchgame'>The Matches Game</h3>
+	<p> In Goldratt's "The Goal" he describes a game that the boys play that demonstrates that the variability in processing time can affect throughput. 
+		 This animation shows that when inventory between stages is limited then indeed, variability can cause blocking and starving 
+		 in the queueing system which reduces throughput.  If the queue lengths are not limited then there is very little impact on long term throughput.
+		   One can generate a graph that shows for different levels of inventory allowed how throughput and inventory rise with the level of inventory.
+	</p>
+	<h4>Teaching Note</h4>
+	<p>My teaching objective for this animation is to show that there is a trade-off between flow time and throughput.  
+		If you limit the inventory to something small like one part btween stages then you will see that the throughput is lower because occasional machines are blocked so that they cannot run.
+		Yet because the inventory is so low the total inventory in the system is low and the flowtime through the system is low as well,
+		because of Litt[le's Law. I usually start with queue limit of 1.  Let them see that machines are sometimes blocked.  When this has run for a while, I speed up the animation.  
+		slowly at first but end of at "infinity"  and hit the play button several times to see the throughput converges to about 2.6 or 2.7 and flowt time is about 2.7 as well.
+		  I then increase the limit on inventory to say 5, and then 10, and then 20.  With the queue limit at 1 and then again at say 5 and perhaps the speed at 2 or 5 it is worthwhile to mark a few matches
+		using the "flag" button to mark a few items as gold. The students can visually follow an item through the system.  
+		They can experience  the time it takes an item to flow through with more inventory.   With the queue limit at of 20 the throuput gets very close to the theoretical limit of 3.5 
+		  and the flow time has increased to around 14 or 15.  On a side board I am plotting the flow time as function of the throughput so they can see the 
+		  exponential increase in flow time as throughput approaches the theoretical limit. 
+		  Once the graph is up I ask the students if they can think of a way to beat this trade-off. The answer is that one can achieve relatively high throughput and low
+		  inventory if you can remove the variability in the system.  Toyota was a master of this getting their supply chain for automobile manufacturing from parts to finished cars
+		  down to 6 weeks, whereas US manufacturers were running 6 months.  Although the cost of the inventory is not that high, when engineering want to introduce an improvement 
+		  Toyota has a large advantage in getting that improvement into cars. 
 	</p> 
 	</div>
+
+	<div class='entry'>
+    <h3 id='funnelgame'>The Funnel Game:</h3>
+		<p>  An animation that allows you to simulate a combination of Deming's red bead experiment and funnel experiment 
+			so everyone in the class can participate on their laptops
+		</p>
+	<h4>Teaching Note</h4>
+	<p>
+
+	</p> 
+   	</div>
+
+<!-- <h2 id='future'> Future Animations</h2>
+
+  	
 
   	<div class='entry'>
     <h3 id='haveanidea'>Have an Idea?</h3>
 		<p>    Do you have other ideas?  <a href="#contact">Contact me</a> and make your pitch.  :)</p>
-  	</div>
+  	</div> -->
 
 <h2 id='customization'> Customization and Use</h2>  
 
@@ -349,28 +377,14 @@ h4{
 <h2 id="contact">Contact Information</h2>
 		<p>Gregory (Greg) Dobson</p>
 		<p>Email: <a href="mailto:gdobson@mac.com?Subject=TioX" target="_top">gdobson@mac.com</a></p>
+		<p>Feel free to contact me if you have and questions about how the the interface works or how the animations work, 
+			or if you have any suggestions for improvements to the interface. Further, if you have any ideas for a new animation, 
+			please let me know. </p>
 <h2>
     <p id='blankSpace'>     </p>
 </h2>
 </div>
 
-<script>
-// var toc1 = document.getElementsByClassName('toc1');
-// for( let j = 0; j< toc1.length; j++ ){
-//   toc1[j].addEventListener('click', openCloseMenu,true);
-// };
-// function openCloseMenu(event) {
-//     const toc = event.target; 
-//     if( toc ){
-//       var dropdownContent = toc.nextElementSibling;
-//       if (dropdownContent.style.display === "block") {
-//           dropdownContent.style.display = "none";
-//       } else {
-//           dropdownContent.style.display = "block";   
-//     }
-//     }
-//   };
 
-</script>
 </body>
 </html> 
