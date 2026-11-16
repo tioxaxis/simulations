@@ -247,6 +247,12 @@ class FunnelExperiment extends OmConcept {
 		super.play();
 		this.startRuleIfNeeded();
 	}
+	pause() {
+		if (!this.isRunning) return;
+		super.pause();
+		this.drag = null;        // a paused release cannot be dragged
+		this.drawForeground();   // and turns grey
+	}
 	newRound() {
 		this.copyToHistory();
 		this.heap.reset();    // nothing left over from the last round
@@ -334,6 +340,11 @@ class FunnelExperiment extends OmConcept {
 		return !isRule(this.mode()) && this.isRunning && !this.roundDone
 			&& t.balls.length < this.ppr() && t.landed == t.balls.length;
 	}
+	// the release is live (green, draggable) only in Manual or Adjustable
+	// mode while the animation is playing
+	releaseActive() {
+		return !isRule(this.mode()) && this.isRunning;
+	}
 	// the left/right arrow keys, in Adjustable mode only
 	arrowLeftRight(d) {
 		if (this.mode() != 'adjustable') return false;
@@ -387,7 +398,7 @@ class FunnelExperiment extends OmConcept {
 	}
 	pointerDown(evt) {
 		const p = this.stagePoint(evt);
-		if (isRule(this.mode()) || !this.onSlider(p)) return;
+		if (!this.releaseActive() || !this.onSlider(p)) return;
 		this.drag = {x: p.x, dx0: this.sliderDx, lastT: evt.timeStamp};
 		evt.target.setPointerCapture(evt.pointerId);
 		evt.preventDefault();
@@ -396,7 +407,7 @@ class FunnelExperiment extends OmConcept {
 		const p = this.stagePoint(evt);
 		if (!this.drag) {
 			evt.target.style.cursor =
-				(!isRule(this.mode()) && this.onSlider(p)) ? 'ew-resize' : 'default';
+				(this.releaseActive() && this.onSlider(p)) ? 'ew-resize' : 'default';
 			return;
 		}
 		const max = anim.slider.maxDx;
@@ -480,10 +491,11 @@ class FunnelExperiment extends OmConcept {
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'middle';
 		ctx.fillText(this.funnelCol, x, (f.top + f.bot) / 2 - 6);
-		// the release: green, or grey (and centered) when a rule drops the balls
+		// the release: green while live, otherwise grey (and centered when a
+		// rule drops the balls)
 		const rule = isRule(this.mode());
 		const left = x - s.w / 2 + (rule ? 0 : this.sliderDx);
-		ctx.fillStyle = rule ? 'lightgrey' : '#54ed77';
+		ctx.fillStyle = this.releaseActive() ? '#54ed77' : 'lightgrey';
 		ctx.fillRect(left, s.y, s.w, s.h);
 		ctx.strokeStyle = 'darkgreen';
 		ctx.strokeRect(left, s.y, s.w, s.h);

@@ -300,34 +300,66 @@ h4{
   	<div class='entry'>
     <h3 id='matchgame'>The Matches Game</h3>
 	<p> In Goldratt's "The Goal" he describes a game that the boys play that demonstrates that the variability in processing time can affect throughput. 
-		 This animation shows that when inventory between stages is limited then indeed, variability can cause blocking and starving 
-		 in the queueing system which reduces throughput.  If the queue lengths are not limited then there is very little impact on long term throughput.
-		   One can generate a graph that shows for different levels of inventory allowed how throughput and inventory rise with the level of inventory.
+		 This animation shows a related situation where there are a seqeunce of machines, where all machines are bottlenecks, and variation in processing time at each machine, impacts either flowtime or throughput or both
+		 depending on how the system is run.  When inventory between stages is limited then indeed, variability can cause blocking and starving 
+		 in the queueing system which reduces throughput.  If the queue lengths are not limited then there is very little impact on long term throughput but flow time increases.
+
+		   One can generate a graph that shows how throughput and flow time rise with the level of inventory allowed.
 	</p>
 	<h4>Teaching Note</h4>
 	<p>My teaching objective for this animation is to show that there is a trade-off between flow time and throughput.  
-		If you limit the inventory to something small like one part btween stages then you will see that the throughput is lower because occasional machines are blocked so that they cannot run.
+		The system has a theoretical limit of throughput of 5.  If you limit the inventory to something small like one part between stages then you will see that the throughput is lower because occasionally machines are blocked so that they cannot run.
 		Yet because the inventory is so low the total inventory in the system is low and the flowtime through the system is low as well,
 		because of Litt[le's Law. I usually start with queue limit of 1.  Let them see that machines are sometimes blocked.  When this has run for a while, I speed up the animation.  
-		slowly at first but end of at "infinity"  and hit the play button several times to see the throughput converges to about 2.6 or 2.7 and flowt time is about 2.7 as well.
-		  I then increase the limit on inventory to say 5, and then 10, and then 20.  With the queue limit at 1 and then again at say 5 and perhaps the speed at 2 or 5 it is worthwhile to mark a few matches
-		using the "flag" button to mark a few items as gold. The students can visually follow an item through the system.  
-		They can experience  the time it takes an item to flow through with more inventory.   With the queue limit at of 20 the throuput gets very close to the theoretical limit of 3.5 
-		  and the flow time has increased to around 14 or 15.  On a side board I am plotting the flow time as function of the throughput so they can see the 
+		slowly at first but end of at "infinity"  and hit the play button several times to see the throughput converges to about 3 and flowt time is about 2.
+		  I then increase the limit on inventory to say 5, and then 10, and then 20 increasing the starting inventory between stations to 5, 10 and 20 respectively.  
+		  
+		 <BR><BR>
+		  With the queue limit at say 5 and perhaps the speed at 2 or 5 it is worthwhile to mark a few matches
+		using the <span class="material-icons fontMaterial" >outlined_flag</span> button to mark a few items as gold. The students can visually follow an item through the system.  
+		They can experience  the time it takes an item to flow through with more inventory.  
+		
+		<BR><BR>With the queue limit at of 20 the throuput gets very close (4.8) to the theoretical limit of 5. 
+		  and the flow time has increased to around 11.  On a side board I am plotting the flow time as function of the throughput so they can see the 
 		  exponential increase in flow time as throughput approaches the theoretical limit. 
 		  Once the graph is up I ask the students if they can think of a way to beat this trade-off. The answer is that one can achieve relatively high throughput and low
-		  inventory if you can remove the variability in the system.  Toyota was a master of this getting their supply chain for automobile manufacturing from parts to finished cars
-		  down to 6 weeks, whereas US manufacturers were running 6 months.  Although the cost of the inventory is not that high, when engineering want to introduce an improvement 
-		  Toyota has a large advantage in getting that improvement into cars. 
+		  inventory if you can remove the variability in the system.    You can demonstrate this improvment by reducing the CV of the service times and reducing the maximum queue lengths simultaneously
+		   for the 5 machine.  With CV = 0 and queue length of 1, flow time is close to 1 and througput is close to 5.Toyota was a master of this getting their supply chain for automobile manufacturing from parts to finished cars
+		  down to 6 weeks, whereas US manufacturers were running 6 months.  Although the cost of the inventory is not that high, when engineering want to introduce an improved part 
+		  Toyota has a large advantage in getting that improvement into cars quickly. 
 	</p> 
 	</div>
 
 	<div class='entry'>
     <h3 id='funnelgame'>The Funnel Game:</h3>
 		<p>  An animation that allows you to simulate a combination of Deming's red bead experiment and funnel experiment 
-			so everyone in the class can participate on their laptops
+			so everyone in the class can participate on their laptops.  You can see Deming running the red bead experiment at <a href="https://www.youtube.com/watch?v=ckBfbvOXDvU">Youtube</a>.  
+			  You can see a demonstration of the funnel experiment at <a href="https://www.youtube.com/watch?v=2VogtYRc9dA">Youtube</a>.   There are many other youtube videos available.<br><BR>
+
+			The red bead experiment was designed to show how variability in a process, not controlled by the user, 
+			but believed, by the user's supervisor, to be controlled by the user, can lead to dysfunctional behavior.
+			</p>
+			
+			<h4>Teaching Note</h4>
+			<p>My personal approach was to have pairs of students running a single laptop, one producing the parts and the other recording the results and reporting to me.  I played the gruff supervisor.
+			I used the animation (without moving the funnel) to substitue for the red bead experiement. <BR><BR>
+
+			I would tell them this was a pay for perfornance company and that they would be evaluated on their performance.  I would give them a goal of 8/10 parts on each round.  This is nearly impossible,
+			but a few pairs would get lucky and produce 8 or more good parts.
+			On each round, of say 10 parts, I would reprimand the worse pairs of students, producing the fewest "good" parts.  I would reward a pair of students who did well on one round after doing poorly 
+			on a previous round.  After three rounds I would dismiss (fire) those pairs that had the worst performance. I would tell them to move to observe other pairs to find out how it is done correctly.
+			<BR><BR>
+			After four rounds I would break out of the supervisor role, and see if they would reveal how they were feeling: helpless, frustrated, angry, dismissed, etc.
+			I would then tell them that they could move the funnel (using the arrow keys).  It was always surprising to me how many thought this was going to help.  I would explain Rule 2, have them run one 
+			more round using Rule 2. and then report to the class that in fact the class (all the pairs) on average did worse.  I then would explain and demonstrate Rule 3 and Rule 4, giving real life examples where
+			people apply them.  <BR><BR>I would then switch to lecturing about xMR charts as a way to run systems where poeple would not react to noise but could detect variation that was highly likely to be a 
+			signal that something had changed in the system and some adjustment to the process was warrented.    
+
+			<BR><BR>Students with work experience related to this demo, and could connect it to situations where they were being disparaged for things that were not under their control, and could explain to their fellow
+				students their real life experiences.
+			
 		</p>
-	<h4>Teaching Note</h4>
+	
 	<p>
 
 	</p> 
@@ -362,6 +394,16 @@ h4{
 	<h4>How do I share them with my colleagues or my students?</h4>
 	<p> If you need to share a collection of scenarios that you have created for one animation, you can create a URL that references the animation and contains all the scenarios encoded in the URL.  Once you are ready, click the <i  class="material-icons fontMaterial" >link</i> icon.  The URL will be copied to the clipboard so you can pass it to a colleague or post the URL in your learning managment system in an assignment for example. If your colleague wants to keep these scenarios as his/her own in his/her "Local Storage" then he/she needs only to load the URL you sent and then hit the <i  class="material-icons fontMaterial">edit</i> icon and they will be saved (although they will replace any scenarios she/he currently has saved for that animation).
 	</p>
+
+	<h4>How do I move all the scenarios I created to a new browser or a new machine?</h4>
+	<p> If you have created your own scenarios for multiple animations, you can export them to a (JSON) file and import that file into tiox.org in a new browser or machine.  To do this go to the homepage and 
+		look for the menu (hamburger icon) in the upper right corner of the page.  Click on it and select "Export Scenarios" to create a file with all your scenarios. 
+		You can now move to a new browser or machine, open tiox.org there and select "Import Scenarios".  You will first need to select (and Open) the file you created in the "Export Scenarios" step. 
+		At the next dialog box you will be presented a table of the animations.  For each animaiton in your file it will give you the option to import those scearios (check box on the left) and indicate if you will be adding
+		these to this browser/machine, or replacing scenarios already on this browser/machine. 
+		The table will also show you animations with customized scenarios stored on that browser/machine that are not in your input file.  These will remain untouched.
+		I hope you find this mechanism easy to use and flexible to send a colleage your scenarios for a few animations without disturbing his/her scenarios for other animations.
+	</p>
   	</div>
 
   	<div class='entry'>
@@ -371,13 +413,14 @@ h4{
 
   	<div class='entry'>
     <h3 id='accessibility'>Accessibility </h3>
-         <p>The colors I have used in the graphs may not seem the most obvious yet I have chosen them to make them more readable to people who have one of the three types of colorblindness.  </p>
+    <p>Within each animation, there is menu in the upper left corner to quickly access the homepage and the other animaitons. Swithching animations here will always pause the current animation. </p>     
+	<p>The colors I have used in the graphs may not seem the most obvious yet I have chosen them to make them more readable to people who have one of the three types of colorblindness.  </p>
         <p>The first page is a set of links now (it was originally a stack of buttons).  A set of links is more useable by those who have difficulty using a mouse (or trackpad) or who prefer a keyboard.  It also has the advantage that a Command-Click on a link will open a new tab (or window) making it easier to open several copies of a particular animation in several tabs.  Of course if you have used the tab key and have focus on a particular link, say Queueing, then Command-Return will open a copy of this animation in a new tab (or window). </p>
     </div>
 <h2 id="contact">Contact Information</h2>
 		<p>Gregory (Greg) Dobson</p>
 		<p>Email: <a href="mailto:gdobson@mac.com?Subject=TioX" target="_top">gdobson@mac.com</a></p>
-		<p>Feel free to contact me if you have and questions about how the the interface works or how the animations work, 
+		<p>Feel free to contact me if you have any questions about how the the interface works or how the animations work, 
 			or if you have any suggestions for improvements to the interface. Further, if you have any ideas for a new animation, 
 			please let me know. </p>
 <h2>

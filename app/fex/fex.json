@@ -1,9 +1,7 @@
 {"app": {
     "omConcept":{ "key":"fex","scenarios":
-[{"mode":"manual","ppr":"10","speed":"1","action":"none","reset":"true","desc":"A: manual, funnel fixed over 20"},
- {"mode":"adjustable","ppr":"10","speed":"1","action":"none","reset":"true","desc":"B: adjustable, move with arrow keys"},
- {"mode":"rule1","ppr":"10","speed":"1","action":"play","reset":"true","desc":"C: rule 1, never adjust"},
- {"mode":"rule2","ppr":"10","speed":"1","action":"play","reset":"true","desc":"D: rule 2, adjust from last position"},
- {"mode":"rule3","ppr":"10","speed":"1","action":"play","reset":"true","desc":"E: rule 3, adjust from the target"},
- {"mode":"rule4","ppr":"10","speed":"1","action":"play","reset":"true","desc":"F: rule 4, set over last drop"}]
+[{"mode":"rule1","ppr":"10","speed":"1","action":"pause","reset":"true","desc":"Rule 1"},
+ {"mode":"rule2","ppr":"10","speed":"1","action":"pause","reset":"true","desc":"Rule 2"},
+ {"mode":"rule3","ppr":"10","speed":"1","action":"pause","reset":"true","desc":"Rule 3"},
+ {"mode":"rule4","ppr":"10","speed":"1","action":"pause","reset":"true","desc":"Rule 4"}]
 }}}
