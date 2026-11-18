@@ -188,6 +188,21 @@ function updateHeader(which){
     }
 };
 
+// Report a page view to Umami (script in index.html) for the animation
+// now shown, as e.g. /simulations/que or /stable/que, so each version
+// and animation is counted separately; the home page is just the path.
+// Does nothing if the Umami script is blocked or not on tiox.org.
+function trackView(which) {
+    const url = location.pathname + (which == 'dir' ? '' : which);
+    const title = which == 'dir' ? 'Home' : animationNames[which];
+    const send = () => {
+        if (window.umami)
+            window.umami.track(props => ({...props, url: url, title: title}));
+    };
+    if (window.umami) send();
+    else window.addEventListener('load', send, {once: true});
+}
+
 window.onpopstate = function() {
 	const h = location.hash;
     switchTo(h != '' ? h.slice(1) : 'dir');
@@ -248,6 +263,7 @@ function switchTo (which){
     currentTab = document.getElementById(k >= 0 ? which : 'dir');
     currentTab.classList.remove('displayNone');
     updateHeader(currentTab.id);
+    trackView(currentTab.id);
     if( k > 0 /* && alreadyStarted */ ){
         redrawBackground();
     }
